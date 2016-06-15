@@ -25,6 +25,14 @@ AC_PROG_SED
 AC_PROG_CC
 
 
+# update submodules ( uncomment if needed )
+# pushd ${srcdir}; source ./conf/update_submodules.sh; popd
+
+
+
+
+
+
 AC_CONFIG_FILES( 
                  Makefile
                  src/Makefile
