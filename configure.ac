@@ -26,9 +26,17 @@ AC_PROG_CC
 
 
 # update submodules ( uncomment if needed )
-# pushd ${srcdir}; source ./conf/update_submodules.sh; popd
+pushd ${srcdir}; source ./conf/update_submodules.sh; popd
 
 
+# TOOLCHAIN
+AS_VAR_SET_IF([TOOLCHAIN_TAR],,
+              AS_VAR_SET([TOOLCHAIN_TAR],["http://releases.linaro.org/14.11/components/toolchain/binaries/arm-linux-gnueabihf/gcc-linaro-4.9-2014.11-x86_64_arm-linux-gnueabihf.tar.xz"]))
+AC_ARG_WITH([toolchain-tar],
+            [AS_HELP_STRING([--with-toolchain-tar], [url of the toolchain tar to use])],
+            [AS_VAR_SET([TOOLCHAIN_TAR],[${with_toolchain_tar}])])
+
+AC_SUBST(TOOLCHAIN_TAR)
 
 
 

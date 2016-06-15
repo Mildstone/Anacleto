@@ -1,3 +1,29 @@
+
+
+TOOLCHAIN = $(top_builddir)/toolchain
+MAKE_PROCESS=$(shell grep -c ^processor /proc/cpuinfo)
+
+TMP           = $(abs_top_builddir)/tmp
+LINUX_DIR     = $(top_srcdir)/linux-xlnx
+LINUX         = $(TMP)/uImage
+
+LINUX_CFLAGS    = "-O2 -mtune=cortex-a9 -mfpu=neon -mfloat-abi=hard"
+TOOLCHAIN_PATH  = ${abs_top_builddir}/toolchain/gcc-linaro-4.9-2014.11-x86_64_arm-linux-gnueabihf/bin
+CROSS_COMPILE   = arm-linux-gnueabihf-
+
+
+
+
+# download toolchain
+$(TOOLCHAIN):
+	@ \
+	echo "--------------------------------------------------------------"; \
+	echo " Downloading toolchain tar from ${TOOLCHAIN_TAR}              "; \
+	echo "--------------------------------------------------------------"; \
+	mkdir -p $@; \
+	curl -SL ${TOOLCHAIN_TAR} | tar -xJv -C $@
+
+
 # docker build targets 
 @AX_DOCKER_BUILD_TARGETS@
 
@@ -8,6 +34,6 @@ reconfigure:
 	echo $(shell $(abs_top_builddir)/config.status --config);              \
 	echo " -------------------------------------------------------------"; \
 	echo ; \
-	cd '$(top_builddir)' && \
-	$(top_srcdir)/configure $(shell $(abs_top_builddir)/config.status --config);
+	cd '$(abs_top_builddir)' && \
+	$(abs_top_srcdir)/configure $(shell $(abs_top_builddir)/config.status --config);
 	
