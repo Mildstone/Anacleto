@@ -256,7 +256,6 @@ static int xilinx_axidmatest_probe(struct platform_device *pdev)
     axidma_test_transfer();
 	return 0;
 
-free_rx:
 	dma_release_channel(rx_chan);
 free_tx:
 	dma_release_channel(tx_chan);
