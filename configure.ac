@@ -1,15 +1,32 @@
 dnl Process this file with autoconf to produce a configure script.
 
+
+dnl AUTOCONF ///////////////////////////////////////////////////////////////////
 AC_PREREQ([2.69])
 AC_INIT([autoconf-bootstrap], [0.1], [andrea.rgn@gmail.com])
 AC_CONFIG_MACRO_DIRS([m4])
 AC_CONFIG_AUX_DIR([conf])
-dnl AC_CONFIG_SRCDIR([include/mdsdescrip.h])
+dnl AC_CONFIG_SRCDIR([...])
 
+dnl AUTOMAKE ///////////////////////////////////////////////////////////////////
+AM_INIT_AUTOMAKE([1.15 foreign subdir-objects])
+AC_CANONICAL_TARGET
+
+dnl update submodules at first ... (must be cleaned out)
+AS_IF([${srcdir}/conf/update_submodules],
+      [AS_ECHO(["Submodules succesfully updated"])],
+      [AS_ECHO(["Error updating submodules"])])
+
+dnl AX_KCONFIG /////////////////////////////////////////////////////////////////
+dnl see: m4/ax_enable_kconfig.m4
+AX_KCONFIG([conf/kconfig])
+
+
+dnl AX_DOCKER_BUILD ////////////////////////////////////////////////////////////
+dnl see: m4_ax_docker_build.m4
 AX_DOCKER_BUILD
 
-AC_CANONICAL_TARGET
-AM_INIT_AUTOMAKE([1.15 foreign subdir-objects])
+
 
 AC_CONFIG_HEADERS([config.h])
 
@@ -25,21 +42,14 @@ AC_PROG_SED
 AC_PROG_CC
 
 
-# update submodules ( uncomment if needed )
-pushd ${srcdir}; source ./conf/update_submodules.sh; popd
 
 
 # TOOLCHAIN
 AS_VAR_SET_IF([TOOLCHAIN_TAR],,
-              AS_VAR_SET([TOOLCHAIN_TAR],["http://releases.linaro.org/14.11/components/toolchain/binaries/arm-linux-gnueabihf/gcc-linaro-4.9-2014.11-x86_64_arm-linux-gnueabihf.tar.xz"]))
+              AS_VAR_SET([TOOLCHAIN_TAR],[${CONFIG_TOOLCHAIN_TAR}]))
 AC_ARG_WITH([toolchain-tar],
             [AS_HELP_STRING([--with-toolchain-tar], [url of the toolchain tar to use])],
             [AS_VAR_SET([TOOLCHAIN_TAR],[${with_toolchain_tar}])])
-
-AC_SUBST(TOOLCHAIN_TAR)
-
-
-
 
 AS_IF([ test -d toolchain ],,
       [AS_BOX([// Downloading toolchain tar from ${TOOLCHAIN_TAR} //////], [\/])

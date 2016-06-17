@@ -1,3 +1,6 @@
 [submodule "linux-xlnx"]
 	path = linux-xlnx
 	url = https://github.com/Xilinx/linux-xlnx.git
+[submodule "conf/kconfig"]
+	path = conf/kconfig
+	url = git@github.com:AndreaRigoni/kconfig-autoconf.git

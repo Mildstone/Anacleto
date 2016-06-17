@@ -1,0 +1,60 @@
+#
+# For a description of the syntax of this configuration file,
+# see Documentation/kbuild/kconfig-language.txt.
+#
+mainmenu "Linux driver building configuration"
+
+
+menu  TOOLCHAIN
+
+  config TOOLCHAIN_TAR	
+	  string "get url path of a valid toolchain tar file"
+	  default "http://releases.linaro.org/14.11/components/toolchain/binaries/arm-linux-gnueabihf/gcc-linaro-4.9-2014.11-x86_64_arm-linux-gnueabihf.tar.xz"
+
+endmenu # TOOLCHAIN
+
+
+# //////////////////////////////////////////////////////////////////////////// #
+# //  DOCKER  //////////////////////////////////////////////////////////////// #
+# //////////////////////////////////////////////////////////////////////////// #
+
+config ENABLE_DOCKER
+        bool "Enable docker build"
+
+menu   DOCKER_BUILD
+        depends on ENABLE_DOCKER
+
+  choice DOCKER_BUILD
+        prompt "Select the docker build method"
+        depends on ENABLE_DOCKER
+        config WITH_DOCKER_IMAGE
+         bool "Pull docker image"
+        config WITH_DOCKER_CONTAINER
+         bool "Start existing docker container"
+        config WITH_DOCKER_URL
+         bool "Create from url with a Dockerfile"
+  endchoice
+
+  config DOCKER_IMAGE
+        string "Docker image"
+        depends on ENABLE_DOCKER
+        depends on WITH_DOCKER_IMAGE
+        default "mdsplus/docker:build_fc22"
+
+  config DOCKER_CONTAINER
+        string "Container name or ID"
+        depends on ENABLE_DOCKER
+        depends on WITH_DOCKER_CONTAINER
+
+  config DOCKER_URL
+        string "Url"
+        depends on ENABLE_DOCKER
+        depends on WITH_DOCKER_URL
+        default "."
+
+endmenu # DOCKER_BUILD
+
+
+
+# subdirectories
+# source "..."
