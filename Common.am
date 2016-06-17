@@ -13,17 +13,6 @@ CROSS_COMPILE   = arm-linux-gnueabihf-
 
 
 
-
-# download toolchain
-$(TOOLCHAIN):
-	@ \
-	echo "--------------------------------------------------------------"; \
-	echo " Downloading toolchain tar from ${TOOLCHAIN_TAR}              "; \
-	echo "--------------------------------------------------------------"; \
-	mkdir -p $@; \
-	curl -SL ${TOOLCHAIN_TAR} | tar -xJv -C $@
-
-
 # docker build targets 
 @AX_DOCKER_BUILD_TARGETS@
 

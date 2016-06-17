@@ -41,6 +41,14 @@ AC_SUBST(TOOLCHAIN_TAR)
 
 
 
+AS_IF([ test -d toolchain ],,
+      [AS_BOX([// Downloading toolchain tar from ${TOOLCHAIN_TAR} //////], [\/])
+       ${MKDIR_P} -p toolchain
+       curl -SL ${TOOLCHAIN_TAR} | tar -xJv -C toolchain])
+
+
+
+
 AC_CONFIG_FILES( 
                  Makefile
                  src/Makefile
