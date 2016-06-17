@@ -1,15 +1,20 @@
 
 
 TOOLCHAIN = $(top_builddir)/toolchain
-MAKE_PROCESS=$(shell grep -c ^processor /proc/cpuinfo)
+MAKE_PROCESS = $(shell grep -c ^processor /proc/cpuinfo)
 
-TMP           = $(abs_top_builddir)/tmp
-LINUX_DIR     = $(top_srcdir)/linux-xlnx
-LINUX         = $(TMP)/uImage
+TMP           = $(abs_top_builddir)
 
-LINUX_CFLAGS    = "-O2 -mtune=cortex-a9 -mfpu=neon -mfloat-abi=hard"
-TOOLCHAIN_PATH  = ${abs_top_builddir}/toolchain/gcc-linaro-4.9-2014.11-x86_64_arm-linux-gnueabihf/bin
-CROSS_COMPILE   = arm-linux-gnueabihf-
+
+LINUX_CFLAGS   ?= "-O2 -mtune=cortex-a9 -mfpu=neon -mfloat-abi=hard"
+LINUX_IMAGE    ?= uImage
+LINUX_DIR      ?= $(abs_top_srcdir)/linux-xlnx
+LINUX_BUILDDIR ?= $(abs_top_builddir)/linux-xlnx
+
+
+TOOLCHAIN_PATH   ?= gcc-linaro-4.9-2014.11-x86_64_arm-linux-gnueabihf/bin
+TOOLCHAIN_PATH  ::= ${abs_top_builddir}/toolchain/${TOOLCHAIN_PATH}
+CROSS_COMPILE    ?= arm-linux-gnueabihf-
 
 
 

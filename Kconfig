@@ -5,13 +5,59 @@
 mainmenu "Linux driver building configuration"
 
 
+# //////////////////////////////////////////////////////////////////////////// #
+# //  TOOLCHAIN  ///////////////////////////////////////////////////////////// #
+# //////////////////////////////////////////////////////////////////////////// #
+
+# TOOLCHAIN_PATH  ?= gcc-linaro-4.9-2014.11-x86_64_arm-linux-gnueabihf/bin
+# TOOLCHAIN_PATH  := ${abs_top_srcdir}/toolchain/${TOOLCHAIN_PATH}
+# CROSS_COMPILE   ?= arm-linux-gnueabihf-
+
+config ENABLE_TOOLCHAIN
+        bool "Enable custom toolchain"
+
 menu  TOOLCHAIN
+        depends on ENABLE_TOOLCHAIN
+
+  choice TOOLCHAIN_SOURCE
+        prompt "Select the toolchain retrieve method"
+        depends on ENABLE_TOOLCHAIN
+        config WITH_TOOLCHAIN_TAR_URL
+         bool "download tar from url"
+  endchoice
 
   config TOOLCHAIN_TAR	
 	  string "get url path of a valid toolchain tar file"
+	  depends on ENABLE_TOOLCHAIN
+	  depends on WITH_TOOLCHAIN_TAR_URL	  
 	  default "http://releases.linaro.org/14.11/components/toolchain/binaries/arm-linux-gnueabihf/gcc-linaro-4.9-2014.11-x86_64_arm-linux-gnueabihf.tar.xz"
-
+  
+  config TOOLCHAIN_PATH 
+          string  "toolchain bin path relative to the toolchain dir"
+          depends on ENABLE_TOOLCHAIN
+          default "gcc-linaro-4.9-2014.11-x86_64_arm-linux-gnueabihf/bin"
+          
+  config CROSS_COMPILE
+          string "toolchain prefix of build executables"
+          depends on ENABLE_TOOLCHAIN
+          default "arm-linux-gnueabihf-"
+  
 endmenu # TOOLCHAIN
+
+
+
+
+# //////////////////////////////////////////////////////////////////////////// #
+# //  LINUX  ///////////////////////////////////////////////////////////////// #
+# //////////////////////////////////////////////////////////////////////////// #
+
+# LINUX_DIR     ?= linux-xlnx
+# LINUX_DIR     := $(top_srcdir)/${LINUX_DIR}
+# LINUX_CFLAGS  ?= "-O2 -mtune=cortex-a9 -mfpu=neon -mfloat-abi=hard"
+# LINUX_IMAGE   ?= uImage
+# LINUX_BUILDDIR ?= ${top_builddir}/linux-xlnx
+
+
 
 
 # //////////////////////////////////////////////////////////////////////////// #
@@ -58,3 +104,5 @@ endmenu # DOCKER_BUILD
 
 # subdirectories
 # source "..."
+
+

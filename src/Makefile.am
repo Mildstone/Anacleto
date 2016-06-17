@@ -8,11 +8,11 @@ src = $(srcdir)
 
 
 modules: axidma_example1.c Kbuild
-	- cp $^ .; \
+#	- cp $^ .; \
 	  export PATH="$${PATH}:${TOOLCHAIN_PATH}"; \
 	  make $(AM_MAKEFLAGS) -C ${LINUX_DIR} ARCH=arm CFLAGS=$(LINUX_CFLAGS) \
 	       -j $(MAKE_PROCESS) CROSS_COMPILE=${CROSS_COMPILE} \
-	       M=`pwd` VPATH=$(abs_srcdir) modules
+	       M=$(srcdir) O=`pwd` VPATH=$(abs_srcdir) modules
 
 all: modules
 

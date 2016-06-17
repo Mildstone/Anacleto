@@ -10,7 +10,7 @@ nconfig menuconfig xconfig gconfig:
 	$(MAKE) -C $(top_srcdir)/linux-xlnx $@
 
 .PHONY: linux
-linux: $(LINUX) 
+linux: $(LINUX_IMAGE) 
 
 
 # $(LINUX_DIR): $(LINUX_TAR)
@@ -24,19 +24,21 @@ linux: $(LINUX)
 #	cp -r $(top_srcdir)/patches/lantiq/*  $@/drivers/net/phy/
 
 
-$(LINUX): $(LINUX_DIR)
+$(LINUX_IMAGE): $(LINUX_DIR)
 	export PATH="$${PATH}:$(TOOLCHAIN_PATH)"; \
 	export CROSS_COMPILE=${CROSS_COMPILE}; \
+	export O=${LINUX_BUILDDIR}; \
+	mkdir -p $$O; \
 	make -C $< mrproper; \
-	make -C $< ARCH=arm xilinx_zynq_defconfig; \
-	make -C $< ARCH=arm CFLAGS=$(LINUX_CFLAGS) -j $(MAKE_PROCESS) \
-		   UIMAGE_LOADADDR=0x8000 uImage; \
-	make -C $< ARCH=arm CFLAGS=$(LINUX_CFLAGS) -j $(MAKE_PROCESS) \
+	make -C $< O=$$O ARCH=arm xilinx_zynq_defconfig; \
+	make -C $< O=$$O ARCH=arm CFLAGS=$(LINUX_CFLAGS) -j $(MAKE_PROCESS) \
+		   UIMAGE_LOADADDR=0x8000 $@; \
+	make -C $< O=$$O ARCH=arm CFLAGS=$(LINUX_CFLAGS) -j $(MAKE_PROCESS) \
 		   modules; \
 	mkdir -p $(TMP)/lib/modules; \
-	make -C $< ARCH=arm CFLAGS=$(LINUX_CFLAGS) -j $(MAKE_PROCESS) \
-	   modules_install INSTALL_MOD_PATH=$(TMP); \
-	cp $</arch/arm/boot/uImage $@
+	make -C $< O=$$O ARCH=arm CFLAGS=$(LINUX_CFLAGS) -j $(MAKE_PROCESS) \
+	           INSTALL_MOD_PATH=$(TMP) modules_install; \
+	cp $</arch/arm/boot/$@ $(TMP)
 
 
 MOSTLYCLEANFILES = $(LINUX)
