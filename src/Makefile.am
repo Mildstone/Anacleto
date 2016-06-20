@@ -3,25 +3,44 @@ include ../Common.am
 
 # Main GCC executable (used for compiling and linking)
 
-obj = $(builddir)
-src = $(srcdir)
-
-
-modules: axidma_example1.c Kbuild
-#	- cp $^ .; \
+.PHONY: modules
+modules: axidma_example0.c axidma_example1.c axidma_example2.c Kbuild
+	@ echo " --- building modules ---"; \
 	  export PATH="$${PATH}:${TOOLCHAIN_PATH}"; \
-	  make $(AM_MAKEFLAGS) -C ${LINUX_DIR} ARCH=arm CFLAGS=$(LINUX_CFLAGS) \
+	  $(MAKE) $(AM_MAKEFLAGS) -C ${LINUX_DIR} \
+	       ARCH=arm CFLAGS="$(LINUX_CFLAGS)" \
 	       -j $(MAKE_PROCESS) CROSS_COMPILE=${CROSS_COMPILE} \
-	       M=$(srcdir) O=`pwd` VPATH=$(abs_srcdir) modules
+	       M=`pwd` O=$(abs_top_builddir)/linux-xlnx \
+	       srcdir=$(srcdir) builddir=$(builddir) modules
+
+clean-local:
+	@ echo " --- building modules ---"; \
+	export PATH="$${PATH}:${TOOLCHAIN_PATH}"; \
+	$(MAKE) $(AM_MAKEFLAGS) -C ${LINUX_DIR} \
+	     ARCH=arm CFLAGS="$(LINUX_CFLAGS)" \
+	     -j $(MAKE_PROCESS) CROSS_COMPILE=${CROSS_COMPILE} \
+	     M=`pwd` O=$(abs_top_builddir)/linux-xlnx \
+	     srcdir=$(srcdir) builddir=$(builddir) clean
+
+
+test_example2: test_example2.c
+	@ echo " --- building example2 ---"; \
+	export PATH="$${PATH}:${TOOLCHAIN_PATH}"; \
+	${CROSS_COMPILE}${CC} $(LINUX_CFLAGS) $^ -o $@
+	
+
+
+.PHONY: deploy
+deploy: modules test_example2
+	@ echo " --- deploying modules to target device: ${DEVICE_NAME} ---"; \
+	  scp axidma_example0.ko axidma_example1.ko axidma_example2.ko \
+	   test_example2 \
+	   $(DEVICE_USER)@$(DEVICE_IP):$(DEVICE_MODULES_DIR);
+
 
 all: modules
 
-# FIX !
-clean:
-	rm  -f  \
-	Kbuild  \
-	axidma_example1.mod.c  axidma_example1.o  Module.symvers \
-	axidma_example1.ko  axidma_example1.mod.o modules.order
+
+
 	
 
-	 

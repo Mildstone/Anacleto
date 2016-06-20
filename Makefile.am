@@ -1,5 +1,7 @@
-include Common.am
 
+SUBDIRS = src
+
+include Common.am
 
 
 ################################################################################
@@ -29,17 +31,27 @@ $(LINUX_IMAGE): $(LINUX_DIR)
 	export CROSS_COMPILE=${CROSS_COMPILE}; \
 	export O=${LINUX_BUILDDIR}; \
 	mkdir -p $$O; \
-	make -C $< mrproper; \
-	make -C $< O=$$O ARCH=arm xilinx_zynq_defconfig; \
-	make -C $< O=$$O ARCH=arm CFLAGS=$(LINUX_CFLAGS) -j $(MAKE_PROCESS) \
+	$(MAKE) -C $< mrproper; \
+	$(MAKE) -C $< O=$$O ARCH=arm xilinx_zynq_defconfig; \
+	$(MAKE) -C $< O=$$O ARCH=arm CFLAGS="$(LINUX_CFLAGS)" -j $(MAKE_PROCESS) \
 		   UIMAGE_LOADADDR=0x8000 $@; \
-	make -C $< O=$$O ARCH=arm CFLAGS=$(LINUX_CFLAGS) -j $(MAKE_PROCESS) \
+	$(MAKE) -C $< O=$$O ARCH=arm CFLAGS="$(LINUX_CFLAGS)" -j $(MAKE_PROCESS) \
 		   modules; \
-	mkdir -p $(TMP)/lib/modules; \
-	make -C $< O=$$O ARCH=arm CFLAGS=$(LINUX_CFLAGS) -j $(MAKE_PROCESS) \
+	$(MAKE) -p $(TMP)/lib/modules; \
+	$(MAKE) -C $< O=$$O ARCH=arm CFLAGS="$(LINUX_CFLAGS)" -j $(MAKE_PROCESS) \
 	           INSTALL_MOD_PATH=$(TMP) modules_install; \
 	cp $</arch/arm/boot/$@ $(TMP)
 
 
-MOSTLYCLEANFILES = $(LINUX)
+.PHONY: linux
+linux: $(LINUX_IMAGE)
+
+all: $(LINUX_IMAGE)
+
+
+clean-local:
+	-$(MAKE) -C $(top_builddir)/linux-xlnx clean
+	-rm -rf lib/modules
+
+MOSTLYCLEANFILES = $(LINUX_IMAGE)
                    

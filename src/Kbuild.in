@@ -1,0 +1,7 @@
+
+obj = $(builddir)
+src = $(srcdir)
+
+obj-m += axidma_example0.o
+obj-m += axidma_example1.o
+obj-m += axidma_example2.o

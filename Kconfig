@@ -100,6 +100,65 @@ menu   DOCKER_BUILD
 
 endmenu # DOCKER_BUILD
 
+# //////////////////////////////////////////////////////////////////////////// #
+# //  COMPILER_OPTIONS  ////////////////////////////////////////////////////// #
+# //////////////////////////////////////////////////////////////////////////// #
+
+menu COMPILER_OPTIONS
+
+   config MAKE_PROCESS
+         int "Number of parallel process (aka -j option)"
+         range 1 16
+         default 8
+         
+   config LINUX_CFLAGS  
+         string  "linux and modules compiler flags" 
+         default "-O2 -mtune=cortex-a9 -mfpu=neon -mfloat-abi=hard"
+
+   config LINUX_IMAGE 
+         string  "linux image type"
+         default "uImage"
+         
+   config LINUX_DIR 
+         string  "linux directory name in source and build path"
+         default "linux-xlnx"
+
+endmenu # COMPILER_OPTIONS
+
+
+# //////////////////////////////////////////////////////////////////////////// #
+# //  TARGET_DEVICE  ///////////////////////////////////////////////////////// #
+# //////////////////////////////////////////////////////////////////////////// #
+
+menu TARGET_DEVICE
+
+    config DEVICE_NAME
+          string  "Enter device name"
+          
+    config DEVICE_IP
+          string  "Enter device IP address"
+          
+    config DEVICE_ACCESS
+          string  "Enter device access method"
+          default "sftp"
+          
+    config DEVICE_USER
+          string  "User to connect device with"
+          default "root"
+          
+#    config DEVICE_PASSWD
+#          string  "User password to autenticate user"
+#          default "root"
+
+    config DEVICE_MODULES_DIR
+          string  "Target device modules directory"
+          default "/lib/modules"
+
+endmenu # TARGET_DEVICE
+
+
+
+
 
 
 # subdirectories
