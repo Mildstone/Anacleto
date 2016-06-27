@@ -5,3 +5,4 @@ src = $(srcdir)
 obj-m += axidma_example0.o
 obj-m += axidma_example1.o
 obj-m += axidma_example2.o
+obj-m += axidma_example3.o

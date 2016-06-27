@@ -42206,3 +42206,6 @@ m4/ax_enable_kconfig.m4
 src/axidma_example0.c
 src/axidma_example2.c
 src/test_example2.c
+src/axidma_example3.c
+src/axidma_example3.h
+src/test_example3.c
