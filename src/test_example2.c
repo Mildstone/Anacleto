@@ -29,8 +29,8 @@ int main(int argc, char *argv[])
         return 1;
     }
     
-    
-    printf("buffer content -> %s", buffer);    
+    printf("buffer content -> %s", buffer);
+    munmap(buffer,BUFFER_SIZE);
     return 0;
 }
 

@@ -42209,3 +42209,8 @@ src/test_example2.c
 src/axidma_example3.c
 src/axidma_example3.h
 src/test_example3.c
+patches/linux-xlnx-xilinx-v2015.4-config.patch
+patches/linux-xlnx-xilinx-v2015.4-eeprom.patch
+patches/linux-xlnx-xilinx-v2015.4-lantiq.patch
+patches/linux-xlnx-xilinx-v2015.4-wifi.patch
+src/axidma_example5.c

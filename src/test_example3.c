@@ -12,12 +12,48 @@
 
 #include "axidma_example3.h"
 
-#define BUFFER_SIZE 5000
+
+
+static int test_transfer_mmap(int fd, unsigned long size) {
+    char *buffer;
+    int status;
+    
+    // MMAP buffer //
+    buffer = mmap(NULL,size,PROT_READ | PROT_WRITE, MAP_SHARED,fd,0);
+    if(!buffer) {
+        printf("error mmapping device buffer\n");
+        return 1;
+    }
+
+    int i;
+    int * src = (int *)buffer;
+    int * dst = (int *)(buffer+size/2);
+    
+    // init source data //
+    for (i=0; i<size/2/sizeof(int); ++i) src[i] = i;
+    
+    status = ioctl(fd, XDMA_TEST_MMAPTRASFER, 0);
+    if(status < 0) {
+        printf("error ioctl on device -> err: %d \n",status);
+        return 1;        
+    }
+    
+    // compare result //
+    int err = 0;
+    for(i=0; i<size/2/sizeof(int); ++i)
+        if(src[i] != dst[i]) ++err;
+    
+    // MUNMAP buffer //
+    munmap(buffer,size);    
+    
+    return err;
+}
+
 
 int main(int argc, char *argv[])
 {
     char * dev_file = argv[1];
-    
+    int status = 0;
     // open file //
     int fd = open(dev_file, O_RDWR);
     if(!fd) {
@@ -26,29 +62,29 @@ int main(int argc, char *argv[])
     }
     
     int    number_devices;
-    int status = ioctl(fd, XDMA_GET_NUM_DEVICES, &number_devices);
+    status = ioctl(fd, XDMA_GET_NUM_DEVICES, &number_devices);
     if(status < 0) {
         printf("error ioctl on device -> err: %d \n",status);
         return 1;        
     }
     printf( "number of devices registered: %d \n", number_devices);
     
-    int   test_trasfer;
-    status = ioctl(fd, XDMA_TEST_TRASFER, &number_devices);
+    status = ioctl(fd, XDMA_TEST_TRASFER, 0);
     if(status < 0) {
         printf("error ioctl on device -> err: %d \n",status);
         return 1;        
     }
-    printf( "result of test trasfer: %d \n", test_trasfer);
-
-    status = ioctl(fd, XDMA_TEST_RING, 0);
-    if(status < 0) {
-        printf("error ioctl on device -> err: %d \n",status);
-        return 1;        
+    printf( "result of test trasfer: %d \n", status);
+ 
+    int i;
+    printf("\n");
+    for (i=0; i<50; ++i) {
+        test_transfer_mmap(fd,BUFFER_SIZE);
+        printf(".");
+        fflush(stdout);
     }
-    printf( "ring trasfer done: %d \n",status);
     
-    
+        
     return 0;
 }
 

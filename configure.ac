@@ -21,7 +21,6 @@ dnl AX_KCONFIG /////////////////////////////////////////////////////////////////
 dnl see: m4/ax_enable_kconfig.m4
 AX_KCONFIG([conf/kconfig])
 
-
 dnl AX_DOCKER_BUILD ////////////////////////////////////////////////////////////
 dnl see: m4_ax_docker_build.m4
 dnl /// Kconfig docker variables import example ...

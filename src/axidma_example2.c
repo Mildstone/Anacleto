@@ -7,6 +7,7 @@
 #include <linux/module.h>
 #include <linux/version.h>
 #include <linux/kernel.h>
+#include <linux/mm.h>
 #include <linux/fs.h>
 #include <asm/errno.h>
 
@@ -17,7 +18,6 @@
 #include <asm/pgtable.h>
 
 #include <linux/platform_device.h>
-
 
 // FOPS FWDDECL //
 static int device_open(struct inode *, struct file *);
@@ -144,6 +144,11 @@ static ssize_t device_write(struct file *filp,
 }
 
 
+static struct vm_operations_struct vm_ops;
+static void mmap_close_cb(struct vm_area_struct *vma) { 
+    printk("close operation on vm object called by munmap\n"); 
+}
+
 // MMAP //
 static int device_mmap(struct file *filp, struct vm_area_struct *vma)
 {
@@ -161,6 +166,9 @@ static int device_mmap(struct file *filp, struct vm_area_struct *vma)
 		return -EAGAIN;
 	}
     
+    // set close callback
+    vm_ops.close = mmap_close_cb;
+    vma->vm_ops = &vm_ops;       
     
     // AVOID CACHING BUFFER //
 	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);

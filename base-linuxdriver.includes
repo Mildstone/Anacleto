@@ -3,3 +3,4 @@ linux-xlnx/include
 linux-xlnx/arch/arm/include
 ../base-linuxdriver-build/linux-xlnx/include
 
+patches

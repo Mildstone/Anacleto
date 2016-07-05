@@ -11,12 +11,13 @@ extern "C" {
 #define DEVICE_NAME "signal"  /* Dev name as it appears in /proc/devices */
 #define MODULE_NAME "axidma_example3"
 #define RING_SIZE 10
+#define BUFFER_SIZE 4*1024*1024
 
 #define XDMA_IOCTL_BASE	'W'
 #define XDMA_GET_NUM_DEVICES  _IO(XDMA_IOCTL_BASE, 0)
 #define XDMA_GET_DEV_INFO	  _IO(XDMA_IOCTL_BASE, 1)
 #define XDMA_TEST_TRASFER	  _IO(XDMA_IOCTL_BASE, 2)
-#define XDMA_TEST_RING  	  _IO(XDMA_IOCTL_BASE, 3)
+#define XDMA_TEST_MMAPTRASFER _IO(XDMA_IOCTL_BASE, 3)
 
 
 // struct xdma_ioctl_ops {	
