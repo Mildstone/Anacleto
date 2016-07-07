@@ -1,6 +1,6 @@
 /* AXI DMA Example
 *
-* This small example is intended to simply llustate how to use the DMA engine 
+* This small example is intended to simply illustate how to use the DMA engine 
 * of Linux to take advantage of DMA in the PL. The hardware design is intended
 * to be an AXI DMA without scatter gather and with the transmit channel looped
 * back to the receive channel. 
@@ -73,7 +73,7 @@ static dma_cookie_t axidma_prep_buffer(struct dma_chan *chan, dma_addr_t buf, si
 		 */
 
 		cookie = dmaengine_submit(chan_desc);
-	
+
 	}
 	return cookie;
 }
@@ -129,7 +129,7 @@ static void axidma_test_transfer(void)
     //	char *dest_dma_buffer = kzalloc(dma_length, GFP_KERNEL);
     char *src_dma_buffer = dma_alloc_coherent(tx_chan->device->dev,dma_length,&tx_dma_handle,GFP_KERNEL);
     char *dest_dma_buffer = dma_alloc_coherent(rx_chan->device->dev,dma_length,&rx_dma_handle,GFP_KERNEL);
-        
+
 	if (!src_dma_buffer || !dest_dma_buffer) {
 		printk(KERN_ERR "Allocating DMA memory failed\n");
 		return;

@@ -1,7 +1,16 @@
 /* AXI DMA Example 3
 *
-* Mmap memory dma transfer for single buffer
+* This example demonstrates the use of dma transfer in two ways:
+* 
+* 1) A single send/receive short circuit loop PS->PL->PS where the overall
+*    memory involved are allocated and handled within the kernel.
+* 
+* 2) Send and receive a mmapped memory, the user can do the tranfer directly.
+*    See: test_example3.c
 *
+* 
+* NOTE: Both methods are using a coherent allocated memory.
+* 
 */
 
 
@@ -13,8 +22,6 @@
 
 #include <linux/slab.h>   // kmalloc
 #include <xen/page.h>
-
-#include <linux/kthread.h> // kthreads
 
 #include <asm/uaccess.h>  // put_user
 #include <asm/pgtable.h>
@@ -188,9 +195,11 @@ static int axidma_test_transfer(unsigned int dma_length)
     for (i = 0; i < dma_length; i++) 
         src_buffer[i] = i;
     
-    // is this needed ??
-//    tx_dma_handle = dma_map_single(tx_chan->device->dev, src_buffer, dma_length, DMA_TO_DEVICE);
-//    rx_dma_handle = dma_map_single(rx_chan->device->dev, dst_buffer, dma_length, DMA_FROM_DEVICE);	
+    // Mapping and unmapping is not actually needed as the alloc coherent is
+    // already providing a dma_addr_t mem handler    
+    //    tx_dma_handle = dma_map_single(tx_chan->device->dev, src_buffer, dma_length, DMA_TO_DEVICE);
+    //    rx_dma_handle = dma_map_single(rx_chan->device->dev, dst_buffer, dma_length, DMA_FROM_DEVICE);	
+    
     tx_cookie = axidma_test_transfer_prep_buffer(tx_chan, tx_dma_handle, dma_length, DMA_MEM_TO_DEV, &tx_cmp);
 	rx_cookie = axidma_test_transfer_prep_buffer(rx_chan, rx_dma_handle, dma_length, DMA_DEV_TO_MEM, &rx_cmp);
 
@@ -205,8 +214,9 @@ static int axidma_test_transfer(unsigned int dma_length)
 	axidma_start_test_transfer(rx_chan, &rx_cmp, rx_cookie, NO_WAIT);
 	axidma_start_test_transfer(tx_chan, &tx_cmp, tx_cookie, WAIT);    
 
-//    dma_unmap_single(rx_chan->device->dev, rx_dma_handle, dma_length, DMA_FROM_DEVICE);	
-//    dma_unmap_single(tx_chan->device->dev, tx_dma_handle, dma_length, DMA_TO_DEVICE);
+    // see above..
+    //    dma_unmap_single(rx_chan->device->dev, rx_dma_handle, dma_length, DMA_FROM_DEVICE);	
+    //    dma_unmap_single(tx_chan->device->dev, tx_dma_handle, dma_length, DMA_TO_DEVICE);
     
 	/* Verify the data in the destination buffer matches the source buffer */
     for (i = 0; i < dma_length; i++) {
@@ -242,8 +252,6 @@ static int device_ioctl_testtrasfer(unsigned int dma_length)
 
 static int device_ioctl_mmap_testtransfer(void ) {
     
-    // inputs:
-    // - coherent buffers
     char *src = src_dma_buffer;
     char *dst = dst_dma_buffer;
     unsigned long len = dma_buffer_length;

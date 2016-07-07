@@ -1,6 +1,7 @@
 /* AXI DMA Example 2
 *
-* File operations on char device to mmap a kernel allocated buffer
+* File operations on char device to mmap a kernel allocated buffer to the user
+* space.
 *
 */
 

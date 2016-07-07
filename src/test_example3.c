@@ -44,7 +44,7 @@ static int test_transfer_mmap(int fd, unsigned long size) {
         if(src[i] != dst[i]) ++err;
     
     // MUNMAP buffer //
-    munmap(buffer,size);    
+    munmap(buffer,size);
     
     return err;
 }
