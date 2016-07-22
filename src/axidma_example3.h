@@ -8,6 +8,8 @@ extern "C" {
 #include <linux/types.h>
 #include <asm/ioctl.h>
 
+
+
 #define DEVICE_NAME "signal"  /* Dev name as it appears in /proc/devices */
 #define MODULE_NAME "axidma_example3"
 #define RING_SIZE 10
@@ -20,9 +22,7 @@ extern "C" {
 #define XDMA_TEST_MMAPTRASFER _IO(XDMA_IOCTL_BASE, 3)
 
 
-// struct xdma_ioctl_ops {	
-//	int (*axidma_get_num_devices)(struct file *file, void *fh);
-// };
+
 
 
 #ifdef __cplusplus

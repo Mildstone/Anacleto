@@ -252,9 +252,9 @@ static int device_ioctl_testtrasfer(unsigned int dma_length)
 
 static int device_ioctl_mmap_testtransfer(void ) {
     
-    char *src = src_dma_buffer;
-    char *dst = dst_dma_buffer;
-    unsigned long len = dma_buffer_length;
+//    char *src = src_dma_buffer;
+//    char *dst = dst_dma_buffer;
+//    unsigned long len = dma_buffer_length;
         
     tx_cookie = axidma_test_transfer_prep_buffer(tx_chan, tx_dma_handle, dma_buffer_length,
                                                  DMA_MEM_TO_DEV, &tx_cmp);
@@ -334,7 +334,6 @@ static int device_mmap(struct file *filp, struct vm_area_struct *vma)
 {
 	int result;
 	unsigned long requested_size;
-    unsigned long buf_size;
     
     requested_size = vma->vm_end - vma->vm_start;
     dma_buffer_length = requested_size / 2 ;

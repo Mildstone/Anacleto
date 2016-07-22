@@ -42214,3 +42214,11 @@ patches/linux-xlnx-xilinx-v2015.4-eeprom.patch
 patches/linux-xlnx-xilinx-v2015.4-lantiq.patch
 patches/linux-xlnx-xilinx-v2015.4-wifi.patch
 src/axidma_example5.c
+src/axidma_example4.c
+src/axidma_example4.h
+src/test_example4.c
+src/base_example_list.c
+src/axidma_example6.c
+linux-xlnx/Documentation/devicetree/bindings/dma/xilinx/xilinx_dma.txt
+src/axidma_example5.h
+src/test_example5.c
