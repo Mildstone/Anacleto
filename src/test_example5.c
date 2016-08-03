@@ -13,7 +13,7 @@
 
 #include "axidma_example5.h"
 
-static struct example5_dma_ring ring1, ring2;
+static struct example5_dma_ring_info ring1, ring2;
 
 
 ///
@@ -22,7 +22,7 @@ static struct example5_dma_ring ring1, ring2;
 /// \param fd
 /// \return
 ///
-int ring_buffer_init(struct example5_dma_ring *r, int fd, int offset) {
+int ring_buffer_init(struct example5_dma_ring_info *r, int fd, int offset) {
 
     int i,j;
     int status = 0;
@@ -35,18 +35,19 @@ int ring_buffer_init(struct example5_dma_ring *r, int fd, int offset) {
         return 1;
     }
 
+    //    r->data = (char **)malloc(r->ring_size * sizeof(char *));
+    //    for (i=0; i<r->ring_size; ++i) {
+    //        r->data[i] = mmap(NULL,r->ring_size,
+    //                            PROT_READ | PROT_WRITE, MAP_SHARED,fd, offset +
+    //                            i*(r->buffer_size/page_size + 1)*page_size);
+    //        if(!r->data[i])
+    //        {
+    //            printf("ERROR: mmaping buffers");
+    //            return 1;
+    //        }
+    //    }
+
     // ioct (REQUEST_BUFFERS) NON NECESSARIO
-    r->data = (char **)malloc(r->ring_size * sizeof(char *));
-    for (i=0; i<r->ring_size; ++i) {
-        r->data[i] = mmap(NULL,r->ring_size,
-                            PROT_READ | PROT_WRITE, MAP_SHARED,fd, offset +
-                            i*(r->buffer_size/page_size + 1)*page_size);
-        if(!r->data[i])
-        {
-            printf("ERROR: mmaping buffers");
-            return 1;
-        }
-    }
 
     return status;
 }
@@ -57,16 +58,16 @@ int ring_buffer_init(struct example5_dma_ring *r, int fd, int offset) {
 /// \param r
 /// \return
 ///
-int ring_buffer_release(struct example5_dma_ring *r) {
+int ring_buffer_release(struct example5_dma_ring_info *r) {
     int i;
-    for (i=0; i<r->ring_size; ++i)
-        munmap(r->data[i],r->ring_size);
-    free(r->data);
+    for (i=0; i<r->ring_size; ++i);
+        //        munmap(r->data[i],r->ring_size);
+        //    free(r->data);
 }
 
 
 
-int ring_write(int fd, struct example5_dma_ring *r, int timeout_sec) {
+int ring_write(int fd, struct example5_dma_ring_info *r, int timeout_sec) {
 
     int status = 0;
     int timeout_msecs = timeout_sec * 1000;
@@ -109,11 +110,11 @@ int main(int argc, char *argv[])
 
     ring1.buffer_size = BUFSIZE;
     ring1.ring_size = 10;
-    ring1.flags = TX_CHANNEL;
-    ring1.data = NULL;
+    ring1.flags = example5_MEM_TO_DEV;
+//    ring1.data = NULL;
 
     ring2 = ring1;
-    ring2.flags = RX_CHANNEL;
+    ring2.flags = example5_DEV_TO_MEM;
 
     // open file //
     int fd = open(dev_file, O_RDWR);
@@ -129,11 +130,11 @@ int main(int argc, char *argv[])
     printf("testing: ");
     for(i=0;i<ring1.ring_size; ++i) {
         for(j=0;j<ring1.buffer_size/sizeof(int);++j) {
-            int * data = (int*)ring1.data[i];
-            if(data[j] != j) {
-                status++;
-                printf("%d-%d:%d \n",i,j,data[j]);
-            }
+//            int * data = (int*)ring1.data[i];
+//            if(data[j] != j) {
+//                status++;
+//                printf("%d-%d:%d \n",i,j,data[j]);
+//            }
         }
     }
     if (status) { printf("FAIL\n"); }

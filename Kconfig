@@ -145,10 +145,24 @@ menu TARGET_DEVICE
     config DEVICE_USER
           string  "User to connect device with"
           default "root"
-          
-#    config DEVICE_PASSWD
-#          string  "User password to autenticate user"
-#          default "root"
+
+    choice DEVICE_AUTHMETHOD
+          prompt "Select device authentication method"
+          config WITH_DEVICE_SSHPASSWD
+           bool "Auth on device using password"
+          config WITH_DEVICE_SSHKEY
+           bool "Auth on device using ssh keyid"
+    endchoice
+
+    config DEVICE_PASSWD
+          string  "User password to autenticate user"
+          depends on WITH_DEVICE_SSHPASSWD
+          default "root"
+
+    config DEVICE_SSHKEY
+          string  "User rsa_key to autenticate"
+          depends on WITH_DEVICE_SSHKEY
+          default "$HOME/.ssh/id_rsa"
 
     config DEVICE_MODULES_DIR
           string  "Target device modules directory"

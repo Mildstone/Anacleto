@@ -44,6 +44,9 @@
 #include <linux/poll.h>
 #include <linux/wait.h>
 
+#include <linux/mutex.h>
+#include <linux/semaphore.h>
+
 #include "axidma_example4.h"
 
 
@@ -102,19 +105,29 @@ static struct platform_driver rfx_axidmatest_driver = {
 };
 
 
+static DEFINE_MUTEX(w_mutex);
+static DEFINE_SEMAPHORE(w_semaphore);
+
 static u8* buffer;
 static u64 buffer_len;
 static struct vm_operations_struct vm_ops;
+
+
+enum example4_done {
+    done_in = 1 << 0,
+    done_out = 1 << 1,
+};
 
 struct fill_thread_data {
     u8 *buf;
     u64 len;
     struct completion cmp;
-    u8 done;
+    enum example4_done done;
 };
 static struct fill_thread_data buf_th;
         
-DECLARE_WAIT_QUEUE_HEAD(fill_wq);
+DECLARE_WAIT_QUEUE_HEAD(fill_in);
+DECLARE_WAIT_QUEUE_HEAD(fill_out);
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -122,7 +135,14 @@ DECLARE_WAIT_QUEUE_HEAD(fill_wq);
 ////////////////////////////////////////////////////////////////////////////////
 
 
-
+///
+/// \brief fill_thread_func fills up the mmapped buffer with a int sequence and
+/// adds a delay of 1ms each nuber entered. The buffer completion sould happen
+/// after a second event is triggered by the other thread started that is
+/// executing the function below. Once complete this function triggers the
+/// fill_in queue wake that is chatched by poll waiting function with the
+/// signal POLLIN.
+///
 int fill_thread_func(void *arg) {
     int i;
     int *data = (int *)buf_th.buf;
@@ -131,22 +151,39 @@ int fill_thread_func(void *arg) {
         data[i] = i;
         mdelay(1);
     }
-    printk("completed\n");
+    printk("completed thread_func\n");
     complete(&buf_th.cmp);
-    buf_th.done = 1;
-    wake_up(&fill_wq);
+    buf_th.done |= done_in;
+    wake_up(&fill_in);
     return 0;
 }
 
+
+///
+/// \brief fill_thread_func2 exits after 10ms triggering a wake of the fill_out
+/// wait queue. This is used to check that a POLLOUT event does not influence
+/// the normal fill operation done by the function above.
+///
+int fill_thread_func2(void *arg) {
+    mdelay(10);
+    printk("completed thread_func2\n");
+    buf_th.done |= done_out;
+    wake_up(&fill_out);
+    return 0;
+}
+
+
 void start_fill_thread(void) {
-    struct task_struct *task;
+    static struct task_struct *task;
+    static struct task_struct *task2;
     buf_th.buf = buffer;
     buf_th.len = buffer_len;
     buf_th.done = 0;
     
     // starts a kernel thread to fill up the buffer //
-    init_completion(&buf_th.cmp); 
+    init_completion(&buf_th.cmp); // ( this does nothing here actually )
     task = kthread_run(fill_thread_func, NULL, "fill function");
+    task2 = kthread_run(fill_thread_func2, NULL, "fill function 2");
 }
 
 
@@ -160,9 +197,10 @@ void start_fill_thread(void) {
 // OPEN //
 static int device_open(struct inode *inode, struct file *file)
 {
-    
     if (s_device_open) return -EBUSY;
     s_device_open++;
+
+//    file->private_data = container_of(inode->i_cdev, struct device)
 
     return SUCCESS;
 }
@@ -300,11 +338,21 @@ static long device_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 
 unsigned int device_poll(struct file *file, struct poll_table_struct *p) {
     unsigned int mask=0;
+    int status = 0;
     printk("polling file\n");
-    poll_wait(file,&fill_wq,p);    
-    if(buf_th.done)
+
+//    file->private_data
+
+    status = down_interruptible(&w_semaphore);
+    if (status) return 0;
+    poll_wait(file,&fill_in,p);
+    poll_wait(file,&fill_out,p);
+    if(buf_th.done & done_in)
         mask |= POLLIN | POLLRDNORM;
-    return mask;                                       
+    if(buf_th.done & done_out)
+        mask |= POLLOUT | POLLWRNORM;
+    up(&w_semaphore);
+    return mask;
 }
 
 

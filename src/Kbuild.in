@@ -8,4 +8,5 @@ obj-m += axidma_example2.o
 obj-m += axidma_example3.o
 obj-m += axidma_example4.o
 obj-m += axidma_example5.o
+obj-m += axidma_example6.o
 obj-m += base_example_list.o

@@ -11,6 +11,7 @@
 #include <asm/unistd.h>
 
 #include "axidma_example4.h"
+#include "pthread.h"
 
 #include <poll.h>
 
@@ -77,6 +78,24 @@ int test_using_poll(int fd, int timeout_sec) {
     return status;    
 }
 
+int poll4write_func(void *arg) {
+    int status = 0;
+    int timeout_msecs = 5000;
+    struct pollfd pfds;
+    pfds.fd = *(int*)arg;
+    pfds.events = POLLOUT | POLLWRNORM;
+
+    printf("now start polling on file for WRITE\n");
+    status = poll(&pfds,1,timeout_msecs);
+    if(status == 0)
+        printf( "Poll out timed out\n" );
+    else if(status < 0)
+        printf( "Error on poll out\n" );
+    else
+        printf(" GOT POLLOUT !! \n");
+    return status;
+}
+
 void reset_buffer(char *b, int len) {
     int i;
     int * b_int=(int *)b;
@@ -87,20 +106,21 @@ void reset_buffer(char *b, int len) {
 int check_buffer(char *b, int len) {
     int i,e=0;
     int * b_int=(int *)b;
-    printf("\n");
     for (i=0; i<len/sizeof(int); ++i) {
-        printf("%d ",b_int[i]);
+        //        printf("%d ",b_int[i]);
         if(b_int[i] != i) ++e;
     }
-    printf("\n");
     if(e) printf("check buffer FAILED: %d !\n",e);
+    else printf("check buffer SUCCESS! !\n");
+    printf("\n");
     return e;
 }
 
 int main(int argc, char *argv[])
 {
     char * dev_file = argv[1];
-    int status = 0;    
+    int status = 0;
+    pthread_t poll_for_write_th;
     
     // open file //
     int fd = open(dev_file, O_RDWR);
@@ -124,11 +144,15 @@ int main(int argc, char *argv[])
     if(ready)    
     {       
         reset_buffer(buffer,buffer_len);
+        pthread_create(&poll_for_write_th,NULL,(void *(*)(void *))poll4write_func,&fd);
         test_using_select(fd,3);
+        pthread_join(poll_for_write_th,0);
         check_buffer(buffer,buffer_len);
                 
         reset_buffer(buffer,buffer_len);
+        pthread_create(&poll_for_write_th,NULL,(void *(*)(void *))poll4write_func,&fd);
         test_using_poll(fd,3);        
+        pthread_join(poll_for_write_th,0);
         check_buffer(buffer,buffer_len);
     }
     

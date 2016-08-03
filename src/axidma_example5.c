@@ -48,6 +48,10 @@
 
 
 // FOPS FWDDECL //
+
+struct example5_ring_buffer;
+struct example5_ring;
+
 static int device_open(struct inode *, struct file *);
 static int device_release(struct inode *, struct file *);
 static ssize_t device_read(struct file *, char *, size_t, loff_t *);
@@ -68,48 +72,80 @@ static struct file_operations fops = {
 };
 
 
+struct example5_device {
+    struct platform_device *pdev;
+    struct dma_device *device;
 
-struct example5_ring_buffer {
-    struct example5_dma_buffer user_data;
-    struct list_head node;
-    u8 *data;
-    u32 mmap_index;
-    dma_addr_t handle;
-    dma_cookie_t cookie;
 };
 
+
+
+// BUFFER //
+struct example5_ring_buffer {
+    struct list_head node;
+    u8 *data;
+    dma_addr_t handle;
+    dma_cookie_t cookie;
+
+    struct example5_dma_buffer_info info;
+};
+
+
+// RING //
 struct example5_ring {
     struct list_head node;
     struct list_head buffers;
-    u32 buffer_size;
-    u32 len;
+
     enum dma_transfer_direction dir;
     struct example5_ring_buffer *w_pos;
     struct example5_ring_buffer *r_pos;
     struct wait_queue_head_t  *w_wait;
     struct wait_queue_head_t  *r_wait;
     struct completion *cmp;
-//    struct dma_chan *channel;
+    struct dma_chan *channel;
+
+    struct example5_dma_ring_info info;
 };
 
+
+// GLOBALS //
+static struct example5_device s_dev;
 static struct dma_chan *rx_chan, *tx_chan;
-static LIST_HEAD(rings);
+//static LIST_HEAD(rings);
+static struct example5_ring rings[2];
+static struct example5_ring * const tx_ring = &rings[0];
+static struct example5_ring * const rx_ring = &rings[1];
+
+DECLARE_WAIT_QUEUE_HEAD(tx_wque);
+DECLARE_WAIT_QUEUE_HEAD(rx_wque);
+
 static struct example5_ring *last_ring_requested = NULL;
 
 
-static void init_example5_ring (struct example5_ring *r) {
+
+static void example5_ring_init (struct example5_ring *r)
+{
     INIT_LIST_HEAD(&r->buffers);
-    r->buffer_size = BUFSIZE;
-    r->len = 0;
-    r->dir = DMA_DEV_TO_MEM;
     r->w_pos = NULL;
     r->r_pos = NULL;
     r->w_wait = NULL;
     r->r_wait = NULL;
     r->cmp = NULL;
-//    r->channel = NULL;
+    r->channel = NULL;
+    r->info.buffer_size = 0;
+    r->info.flags = 0;
+    r->info.ring_size = 0;
+    r->dir = 0;
 }
 
+//static void example5_ring_buffer_init(struct example5_ring_buffer *b) {
+//    b->info.data = NULL;
+//    b->info.flags = DMA_MEM_TO_DEV;
+//    b->info.offset = 0;
+//    b->data = NULL;
+//    b->handle = 0;
+//    b->cookie = 0;
+//}
 
 
 
@@ -154,8 +190,6 @@ static dma_cookie_t axidma_test_transfer_prep_buffer(struct dma_chan *chan, dma_
 
 
 
-
-
 /* Start a DMA transfer that was previously submitted to the DMA engine and then
  * wait for it complete, timeout or have an error
  */
@@ -186,11 +220,6 @@ static void axidma_start_test_transfer(struct dma_chan *chan, struct completion 
 ////////////////////////////////////////////////////////////////////////////////
 
 
-///
-/// \brief example5_request_channels
-/// \param dev dma device
-/// \return errors if any
-///
 static int example5_request_channels(struct device *dev) {
     int err = 0;
     //    struct dma_slave_config tx_conf;
@@ -204,6 +233,8 @@ static int example5_request_channels(struct device *dev) {
         dma_release_channel(tx_chan);
         return -EFAULT;
     }
+    example5_ring_init(tx_ring);
+    tx_ring->channel = tx_chan;
 
     rx_chan = dma_request_slave_channel(dev, "dma1");
     if (IS_ERR(rx_chan)) {
@@ -213,58 +244,61 @@ static int example5_request_channels(struct device *dev) {
         dma_release_channel(rx_chan);
         return -EFAULT;
     }
+    example5_ring_init(rx_ring);
+    rx_ring->channel = rx_chan;
+
     return err;
 }
 
 
-///
-/// \brief example5_release_channels
-/// \return 0
-///
 static int example5_release_channels(void) {
+//    example5_release_all_rings();
     dma_release_channel(rx_chan);
     dma_release_channel(tx_chan);
     return 0;
 }
 
 
-///
-/// \brief example5_request_ring
-/// \param len: nuber of buffers
-/// \param size: size requested for each buffer
-/// \return
-///
-static int example5_initialize_ring(struct dma_chan *channel, int len, int size) {
+
+
+static int example5_request_ring(struct example5_ring *ring,
+                                 const struct example5_dma_ring_info * const info) {
     int i,j;
+    int status = 0;
+    int size = info->buffer_size;
+    int len  = info->ring_size;
     int * data;
-    struct device *dev = channel->device->dev;
-    struct example5_ring *ring;
+    struct device *dev = NULL;
 
     printk( KERN_DEBUG"entering request for ring\n");
-    ring = (struct example5_ring *)
-            kmalloc(sizeof(struct example5_ring),GFP_KERNEL);
 
-    // init buffers list
-    init_example5_ring(ring);
-    ring->buffer_size = size;
+    // select ring //
+    if(!ring) ring = info->flags == example5_MEM_TO_DEV ? tx_ring : rx_ring;
+    dev = ring->channel->device->dev;
 
-    // allocate buffers
-    printk(KERN_DEBUG"allocating buffers %dx%d\n", len, size);
-    for(i=0; i<len; i++) {
-        struct example5_ring_buffer *node = (struct example5_ring_buffer *)
-                kmalloc(sizeof(struct example5_ring_buffer),GFP_KERNEL);
-        node->data = dma_alloc_coherent(dev,size,&node->handle,GFP_KERNEL);
-        node->mmap_index = 0;
-        if(!node->data || !node->handle) {
-            printk(KERN_ERR"unable to allocate dma ring buffers\n");
-            break;
-        } else {
-            list_add((struct list_head*)node,&ring->buffers);
-            ++ring->len;
-            node->mmap_index = i; // assinged automatically //
-            // only for testing buffer content //
-            data = (int*)node->data;
-            for(j=0;j<size/sizeof(int);++j) data[j] = j;
+    if(ring->info.ring_size == 0) {
+        // allocate buffers
+        printk(KERN_DEBUG"allocating buffers %dx%d\n", len, size);
+        for(i=0; i<len; i++) {
+            struct example5_ring_buffer *node = (struct example5_ring_buffer *)
+                    kmalloc(sizeof(struct example5_ring_buffer),GFP_KERNEL);
+            node->info.data = NULL;
+            node->info.offset = 0;
+            node->info.kp_data = node;
+            node->data = dma_alloc_coherent(dev,size,&node->handle,GFP_KERNEL);
+            if(!node->data || !node->handle) {
+                printk(KERN_ERR"unable to allocate dma ring buffers\n");
+                status = ENOMEM;
+                break;
+            } else {
+                list_add((struct list_head*)node,&ring->buffers);
+                ring->info.buffer_size = size;
+                ++ring->info.ring_size;
+
+                // only for testing buffer content //
+                data = (int*)node->data;
+                for(j=0;j<size/sizeof(int);++j) data[j] = j;
+            }
         }
     }
 
@@ -273,35 +307,46 @@ static int example5_initialize_ring(struct dma_chan *channel, int len, int size)
     ring->r_pos = list_first_entry(&ring->buffers,struct example5_ring_buffer,node);
     ring->w_pos = list_first_entry(&ring->buffers,struct example5_ring_buffer,node);
 
-    // add to list
-    list_add((struct list_head*)ring,&rings);
     return 0;
 }
 
 
-
-
-
-
-
-///
-/// \brief example5_release_rings frees allocate bffers
-/// \return 0
-///
-static int example5_release_all_rings(struct dma_chan *channel) {
-    struct device *dev = channel->device->dev;
-    struct example5_ring *r;
+static int example5_release_ring(struct example5_ring *r) {
     struct example5_ring_buffer *n;
-    list_for_each_entry(r,&rings,node){
+    if(r && r->channel->device)
         list_for_each_entry(n,&r->buffers,node) {
-            dma_free_coherent(dev,r->buffer_size,n->data,n->handle);
-            r->len--;
+            dma_free_coherent(r->channel->device->dev,r->info.buffer_size,n->data,n->handle);
+            --r->info.ring_size;
         }
-    }
     return 0;
 }
 
 
+static int example5_release_all_rings(void) {
+    example5_release_ring(tx_ring);
+    example5_release_ring(rx_ring);
+    return 0;
+}
+
+
+
+static int example5_ring_read_next(struct example5_ring *ring, struct example5_ring_buffer * buf) {
+    buf = list_next_entry(ring->r_pos,node);
+    if(buf != ring->w_pos) {
+        ring->r_pos = buf;
+        return 0;
+    }
+    else return 1;
+}
+
+static int example5_ring_write_next(struct example5_ring *ring, struct example5_ring_buffer * buf) {
+    buf = list_next_entry(ring->w_pos,node);
+    if(buf != ring->r_pos) {
+        ring->w_pos = buf;
+        return 0;
+    }
+    else return 1;
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -317,6 +362,7 @@ static int device_open(struct inode *inode, struct file *file)
 {
     if (s_device_open) return -EBUSY;
     s_device_open++;
+
     return 0;
 }
 
@@ -355,14 +401,13 @@ static ssize_t device_write(struct file *filp, const char *buff, size_t len,
 // MMAP //
 static int device_mmap(struct file *filp, struct vm_area_struct *vma) {
     int status = 0;
-    int pos = 0;
     unsigned long requested_size = vma->vm_end - vma->vm_start;
     struct example5_ring_buffer *node = last_ring_requested->r_pos;
-    pos = node->mmap_index;
 
-    if(requested_size < last_ring_requested->buffer_size) {
+
+    if(requested_size < last_ring_requested->info.buffer_size) {
         printk(KERN_ERR"requested wrong size: %d vs %d\n",
-               (int)requested_size, last_ring_requested->buffer_size);
+               (int)requested_size, last_ring_requested->info.buffer_size);
         return EAGAIN;
     }
 
@@ -370,7 +415,7 @@ static int device_mmap(struct file *filp, struct vm_area_struct *vma) {
     vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
     status = remap_pfn_range(vma, vma->vm_start,
                              virt_to_pfn(node->data),
-                             last_ring_requested->buffer_size, vma->vm_page_prot);
+                             last_ring_requested->info.buffer_size, vma->vm_page_prot);
     if (status) {
         printk(KERN_ERR
                "<%s> Error: in calling remap_pfn_range: returned %d\n",
@@ -379,7 +424,7 @@ static int device_mmap(struct file *filp, struct vm_area_struct *vma) {
     }
 
     last_ring_requested->r_pos = list_next_entry(last_ring_requested->r_pos,node);
-    last_ring_requested->r_pos->mmap_index = pos+1;
+    //    last_ring_requested->r_pos->mmap_index = pos+1;
     return status;
 }
 
@@ -387,33 +432,48 @@ static int device_mmap(struct file *filp, struct vm_area_struct *vma) {
 static long device_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
     int status = 0;
-    struct example5_dma_ring ring;
-    struct dma_chan *chan;
+    struct example5_dma_ring_info r_info;
+    struct example5_dma_buffer_info b_info;
+    struct example5_ring *ring = NULL;
+    struct example5_ring_buffer *buf = NULL;
 
     switch (cmd) {
     case XDMA_REQUEST_RING:
         printk(KERN_DEBUG "<%s> ioctl: XDMA_REQUEST_RING\n", MODULE_NAME);
-        status = copy_from_user(&ring,(const void *)arg, sizeof(struct example5_dma_ring));
-        if(status) return -EFAULT;
-        chan = ring.flags & TX_CHANNEL ? tx_chan : rx_chan;
-        example5_initialize_ring(chan,ring.ring_size,ring.buffer_size);
+        status = copy_from_user(&r_info,(const void *)arg, sizeof(struct example5_dma_ring_info));
+        if(status) return EFAULT;
+        status = example5_request_ring(ring,&r_info);
+        status = copy_to_user((void *)arg,&ring->info,sizeof(struct example5_dma_ring_info));
+        if(status) return EFAULT;
         break;
 
     case XDMA_RELEASE_RINGS:
         printk(KERN_DEBUG "<%s> ioctl: XDMA_RLEASE_RING\n", MODULE_NAME);
-        example5_release_all_rings(tx_chan);
+        example5_release_all_rings();
         break;
 
-    case XDMA_REQUEST_BUFFER:
-        printk(KERN_DEBUG "<%s> ioctl: XDMA_REQUEST_BUFFER\n", MODULE_NAME);
+    case XDMA_DEQUE_BUFFER:
+        printk(KERN_DEBUG "<%s> ioctl: XDMA_DEQUE_BUFFER\n", MODULE_NAME);
+        status = copy_from_user(&b_info,(const void *)arg, sizeof(struct example5_dma_buffer_info));
+        if(status) return EFAULT;
+        if(b_info.flags == example5_MEM_TO_DEV ) {
+            ring = tx_ring;
+            status |= example5_ring_write_next(ring,buf);
+            status |= copy_to_user((void *)arg,&buf->info, sizeof(struct example5_dma_buffer_info));
+        }
+        else if(b_info.flags == example5_DEV_TO_MEM) {
+            ring = rx_ring;
+            status |= example5_ring_read_next(ring,buf);
+            status |= copy_to_user((void *)arg,&buf->info, sizeof(struct example5_dma_buffer_info));
+        }
         break;
 
-    case XDMA_REQUEST_TO_SEND:
-        printk(KERN_DEBUG "<%s> ioctl: XDMA_REQUEST_TO_SEND\n", MODULE_NAME);
+    case XDMA_ENQUE_BUFFER:
+        printk(KERN_DEBUG "<%s> ioctl: XDMA_ENQUE_BUFFER\n", MODULE_NAME);
         break;
 
     default:
-        return -EAGAIN;
+        return EAGAIN;
         break;
     }
     return status;
@@ -423,7 +483,7 @@ static long device_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 unsigned int device_poll(struct file *file, struct poll_table_struct *p) {
     unsigned int mask=0;
 
-
+    poll_wait(file,&tx_wque,p);
     mask |= POLLIN | POLLRDNORM;
 
     return mask;
@@ -451,7 +511,10 @@ static int example5_probe(struct platform_device *pdev)
     printk(KERN_NOTICE "mknod /dev/xdma c %d 0\n", s_major);
 
     // REQUST CHANNELS //
-    err = example5_request_channels(&pdev->dev);
+    err = example5_request_channels(&pdev->dev);    
+
+    s_dev.pdev = pdev;
+    s_dev.device = tx_chan->device;
 
     return err;
 }
