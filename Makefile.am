@@ -12,7 +12,7 @@ nconfig menuconfig xconfig gconfig: $(LINUX_DIR) $(LINUX_BUILDDIR)
 	export PATH="$${PATH}:$(TOOLCHAIN_PATH)"; \
 	export CROSS_COMPILE=${CROSS_COMPILE}; \
 	export O=$(LINUX_BUILDDIR); \
-	$(MAKE) -C $(top_srcdir)/linux-xlnx O=$$O $@
+	$(MAKE) -C $< O=$$O ARCH=arm $@
 
 
 .PHONY: linux-init
@@ -34,9 +34,9 @@ $(LINUX_IMAGE): $(LINUX_DIR) $(LINUX_BUILDDIR) linux-init
 		   UIMAGE_LOADADDR=0x8000 $@; \
 	$(MAKE) -C $< O=$$O ARCH=arm CFLAGS="$(LINUX_CFLAGS)" -j $(MAKE_PROCESS) \
 		   modules; \
-	$(MAKE) -p $(TMP)/lib/modules; \
+	$(MKDIR) -p $(TMP)/lib/modules; \
 	$(MAKE) -C $< O=$$O ARCH=arm CFLAGS="$(LINUX_CFLAGS)" -j $(MAKE_PROCESS) \
-	           INSTALL_MOD_PATH=$(TMP) modules_install; \
+		   INSTALL_MOD_PATH=$(TMP) modules_install; \
 	cp $$O/arch/arm/boot/$@ $(TMP)
 
 
