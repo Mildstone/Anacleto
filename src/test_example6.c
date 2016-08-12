@@ -13,7 +13,7 @@
 
 #include "axidma_example6.h"
 
-static struct xdma6_ring_info ring1, ring2;
+
 
 
 int ring_buffer_init(struct xdma6_ring_info *r, int fd) {
@@ -190,9 +190,9 @@ int try_receive_something(int fd, int *data, int len) {
 //  main  //////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-
 int main(int argc, char *argv[])
 {
+    struct xdma6_ring_info ring1, ring2;
     char * dev_file = argv[1];
     int status = 0;
     int i,j;

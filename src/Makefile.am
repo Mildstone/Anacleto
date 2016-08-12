@@ -1,7 +1,9 @@
 
 include ../Common.am
 
-# Main GCC executable (used for compiling and linking)
+export O=$(LINUX_BUILDDIR)
+AM_MAKEFLAGS = -j$(MAKE_PROCESS)
+
 
 MODULES = \
           axidma_example0 \
@@ -23,38 +25,25 @@ TEST_EXAMPLES = \
 MOSTLYCLEANFILES = $(TEST_EXAMPLES)
 
 
-
 .PHONY: modules
 modules: $(MODULES:=.c) Kbuild
 	@ echo " --- building modules ---"; \
-	  echo " -> $^"; \
-	  export PATH="$${PATH}:${TOOLCHAIN_PATH}"; \
 	  $(MAKE) $(AM_MAKEFLAGS) -C ${LINUX_DIR} \
-	       ARCH=arm CFLAGS="$(LINUX_CFLAGS)" \
-	       -j $(MAKE_PROCESS) CROSS_COMPILE=${CROSS_COMPILE} \
-	       M=`pwd` O=$(abs_top_builddir)/linux-xlnx \
-	       srcdir=$(srcdir) builddir=$(builddir) modules
+	  CFLAGS="$(LINUX_CFLAGS)" M=`pwd` O=$$O \
+	  srcdir=$(srcdir) builddir=$(builddir) modules
 
 clean-local:
 	@ echo " --- cleaning modules ---"; \
-	export PATH="$${PATH}:${TOOLCHAIN_PATH}"; \
 	$(MAKE) $(AM_MAKEFLAGS) -C ${LINUX_DIR} \
-	     ARCH=arm CFLAGS="$(LINUX_CFLAGS)" \
-	     -j $(MAKE_PROCESS) CROSS_COMPILE=${CROSS_COMPILE} \
-	     M=`pwd` O=$(abs_top_builddir)/linux-xlnx \
+	     CFLAGS="$(LINUX_CFLAGS)" M=`pwd` O=$$O \
 	     srcdir=$(srcdir) builddir=$(builddir) clean
-
-
 
 .PHONY: test_examples
 test_examples: $(TEST_EXAMPLES)
 
 $(TEST_EXAMPLES):
 	@ echo " --- building $@ ---"; \
-	export PATH="$${PATH}:${TOOLCHAIN_PATH}"; \
 	${CROSS_COMPILE}${CC} $(LINUX_CFLAGS) $(srcdir)/$@.c -o $@ -lpthread
-
-
 
 
 .PHONY: deploy

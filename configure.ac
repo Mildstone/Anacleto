@@ -63,6 +63,7 @@ AC_SUBST([TOOLCHAIN_TAR])
 AC_SUBST([TOOLCHAIN_PATH])
 AC_SUBST([CROSS_COMPILE])
 
+# INSTALL TOOLCHAIN
 AS_IF([ test -d toolchain ],,
       [AS_BOX([// Downloading toolchain tar from ${TOOLCHAIN_TAR} //////], [\/])
        ${MKDIR_P} -p toolchain

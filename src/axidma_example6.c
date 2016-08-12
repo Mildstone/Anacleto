@@ -335,9 +335,7 @@ static int xdma6_request_ring(struct xdma6_ring **ring,
                 status = -ENOMEM;
                 break;
             } else {
-                //  INIT_LIST_HEAD(&buf->node);
                 list_add_tail(&buf->node,&r->buffers);
-                //  printk("%d\n",&buf->node);
                 buf->info.size = size;
                 r->info.buffer_size = size;
                 ++r->info.ring_size;
