@@ -143,8 +143,8 @@ int poll_write(int fd, int timeout_sec) {
     return status;
 }
 
-static int counter = 0;
 
+static int counter = 0;
 int try_send_something(int fd, int *data, int len) {
     int err = 0;
     struct xdma6_buffer_info buf;
@@ -155,7 +155,6 @@ int try_send_something(int fd, int *data, int len) {
     err = ioctl(fd, XDMA_REQ_BUFFER, &buf);
     if(err) { printf("ERROR: deq_buffer\n"); return 1; }
 
-//    printf("writing in buffer: %d -> mem: %d\n",counter,buf.kp_data);
     data[0] = counter++;
     memcpy(buf.data,(char*)data,len*sizeof(int));
 
@@ -175,7 +174,8 @@ int try_receive_something(int fd, int *data, int len) {
     if(err) { printf("ERROR: deq_buffer\n"); return 1; }
 
     memcpy((char*)data,buf.data,len*sizeof(int));
-    printf("-> GOT BUF no.%d: %d %d %d %d %d ...\n", buf.kp_data, data[0], data[1], data[2], data[3], data[4]);
+    printf("-> GOT BUF no.%d: %d %d %d %d %d ...\n", buf.kp_data,
+           data[0], data[1], data[2], data[3], data[4]);
 
     buf.flags = xdma_DEV_TO_MEM;
     err = ioctl(fd, XDMA_ENQ_BUFFER, &buf);

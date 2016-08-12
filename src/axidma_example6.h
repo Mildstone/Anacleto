@@ -33,10 +33,17 @@ struct xdma6_buffer_info {
 };
 
 
+//struct xdma6_chan_cfg {
+//    int coalesc;	/* Interrupt coalescing threshold */
+//    int delay;	    /* Delay counter */
+//    int reset;	    /* Reset Channel */
+//};
+
 struct xdma6_ring_info {
     unsigned int buffer_size;
     unsigned int ring_size;
     enum xdma6_flags flags;
+//    struct xdma6_chan_cfg chan_cfg;
 };
 
 

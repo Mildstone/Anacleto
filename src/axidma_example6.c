@@ -147,12 +147,26 @@ static int xdma6_request_channels(struct device *dev) {
 
 
 static int xdma6_release_channels(void) {
-//    example5_release_all_rings();
     dma_release_channel(xdev.rx_chan);
     dma_release_channel(xdev.tx_chan);
     return 0;
 }
 
+//static void xdma6_device_control(struct dma_chan *chan,struct xdma6_chan_cfg *cfg)
+//{
+//    struct dma_device *chan_dev;
+//    struct xilinx_dma_config config;
+
+//    config.coalesc = cfg->coalesc;
+//    config.delay = cfg->delay;
+//    config.reset = cfg->reset;
+
+//    if (chan) {
+//        chan_dev = chan->device;
+//        chan_dev->device_control(chan, DMA_SLAVE_CONFIG,
+//                     (unsigned long)&config);
+//    }
+//}
 
 ////////////////////////////////////////////////////////////////////////////////
 //  DMA TRANSFER  //////////////////////////////////////////////////////////////
@@ -211,6 +225,12 @@ static int ring_init(struct xdma6_ring *r) {
     r->r_pos = NULL;
     r->w_pos = NULL;
     INIT_LIST_HEAD(&r->buffers);
+
+    r->info.flags = 0;
+//    r->info.chan_cfg.coalesc = 1;
+//    r->info.chan_cfg.delay   = 0;
+//    r->info.chan_cfg.reset   = 0;
+
     return 0;
 }
 
@@ -295,6 +315,9 @@ static int xdma6_request_ring(struct xdma6_ring **ring,
     // select ring //
     if(!r) r = info->flags & xdma_MEM_TO_DEV ? xdev.tx_ring : xdev.rx_ring;
     if(!r) return -EFAULT;
+
+    // set channel control //
+    //    xdma6_device_control(r->channel,&r->info.chan_cfg);
 
     if(r->info.ring_size == 0) {
         // allocate buffers
@@ -482,9 +505,10 @@ static int xdma6_stream_tx_fn(void *arg) {
                 printk(KERN_DEBUG "xdma_prep_buffer tx ok\n");
             }
             // - issue
+            printk(KERN_DEBUG"TX sent %d %d\n",buf->info.kp_data,(int)buf->data[0]);
             dma_async_issue_pending(r->channel);
 
-
+            timeout = msecs_to_jiffies(10000);
             timeout = wait_for_completion_timeout(&buf->cmp, timeout);
             dma_status = dma_async_is_tx_complete(r->channel, buf->cookie, NULL, NULL);
             if (timeout == 0)  {
@@ -502,7 +526,8 @@ static int xdma6_stream_tx_fn(void *arg) {
         }
 
         // subscribe(wqueue)
-        printk(KERN_DEBUG"wait_tx\n");
+
+        printk(KERN_DEBUG"Start waiting into wait_tx\n");
         state_has_txdata = 0;
         status = wait_event_interruptible(wait_tx, state_has_txdata);
         if(status) {
@@ -522,7 +547,7 @@ static int xdma6_stream_rx_fn(void *arg) {
     int status = 0;
     struct xdma6_ring *r = xdev.rx_ring;
     struct xdma6_buffer *buf;
-    unsigned long timeout = msecs_to_jiffies(10000); // 10 sec
+    unsigned long timeout; // = msecs_to_jiffies(10000); // 10 sec
     enum dma_status dma_status;
 
     allow_signal(SIGKILL);
@@ -549,6 +574,7 @@ static int xdma6_stream_rx_fn(void *arg) {
 //        printk("issued RX pending ... \n");
 
         //  wait cmp
+        timeout = msecs_to_jiffies(10000);
         timeout = wait_for_completion_timeout(&buf->cmp, timeout);
         dma_status = dma_async_is_tx_complete(r->channel, buf->cookie, NULL, NULL);
         if (timeout == 0)  {
@@ -794,6 +820,8 @@ static int example6_probe(struct platform_device *pdev)
 
     ring_init(xdev.tx_ring);
     ring_init(xdev.rx_ring);
+    xdev.tx_ring->info.flags |= xdma_MEM_TO_DEV;
+    xdev.rx_ring->info.flags |= xdma_DEV_TO_MEM;
 
     // REQUST CHANNELS //    
     err = xdma6_request_channels(&pdev->dev);
