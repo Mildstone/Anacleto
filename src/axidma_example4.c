@@ -27,6 +27,7 @@
 #include <asm/uaccess.h>  // put_user
 #include <asm/pgtable.h>
 #include <linux/mm.h>
+#include <linux/vmalloc.h>
 
 #include <linux/dmaengine.h>         // dma api
 #include <linux/amba/xilinx_dma.h>   // axi dma driver
