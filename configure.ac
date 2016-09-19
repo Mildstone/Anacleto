@@ -110,5 +110,6 @@ AC_CONFIG_FILES(
                  Makefile
                  src/Makefile
                  src/Kbuild
+                 fpga/Makefile
                )
 AC_OUTPUT

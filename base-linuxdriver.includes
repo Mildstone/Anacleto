@@ -5,3 +5,4 @@ linux-xlnx/arch/arm/include
 
 patches
 linux-xlnx/Documentation/devicetree/bindings/dma/xilinx
+fpga

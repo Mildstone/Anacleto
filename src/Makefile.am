@@ -1,5 +1,5 @@
 
-include ../Common.am
+include $(top_srcdir)/Common.am
 
 export O=$(LINUX_BUILDDIR)
 AM_MAKEFLAGS = -j$(MAKE_PROCESS)

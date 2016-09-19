@@ -15,6 +15,7 @@ mainmenu "Linux driver building configuration"
 
 config ENABLE_TOOLCHAIN
         bool "Enable custom toolchain"
+        default true
 
 menu  TOOLCHAIN
         depends on ENABLE_TOOLCHAIN
