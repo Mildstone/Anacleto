@@ -483,12 +483,12 @@ static int xdma6_stream_tx_fn(void *arg) {
     unsigned long timeout = msecs_to_jiffies(10000); // 10 sec
     enum dma_status dma_status;
 
-    allow_signal(SIGKILL);
-    allow_signal(SIGSTOP);
+//    allow_signal(SIGKILL);
+//    allow_signal(SIGSTOP);
 
     printk(KERN_DEBUG"Started TX thread:\n");
     while(state_streaming) {
-        if(kthread_should_stop()) do_exit(0);
+        if(kthread_should_stop()) return 0;
         // while read from TX ring
         while( ring_read_next(r,&buf,0) == SUCCESS) {
             axidma_test_transfer_prep_buffer(r->channel,
@@ -507,7 +507,8 @@ static int xdma6_stream_tx_fn(void *arg) {
             dma_async_issue_pending(r->channel);
 
             timeout = msecs_to_jiffies(10000);
-            timeout = wait_for_completion_timeout(&buf->cmp, timeout);
+            timeout = wait_for_completion_interruptible_timeout(&buf->cmp, timeout);
+            if(kthread_should_stop()) printk("Thread should stop TX!!\n");
             dma_status = dma_async_is_tx_complete(r->channel, buf->cookie, NULL, NULL);
             if (timeout == 0)  {
                 printk(KERN_ERR "DMA TX timed out\n");
@@ -527,7 +528,7 @@ static int xdma6_stream_tx_fn(void *arg) {
 
         printk(KERN_DEBUG"Start waiting into wait_tx\n");
         state_has_txdata = 0;
-        status = wait_event_interruptible(wait_tx, state_has_txdata);
+        status = wait_event_interruptible(wait_tx, state_has_txdata || kthread_should_stop());
         if(status) {
             state_streaming = 0;
             break;
@@ -554,7 +555,6 @@ static int xdma6_stream_rx_fn(void *arg) {
     printk(KERN_DEBUG"Started RX thread:\n");
     buf = r->w_pos;
     while(state_streaming) {
-        if(kthread_should_stop()) do_exit(0);
         // while DMA writes from RX ring
         buf->cookie = axidma_test_transfer_prep_buffer(r->channel,
                                                        buf,
@@ -573,10 +573,14 @@ static int xdma6_stream_rx_fn(void *arg) {
 
         //  wait cmp
         timeout = msecs_to_jiffies(10000);
-        timeout = wait_for_completion_timeout(&buf->cmp, timeout);
+        timeout = wait_for_completion_killable_timeout(&buf->cmp, timeout);
+        if(timeout == -ERESTARTSYS) {
+            if(kthread_should_stop()) printk(KERN_ERR"should stop..\n");
+            break;
+        }
         dma_status = dma_async_is_tx_complete(r->channel, buf->cookie, NULL, NULL);
         if (timeout == 0)  {
-            printk(KERN_ERR "DMA RX timed out\n");
+            printk(KERN_ERR "- DMA RX timed out\n");
             status = -EAGAIN;
             state_streaming = 0;
             break;
@@ -593,6 +597,7 @@ static int xdma6_stream_rx_fn(void *arg) {
         wake_up_interruptible(&wait_poll);
 
     }
+
     return status;
 }
 
@@ -604,13 +609,14 @@ static struct task_struct *task_rx = 0;
 static int xdma6_start_stream(void) {
     state_streaming = 1;
     // starts a kernel thread to fill up the buffer //
-    task_tx = kthread_run(xdma6_stream_tx_fn, NULL, "tx queue stream thread");
-    task_rx = kthread_run(xdma6_stream_rx_fn, NULL, "rx queue stream thread");
+    task_tx = kthread_run(xdma6_stream_tx_fn, NULL, "tx_dmaq");
+    task_rx = kthread_run(xdma6_stream_rx_fn, NULL, "rx_dmaq");
     return SUCCESS;
 }
 
 static int xdma6_stop_stream(void) {
     state_streaming = 0;
+    printk("Try to stop streaming !!!\n");
     // starts a kernel thread to fill up the buffer //
     if(task_tx) kthread_stop(task_tx);
     if(task_rx) kthread_stop(task_rx);

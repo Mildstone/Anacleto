@@ -1,0 +1,3 @@
+obj-m += axidmatest.o axidma_golden.o rfx-axidma.o
+axidmatest-objs := axidmatest_core.o
+

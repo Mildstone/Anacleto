@@ -7,15 +7,15 @@ TMP          ?= $(abs_top_builddir)
 
 LINUX_CFLAGS    ?= "-O2 -mtune=cortex-a9 -mfpu=neon -mfloat-abi=hard"
 LINUX_IMAGE     ?= uImage
-LINUX_DIR       ?= linux-xlnx
+# LINUX_DIR       ?= linux-xlnx
 
-LINUX_DIR      ::= $(abs_top_srcdir)/linux-xlnx
-LINUX_BUILDDIR ::= $(abs_top_builddir)/linux-xlnx
+LINUX_DIR       = $(abs_top_srcdir)/linux-xlnx
+LINUX_BUILDDIR  = $(abs_top_builddir)/linux-xlnx
 
 
-ARCH             ?= arm
-TOOLCHAIN_PATH   ?= gcc-linaro-4.9-2014.11-x86_64_arm-linux-gnueabihf/bin
-TOOLCHAIN_PATH  ::= ${abs_top_builddir}/toolchain/${TOOLCHAIN_PATH}
+ARCH              = arm
+TOOLCHAIN_BINDIR ?= gcc-linaro-4.9-2014.11-x86_64_arm-linux-gnueabihf/bin
+TOOLCHAIN_PATH    = ${abs_top_builddir}/toolchain/${TOOLCHAIN_BINDIR}
 CROSS_COMPILE    ?= arm-linux-gnueabihf-
 
 
@@ -23,10 +23,12 @@ CROSS_COMPILE    ?= arm-linux-gnueabihf-
 ## // EXPORTS //////////////////////////////////////////////////////////////////
 ## /////////////////////////////////////////////////////////////////////////////
 
-export ARCH
-export CROSS_COMPILE
-export LINUX_CFLAGS
-export PATH ::= ${PATH}:$(TOOLCHAIN_PATH)
+define _set_export
+export ARCH=$(ARCH); \
+export CROSS_COMPILE=${CROSS_COMPILE}; \
+export PATH=$${PATH}:$(TOOLCHAIN_PATH); \
+export O=$(LINUX_BUILDDIR)
+endef
 
 
 ## /////////////////////////////////////////////////////////////////////////////
@@ -40,7 +42,6 @@ export PATH ::= ${PATH}:$(TOOLCHAIN_PATH)
 ## // RECONFIGURE  /////////////////////////////////////////////////////////////
 ## /////////////////////////////////////////////////////////////////////////////
 
-
 .PHONY: reconfigure
 reconfigure:
 	@ \
@@ -51,3 +52,23 @@ reconfigure:
 	cd '$(abs_top_builddir)' && \
 	$(abs_top_srcdir)/configure $(shell $(abs_top_builddir)/config.status --config);
 	
+
+## /////////////////////////////////////////////////////////////////////////////
+## // DUMPS  ///////////////////////////////////////////////////////////////////
+## /////////////////////////////////////////////////////////////////////////////
+
+print-env:
+	@\
+	$(_set_export); \
+	echo ""; \
+	echo "---[KERNEL BUILD]----------------------------------------------------------"; \
+	echo " compiler: ${CROSS_COMPILE}${CC}"; \
+	echo " arch    : ${ARCH}"; \
+	echo " flags   : ${LINUX_CFLAGS}"; \
+	echo " TOOLCH  : ${TOOLCHAIN_PATH}"; \
+	echo " PATH    : $${PATH}"; \
+	echo " builddir: $${O}"; \
+	echo "---------------------------------------------------------------------------"; \
+	echo ""
+
+

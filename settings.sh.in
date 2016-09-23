@@ -1,0 +1,7 @@
+################################################################################
+# setup Xilinx Vivado FPGA tools
+################################################################################
+
+. /opt/Xilinx/Vivado/2015.4/.settings64-Vivado.sh
+. /opt/Xilinx/SDK/2015.4/.settings64-Software_Development_Kit.sh
+

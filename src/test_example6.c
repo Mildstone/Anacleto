@@ -226,19 +226,22 @@ int main(int argc, char *argv[])
     ring_buffer_init(&ring1,fd);
     ring_buffer_init(&ring2,fd);
 
+    printf("start stream:\n");
     ring_start_stream(fd);
 
-    for(i=0;i<5000;++i){
+    for(i=0;i<50;++i){
         try_send_something(fd,data,data_len);
         try_receive_something(fd,data,data_len);
     }
 
-    sleep(2);
-//    ring_stop_stream(fd);
 
+    sleep(1);
+    printf("stop stream:\n");
+    ring_stop_stream(fd);
+
+    printf("release buffers:\n");
     ring_buffer_release(&ring2,fd);
     ring_buffer_release(&ring1,fd);
-
 
     return 0;
 }

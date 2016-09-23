@@ -1,10 +1,12 @@
-
 SUBDIRS = src
 
 include Common.am
-export O=$(LINUX_BUILDDIR)
 
 AM_MAKEFLAGS = -j$(MAKE_PROCESS)
+
+
+
+
 
 
 ################################################################################
@@ -18,6 +20,7 @@ nconfig menuconfig xconfig gconfig: $(LINUX_DIR) $(LINUX_BUILDDIR)
 
 .PHONY: linux-init
 linux-init: $(LINUX_DIR) $(LINUX_BUILDDIR) print-env
+	$(_set_export); \
 	$(MAKE) $(AM_MAKEFLAGS) -C $< mrproper; \
 	$(MAKE) $(AM_MAKEFLAGS) -C $< O=$$O CFLAGS="$(LINUX_CFLAGS)" xilinx_zynq_defconfig;
 
@@ -25,27 +28,48 @@ $(LINUX_BUILDDIR):
 	mkdir -p $@;
 
 $(LINUX_IMAGE): $(LINUX_DIR) $(LINUX_BUILDDIR) linux-init
+	$(_set_export); \
 	$(MAKE) $(AM_MAKEFLAGS) -C $< O=$$O CFLAGS="$(LINUX_CFLAGS)" UIMAGE_LOADADDR=0x8000 $@; \
 	$(MAKE) $(AM_MAKEFLAGS) -C $< O=$$O CFLAGS="$(LINUX_CFLAGS)" modules; \
 	mkdir -p $(TMP)/lib/modules; \
 	$(MAKE) $(AM_MAKEFLAGS) -C $< O=$$O CFLAGS="$(LINUX_CFLAGS)" \
 		INSTALL_MOD_PATH=$(TMP) modules_install; \
-	cp $$O/arch/arm/boot/$@ $(TMP)
+	cp $(LINUX_BUILDDIR)/arch/arm/boot/$@ $(TMP)
 
 .PHONY: linux
 linux: $(LINUX_IMAGE)
 
 
-print-env:
-	@\
-	echo ""; \
-	echo "---[KERNEL BUILD]----------------------------------------------------------"; \
-	echo " compiler: $${CROSS_COMPILE}${CC}"; \
-	echo " arch    : $${ARCH}"; \
-	echo " flags   : $${LINUX_CFLAGS}"; \
-	echo " builddir: $${O}"; \
-	echo "---------------------------------------------------------------------------"; \
-	echo ""
+
+################################################################################
+# device tree processing
+# TODO: here separate device trees should be provided for Ubuntu and buildroot
+################################################################################
+
+DTREE_TAG     = xilinx-v2015.4
+DEVICETREE    = $(TMP)/devicetree.dtb
+DTREE_DIR     = $(TMP)/device-tree-xlnx-$(DTREE_TAG)
+DTREE_URL     ?= https://github.com/Xilinx/device-tree-xlnx/archive/$(DTREE_TAG).tar.gz
+DTREE_TAR     = $(DL)/device-tree-xlnx-$(DTREE_TAG).tar.gz
+DL            = $(top_builddir)/dl
+
+devicetree: $(DEVICETREE)
+
+
+$(DTREE_TAR): | $(DL)
+	curl -L $(DTREE_URL) -o $@
+
+$(DTREE_DIR): $(DTREE_TAR)
+	mkdir -p $@
+	tar -zxf $< --strip-components=1 --directory=$@
+
+$(DEVICETREE): $(DTREE_DIR) $(LINUX) fpga
+#        cp $(DTS) $(TMP)
+#       patch $(TMP)/devicetree.dts $(srcdir)/patches/devicetree.patch
+#        $(LINUX_DIR)/scripts/dtc/dtc -i $(FPGA_DIR)/sdk/dts/ $(TMP)/system.dts > $(TMP)/devicetree.dts
+#        $(LINUX_DIR)/scripts/dtc/dtc -I dts -O dtb -o $(DEVICETREE) -i $(FPGA_DIR)/sdk/dts/ $(TMP)/devicetree.dts
+
+
 
 clean-local:
 	-$(MAKE) -C $(LINUX_BUILDDIR) clean

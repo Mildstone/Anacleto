@@ -33,7 +33,7 @@ menu  TOOLCHAIN
 	  depends on WITH_TOOLCHAIN_TAR_URL	  
 	  default "http://releases.linaro.org/14.11/components/toolchain/binaries/arm-linux-gnueabihf/gcc-linaro-4.9-2014.11-x86_64_arm-linux-gnueabihf.tar.xz"
   
-  config TOOLCHAIN_PATH 
+  config TOOLCHAIN_BINDIR
           string  "toolchain bin path relative to the toolchain dir"
           depends on ENABLE_TOOLCHAIN
           default "gcc-linaro-4.9-2014.11-x86_64_arm-linux-gnueabihf/bin"
@@ -45,6 +45,29 @@ menu  TOOLCHAIN
   
 endmenu # TOOLCHAIN
 
+
+# //////////////////////////////////////////////////////////////////////////// #
+# //  VIVADO  //////////////////////////////////////////////////////////////// #
+# //////////////////////////////////////////////////////////////////////////// #
+
+config ENABLE_FPGA
+        bool "Enable fpga development"
+        default true
+
+menu  FPGA
+        depends on ENABLE_FPGA
+
+#  config VIVADO_LICENSE_PATH
+#        string "Path to the vivado system folder"
+#        depends on ENABLE_FPGA
+#        default ""
+
+  config VIVADO_SETUP_SCRIPT
+        string "Setup script to set vivado environments"
+        depends on ENABLE_FPGA
+        default "/opt/Xilinx/Vivado/2015.4/settings64.sh"
+
+endmenu # FPGA
 
 
 

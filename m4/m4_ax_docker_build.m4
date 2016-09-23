@@ -183,7 +183,7 @@ AC_DEFUN_LOCAL([m4_ax_docker_build],[DK_CMD_CNTRUN], [
   AS_VAR_SET([user_groups],[$(id -G ${USER} | sed 's/ /,/g')])
   AS_VAR_SET([abs_srcdir],[$(cd ${srcdir}; pwd)])
   dnl run container
-  m4_normalize([ docker run -d -it --entrypoint=/bin/sh \
+  m4_normalize([ docker run -d -it --entrypoint=${SHELL} \
                      -e USER=${USER} \
                      -e DISPLAY=${DISPLAY} \
                      -e http_proxy=${http_proxy} \
@@ -198,7 +198,7 @@ AC_DEFUN_LOCAL([m4_ax_docker_build],[DK_CMD_CNTRUN], [
                      $1;
                ])
   dnl set user option inside container
-  m4_normalize([ docker exec --user root $2 sh -c "
+  m4_normalize([ docker exec --user root $2 ${SHELL} -c "
                           echo ${user_entry}  >> /etc/passwd;
                           echo ${group_entry} >> /etc/group;
                          ";
@@ -218,10 +218,11 @@ AC_DEFUN_LOCAL([m4_ax_docker_build],[DK_CONFIGURE],[
          AS_VAR_SET_IF([DOCKER_FILE],AS_VAR_APPEND([dk_configure_args],["DOCKER_FILE=\"${DOCKER_FILE}\" "]));
 
          m4_pushdef([dk_configure_cmd], m4_normalize([
+           ENABLE_KCONFIG=no
            docker exec -t
            --user ${USER}
-           ${DOCKER_CONTAINER} ${SHELL} -l
-           -c \"cd $(pwd)\; ${0} DK_ADD_ESCAPE(${dk_configure_args}) DK_ADD_ESCAPE([HAVE_DOCKER=\"no\"]) \";
+           ${DOCKER_CONTAINER} bash -l
+           -c \"cd $(pwd)\; DK_ADD_ESCAPE([ENABLE_KCONFIG=\"no\"]) ${0} DK_ADD_ESCAPE(${dk_configure_args}) DK_ADD_ESCAPE([HAVE_DOCKER=\"no\"]) \";
            exit 0;
          ]))
 
@@ -428,7 +429,7 @@ inspect:
 
 start:
 	@echo "Starting docker container:";
-	m4_normalize( docker run -d -it --entrypoint=/bin/sh
+	m4_normalize( docker run -d -it --entrypoint=\${SHELL}
 			     -e USER=\${USER}
 			     -e DISPLAY=\${DISPLAY}
 			     -e http_proxy=\${http_proxy}
@@ -442,7 +443,7 @@ start:
 			     --name \${DOCKER_CONTAINER}
 			     \${DOCKER_IMAGE}; )
 	m4_normalize( docker exec --user root \${DOCKER_CONTAINER}
-				  sh -c "
+				  \${SHELL} -c "
 				    echo ${user_entry}  >> /etc/passwd;
 				    echo ${group_entry} >> /etc/group;
 				  ";)
@@ -455,9 +456,12 @@ stop:
 shell:
 	@echo "Starting docker shell";
 	docker exec -ti --user \${USER} \${DOCKER_CONTAINER} \
-	 sh -c "cd \$(shell pwd); export MAKESHELL=\${SHELL}; bash"
+	 \${SHELL} -c "cd \$(shell pwd); export MAKESHELL=\${SHELL}; bash"
+
 
 endif
+
+
 ])
 AC_SUBST([AX_DOCKER_BUILD_TARGETS])
 m4_ifdef([AM_SUBST_NOTMAKE], [AM_SUBST_NOTMAKE([AX_DOCKER_BUILD_TARGETS])])
@@ -468,7 +472,7 @@ m4_ifdef([AM_SUBST_NOTMAKE], [AM_SUBST_NOTMAKE([AX_DOCKER_BUILD_TARGETS])])
 
 AC_DEFUN_LOCAL([m4_ax_docker_build],[DK_WRITE_DSHELLFILE],[
 AS_VAR_READ([DK_DSHELLFILE],m4_escape([
-#!/bin/sh
+#!/bin/bash
 # //////////////////////////////////////////////////////////////////////////// #
 # //// DOCKER SHELL  ///////////////////////////////////////////////////////// #
 # //////////////////////////////////////////////////////////////////////////// #
@@ -488,7 +492,7 @@ quoted_args="\$(printf " %q" "\$\@")"
 if [ -n "\${MAKESHELL}" ]; then
  \${MAKESHELL} \${quoted_args};
 else
- docker exec -t --user \${USER} \${DOCKER_CONTAINER} ${SHELL} -l -c "cd \$(pwd); export MAKESHELL=${SHELL}; export MAKEFLAGS=\${MAKEFLAGS}; export MFLAGS=\${MFLAGS}; ${SHELL} \${quoted_args}";
+ docker exec -t -i --user \${USER} \${DOCKER_CONTAINER} /bin/bash -l -c "cd \$(pwd); export MAKESHELL=${SHELL}; export MAKEFLAGS=\${MAKEFLAGS}; export MFLAGS=\${MFLAGS}; /bin/bash \${quoted_args}";
 fi
 ]))
 
