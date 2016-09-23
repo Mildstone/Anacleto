@@ -1,4 +1,4 @@
-SUBDIRS = src
+SUBDIRS =
 
 include Common.am
 
@@ -29,12 +29,12 @@ $(LINUX_BUILDDIR):
 
 $(LINUX_IMAGE): $(LINUX_DIR) $(LINUX_BUILDDIR) linux-init
 	$(_set_export); \
-	$(MAKE) $(AM_MAKEFLAGS) -C $< O=$$O CFLAGS="$(LINUX_CFLAGS)" UIMAGE_LOADADDR=0x8000 $@; \
+	$(MAKE) $(AM_MAKEFLAGS) -C $< O=$$O CFLAGS="$(LINUX_CFLAGS)" UIMAGE_LOADADDR=0x8000 uImage; \
 	$(MAKE) $(AM_MAKEFLAGS) -C $< O=$$O CFLAGS="$(LINUX_CFLAGS)" modules; \
 	mkdir -p $(TMP)/lib/modules; \
 	$(MAKE) $(AM_MAKEFLAGS) -C $< O=$$O CFLAGS="$(LINUX_CFLAGS)" \
 		INSTALL_MOD_PATH=$(TMP) modules_install; \
-	cp $(LINUX_BUILDDIR)/arch/arm/boot/$@ $(TMP)
+	cp $(LINUX_BUILDDIR)/arch/arm/boot/uImage $@
 
 .PHONY: linux
 linux: $(LINUX_IMAGE)
@@ -43,15 +43,17 @@ linux: $(LINUX_IMAGE)
 
 ################################################################################
 # device tree processing
-# TODO: here separate device trees should be provided for Ubuntu and buildroot
 ################################################################################
 
-DTREE_TAG     = xilinx-v2015.4
+DTREE_TAG     = xilinx-v${VIVADO_VERSION}
 DEVICETREE    = $(TMP)/devicetree.dtb
 DTREE_DIR     = $(TMP)/device-tree-xlnx-$(DTREE_TAG)
 DTREE_URL     ?= https://github.com/Xilinx/device-tree-xlnx/archive/$(DTREE_TAG).tar.gz
 DTREE_TAR     = $(DL)/device-tree-xlnx-$(DTREE_TAG).tar.gz
-DL            = $(top_builddir)/dl
+DL            = $(top_builddir)/download
+
+$(DL):
+	mkdir -p $@
 
 devicetree: $(DEVICETREE)
 
@@ -68,7 +70,6 @@ $(DEVICETREE): $(DTREE_DIR) $(LINUX) fpga
 #       patch $(TMP)/devicetree.dts $(srcdir)/patches/devicetree.patch
 #        $(LINUX_DIR)/scripts/dtc/dtc -i $(FPGA_DIR)/sdk/dts/ $(TMP)/system.dts > $(TMP)/devicetree.dts
 #        $(LINUX_DIR)/scripts/dtc/dtc -I dts -O dtb -o $(DEVICETREE) -i $(FPGA_DIR)/sdk/dts/ $(TMP)/devicetree.dts
-
 
 
 clean-local:

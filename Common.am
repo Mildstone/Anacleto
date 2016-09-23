@@ -3,10 +3,16 @@
 TOOLCHAIN     = $(top_builddir)/toolchain
 MAKE_PROCESS ?= $(shell grep -c ^processor /proc/cpuinfo)
 TMP          ?= $(abs_top_builddir)
+FPGA_DIR      = $(abs_top_srcdir)/fpga
+FPGA_REPO_DIR = $(abs_top_srcdir)/fpga/ip_repo
+
+VIVADO_VERSION ?= 2015.4
+
 
 
 LINUX_CFLAGS    ?= "-O2 -mtune=cortex-a9 -mfpu=neon -mfloat-abi=hard"
-LINUX_IMAGE     ?= uImage
+LINUX_PACKAGE   ?= uImage
+LINUX_IMAGE     ?= $(TMP)/$(LINUX_PACKAGE)
 # LINUX_DIR       ?= linux-xlnx
 
 LINUX_DIR       = $(abs_top_srcdir)/linux-xlnx

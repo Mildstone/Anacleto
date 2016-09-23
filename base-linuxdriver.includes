@@ -9,3 +9,4 @@ fpga
 .
 fpga/src
 fpga/ip
+projects/rfx_pwmgen/src

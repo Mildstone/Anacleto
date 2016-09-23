@@ -11,13 +11,21 @@
 
 global env
 set srcdir   $env(srcdir)
-set system   $env(system)
+set top_srcdir   $env(top_srcdir)
+
+set SYSTEM           $env(SYSTEM)
+set SOC_BOARD        $env(SOC_BOARD)
+set FPGA_SDC         $env(FPGA_SDC)
+set FPGA_BIT         $env(FPGA_BIT)
+set VIVADO_VERSION   $env(VIVADO_VERSION)
+set VIVADO_SOC_PART  $env(VIVADO_SOC_PART)
+set FPGA_REPO_DIR    $env(FPGA_REPO_DIR)
 
 set_param general.maxThreads $env(maxThreads)
 
-set path_rtl rtl
-set path_ip  ip
-set path_sdc sdc
+# set path_rtl rtl
+# set path_ip  ip
+# set path_sdc sdc
 
 set path_out out
 set path_sdk sdk
@@ -29,9 +37,10 @@ file mkdir $path_sdk
 # setup an in memory project
 ################################################################################
 
-set part xc7z010clg400-1
+create_project -in_memory -part $VIVADO_SOC_PART
 
-create_project -in_memory -part $part
+set_property  ip_repo_paths $FPGA_REPO_DIR [current_project]
+update_ip_catalog
 
 # experimental attempts to avoid a warning
 #get_projects
@@ -46,11 +55,11 @@ create_project -in_memory -part $part
 
 # file was created from GUI using "write_bd_tcl -force ip/system_bd.tcl"
 # create PS BD
-source                            $srcdir/$path_ip/$system
+source                            $srcdir/$SYSTEM.tcl
 
 # generate SDK files
 generate_target all [get_files    system.bd]
-write_hwdef        -force         $path_sdk/red_pitaya.hwdef
+write_hwdef        -force         $path_sdk/$SYSTEM.hwdef
 
 ################################################################################
 # read files:
@@ -59,6 +68,7 @@ write_hwdef        -force         $path_sdk/red_pitaya.hwdef
 # 3. constraints
 ################################################################################
 
+
 # template
 #read_verilog                      $path_rtl/...
 
@@ -66,7 +76,8 @@ write_hwdef        -force         $path_sdk/red_pitaya.hwdef
 read_verilog                      .srcs/sources_1/bd/system/hdl/system_wrapper.v
 
 # constraints
-# read_xdc                          $srcdir/$path_sdc/red_pitaya.xdc
+#add_files -fileset constrs_1      $srcdir/$FPGA_SDC
+read_xdc                          $srcdir/$FPGA_SDC
 
 ################################################################################
 # run synthesis
@@ -119,14 +130,14 @@ report_drc               -file    $path_out/post_imp_drc.rpt
 
 set_property BITSTREAM.GENERAL.COMPRESS TRUE [current_design]
 
-write_bitstream -force $path_out/red_pitaya.bit
+write_bitstream -force $FPGA_BIT
 
 ################################################################################
 # generate system definition
 ################################################################################
 
-write_sysdef             -hwdef   $path_sdk/red_pitaya.hwdef \
-                         -bitfile $path_out/red_pitaya.bit \
-                         -file    $path_sdk/red_pitaya.sysdef
+write_sysdef    -force   -hwdef   $path_sdk/$SYSTEM.hwdef \
+			 -bitfile $FPGA_BIT \
+			 -file    $path_sdk/$SYSTEM.sysdef
 
 exit

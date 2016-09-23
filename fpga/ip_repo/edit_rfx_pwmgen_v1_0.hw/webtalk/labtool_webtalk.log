@@ -1,8 +1,0 @@
-
-****** Webtalk v2015.4 (64-bit)
-  **** SW Build 1412921 on Wed Nov 18 09:44:32 MST 2015
-  **** IP Build 1412160 on Tue Nov 17 13:47:24 MST 2015
-    ** Copyright 1986-2015 Xilinx, Inc. All Rights Reserved.
-
-source /home/andrea/devel/utils/base-linuxdriver/fpga/ip_repo/edit_rfx_pwmgen_v1_0.hw/webtalk/labtool_webtalk.tcl -notrace
-INFO: [Common 17-206] Exiting Webtalk at Wed Sep 21 10:17:10 2016...

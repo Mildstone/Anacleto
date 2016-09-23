@@ -67,6 +67,26 @@ menu  FPGA
         depends on ENABLE_FPGA
         default "/opt/Xilinx/Vivado/2015.4/settings64.sh"
 
+  config VIVADO_VERSION
+	string "Vivado version yyyy.v "
+	depends on ENABLE_FPGA
+	default "2015.4"
+
+  choice SOC_BOARD
+	prompt "Select SOC board"
+	depends on ENABLE_FPGA
+	config WITH_SOC_RED_PITAYA
+	 bool "red_pitaya"
+	config WITH_SOC_PARALLELLA
+	 bool "parallella"
+  endchoice
+
+ config VIVADO_SOC_PART
+      string "Vivado soc part to load in project"
+      depends on ENABLE_FPGA
+      default "xc7z010clg400-1"
+
+
 endmenu # FPGA
 
 
@@ -139,7 +159,7 @@ menu COMPILER_OPTIONS
          string  "linux and modules compiler flags" 
          default "-O2 -mtune=cortex-a9 -mfpu=neon -mfloat-abi=hard"
 
-   config LINUX_IMAGE 
+   config LINUX_PACKAGE
          string  "linux image type"
          default "uImage"
          
@@ -191,6 +211,10 @@ menu TARGET_DEVICE
     config DEVICE_MODULES_DIR
           string  "Target device modules directory"
           default "/lib/modules"
+
+    config DEVICE_BOOT_DIR
+	  string  "Target device boot directory"
+	  default "/boot"
 
 endmenu # TARGET_DEVICE
 

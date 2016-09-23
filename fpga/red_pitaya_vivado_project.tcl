@@ -10,23 +10,30 @@
 ################################################################################
 
 global env
-set srcdir   $env(srcdir)
-set system   $env(system)
+set srcdir       $env(srcdir)
+set top_srcdir   $env(top_srcdir)
+
+set SYSTEM           $env(SYSTEM)
+set SOC_BOARD        $env(SOC_BOARD)
+set FPGA_SDC         $env(FPGA_SDC)
+set FPGA_BIT         $env(FPGA_BIT)
+set VIVADO_VERSION   $env(VIVADO_VERSION)
+set VIVADO_SOC_PART  $env(VIVADO_SOC_PART)
+set FPGA_REPO_DIR    $env(FPGA_REPO_DIR)
+
 set_param general.maxThreads $env(maxThreads)
 
-set path_rtl rtl
-set path_ip  ip
-set path_sdc sdc
+# set path_rtl $srcdir
+# set path_ip  $srcdir
+# set path_sdc $srcdir
 
 ################################################################################
 # setup an in memory project
 ################################################################################
 
-set part xc7z010clg400-1
+create_project -part $VIVADO_SOC_PART -force $SOC_BOARD ./project
 
-create_project -part $part -force redpitaya ./project
-
-set_property  ip_repo_paths $srcdir/ip_repo [current_project]
+set_property  ip_repo_paths $FPGA_REPO_DIR [current_project]
 update_ip_catalog
 
 ################################################################################
@@ -34,7 +41,7 @@ update_ip_catalog
 ################################################################################
 
 # create PS BD
-source                            $srcdir/$path_ip/$system
+source                            $srcdir/$SYSTEM.tcl
 
 # generate SDK files
 generate_target all [get_files    system.bd]
@@ -46,9 +53,9 @@ generate_target all [get_files    system.bd]
 # 3. constraints
 ################################################################################
 
-read_verilog                      ./project/redpitaya.srcs/sources_1/bd/system/hdl/system_wrapper.v
+read_verilog  ./project/$SOC_BOARD.srcs/sources_1/bd/system/hdl/system_wrapper.v
 
-add_files -fileset constrs_1      $srcdir/$path_sdc/red_pitaya.xdc
+add_files -fileset constrs_1      $srcdir/$FPGA_SDC
 
 import_files -force
 
