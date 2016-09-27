@@ -46,7 +46,6 @@ linux: $(LINUX_IMAGE)
 ################################################################################
 
 DTREE_TAG     = xilinx-v${VIVADO_VERSION}
-DEVICETREE    = $(TMP)/devicetree.dtb
 DTREE_DIR     = $(TMP)/device-tree-xlnx-$(DTREE_TAG)
 DTREE_URL     ?= https://github.com/Xilinx/device-tree-xlnx/archive/$(DTREE_TAG).tar.gz
 DTREE_TAR     = $(DL)/device-tree-xlnx-$(DTREE_TAG).tar.gz
@@ -55,7 +54,7 @@ DL            = $(top_builddir)/download
 $(DL):
 	mkdir -p $@
 
-devicetree: $(DEVICETREE)
+xlnx-devicetree: $(DTREE_DIR)
 
 
 $(DTREE_TAR): | $(DL)
@@ -65,11 +64,7 @@ $(DTREE_DIR): $(DTREE_TAR)
 	mkdir -p $@
 	tar -zxf $< --strip-components=1 --directory=$@
 
-$(DEVICETREE): $(DTREE_DIR) $(LINUX) fpga
-#        cp $(DTS) $(TMP)
-#       patch $(TMP)/devicetree.dts $(srcdir)/patches/devicetree.patch
-#        $(LINUX_DIR)/scripts/dtc/dtc -i $(FPGA_DIR)/sdk/dts/ $(TMP)/system.dts > $(TMP)/devicetree.dts
-#        $(LINUX_DIR)/scripts/dtc/dtc -I dts -O dtb -o $(DEVICETREE) -i $(FPGA_DIR)/sdk/dts/ $(TMP)/devicetree.dts
+
 
 
 clean-local:

@@ -99,7 +99,10 @@ $(FSBL_ELF):  $(FPGA_BIT)
 dts: $(DTS)
 dtb: $(DTB)
 
-sdk/dts/system.dts:  $(FPGA_BIT)
+xlnx-devicetree:
+	$(MAKE) -C $(top_builddir) xlnx-devicetree
+
+sdk/dts/system.dts:  $(FPGA_BIT) xlnx-devicetree
 	( ${_envset}; \
 	  $(HSI) -source $(FPGA_DIR)/red_pitaya_hsi_dts.tcl )
 
