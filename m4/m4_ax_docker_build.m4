@@ -217,13 +217,13 @@ AC_DEFUN_LOCAL([m4_ax_docker_build],[DK_CONFIGURE],[
          AS_VAR_SET_IF([DOCKER_CONTAINER],AS_VAR_APPEND([dk_configure_args],["DOCKER_CONTAINER=\"${DOCKER_CONTAINER}\" "]));
          AS_VAR_SET_IF([DOCKER_FILE],AS_VAR_APPEND([dk_configure_args],["DOCKER_FILE=\"${DOCKER_FILE}\" "]));
 
-         m4_pushdef([dk_configure_cmd], m4_normalize([
-           ENABLE_KCONFIG=no
-           docker exec -t
+	 m4_pushdef([dk_configure_cmd], m4_normalize([
+	   ENABLE_KCONFIG=no
+	   docker exec -t
            --user ${USER}
            ${DOCKER_CONTAINER} bash -l
-           -c \"cd $(pwd)\; DK_ADD_ESCAPE([ENABLE_KCONFIG=\"no\"]) ${0} DK_ADD_ESCAPE(${dk_configure_args}) DK_ADD_ESCAPE([HAVE_DOCKER=\"no\"]) \";
-           exit 0;
+	   -c \"cd $(pwd)\; DK_ADD_ESCAPE([ENABLE_KCONFIG=\"no\"]) ${0} DK_ADD_ESCAPE(${dk_configure_args}) DK_ADD_ESCAPE([HAVE_DOCKER=\"no\"]) \";
+	   exit 0;
          ]))
 
          AS_ECHO(" ------------------------- ")
@@ -492,7 +492,8 @@ quoted_args="\$(printf " %q" "\$\@")"
 if [ -n "\${MAKESHELL}" ]; then
  \${MAKESHELL} \${quoted_args};
 else
- docker exec -t -i --user \${USER} \${DOCKER_CONTAINER} /bin/bash -l -c "cd \$(pwd); export MAKESHELL=/bin/bash; export MAKEFLAGS=\${MAKEFLAGS}; export MFLAGS=\${MFLAGS}; /bin/bash \${quoted_args}";
+ [ -t AS_ORIGINAL_STDIN_FD -o -t 0 ] && INT=-ti || INT=
+ docker exec \${INT} --user \${USER} \${DOCKER_CONTAINER} /bin/bash -l -c "cd \$(pwd); export MAKESHELL=/bin/bash; export MAKEFLAGS=\${MAKEFLAGS}; export MFLAGS=\${MFLAGS}; /bin/bash \${quoted_args}";
 fi
 ]))
 
