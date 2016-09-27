@@ -14,7 +14,7 @@ AM_INIT_AUTOMAKE([1.15 foreign subdir-objects])
 
 
 dnl update submodules at first ... (must be cleaned out)
-AS_IF([${srcdir}/conf/update_submodules],
+AS_IF([${srcdir}/conf/update_submodules.sh],
       [AS_ECHO(["Submodules succesfully updated"])],
       [AS_ECHO(["Error updating submodules"])])
 
