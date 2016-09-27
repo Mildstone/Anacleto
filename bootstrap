@@ -1,4 +1,14 @@
-#! /bin/sh
+#!/bin/sh
+
+UPDATE_SUBMODULES=conf/update_submodules.sh
+
+[ -f ${UPDATE_SUBMODULES} ] && . ${UPDATE_SUBMODULES} || exit 1
+
+if [ -d conf/kconfig ]; then
+ pushd conf/kconfig
+ ./bootstrap
+ popd
+fi
 
 aclocal -I ./m4 
 
