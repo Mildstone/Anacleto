@@ -2,13 +2,15 @@
 include $(top_srcdir)/Common.am
 
 AM_MAKEFLAGS = -j$(MAKE_PROCESS)
+AM_CPPFLAGS  = -lpthread
 
 
 MODULES = \
 	  rfx_pwmgen
 
 TEST_EXAMPLES = \
-	  rfx_pwmgen_test
+	  rfx_pwmgen_test  \
+	  rfx_pwmgen_test2
           
 MOSTLYCLEANFILES = $(TEST_EXAMPLES)
 

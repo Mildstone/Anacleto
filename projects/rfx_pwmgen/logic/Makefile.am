@@ -107,7 +107,7 @@ $(DTS): sdk/dts/system.dts $(LINUX_IMAGE)
 	$(LINUX_BUILDDIR)/scripts/dtc/dtc -i sdk/dts/ sdk/dts/system.dts > $@
 
 $(DTB):  $(DTS) $(LINUX_IMAGE)
-	$(LINUX_BUILDDIR)/scripts/dtc/dtc -I dts -O dtb -o $@ -i sdk/dts/ $^
+	$(LINUX_BUILDDIR)/scripts/dtc/dtc -I dts -O dtb -o $@ -i sdk/dts/ $<
 
 
 
@@ -125,7 +125,7 @@ else
 if WITH_DEVICE_SSHPASSWD
 	@ echo " --- deploying to target device: ${DEVICE_NAME} using passwd ---";
 	sshpass -p ${DEVICE_PASSWD} scp $^ \
-	  $(DEVICE_USER)@$(DEVICE_IP):$(DEVICE_BOOT_DIR);
+	  $(DEVICE_USER)@$(DEVICE_IP):$(DEVICE_INSTALL_DIR);
 endif
 endif
 

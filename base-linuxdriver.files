@@ -50682,3 +50682,5 @@ Makefile.am
 Makefile.in
 README.md
 settings.sh.in
+projects/rfx_pwmgen/src/rfx_pwmgen.h
+projects/rfx_pwmgen/src/rfx_pwmgen_test2.c

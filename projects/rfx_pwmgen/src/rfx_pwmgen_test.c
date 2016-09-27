@@ -13,10 +13,10 @@
 
 static int fd = NULL;
 
-int cmn_Init()
+int cmn_Init(const char *fname)
 {
     if (!fd) {
-        if((fd = open("/dev/mem", O_RDWR | O_SYNC)) == -1) { return RP_EOMD; }
+        if((fd = open(fname, O_RDWR | O_SYNC)) == -1) { return RP_EOMD; }
     }
     return RP_OK;
 }
@@ -46,6 +46,8 @@ int cmn_Map(size_t size, size_t offset, void** mapped)
     return RP_OK;
 }
 
+
+
 int main(int argc, char **argv) {
  printf("pwmgen test \n");
 
@@ -55,12 +57,17 @@ int main(int argc, char **argv) {
  }
 
  int *addr;
- cmn_Init();
- cmn_Map(16, 0x43c00000,(void**)&addr);
+ cmn_Init(argv[1]);   // rfx
 
- *(addr+0) = atoi(argv[1]);
- *(addr+1) = atoi(argv[2]);
+// cmn_Map(16, 0x43c00000,(void**)&addr);
+ cmn_Map(16, strtol(argv[2], NULL, 16),(void**)&addr);
+
+ *(addr+0) = atoi(argv[3]);
+ *(addr+1) = atoi(argv[4]);
+
+ printf(" %d %d \n",*(addr+0),*(addr+1));
 
  cmn_Release();
+
  return 0;
 }
