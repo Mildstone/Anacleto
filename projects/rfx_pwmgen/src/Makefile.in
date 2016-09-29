@@ -165,8 +165,7 @@ LDFLAGS = @LDFLAGS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LINUX_CFLAGS = @LINUX_CFLAGS@
-# LINUX_DIR       ?= linux-xlnx
-LINUX_DIR = $(abs_top_srcdir)/linux-xlnx
+LINUX_DIR = @LINUX_DIR@
 LINUX_PACKAGE = @LINUX_PACKAGE@
 LTLIBOBJS = @LTLIBOBJS@
 MAKEINFO = @MAKEINFO@
@@ -247,15 +246,18 @@ top_srcdir = @top_srcdir@
 TOOLCHAIN = $(top_builddir)/toolchain
 FPGA_DIR = $(abs_top_srcdir)/fpga
 FPGA_REPO_DIR = $(abs_top_srcdir)/fpga/ip_repo
-LINUX_BUILDDIR = $(abs_top_builddir)/linux-xlnx
+LINUX_SRCDIR = $(abs_top_srcdir)/$(LINUX_DIR)
+LINUX_BUILDDIR = $(abs_top_builddir)/$(LINUX_DIR)
 ARCH = arm
 TOOLCHAIN_PATH = ${abs_top_builddir}/toolchain/${TOOLCHAIN_BINDIR}
 AM_MAKEFLAGS = -j$(MAKE_PROCESS)
+AM_CPPFLAGS = -lpthread
 MODULES = \
 	  rfx_pwmgen
 
 TEST_EXAMPLES = \
-	  rfx_pwmgen_test
+	  rfx_pwmgen_test  \
+	  rfx_pwmgen_test2
 
 MOSTLYCLEANFILES = $(TEST_EXAMPLES)
 all: all-am
@@ -454,6 +456,7 @@ VIVADO_VERSION ?= 2015.4
 LINUX_CFLAGS    ?= "-O2 -mtune=cortex-a9 -mfpu=neon -mfloat-abi=hard"
 LINUX_PACKAGE   ?= uImage
 LINUX_IMAGE     ?= $(TMP)/$(LINUX_PACKAGE)
+LINUX_DIR       ?= linux
 TOOLCHAIN_BINDIR ?= gcc-linaro-4.9-2014.11-x86_64_arm-linux-gnueabihf/bin
 CROSS_COMPILE    ?= arm-linux-gnueabihf-
 
@@ -488,6 +491,13 @@ print-env:
 	echo " TOOLCH  : ${TOOLCHAIN_PATH}"; \
 	echo " PATH    : $${PATH}"; \
 	echo " builddir: $${O}"; \
+	echo " "; \
+	echo " LINUX_IMAGE    : ${LINUX_IMAGE}"; \
+	echo " LINUX_DIR      : ${LINUX_DIR}"; \
+	echo " LINUX_SRCDIR   : ${LINUX_SRCDIR}"; \
+	echo " LINUX_BUILDDIR : ${LINUX_BUILDDIR}"; \
+	echo " LINUX_GIT      : ${LINUX_GIT}"; \
+	echo " "; \
 	echo "---------------------------------------------------------------------------"; \
 	echo ""
 

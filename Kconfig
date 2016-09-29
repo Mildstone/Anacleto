@@ -95,12 +95,7 @@ endmenu # FPGA
 # //  LINUX  ///////////////////////////////////////////////////////////////// #
 # //////////////////////////////////////////////////////////////////////////// #
 
-# LINUX_DIR     ?= linux-xlnx
-# LINUX_DIR     := $(top_srcdir)/${LINUX_DIR}
-# LINUX_CFLAGS  ?= "-O2 -mtune=cortex-a9 -mfpu=neon -mfloat-abi=hard"
-# LINUX_IMAGE   ?= uImage
-# LINUX_BUILDDIR ?= ${top_builddir}/linux-xlnx
-
+source conf/scripts/linux.kconfig
 
 
 

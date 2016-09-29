@@ -15,11 +15,19 @@ AM_MAKEFLAGS = -j$(MAKE_PROCESS)
 
 all: $(LINUX_IMAGE)
 
-nconfig menuconfig xconfig gconfig: $(LINUX_DIR) $(LINUX_BUILDDIR)
+
+# $(LINUX_SRCDIR):
+#	@ echo "Download linux sources"; \
+#	  mkdir -p $@;
+# if WITH_LINUX_GIT
+#	  git clone ${LINUX_GIT} $@;
+# endif
+
+nconfig menuconfig xconfig gconfig: $(LINUX_SRCDIR) $(LINUX_BUILDDIR)
 	$(MAKE) -C $< $@
 
 .PHONY: linux-init
-linux-init: $(LINUX_DIR) $(LINUX_BUILDDIR) print-env
+linux-init: $(LINUX_SRCDIR) $(LINUX_BUILDDIR) print-env
 	$(_set_export); \
 	$(MAKE) $(AM_MAKEFLAGS) -C $< mrproper; \
 	$(MAKE) $(AM_MAKEFLAGS) -C $< O=$$O CFLAGS="$(LINUX_CFLAGS)" xilinx_zynq_defconfig;
@@ -27,7 +35,7 @@ linux-init: $(LINUX_DIR) $(LINUX_BUILDDIR) print-env
 $(LINUX_BUILDDIR):
 	mkdir -p $@;
 
-$(LINUX_IMAGE): $(LINUX_DIR) $(LINUX_BUILDDIR) linux-init
+$(LINUX_IMAGE): $(LINUX_SRCDIR) $(LINUX_BUILDDIR) linux-init
 	$(_set_export); \
 	$(MAKE) $(AM_MAKEFLAGS) -C $< O=$$O CFLAGS="$(LINUX_CFLAGS)" UIMAGE_LOADADDR=0x8000 uImage; \
 	$(MAKE) $(AM_MAKEFLAGS) -C $< O=$$O CFLAGS="$(LINUX_CFLAGS)" modules; \

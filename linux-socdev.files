@@ -50684,3 +50684,7 @@ README.md
 settings.sh.in
 projects/rfx_pwmgen/src/rfx_pwmgen.h
 projects/rfx_pwmgen/src/rfx_pwmgen_test2.c
+conf/scripts/linux.am
+conf/scripts/linux.kconfig
+conf/scripts/toolchain.am
+conf/scripts/toolchain.kconfig
