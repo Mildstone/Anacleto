@@ -100,14 +100,14 @@ dts: $(DTS)
 dtb: $(DTB)
 
 xlnx-devicetree:
-	$(MAKE) -C $(top_builddir) xlnx-devicetree
+	$(MAKE) -C $(top_builddir)/fpga xlnx-devicetree
 
 sdk/dts/system.dts:  $(FPGA_BIT) xlnx-devicetree
 	( ${_envset}; \
 	  $(HSI) -source $(FPGA_DIR)/red_pitaya_hsi_dts.tcl )
 
 $(DTS): sdk/dts/system.dts $(LINUX_IMAGE)
-	$(LINUX_BUILDDIR)/scripts/dtc/dtc -i sdk/dts/ sdk/dts/system.dts > $@
+	$(LINUX_BUILDDIR)/scripts/dtc/dtc -I dts -O dts -o $@ -i sdk/dts/ $<
 
 $(DTB):  $(DTS) $(LINUX_IMAGE)
 	$(LINUX_BUILDDIR)/scripts/dtc/dtc -I dts -O dtb -o $@ -i sdk/dts/ $<

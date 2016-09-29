@@ -2,7 +2,7 @@
 # For a description of the syntax of this configuration file,
 # see Documentation/kbuild/kconfig-language.txt.
 #
-mainmenu "Linux driver building configuration"
+mainmenu "linux-socdev - Linux drivers build system for SoC devices"
 
 
 # //////////////////////////////////////////////////////////////////////////// #
@@ -47,56 +47,63 @@ endmenu # TOOLCHAIN
 
 
 # //////////////////////////////////////////////////////////////////////////// #
-# //  VIVADO  //////////////////////////////////////////////////////////////// #
+# //  FPGA  ////////////////////////////////////////////////////////////////// #
 # //////////////////////////////////////////////////////////////////////////// #
 
-config ENABLE_FPGA
-        bool "Enable fpga development"
-        default true
 
-menu  FPGA
-        depends on ENABLE_FPGA
-
-#  config VIVADO_LICENSE_PATH
-#        string "Path to the vivado system folder"
-#        depends on ENABLE_FPGA
-#        default ""
-
-  config VIVADO_SETUP_SCRIPT
-        string "Setup script to set vivado environments"
-        depends on ENABLE_FPGA
-        default "/opt/Xilinx/Vivado/2015.4/settings64.sh"
-
-  config VIVADO_VERSION
-	string "Vivado version yyyy.v "
-	depends on ENABLE_FPGA
-	default "2015.4"
-
-  choice SOC_BOARD
-	prompt "Select SOC board"
-	depends on ENABLE_FPGA
-	config WITH_SOC_RED_PITAYA
-	 bool "red_pitaya"
-	config WITH_SOC_PARALLELLA
-	 bool "parallella"
-  endchoice
-
- config VIVADO_SOC_PART
-      string "Vivado soc part to load in project"
-      depends on ENABLE_FPGA
-      default "xc7z010clg400-1"
-
-
-endmenu # FPGA
-
+source fpga/Kconfig
 
 
 # //////////////////////////////////////////////////////////////////////////// #
 # //  LINUX  ///////////////////////////////////////////////////////////////// #
 # //////////////////////////////////////////////////////////////////////////// #
 
-source conf/scripts/linux.kconfig
+menu LINUX_BUILD
+  config LINUX_DIR
+	string  "Linux sources directory name"
+	default "linux"
 
+  config LINUX_DIR_IN_SRCTREE
+	bool    "Place linux sources in src tree"
+	default n
+
+  choice LINUX_DLMETHOD
+	prompt "Linux sources download method"
+	config WITH_LINUX_GIT
+	 bool "git repository"
+	config WITH_LINUX_TAR
+	 bool "tar archive (not working yet)"
+  endchoice
+
+  config LINUX_GIT
+	string  "Linux git repository"
+	depends on WITH_LINUX_GIT
+	default "https://github.com/Xilinx/linux-xlnx.git"
+
+  config LINUX_TAR
+	string  "Linux tar repository"
+	depends on WITH_LINUX_TAR
+	default ""
+
+  choice LINUX_PACKAGE
+	prompt  "Linux image type"
+	config LINUX_UIMAGE
+	 bool "uImage"
+	config LINUX_ZIMAGE
+	 bool "zImage"
+  endchoice
+
+  config LINUX_UIMAGE_LOADADDR
+	string  "Linux uImage load address defined in u-boot"
+	depends on LINUX_UIMAGE
+	default "0x8000"
+
+  config LINUX_DEF_CONFIG
+	string  "Linux def config"
+	default "xilinx_zynq_defconfig" if WITH_SOC_RED_PITAYA
+	default "parallella_defconfig"  if WITH_SOC_PARALLELLA
+
+endmenu # LINUX_BUILD
 
 
 # //////////////////////////////////////////////////////////////////////////// #
@@ -212,13 +219,5 @@ menu TARGET_DEVICE
 	  default "/boot"
 
 endmenu # TARGET_DEVICE
-
-
-
-
-
-
-# subdirectories
-# source "..."
 
 

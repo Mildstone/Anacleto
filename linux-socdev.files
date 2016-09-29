@@ -50688,3 +50688,4 @@ conf/scripts/linux.am
 conf/scripts/linux.kconfig
 conf/scripts/toolchain.am
 conf/scripts/toolchain.kconfig
+fpga/Kconfig

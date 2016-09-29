@@ -6,9 +6,6 @@ AM_MAKEFLAGS = -j$(MAKE_PROCESS)
 
 
 
-
-
-
 ################################################################################
 # Linux build provides: $(LINUX)
 ################################################################################
@@ -16,12 +13,18 @@ AM_MAKEFLAGS = -j$(MAKE_PROCESS)
 all: $(LINUX_IMAGE)
 
 
-# $(LINUX_SRCDIR):
-#	@ echo "Download linux sources"; \
-#	  mkdir -p $@;
-# if WITH_LINUX_GIT
-#	  git clone ${LINUX_GIT} $@;
-# endif
+$(LINUX_SRCDIR):
+	@ echo "Download linux sources";
+if WITH_LINUX_GIT
+	mkdir -p $@;
+	echo "git clone ${LINUX_GIT} $@";
+	git clone ${LINUX_GIT} $@;
+endif
+
+if LINUX_DIR_IN_SRCTREE
+$(LINUX_BUILDDIR):
+	mkdir -p $@;
+endif
 
 nconfig menuconfig xconfig gconfig: $(LINUX_SRCDIR) $(LINUX_BUILDDIR)
 	$(MAKE) -C $< $@
@@ -30,14 +33,14 @@ nconfig menuconfig xconfig gconfig: $(LINUX_SRCDIR) $(LINUX_BUILDDIR)
 linux-init: $(LINUX_SRCDIR) $(LINUX_BUILDDIR) print-env
 	$(_set_export); \
 	$(MAKE) $(AM_MAKEFLAGS) -C $< mrproper; \
-	$(MAKE) $(AM_MAKEFLAGS) -C $< O=$$O CFLAGS="$(LINUX_CFLAGS)" xilinx_zynq_defconfig;
+	$(MAKE) $(AM_MAKEFLAGS) -C $< O=$$O CFLAGS="$(LINUX_CFLAGS)" \
+		$(LINUX_DEF_CONFIG);
 
-$(LINUX_BUILDDIR):
-	mkdir -p $@;
 
 $(LINUX_IMAGE): $(LINUX_SRCDIR) $(LINUX_BUILDDIR) linux-init
 	$(_set_export); \
-	$(MAKE) $(AM_MAKEFLAGS) -C $< O=$$O CFLAGS="$(LINUX_CFLAGS)" UIMAGE_LOADADDR=0x8000 uImage; \
+	$(MAKE) $(AM_MAKEFLAGS) -C $< O=$$O CFLAGS="$(LINUX_CFLAGS)" \
+		UIMAGE_LOADADDR=$(LINUX_UIMAGE_LOADADDR) $(LINUX_PACKAGE); \
 	$(MAKE) $(AM_MAKEFLAGS) -C $< O=$$O CFLAGS="$(LINUX_CFLAGS)" modules; \
 	mkdir -p $(TMP)/lib/modules; \
 	$(MAKE) $(AM_MAKEFLAGS) -C $< O=$$O CFLAGS="$(LINUX_CFLAGS)" \
@@ -48,29 +51,6 @@ $(LINUX_IMAGE): $(LINUX_SRCDIR) $(LINUX_BUILDDIR) linux-init
 linux: $(LINUX_IMAGE)
 
 
-
-################################################################################
-# device tree processing
-################################################################################
-
-DTREE_TAG     = xilinx-v${VIVADO_VERSION}
-DTREE_DIR     = $(TMP)/device-tree-xlnx-$(DTREE_TAG)
-DTREE_URL     ?= https://github.com/Xilinx/device-tree-xlnx/archive/$(DTREE_TAG).tar.gz
-DTREE_TAR     = $(DL)/device-tree-xlnx-$(DTREE_TAG).tar.gz
-DL            = $(top_builddir)/download
-
-$(DL):
-	mkdir -p $@
-
-xlnx-devicetree: $(DTREE_DIR)
-
-
-$(DTREE_TAR): | $(DL)
-	curl -L $(DTREE_URL) -o $@
-
-$(DTREE_DIR): $(DTREE_TAR)
-	mkdir -p $@
-	tar -zxf $< --strip-components=1 --directory=$@
 
 
 
