@@ -10,7 +10,7 @@ dnl AC_CONFIG_SRCDIR([...])
 AC_CANONICAL_TARGET
 
 dnl AUTOMAKE ///////////////////////////////////////////////////////////////////
-AM_INIT_AUTOMAKE([1.15 foreign subdir-objects])
+AM_INIT_AUTOMAKE([1.14 foreign subdir-objects])
 
 
 dnl update submodules at first ... (must be cleaned out)
@@ -51,25 +51,32 @@ AC_PROG_CC
 
 
 
-# TOOLCHAIN
-AX_KCONFIG_VAR([TOOLCHAIN_TAR])
-AX_KCONFIG_VAR([TOOLCHAIN_BINDIR])
-AX_KCONFIG_VAR([CROSS_COMPILE])
+# //////////////////////////////////////////////////////////////////////////// #
+# //  TOOLCHAIN  ///////////////////////////////////////////////////////////// #
+# //////////////////////////////////////////////////////////////////////////// #
 
-AC_ARG_WITH([toolchain-tar],
-            [AS_HELP_STRING([--with-toolchain-tar], [url of the toolchain tar to use])],
-            [AS_VAR_SET([TOOLCHAIN_TAR],[${with_toolchain_tar}])])
 
-AC_SUBST([TOOLCHAIN_TAR])
-AC_SUBST([TOOLCHAIN_BINDIR])
-AC_SUBST([CROSS_COMPILE])
+AX_KCONFIG_VAR_ENABLE([ENABLE_TOOLCHAIN],["Enable external toolchain"])
+AX_KCONFIG_CHOICE([TOOLCHAIN_VENDOR],
+		  [TOOLCHAIN_LINARO_BIN],["download"],
+		  [TOOLCHAIN_DIR],["dir"])
+
+AS_ECHO(["linaro bin: ${TOOLCHAIN_LINARO_BIN}"])
+
+AX_KCONFIG_VAR_WITH([WITH_LINARO_BIN_TAR],["url path for Linaro toolchain binaries"])
+AC_SUBST([WITH_LINARO_BIN_TAR])
+
+AX_KCONFIG_VAR_WITH([WITH_TOOLCHAIN_BINDIR],["Set external toolchain bin dir"])
+AC_SUBST([WITH_TOOLCHAIN_BINDIR])
+
+AX_KCONFIG_VAR_WITH([WITH_CROSS_COMPILE],["Toolchain prefix of build executables"])
+AC_SUBST([WITH_CROSS_COMPILE])
 
 # INSTALL TOOLCHAIN
-AS_IF([ test -d toolchain ],,
-      [AS_BOX([// Downloading toolchain tar from ${TOOLCHAIN_TAR} //////], [\/])
-       ${MKDIR_P} -p toolchain
-       curl -SL ${TOOLCHAIN_TAR} | tar -xJv -C toolchain])
-
+# AS_IF([ test -d toolchain ],,
+#      [AS_BOX([// Downloading toolchain tar from ${TOOLCHAIN_TAR} //////], [\/])
+#       ${MKDIR_P} -p toolchain
+#       curl -SL ${TOOLCHAIN_TAR} | tar -xJv -C toolchain])
 
 
 # COMPILER OPTIONS
@@ -79,6 +86,11 @@ AX_KCONFIG_VAR([LINUX_DIR])
 AC_SUBST([LINUX_CFLAGS])
 AC_SUBST([LINUX_PACKAGE])
 AC_SUBST([LINUX_DIR])
+
+
+# //////////////////////////////////////////////////////////////////////////// #
+# //  TARGET  //////////////////////////////////////////////////////////////// #
+# //////////////////////////////////////////////////////////////////////////// #
 
 
 # DEVICE
@@ -96,7 +108,8 @@ AX_KCONFIG_VAR([DEVICE_ACCESS])
 AX_KCONFIG_VAR([DEVICE_USER])
 AC_CHECK_PROG([SSHPASS],sshpass,sshpass)
 AX_KCONFIG_VAR([WITH_DEVICE_SSHPASSWD])
-AM_CONDITIONAL([WITH_DEVICE_SSHPASSWD], [test -n "${WITH_DEVICE_SSHPASSWD}" -a -n "${SSHPASS}"] )
+AM_CONDITIONAL([WITH_DEVICE_SSHPASSWD],
+	       [test -n "${WITH_DEVICE_SSHPASSWD}" -a -n "${SSHPASS}"] )
 AX_KCONFIG_VAR([WITH_DEVICE_SSHKEY])
 AM_CONDITIONAL([WITH_DEVICE_SSHKEY], [test -n "${WITH_DEVICE_SSHKEY}"])
 AX_KCONFIG_VAR([DEVICE_PASSWD])
@@ -119,14 +132,13 @@ AC_SUBST([VIVADO_VERSION])
 AX_KCONFIG_VAR([VIVADO_SETUP_SCRIPT])
 AC_SUBST([VIVADO_SETUP_SCRIPT])
 
-AX_KCONFIG_CONDITIONAL([WITH_SOC_RED_PITAYA])
-AX_KCONFIG_CONDITIONAL([WITH_SOC_PARALLELLA])
-AS_VAR_IF([WITH_SOC_RED_PITAYA],[y], AS_VAR_SET([SOC_BOARD],["red_pitaya"]))
-AS_VAR_IF([WITH_SOC_PARALLELLA],[y], AS_VAR_SET([SOC_BOARD],["parallella"]))
+AX_KCONFIG_WITH_CHOICE([SOC_BOARD],["Select SoC board to use"],
+		       [WITH_SOC_RED_PITAYA],["red_pitaya"],
+		       [WITH_SOC_PARALLELLA],["parallella"])
 AC_SUBST([SOC_BOARD])
 
-AX_KCONFIG_VAR([ENABLE_FPGA])
-AM_CONDITIONAL([ENABLE_FPGA], [test -n "${ENABLE_FPGA}" -a -f "${VIVADO_SETUP_SCRIPT}"])
+AX_KCONFIG_VAR_ENABLE([ENABLE_FPGA])
+AM_CONDITIONAL([ENABLE_FPGA],[test -n "${ENABLE_FPGA}" -a -f "${VIVADO_SETUP_SCRIPT}"])
 
 AX_KCONFIG_VAR([DEVICETREE_BASEFILES_TAR])
 AC_SUBST([DEVICETREE_BASEFILES_TAR])

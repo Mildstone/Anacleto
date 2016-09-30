@@ -51,8 +51,13 @@ $(LINUX_IMAGE): $(LINUX_SRCDIR) $(LINUX_BUILDDIR) linux-init
 linux: $(LINUX_IMAGE)
 
 
-
-
+if TOOLCHAIN_LINARO_BIN
+$(top_builddir)/toolchain:
+	mkdir -p $@;
+	curl -SL $(WITH_LINARO_BIN_TAR) | tar -xJv -C $@
+else
+$(top_builddir)/toolchain:
+endif
 
 
 clean-local:

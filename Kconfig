@@ -9,37 +9,7 @@ mainmenu "linux-socdev - Linux drivers build system for SoC devices"
 # //  TOOLCHAIN  ///////////////////////////////////////////////////////////// #
 # //////////////////////////////////////////////////////////////////////////// #
 
-config ENABLE_TOOLCHAIN
-        bool "Enable custom toolchain"
-        default true
-
-menu  TOOLCHAIN
-        depends on ENABLE_TOOLCHAIN
-
-  choice TOOLCHAIN_SOURCE
-        prompt "Select the toolchain retrieve method"
-        depends on ENABLE_TOOLCHAIN
-        config WITH_TOOLCHAIN_TAR_URL
-         bool "download tar from url"
-  endchoice
-
-  config TOOLCHAIN_TAR	
-	  string "get url path of a valid toolchain tar file"
-	  depends on ENABLE_TOOLCHAIN
-	  depends on WITH_TOOLCHAIN_TAR_URL	  
-	  default "http://releases.linaro.org/14.11/components/toolchain/binaries/arm-linux-gnueabihf/gcc-linaro-4.9-2014.11-x86_64_arm-linux-gnueabihf.tar.xz"
-  
-  config TOOLCHAIN_BINDIR
-          string  "toolchain bin path relative to the toolchain dir"
-          depends on ENABLE_TOOLCHAIN
-          default "gcc-linaro-4.9-2014.11-x86_64_arm-linux-gnueabihf/bin"
-          
-  config CROSS_COMPILE
-          string "toolchain prefix of build executables"
-          depends on ENABLE_TOOLCHAIN
-          default "arm-linux-gnueabihf-"
-  
-endmenu # TOOLCHAIN
+source conf/scripts/toolchain.kconfig
 
 
 # //////////////////////////////////////////////////////////////////////////// #
