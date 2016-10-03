@@ -28,6 +28,7 @@ DTB        = sdk/dts/devicetree.dtb
 
 define _envset
 . $(VIVADO_SETUP_SCRIPT); \
+. $(VIVADO_SDK_SETUP_SCRIPT); \
 export srcdir=$(srcdir); \
 export top_srcdir=$(top_srcdir); \
 export tmp=$(TMP); \

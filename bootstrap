@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 UPDATE_SUBMODULES=conf/update_submodules.sh
 [ -f ${UPDATE_SUBMODULES} ] && . ${UPDATE_SUBMODULES} || exit 1

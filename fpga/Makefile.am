@@ -24,58 +24,58 @@ endif
 VIVADO = vivado -nolog -nojournal -mode batch
 HSI    = hsi    -nolog -nojournal -mode batch
 
-.PHONY: all clean project fpga bit fsbl dts
+#.PHONY: all clean project fpga bit fsbl dts
 
-all: $(FPGA_BIT) $(FSBL_ELF) $(DEVICE_TREE)
+#all: $(FPGA_BIT) $(FSBL_ELF) $(DEVICE_TREE)
 
-clean:
-	-rm -rf out .Xil .srcs sdk
+#clean:
+#	-rm -rf out .Xil .srcs sdk
 	
-project:
-	( ${_envset}; \
-	export system=${SYSTEM}; \
-	vivado -source $(srcdir)/red_pitaya_vivado_project.tcl )
+#project:
+#	( ${_envset}; \
+#	export system=${SYSTEM}; \
+#	vivado -source $(srcdir)/red_pitaya_vivado_project.tcl )
 
-project_rp:
-	( ${_envset}; \
-	export system=rp_original.tcl; \
-	vivado -source $(srcdir)/red_pitaya_vivado_project.tcl )
+#project_rp:
+#	( ${_envset}; \
+#	export system=rp_original.tcl; \
+#	vivado -source $(srcdir)/red_pitaya_vivado_project.tcl )
 
-project_pwm:
-	( ${_envset}; \
-	export system=system_pwm.tcl; \
-	vivado -source $(srcdir)/red_pitaya_vivado_project.tcl )
+#project_pwm:
+#	( ${_envset}; \
+#	export system=system_pwm.tcl; \
+#	vivado -source $(srcdir)/red_pitaya_vivado_project.tcl )
 
-project_video:
-	( ${_envset}; \
-	export system=system-video.tcl; \
-	vivado -source $(srcdir)/red_pitaya_vivado_project.tcl )
+#project_video:
+#	( ${_envset}; \
+#	export system=system-video.tcl; \
+#	vivado -source $(srcdir)/red_pitaya_vivado_project.tcl )
 
-clean_project:
-	-rm -rf project  vivado.jou  vivado.log  vivado_*.backup.jou  vivado_*.backup.log  vivado_pid*.str
+#clean_project:
+#	-rm -rf project  vivado.jou  vivado.log  vivado_*.backup.jou  vivado_*.backup.log  vivado_pid*.str
 
-update_project:
-	cp -a $(builddir)/project/system.tcl $(srcdir)/ip/system.tcl
+#update_project:
+#	cp -a $(builddir)/project/system.tcl $(srcdir)/ip/system.tcl
 
-fpga bit: $(FPGA_BIT)
+#fpga bit: $(FPGA_BIT)
 
-$(FPGA_BIT):
-	( ${_envset}; \
-	export system=${SYSTEM}; \
-	$(VIVADO) -source $(srcdir)/red_pitaya_vivado.tcl )
+#$(FPGA_BIT):
+#	( ${_envset}; \
+#	export system=${SYSTEM}; \
+#	$(VIVADO) -source $(srcdir)/red_pitaya_vivado.tcl )
 
-fsbl: $(FSBL_ELF)
+#fsbl: $(FSBL_ELF)
 
-$(FSBL_ELF):  $(FPGA_BIT)
-	${_envset}; \
-	$(HSI) -source $(srcdir)/red_pitaya_hsi_fsbl.tcl
+#$(FSBL_ELF):  $(FPGA_BIT)
+#	${_envset}; \
+#	$(HSI) -source $(srcdir)/red_pitaya_hsi_fsbl.tcl
 
-dts: $(DEVICE_TREE)
+#dts: $(DEVICE_TREE)
 
-$(DEVICE_TREE):  $(FPGA_BIT)
-	( ${_envset}; \
-	export system=${SYSTEM}; \
-	$(HSI) -source $(srcdir)/red_pitaya_hsi_dts.tcl )
+#$(DEVICE_TREE):  $(FPGA_BIT)
+#	( ${_envset}; \
+#	export system=${SYSTEM}; \
+#	$(HSI) -source $(srcdir)/red_pitaya_hsi_dts.tcl )
 
 
 
