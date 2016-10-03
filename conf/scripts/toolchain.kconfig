@@ -1,7 +1,7 @@
 
   config ENABLE_TOOLCHAIN
 	 bool "Enable custom toolchain"
-	 default true
+	 default y
 
   menu   TOOLCHAIN
 	 depends on ENABLE_TOOLCHAIN
@@ -14,16 +14,16 @@
 	 bool "Use toolchain from existing directory"
   endchoice
 
-  config WITH_LINARO_BIN_TAR
+  config LINARO_BIN_TAR
 	 string "url path for Linaro toolchain binaries"
 	 depends on TOOLCHAIN_LINARO_BIN
 	 default "http://releases.linaro.org/14.11/components/toolchain/binaries/arm-linux-gnueabihf/gcc-linaro-4.9-2014.11-x86_64_arm-linux-gnueabihf.tar.xz"
 
-  config WITH_TOOLCHAIN_BINDIR
-	 string  "toolchain bin path relative to the toolchain dir"
-	 default "gcc-linaro-4.9-2014.11-x86_64_arm-linux-gnueabihf/bin" if TOOLCHAIN_LINARO_BIN
+  config WITH_TOOLCHAIN_DIR
+	 string  "toolchain root path"
+	 default "gcc-linaro-4.9-2014.11-x86_64_arm-linux-gnueabihf" if TOOLCHAIN_LINARO_BIN
 
-  config WITH_CROSS_COMPILE
+  config CROSS_COMPILE
 	 string "toolchain prefix of build executables"
 	 default "arm-linux-gnueabihf-"
 

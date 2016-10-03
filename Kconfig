@@ -172,3 +172,8 @@ menu TARGET_DEVICE
 endmenu # TARGET_DEVICE
 
 
+
+
+config TEST_VARIABLE
+      string  "Test variable"
+      default "prova"

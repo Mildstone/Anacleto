@@ -49,6 +49,8 @@ AC_PROG_MKDIR_P
 AC_PROG_SED
 AC_PROG_CC
 
+AC_CHECK_PROGS([CURL],[curl])
+AC_CHECK_PROGS([TAR],[gtar tar])
 
 
 # //////////////////////////////////////////////////////////////////////////// #
@@ -58,25 +60,39 @@ AC_PROG_CC
 
 AX_KCONFIG_VAR_ENABLE([ENABLE_TOOLCHAIN],["Enable external toolchain"])
 AX_KCONFIG_CHOICE([TOOLCHAIN_VENDOR],
-		  [TOOLCHAIN_LINARO_BIN],["download"],
+		  [TOOLCHAIN_LINARO_BIN],["linaro_web"],
 		  [TOOLCHAIN_DIR],["dir"])
 
 AS_ECHO(["linaro bin: ${TOOLCHAIN_LINARO_BIN}"])
 
-AX_KCONFIG_VAR_WITH([WITH_LINARO_BIN_TAR],["url path for Linaro toolchain binaries"])
-AC_SUBST([WITH_LINARO_BIN_TAR])
+AX_KCONFIG_VAR_WITH([LINARO_BIN_TAR],["url path for Linaro toolchain binaries"])
+AC_SUBST([LINARO_BIN_TAR])
 
-AX_KCONFIG_VAR_WITH([WITH_TOOLCHAIN_BINDIR],["Set external toolchain bin dir"])
-AC_SUBST([WITH_TOOLCHAIN_BINDIR])
+AX_KCONFIG_VAR_WITH([WITH_TOOLCHAIN_DIR],["Set toolchain base dir"])
+AC_SUBST([WITH_TOOLCHAIN_DIR])
 
-AX_KCONFIG_VAR_WITH([WITH_CROSS_COMPILE],["Toolchain prefix of build executables"])
-AC_SUBST([WITH_CROSS_COMPILE])
+AX_KCONFIG_VAR_WITH([CROSS_COMPILE],["Toolchain prefix of build executables"])
+AC_SUBST([CROSS_COMPILE])
 
-# INSTALL TOOLCHAIN
-# AS_IF([ test -d toolchain ],,
-#      [AS_BOX([// Downloading toolchain tar from ${TOOLCHAIN_TAR} //////], [\/])
-#       ${MKDIR_P} -p toolchain
-#       curl -SL ${TOOLCHAIN_TAR} | tar -xJv -C toolchain])
+dnl AS_IF([test -f ${WITH_TOOLCHAIN_DIR}/${WITH_CROSS_COMPILE}${CC} ],,
+dnl      [AS_VAR_IF([TOOLCHAIN_VENDOR],[linaro_web],
+dnl	  [AS_BOX([// Downloading toolchain tar from ${WITH_LINARO_BIN_TAR} //////], [\/])
+dnl	   ${MKDIR_P} -p toolchain
+dnl	   ${CURL} -SL ${WITH_LINARO_BIN_TAR} | ${TAR} -xJv -C toolchain])])
+
+dnl # AC_LANG(C)
+dnl # ----------
+dnl # CFLAGS is not in ac_cpp because -g, -O, etc. are not valid cpp options.
+dnl # AC_LANG_DEFINE(NAME, ABBREV, PREFIX, COMPILER-VAR, COPY-FROM, SHELL-VARS)
+dnl AC_LANG_DEFINE([XC], [c], [XC], [XCC], [],
+dnl [
+dnl ac_ext=c
+dnl ac_cpp='$CPP $CPPFLAGS'
+dnl ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&AS_MESSAGE_LOG_FD'
+dnl ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&AS_MESSAGE_LOG_FD'
+dnl ac_compiler_gnu=$ac_cv_c_compiler_gnu
+dnl ])
+
 
 
 # COMPILER OPTIONS
@@ -126,7 +142,7 @@ AC_SUBST([DEVICE_SSHKEY])
 
 
 AX_KCONFIG_CONDITIONAL([VIVADO_VERSION_2015_4])
-AS_VAR_IF([VIVADO_VERSION_2015_4],[y], AS_VAR_SET([VIVADO_VERSION],["2015.4"]))
+AS_VAR_IF([VIVADO_VERSION_2015_4],[yes], AS_VAR_SET([VIVADO_VERSION],["2015.4"]))
 AC_SUBST([VIVADO_VERSION])
 
 AX_KCONFIG_VAR([VIVADO_SETUP_SCRIPT])
@@ -163,8 +179,8 @@ AC_SUBST([LINUX_GIT])
 
 AX_KCONFIG_CONDITIONAL([LINUX_UIMAGE])
 AX_KCONFIG_CONDITIONAL([LINUX_ZIMAGE])
-AS_VAR_IF([LINUX_UIMAGE],[y], AS_VAR_SET([LINUX_PACKAGE],[uImage]))
-AS_VAR_IF([LINUX_ZIMAGE],[y], AS_VAR_SET([LINUX_PACKAGE],[zImage]))
+AS_VAR_IF([LINUX_UIMAGE],[yes], AS_VAR_SET([LINUX_PACKAGE],[uImage]))
+AS_VAR_IF([LINUX_ZIMAGE],[yes], AS_VAR_SET([LINUX_PACKAGE],[zImage]))
 AC_SUBST([LINUX_PACKAGE])
 
 AX_KCONFIG_VAR([LINUX_UIMAGE_LOADADDR])

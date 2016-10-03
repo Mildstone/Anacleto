@@ -10,7 +10,7 @@ AM_MAKEFLAGS = -j$(MAKE_PROCESS)
 # Linux build provides: $(LINUX)
 ################################################################################
 
-all: $(LINUX_IMAGE)
+all: $(top_builddir)/toolchain $(LINUX_IMAGE)
 
 
 $(LINUX_SRCDIR):
@@ -51,10 +51,11 @@ $(LINUX_IMAGE): $(LINUX_SRCDIR) $(LINUX_BUILDDIR) linux-init
 linux: $(LINUX_IMAGE)
 
 
+## TODO: remove this and put it to configure
 if TOOLCHAIN_LINARO_BIN
 $(top_builddir)/toolchain:
 	mkdir -p $@;
-	curl -SL $(WITH_LINARO_BIN_TAR) | tar -xJv -C $@
+	curl -SL $(LINARO_BIN_TAR) | tar -xJv -C $@
 else
 $(top_builddir)/toolchain:
 endif

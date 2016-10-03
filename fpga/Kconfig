@@ -4,7 +4,7 @@
 
 config ENABLE_FPGA
 	bool "Enable fpga development"
-	default true
+	default y
 
 menu  FPGA
 	depends on ENABLE_FPGA
@@ -20,14 +20,12 @@ menu  FPGA
 
   choice VIVADO_VERSION
 	prompt "Vivado version yyyy.v "
-	depends on ENABLE_FPGA
 	config VIVADO_VERSION_2015_4
 	 bool  "2015.4"
   endchoice
 
   config VIVADO_SETUP_SCRIPT
 	string "Setup script to set vivado environments"
-	depends on ENABLE_FPGA
 	default "/opt/Xilinx/Vivado/2015.4/settings64.sh" if VIVADO_VERSION_2015_4
 
   config DEVICETREE_BASEFILES_TAR
@@ -36,13 +34,11 @@ menu  FPGA
 
   config VIVADO_SOC_PART
 	string "Vivado soc part to load in project"
-	depends on ENABLE_FPGA
 	default "xc7z010clg400-1" if WITH_SOC_RED_PITAYA
 	default "xc7z010clg400-1" if WITH_SOC_PARALLELLA
 
 #  config VIVADO_LICENSE_PATH
 #        string "Path to the vivado system folder"
-#        depends on ENABLE_FPGA
 #        default ""
 
 endmenu # FPGA

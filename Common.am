@@ -20,7 +20,7 @@ LINUX_DIR       ?= linux
 if LINUX_DIR_IN_SRCTREE
  LINUX_SRCDIR    = $(abs_top_srcdir)/$(LINUX_DIR)
  LINUX_BUILDDIR  = $(abs_top_builddir)/$(LINUX_DIR)
- LINUX_BUILDO    = $(LINUX_BUILDDIR)
+ LINUX_BUILD_O   = $(LINUX_BUILDDIR)
 else
  LINUX_SRCDIR    = $(abs_top_builddir)/$(LINUX_DIR)
  LINUX_BUILDDIR  = $(abs_top_builddir)/$(LINUX_DIR)
@@ -28,11 +28,17 @@ endif
 
 
 
-ARCH              = arm
-TOOLCHAIN_BINDIR ?= gcc-linaro-4.9-2014.11-x86_64_arm-linux-gnueabihf/bin
-TOOLCHAIN_PATH    = ${abs_top_builddir}/toolchain/${TOOLCHAIN_BINDIR}
-CROSS_COMPILE    ?= arm-linux-gnueabihf-
+ARCH                     = arm
+WITH_TOOLCHAIN_DIR      ?= gcc-linaro-4.9-2014.11-x86_64_arm-linux-gnueabihf
 
+## TODO: remove this and put it to configure
+if TOOLCHAIN_LINARO_BIN
+TOOLCHAIN_PATH     ?= ${abs_top_builddir}/toolchain/${WITH_TOOLCHAIN_DIR}/bin
+else
+TOOLCHAIN_PATH     ?= ${WITH_TOOLCHAIN_DIR}/bin
+endif
+
+CROSS_COMPILE ?= arm-linux-gnueabihf-
 
 ## /////////////////////////////////////////////////////////////////////////////
 ## // EXPORTS //////////////////////////////////////////////////////////////////
@@ -42,7 +48,7 @@ define _set_export
 export ARCH=$(ARCH); \
 export CROSS_COMPILE=${CROSS_COMPILE}; \
 export PATH=$${PATH}:$(TOOLCHAIN_PATH); \
-export O=${LINUX_BUILDO}
+export O=${LINUX_BUILD_O}
 endef
 
 
@@ -77,7 +83,7 @@ print-env:
 	$(_set_export); \
 	echo ""; \
 	echo "---[KERNEL BUILD]----------------------------------------------------------"; \
-	echo " compiler: ${CROSS_COMPILE}${CC}"; \
+	echo " compiler: $${CROSS_COMPILE}${CC}"; \
 	echo " arch    : ${ARCH}"; \
 	echo " flags   : ${LINUX_CFLAGS}"; \
 	echo " TOOLCH  : ${TOOLCHAIN_PATH}"; \

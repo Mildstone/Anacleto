@@ -19,14 +19,14 @@ MOSTLYCLEANFILES = $(TEST_EXAMPLES)
 modules: $(MODULES:=.c) Kbuild
 	@ echo " --- building modules ---"; \
 	$(_set_export); \
-	  $(MAKE) $(AM_MAKEFLAGS) -C ${LINUX_DIR} \
+	  $(MAKE) $(AM_MAKEFLAGS) -C ${LINUX_SRCDIR} \
 	  CFLAGS="$(LINUX_CFLAGS)" M=`pwd` O=$$O \
 	  srcdir=$(srcdir) builddir=$(builddir) modules
 
 clean-local:
 	@ echo " --- cleaning modules ---"; \
 	$(_set_export); \
-	$(MAKE) $(AM_MAKEFLAGS) -C ${LINUX_DIR} \
+	$(MAKE) $(AM_MAKEFLAGS) -C ${LINUX_SRCDIR} \
 	     CFLAGS="$(LINUX_CFLAGS)" M=`pwd` O=$$O \
 	     srcdir=$(srcdir) builddir=$(builddir) clean
 
@@ -34,7 +34,7 @@ clean-local:
 test_examples: $(TEST_EXAMPLES)
 
 $(TEST_EXAMPLES):
-	@ echo " --- building $@ ---"; \
+	echo " --- building $@ ---"; \
 	$(_set_export); \
 	${CROSS_COMPILE}${CC} $(LINUX_CFLAGS) $(srcdir)/$@.c -o $@ -lpthread
 
