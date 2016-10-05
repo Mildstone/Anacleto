@@ -203,5 +203,9 @@ AC_CONFIG_FILES(
 		 projects/rfx_pwmgen/logic/Makefile
 		 projects/rfx_pwmgen/src/Kbuild
 		 projects/rfx_pwmgen/src/Makefile
+		 projects/rfx_AD7641/Makefile
+		 projects/rfx_AD7641/logic/Makefile
+		 projects/rfx_AD7641/src/Kbuild
+		 projects/rfx_AD7641/src/Makefile
                )
 AC_OUTPUT
