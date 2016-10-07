@@ -12,3 +12,5 @@ fpga/ip
 projects/rfx_pwmgen/src
 conf
 conf/scripts
+m4
+conf/linux/4.4.0

@@ -29,16 +29,16 @@ endif
 
 
 ARCH                     = arm
-WITH_TOOLCHAIN_DIR      ?= gcc-linaro-4.9-2014.11-x86_64_arm-linux-gnueabihf
+WITH_TOOLCHAIN_DIR      ?= ${abs_top_builddir}/toolchain
+TOOLCHAIN_PATH          ?= ${WITH_TOOLCHAIN_DIR}/bin
+CROSS_COMPILE           ?= arm-linux-gnueabihf-
 
-## TODO: remove this and put it to configure
-if TOOLCHAIN_LINARO_BIN
-TOOLCHAIN_PATH     ?= ${abs_top_builddir}/toolchain/${WITH_TOOLCHAIN_DIR}/bin
-else
-TOOLCHAIN_PATH     ?= ${WITH_TOOLCHAIN_DIR}/bin
-endif
+## /////////////////////////////////////////////////////////////////////////////
+## // DIRECTORIES //////////////////////////////////////////////////////////////
+## /////////////////////////////////////////////////////////////////////////////
 
-CROSS_COMPILE ?= arm-linux-gnueabihf-
+${DL} ${TMP}:
+	@$(MKDIR_P) $@
 
 ## /////////////////////////////////////////////////////////////////////////////
 ## // EXPORTS //////////////////////////////////////////////////////////////////

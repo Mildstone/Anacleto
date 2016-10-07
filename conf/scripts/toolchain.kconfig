@@ -21,7 +21,7 @@
 
   config WITH_TOOLCHAIN_DIR
 	 string  "toolchain root path"
-	 default "gcc-linaro-4.9-2014.11-x86_64_arm-linux-gnueabihf" if TOOLCHAIN_LINARO_BIN
+	 default "${builddir}/toolchain" if TOOLCHAIN_LINARO_BIN
 
   config CROSS_COMPILE
 	 string "toolchain prefix of build executables"

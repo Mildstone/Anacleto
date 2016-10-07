@@ -18,8 +18,11 @@ AS_IF([${srcdir}/conf/update_submodules.sh],
       [AS_ECHO(["Submodules succesfully updated"])],
       [AS_ECHO(["Error updating submodules"])])
 
+
 dnl AX_KCONFIG /////////////////////////////////////////////////////////////////
 dnl see: m4/ax_enable_kconfig.m4
+AS_VAR_SET([srcdir],[${srcdir}])
+AS_VAR_SET([builddir],[$(pwd)])
 AX_KCONFIG([conf/kconfig])
 
 dnl AX_DOCKER_BUILD ////////////////////////////////////////////////////////////
@@ -51,6 +54,9 @@ AC_PROG_CC
 
 AC_CHECK_PROGS([CURL],[curl])
 AC_CHECK_PROGS([TAR],[gtar tar])
+AC_CHECK_PROGS([UNIQ],[uniq])
+AC_CHECK_PROGS([WC],[wc])
+
 
 
 # //////////////////////////////////////////////////////////////////////////// #
@@ -142,7 +148,9 @@ AC_SUBST([DEVICE_SSHKEY])
 
 
 AX_KCONFIG_CONDITIONAL([VIVADO_VERSION_2015_4])
+AX_KCONFIG_CONDITIONAL([VIVADO_VERSION_2016_2])
 AS_VAR_IF([VIVADO_VERSION_2015_4],[yes], AS_VAR_SET([VIVADO_VERSION],["2015.4"]))
+AS_VAR_IF([VIVADO_VERSION_2016_2],[yes], AS_VAR_SET([VIVADO_VERSION],["2016.2"]))
 AC_SUBST([VIVADO_VERSION])
 
 AX_KCONFIG_VAR([VIVADO_SETUP_SCRIPT])
@@ -179,6 +187,8 @@ AX_KCONFIG_CONDITIONAL([WITH_LINUX_TAR])
 
 AX_KCONFIG_VAR([LINUX_GIT])
 AC_SUBST([LINUX_GIT])
+AX_KCONFIG_VAR([LINUX_TAR])
+AC_SUBST([LINUX_TAR])
 
 AX_KCONFIG_CONDITIONAL([LINUX_UIMAGE])
 AX_KCONFIG_CONDITIONAL([LINUX_ZIMAGE])
@@ -191,8 +201,9 @@ AC_SUBST([LINUX_UIMAGE_LOADADDR])
 AX_KCONFIG_VAR([LINUX_DEF_CONFIG])
 AC_SUBST([LINUX_DEF_CONFIG])
 
-
-
+dnl AS_VAR_IF([WITH_LINUX_TAR],[yes],
+dnl	  [AS_ECHO("---- DOWNLOAD LINUX ----")
+dnl	   AX_DOWNLOAD_TAR(${LINUX_TAR},${LINUX_DIR},[tmp])])
 
 
 

@@ -5,6 +5,16 @@
 mainmenu "linux-socdev - Linux drivers build system for SoC devices"
 
 
+choice SOC_BOARD
+      prompt "Select SOC board"
+      depends on ENABLE_FPGA
+      config WITH_SOC_RED_PITAYA
+       bool "red_pitaya"
+      config WITH_SOC_PARALLELLA
+       bool "parallella"
+endchoice
+
+
 # //////////////////////////////////////////////////////////////////////////// #
 # //  TOOLCHAIN  ///////////////////////////////////////////////////////////// #
 # //////////////////////////////////////////////////////////////////////////// #
@@ -35,10 +45,10 @@ menu LINUX_BUILD
 
   choice LINUX_DLMETHOD
 	prompt "Linux sources download method"
+	config WITH_LINUX_TAR
+	 bool "tar archive"
 	config WITH_LINUX_GIT
 	 bool "git repository"
-	config WITH_LINUX_TAR
-	 bool "tar archive (not working yet)"
   endchoice
 
   config LINUX_GIT
@@ -49,7 +59,7 @@ menu LINUX_BUILD
   config LINUX_TAR
 	string  "Linux tar repository"
 	depends on WITH_LINUX_TAR
-	default ""
+	default "https://github.com/Xilinx/linux-xlnx/archive/xilinx-v2016.1.tar.gz"
 
   choice LINUX_PACKAGE
 	prompt  "Linux image type"
@@ -66,8 +76,9 @@ menu LINUX_BUILD
 
   config LINUX_DEF_CONFIG
 	string  "Linux def config"
-	default "xilinx_zynq_defconfig" if WITH_SOC_RED_PITAYA
-	default "parallella_defconfig"  if WITH_SOC_PARALLELLA
+	default ""
+#	default "${srcdir}/conf/linux/${KERNELVERSION}/red_pitaya.def" if WITH_SOC_RED_PITAYA
+#	default "${srcdir}/conf/linux/${KERNELVERSION}/parallella.def" if WITH_SOC_PARALLELLA
 
   config MAKE_PROCESS
       int "Number of parallel process (aka -j option)"
@@ -174,6 +185,6 @@ endmenu # TARGET_DEVICE
 
 
 
-config TEST_VARIABLE
-      string  "Test variable"
-      default "prova"
+# config TEST_VARIABLE
+#      string  "Test variable"
+#      default "prova"
