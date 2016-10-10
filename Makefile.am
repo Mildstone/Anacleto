@@ -12,9 +12,9 @@ all: $(top_builddir)/toolchain $(LINUX_IMAGE)
 # TODO: remove this and put it to configure
 # TODO: identify file type
 if TOOLCHAIN_LINARO_BIN
-$(top_builddir)/toolchain: ${DL}
+$(top_builddir)/toolchain:
 	@ \
-	  mkdir -p $@; \
+	  mkdir -p ${DL} $@; \
 	  echo "getting linaro from tar: ${LINARO_BIN_TAR}"; \
 	  _tar=${DL}/$$(echo $(LINARO_BIN_TAR) | sed -e 's|.*/||'); \
 	  test -f $$_tar || curl -SL $(LINARO_BIN_TAR) > $$_tar; \
@@ -63,17 +63,19 @@ endif
 nconfig menuconfig xconfig gconfig: $(LINUX_SRCDIR) $(LINUX_BUILDDIR)
 	$(MAKE) -C $< $@
 
-
-.PHONY: linux-init
-linux-init: $(LINUX_SRCDIR) $(LINUX_BUILDDIR) print-env
+.PHONY: linux-init linux-init-s
+linux-init-s: $(LINUX_SRCDIR) $(LINUX_BUILDDIR) print-env
 	$(_set_export); \
 	cd $(LINUX_BUILDDIR); \
+	export LS=$$(ls); \
 	export KERNELVERSION=$$($(MAKE) -s -C $< kernelversion); \
 	export DEFCONFIG=${abs_top_srcdir}/conf/linux/$${KERNELVERSION}/${SOC_BOARD}.def; \
 	export SRCARCH=${ARCH}; \
 	export srctree=$(LINUX_SRCDIR); \
-	echo "DEFCONFIG=$${DEFCONFIG}"; \
 	$(LINUX_BUILDDIR)/scripts/kconfig/conf --defconfig=$${DEFCONFIG} Kconfig
+
+linux-init:
+	$(MAKE) -s linux-init-s
 
 .PHONY: kernelversion kernelrelease
 kernelversion kernelrelease: $(LINUX_SRCDIR) $(LINUX_BUILDDIR)
@@ -88,7 +90,7 @@ savedefconfig: $(LINUX_SRCDIR) $(LINUX_BUILDDIR) print-env
 $(LINUX_BUILDDIR)/.config: $(LINUX_SRCDIR) $(LINUX_BUILDDIR)
 	$(_set_export); \
 	$(MAKE) -s $(AM_MAKEFLAGS) -C $< O=$$O CFLAGS="$(LINUX_CFLAGS)" defconfig; \
-	$(MAKE) linux-init;
+	$(MAKE) -s linux-init;
 
 $(LINUX_IMAGE): $(LINUX_SRCDIR) $(LINUX_BUILDDIR) $(LINUX_BUILDDIR)/.config
 	$(_set_export); \
