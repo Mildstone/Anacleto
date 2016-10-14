@@ -1,5 +1,5 @@
-#ifndef RFX_PWMGEN_H
-#define RFX_PWMGEN_H
+#ifndef RFX_AD7641_H
+#define RFX_AD7641_H
 
 #include <linux/types.h>
 #include <asm/ioctl.h>
@@ -11,15 +11,15 @@
 extern "C" {
 #endif
 
-#define DEVICE_NAME "rfx_pwmgen"  /* Dev name as it appears in /proc/devices */
-#define MODULE_NAME "rfx_pwmgen"
+#define DEVICE_NAME "rfx_ad7641"  /* Dev name as it appears in /proc/devices */
+#define MODULE_NAME "rfx_ad7641"
 
-#define RFX_PWMGEN_IOCTL_BASE	'W'
-#define RFX_PWMGEN_RESOFFSET _IO(RFX_PWMGEN_IOCTL_BASE, 0)
+#define RFX_AD7641_IOCTL_BASE	'W'
+#define RFX_AD7641_RESOFFSET _IO(RFX_AD7641_IOCTL_BASE, 0)
 
 
 
-struct rfx_pwmgen {
+struct rfx_ad7641 {
     int ena;   ///< enable value update
     int duty;  ///< new duty cycle value
     int _pad[2];
@@ -35,8 +35,8 @@ struct rfx_pwmgen {
 #include <sys/mman.h>
 
 
-struct rfx_pwmgen *pwmgen_get_device(const char *dev_file) {
-    static struct rfx_pwmgen *dev = NULL;
+struct rfx_ad7641 *rfx_ad7641_get_device(const char *dev_file) {
+    static struct rfx_ad7641 *dev = NULL;
     int fd;
     if(!dev) {
         if(dev_file) fd = open(dev_file, O_RDWR | O_SYNC);
@@ -45,7 +45,7 @@ struct rfx_pwmgen *pwmgen_get_device(const char *dev_file) {
             printf(" ERROR: failed to open device file\n");
             return NULL;
         }
-        dev = mmap(NULL, sizeof(struct rfx_pwmgen), PROT_READ | PROT_WRITE, MAP_SHARED,fd,0);
+        dev = mmap(NULL, sizeof(struct rfx_ad7641), PROT_READ | PROT_WRITE, MAP_SHARED,fd,0);
     }
 
     if(!dev) {
@@ -55,11 +55,11 @@ struct rfx_pwmgen *pwmgen_get_device(const char *dev_file) {
     return dev;
 }
 
-int pwmgen_release_device() {
-    struct rfx_pwmgen *dev = pwmgen_get_device(0);
+int rfx_ad7641_release_device() {
+    struct rfx_ad7641 *dev = rfx_ad7641_get_device(0);
     int status;
     if(dev) {
-        status = munmap(dev, sizeof(struct rfx_pwmgen));
+        status = munmap(dev, sizeof(struct rfx_ad7641));
         if(status == 0) dev = NULL;
     }
     return status;
@@ -74,4 +74,4 @@ int pwmgen_release_device() {
 #ifdef __cplusplus
 }
 #endif
-#endif // RFX_PWMGEN_H
+#endif // rfx_ad7641_H

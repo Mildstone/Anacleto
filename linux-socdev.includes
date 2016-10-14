@@ -14,3 +14,6 @@ conf
 conf/scripts
 m4
 conf/linux/4.4.0
+projects/rfx_AD7641/src
+projects/rfx_RPHctl/logic
+projects/rfx_RPHctl/logic/rtl

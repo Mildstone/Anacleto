@@ -22,6 +22,7 @@ FSBL_ELF   = sdk/fsbl/executable.elf
 DTS        = sdk/dts/devicetree.dts
 DTB        = sdk/dts/devicetree.dtb
 
+RTL_SOURCES =
 
 define _envset
 . $(VIVADO_SETUP_SCRIPT); \
@@ -36,6 +37,7 @@ export FPGA_BIT=${FPGA_BIT}; \
 export SOC_BOARD=${SOC_BOARD}; \
 export VIVADO_VERSION=${VIVADO_VERSION}; \
 export VIVADO_SOC_PART=${VIVADO_SOC_PART}; \
+export RTL_SOURCES=${RTL_SOURCES}; \
 export maxThreads=8
 endef
 

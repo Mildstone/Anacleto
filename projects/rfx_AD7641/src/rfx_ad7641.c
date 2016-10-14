@@ -200,8 +200,8 @@ static long device_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 
 
     switch (cmd) {
-    case RFX_PWMGEN_RESOFFSET:
-        printk(KERN_DEBUG "<%s> ioctl: RFX_PWMGEN_RESOFFSET\n", MODULE_NAME);
+    case rfx_ad7641_RESOFFSET:
+        printk(KERN_DEBUG "<%s> ioctl: rfx_ad7641_RESOFFSET\n", MODULE_NAME);
         if (copy_to_user((u32 *) arg, &res_offset, sizeof(u32)))
             return -EFAULT;
         break;
@@ -224,7 +224,7 @@ static long device_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 static int id_major;
 static struct class *pwmgen_class;
 
-static int rfx_pwmgen_probe(struct platform_device *pdev)
+static int rfx_ad7641_probe(struct platform_device *pdev)
 {
 
     struct resource *r_mem;
@@ -266,7 +266,7 @@ static int rfx_pwmgen_probe(struct platform_device *pdev)
     return 0;
 }
 
-static int rfx_pwmgen_remove(struct platform_device *pdev)
+static int rfx_ad7641_remove(struct platform_device *pdev)
 {
     printk("PLATFORM DEVICE REMOVE...\n");
     if(pwmgen_class) {
@@ -277,33 +277,33 @@ static int rfx_pwmgen_remove(struct platform_device *pdev)
 	return 0;
 }
 
-static const struct of_device_id rfx_pwmgen_of_ids[] = {
+static const struct of_device_id rfx_ad7641_of_ids[] = {
     { .compatible = "xlnx,rfx-pwmgen-1.0",},
 	{}
 };
 
-static struct platform_driver rfx_pwmgen_driver = {
+static struct platform_driver rfx_ad7641_driver = {
 	.driver = {
         .name  = MODULE_NAME,
 		.owner = THIS_MODULE,
-        .of_match_table = rfx_pwmgen_of_ids,
+        .of_match_table = rfx_ad7641_of_ids,
 	},
-    .probe = rfx_pwmgen_probe,
-    .remove = rfx_pwmgen_remove,
+    .probe = rfx_ad7641_probe,
+    .remove = rfx_ad7641_remove,
 };
 
-static int __init rfx_pwmgen_init(void)
+static int __init rfx_ad7641_init(void)
 {
     printk(KERN_INFO "inizializing AXI module ...\n");
-    return platform_driver_register(&rfx_pwmgen_driver);
+    return platform_driver_register(&rfx_ad7641_driver);
 }
 
-static void __exit rfx_pwmgen_exit(void)
+static void __exit rfx_ad7641_exit(void)
 {
     printk(KERN_INFO "exiting AXI module ...\n");
-    platform_driver_unregister(&rfx_pwmgen_driver);
+    platform_driver_unregister(&rfx_ad7641_driver);
 }
 
-module_init(rfx_pwmgen_init);
-module_exit(rfx_pwmgen_exit);
+module_init(rfx_ad7641_init);
+module_exit(rfx_ad7641_exit);
 MODULE_LICENSE("GPL");

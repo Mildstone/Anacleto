@@ -5,10 +5,9 @@ AM_MAKEFLAGS = -j$(MAKE_PROCESS)
 AM_CPPFLAGS  = -lpthread
 
 
-MODULES = \
-	  rfx_ad7641
+MODULES =
 
-TEST_EXAMPLES =
+TEST_EXAMPLES = rfx_ad7641_test
           
 MOSTLYCLEANFILES = $(TEST_EXAMPLES)
 

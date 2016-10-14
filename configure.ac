@@ -218,6 +218,10 @@ AC_CONFIG_FILES(
 		 projects/rfx_AD7641/logic/Makefile
 		 projects/rfx_AD7641/src/Kbuild
 		 projects/rfx_AD7641/src/Makefile
+		 projects/rfx_RPHctl/Makefile
+		 projects/rfx_RPHctl/logic/Makefile
+		 projects/rfx_RPHctl/src/Kbuild
+		 projects/rfx_RPHctl/src/Makefile
 		 projects/w7x_timing/Makefile
 		 projects/w7x_timing/logic/Makefile
 		 projects/w7x_timing/src/Kbuild
