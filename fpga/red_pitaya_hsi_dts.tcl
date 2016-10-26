@@ -34,3 +34,4 @@ set_property CONFIG.kernel_version {2015.4} [get_os]
 generate_target -dir $path_sdk/dts
 
 exit
+

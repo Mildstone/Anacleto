@@ -6,6 +6,7 @@ include $(top_srcdir)/Common.am
 # hsi (hardware software interface) provides software integration
 # both tools are run in batch mode with an option to avoid log/journal files
 VIVADO = vivado -nolog -nojournal -mode batch
+VIVADO_SHELL = vivado -nolog -nojournal -mode tcl
 HSI    = hsi    -nolog -nojournal -mode batch
 
 
@@ -31,6 +32,7 @@ export srcdir=$(srcdir); \
 export top_srcdir=$(top_srcdir); \
 export tmp=$(TMP); \
 export FPGA_REPO_DIR=${FPGA_REPO_DIR}; \
+export FPGA_DIR=${FPGA_DIR}; \
 export SYSTEM=${SYSTEM}; \
 export FPGA_SDC=${FPGA_SDC}; \
 export FPGA_BIT=${FPGA_BIT}; \
@@ -58,14 +60,26 @@ project:
 	( ${_envset}; \
 	vivado -source $(FPGA_DIR)/red_pitaya_vivado_project.tcl )
 
+create_new_project write_project write_bitstream:
+	( ${_envset}; \
+	$(VIVADO) -source $(FPGA_DIR)/vivado_$@.tcl )
+
+restore_project open_project:
+	( ${_envset}; \
+	$(VIVADO_SHELL) -source $(FPGA_DIR)/vivado_$@.tcl )
+
+
+# .PHONY: vivado_shell
+# vivado_shell:
+#	${_envset}; \
+#	vivado -source $(FPGA_DIR)/red_pitaya_vivado_project.tcl -mode tcl
+
 clean_project:
 	-rm -rf project  vivado.jou  vivado.log  \
 		vivado_*.backup.jou  vivado_*.backup.log  vivado_pid*.str \
 		webtalk.jou  webtalk.log  \
 		webtalk_*.backup.jou  webtalk_*.backup.log
 
-update_project:
-	cp -a $(builddir)/project/system.tcl $(srcdir)/${SYSTEM}.tcl
 
 
 
@@ -77,7 +91,7 @@ fpga bit: $(FPGA_BIT)
 
 $(FPGA_BIT):
 	( ${_envset}; \
-	  $(VIVADO) -source $(FPGA_DIR)/red_pitaya_vivado.tcl )
+	  $(VIVADO) -source $(srcdir)/red_pitaya_vivado.tcl )
 
 
 ## ////////////////////////////////////////////////////////////////////////// ##

@@ -38,6 +38,11 @@ $(TEST_EXAMPLES):
 	${CROSS_COMPILE}${CC} $(LINUX_CFLAGS) $(srcdir)/$@.c -o $@ -lpthread
 
 
+rp-base:
+	$(_set_export); \
+	$(MAKE) -C rpbase CC=${CROSS_COMPILE}${CC}
+
+
 .PHONY: deploy
 deploy: $(MODULES:=.ko) $(TEST_EXAMPLES)
 if WITH_DEVICE_SSHKEY
