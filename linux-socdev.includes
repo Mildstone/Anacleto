@@ -22,3 +22,6 @@ projects/w7x_timing/src
 fpga
 projects/rfx_RPHctl/logic/project_src/red_pitaya.srcs/constrs_1/new
 projects/rfx_RPHctl/logic/project_src/red_pitaya.srcs/sources_1/new
+projects/rfx_RPHctl/logic/hdl
+fpga/makeutils
+projects/rfx_RPHctl/logic/red_pitaya_project_src/red_pitaya.srcs/sources_1/bd/design_1_src

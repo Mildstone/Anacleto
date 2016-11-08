@@ -19,7 +19,7 @@ set FPGA_REPO_DIR    $env(FPGA_REPO_DIR)
 
 set path_sdk sdk
 
-open_hw_design $path_sdk/$SYSTEM.sysdef
-generate_app -hw system_0 -os standalone -proc ps7_cortexa9_0 -app zynq_fsbl -compile -sw fsbl -dir $path_sdk/fsbl
+open_hw_design $path_sdk/${SOC_BOARD}.sysdef
+# generate_app  -os standalone -proc ps7_cortexa9_0 -app zynq_fsbl -compile -sw fsbl -dir $path_sdk/fsbl
 
-exit
+# exit

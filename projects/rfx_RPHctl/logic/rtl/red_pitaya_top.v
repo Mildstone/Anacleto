@@ -123,6 +123,12 @@ module red_pitaya_top (
     
 );
 
+
+  wire pwm_led_o;
+  wire [1:0]pwm_out;
+  wire [1:0]pwm_out_1;
+
+
 //---------------------------------------------------------------------------------
 //
 //  Connections to PS
@@ -203,7 +209,10 @@ red_pitaya_ps i_ps (
   .axi1_wlen_i   (axi1_wlen   ),  .axi0_wlen_i   (axi0_wlen   ),  // system write burst length
   .axi1_wfixed_i (axi1_wfixed ),  .axi0_wfixed_i (axi0_wfixed ),  // system write burst type (fixed / incremental)
   .axi1_werr_o   (axi1_werr   ),  .axi0_werr_o   (axi0_werr   ),  // system write error
-  .axi1_wrdy_o   (axi1_wrdy   ),  .axi0_wrdy_o   (axi0_wrdy   )   // system write ready
+  .axi1_wrdy_o   (axi1_wrdy   ),  .axi0_wrdy_o   (axi0_wrdy   ),  // system write ready
+          .pwm_led_o(pwm_led_o),
+          .pwm_out(pwm_out),
+          .pwm_out_1(pwm_out_1)
 );
 
 ////////////////////////////////////////////////////////////////////////////////

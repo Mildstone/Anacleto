@@ -91,7 +91,11 @@ module red_pitaya_ps (
   input   [  4-1: 0] axi1_wlen_i  , axi0_wlen_i  ,  // system write burst length
   input              axi1_wfixed_i, axi0_wfixed_i,  // system write burst type (fixed / incremental)
   output             axi1_werr_o  , axi0_werr_o  ,  // system write error
-  output             axi1_wrdy_o  , axi0_wrdy_o     // system write ready
+  output             axi1_wrdy_o  , axi0_wrdy_o  ,  // system write ready
+  output pwm_led_o,
+  output [1:0]pwm_out,
+  output [1:0]pwm_out_1
+
 );
 
 //------------------------------------------------------------------------------
@@ -139,6 +143,9 @@ wire [  6-1: 0] hp1_saxi_awid   , hp0_saxi_awid   ;
 wire [  6-1: 0] hp1_saxi_wid    , hp0_saxi_wid    ;
 wire [ 64-1: 0] hp1_saxi_wdata  , hp0_saxi_wdata  ;
 wire [  8-1: 0] hp1_saxi_wstrb  , hp0_saxi_wstrb  ;
+wire pwm_led_o;
+wire [1:0]pwm_out;
+wire [1:0]pwm_out_1;
 
 axi_master #(
   .DW   (  64    ), // data width (8,16,...,1024)
@@ -468,7 +475,10 @@ system_wrapper system_i (
   .S_AXI_HP0_awid    (hp0_saxi_awid   ),  .S_AXI_HP1_awid    (hp1_saxi_awid   ), // in 6
   .S_AXI_HP0_wid     (hp0_saxi_wid    ),  .S_AXI_HP1_wid     (hp1_saxi_wid    ), // in 6
   .S_AXI_HP0_wdata   (hp0_saxi_wdata  ),  .S_AXI_HP1_wdata   (hp1_saxi_wdata  ), // in 64
-  .S_AXI_HP0_wstrb   (hp0_saxi_wstrb  ),  .S_AXI_HP1_wstrb   (hp1_saxi_wstrb  )  // in 8
+  .S_AXI_HP0_wstrb   (hp0_saxi_wstrb  ),  .S_AXI_HP1_wstrb   (hp1_saxi_wstrb  ), // in 8
+  .pwm_led_o(pwm_led_o),
+  .pwm_out(pwm_out),
+  .pwm_out_1(pwm_out_1)
 );
 
 endmodule

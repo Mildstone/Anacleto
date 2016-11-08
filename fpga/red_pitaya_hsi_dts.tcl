@@ -22,7 +22,7 @@ set path_sdk sdk
 
 #set boot_args {console=ttyPS0,115200n8 root=/dev/ram rw initrd=0x00800000,16M earlyprintk mtdparts=physmap-flash.0:512K(nor-fsbl),512K(nor-u-boot),5M(nor-linux),9M(nor-user),1M(nor-scratch),-(nor-rootfs)}
 
-open_hw_design $path_sdk/$SYSTEM.sysdef
+open_hw_design $path_sdk/${SOC_BOARD}.sysdef
 
 set_repo_path $tmp/device-tree-xlnx-xilinx-v2015.4/
 

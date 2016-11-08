@@ -1,105 +1,145 @@
 
-.ONESHELL:
-include $(top_srcdir)/Common.am
-
-# build artefacts
-FPGA_BIT=out/red_pitaya.bit
-FSBL_ELF=sdk/fsbl/executable.elf
-DEVICE_TREE=sdk/dts/system.dts
-
-SYSTEM ?= system.tcl
-
-if ENABLE_FPGA
-define _envset 
-. $(VIVADO_SETUP_SCRIPT); \
-export srcdir=$(srcdir); \
-export tmp=$(TMP); \
-export maxThreads=8
-endef
-endif
 
 # Vivado from Xilinx provides IP handling, FPGA compilation
 # hsi (hardware software interface) provides software integration
 # both tools are run in batch mode with an option to avoid log/journal files
 VIVADO = vivado -nolog -nojournal -mode batch
+VIVADO_SHELL = vivado -nolog -nojournal -mode tcl
 HSI    = hsi    -nolog -nojournal -mode batch
+HSI_SHELL    = hsi    -nolog -nojournal -mode tcl
 
-#.PHONY: all clean project fpga bit fsbl dts
+define _envset
+>/dev/null \
+. $(VIVADO_SETUP_SCRIPT); \
+. $(VIVADO_SDK_SETUP_SCRIPT); \
+export srcdir=$(srcdir); \
+export top_srcdir=$(top_srcdir); \
+export tmp=$(TMP); \
+export maxThreads=8; \
+export FPGA_REPO_DIR=${FPGA_REPO_DIR}; \
+export FPGA_DIR=${FPGA_DIR}; \
+export FPGA_BIT=${FPGA_BIT}; \
+export SOC_BOARD=${SOC_BOARD}; \
+export VIVADO_VERSION=${VIVADO_VERSION}; \
+export VIVADO_SOC_PART=${VIVADO_SOC_PART}; \
+export SOURCES="${SOURCES}"; \
+export BD_SOURCES="${BD_SOURCES}"; \
+export IP_SOURCES="${IP_SOURCES}"
+endef
 
-#all: $(FPGA_BIT) $(FSBL_ELF) $(DEVICE_TREE)
+.PHONY: project fpga bit fsbl dts dtb
 
-#clean:
-#	-rm -rf out .Xil .srcs sdk
-	
-#project:
-#	( ${_envset}; \
-#	export system=${SYSTEM}; \
-#	vivado -source $(srcdir)/red_pitaya_vivado_project.tcl )
+## ////////////////////////////////////////////////////////////////////////// ##
+## ///  VIVADO PROJECT  ///////////////////////////////////////////////////// ##
+## ////////////////////////////////////////////////////////////////////////// ##
 
-#project_rp:
-#	( ${_envset}; \
-#	export system=rp_original.tcl; \
-#	vivado -source $(srcdir)/red_pitaya_vivado_project.tcl )
+project:
+	@ ( ${_envset}; \
+	vivado -source $(FPGA_DIR)/red_pitaya_vivado_project.tcl )
 
-#project_pwm:
-#	( ${_envset}; \
-#	export system=system_pwm.tcl; \
-#	vivado -source $(srcdir)/red_pitaya_vivado_project.tcl )
+create_new_project write_project write_bitstream:
+	@ ( ${_envset}; \
+	$(VIVADO) -source $(FPGA_DIR)/vivado_$@.tcl )
 
-#project_video:
-#	( ${_envset}; \
-#	export system=system-video.tcl; \
-#	vivado -source $(srcdir)/red_pitaya_vivado_project.tcl )
+open_project edit_peripheral:
+	@ ( ${_envset}; \
+	$(VIVADO_SHELL) -source $(FPGA_DIR)/vivado_$@.tcl )
 
-#clean_project:
-#	-rm -rf project  vivado.jou  vivado.log  vivado_*.backup.jou  vivado_*.backup.log  vivado_pid*.str
 
-#update_project:
-#	cp -a $(builddir)/project/system.tcl $(srcdir)/ip/system.tcl
-
-#fpga bit: $(FPGA_BIT)
-
-#$(FPGA_BIT):
-#	( ${_envset}; \
-#	export system=${SYSTEM}; \
-#	$(VIVADO) -source $(srcdir)/red_pitaya_vivado.tcl )
-
-#fsbl: $(FSBL_ELF)
-
-#$(FSBL_ELF):  $(FPGA_BIT)
+# .PHONY: vivado_shell
+# vivado_shell:
 #	${_envset}; \
-#	$(HSI) -source $(srcdir)/red_pitaya_hsi_fsbl.tcl
+#	vivado -source $(FPGA_DIR)/red_pitaya_vivado_project.tcl -mode tcl
 
-#dts: $(DEVICE_TREE)
-
-#$(DEVICE_TREE):  $(FPGA_BIT)
-#	( ${_envset}; \
-#	export system=${SYSTEM}; \
-#	$(HSI) -source $(srcdir)/red_pitaya_hsi_dts.tcl )
-
+clean_project:
+	-rm -rf project  vivado.jou  vivado.log  \
+		vivado_*.backup.jou  vivado_*.backup.log  vivado_pid*.str \
+		webtalk.jou  webtalk.log  \
+		webtalk_*.backup.jou  webtalk_*.backup.log
 
 
-################################################################################
-# device tree processing
-################################################################################
-
-DTREE_TAG     = xilinx-v${VIVADO_VERSION}
-DTREE_DIR     = $(TMP)/device-tree-xlnx-$(DTREE_TAG)
-DTREE_URL    ?= https://github.com/Xilinx/device-tree-xlnx/archive/$(DTREE_TAG).tar.gz
-DTREE_TAR     = $(DL)/device-tree-xlnx-$(DTREE_TAG).tar.gz
 
 
-$(DL):
-	mkdir -p $@
+## ////////////////////////////////////////////////////////////////////////// ##
+## ///  BITSTREAM  ////////////////////////////////////////////////////////// ##
+## ////////////////////////////////////////////////////////////////////////// ##
 
-xlnx-devicetree: $(DTREE_DIR)
+fpga bit: $(FPGA_BIT)
+
+$(FPGA_BIT):
+	( ${_envset}; \
+	  $(VIVADO) -source $(srcdir)/red_pitaya_vivado.tcl )
 
 
-$(DTREE_TAR): | $(DL)
-	curl -L $(DTREE_URL) -o $@
+## ////////////////////////////////////////////////////////////////////////// ##
+## ///  FSBL  /////////////////////////////////////////////////////////////// ##
+## ////////////////////////////////////////////////////////////////////////// ##
 
-$(DTREE_DIR): $(DTREE_TAR)
-	mkdir -p $@
-	tar -zxf $< --strip-components=1 --directory=$@
+fsbl: $(FSBL_ELF)
 
+$(FSBL_ELF):  $(FPGA_BIT)
+	${_envset}; \
+	$(HSI_SHELL) -source $(FPGA_DIR)/red_pitaya_hsi_fsbl.tcl
+
+
+
+## ////////////////////////////////////////////////////////////////////////// ##
+## ///  DEVICE TREEE  /////////////////////////////////////////////////////// ##
+## ////////////////////////////////////////////////////////////////////////// ##
+
+dts: $(DTS)
+dtb: $(DTB)
+
+xlnx-devicetree:
+	$(MAKE) -C $(top_builddir)/fpga xlnx-devicetree
+
+sdk/dts/system.dts:  $(FPGA_BIT) xlnx-devicetree
+	( ${_envset}; \
+	  $(HSI) -source $(FPGA_DIR)/red_pitaya_hsi_dts.tcl )
+
+$(DTS): sdk/dts/system.dts $(LINUX_IMAGE)
+	$(LINUX_BUILDDIR)/scripts/dtc/dtc -I dts -O dts -o $@ -i sdk/dts/ $<
+
+$(DTB):  $(DTS) $(LINUX_IMAGE)
+	$(LINUX_BUILDDIR)/scripts/dtc/dtc -I dts -O dtb -o $@ -i sdk/dts/ $<
+
+
+
+
+## ////////////////////////////////////////////////////////////////////////// ##
+## ///  DEPLOY  ///////////////////////////////////////////////////////////// ##
+## ////////////////////////////////////////////////////////////////////////// ##
+
+.PHONY: deploy
+deploy: $(FPGA_BIT) $(LINUX_IMAGE) $(DTB)
+if WITH_DEVICE_SSHKEY
+	@ echo " --- deploying to target device: ${DEVICE_NAME} using key ---";
+	scp -i $(DEVICE_SSHKEY) $^ \
+	  $(DEVICE_USER)@$(DEVICE_IP):$(DEVICE_INSTALL_DIR);
+else
+if WITH_DEVICE_SSHPASSWD
+	@ echo " --- deploying to target device: ${DEVICE_NAME} using passwd ---";
+	sshpass -p ${DEVICE_PASSWD} scp $^ \
+	  $(DEVICE_USER)@$(DEVICE_IP):$(DEVICE_INSTALL_DIR);
+endif
+endif
+
+.PHONY: deploy_fpga
+deploy_fpga: $(FPGA_BIT)
+	@ echo ""; \
+	  echo " WARNING: This will reprogram fpga without setting devicetree and kernel "
+if WITH_DEVICE_SSHKEY
+	@ echo " --- deploying to target device: ${DEVICE_NAME} using key ---";
+	scp -i $(DEVICE_SSHKEY) $^ \
+	  $(DEVICE_USER)@$(DEVICE_IP):/tmp/fpga.bit; \
+	ssh -i $(DEVICE_SSHKEY) $(DEVICE_USER)@$(DEVICE_IP) "cat /tmp/fpga.bit > /dev/xdevcfg";
+else
+if WITH_DEVICE_SSHPASSWD
+	@ echo " --- deploying to target device: ${DEVICE_NAME} using passwd ---";
+	sshpass -p ${DEVICE_PASSWD} scp $^ \
+	  $(DEVICE_USER)@$(DEVICE_IP):/tmp; \
+	sshpass -p ${DEVICE_PASSWD} \
+	  ssh $(DEVICE_USER)@$(DEVICE_IP) "cat /tmp/fpga.bit > /dev/xdevcfg";
+endif
+endif
 
