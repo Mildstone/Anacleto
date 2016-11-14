@@ -147,10 +147,11 @@ proc create_root_design { parentCell } {
   set FIXED_IO [ create_bd_intf_port -mode Master -vlnv xilinx.com:display_processing_system7:fixedio_rtl:1.0 FIXED_IO ]
 
   # Create ports
-  set clk [ create_bd_port -dir I clk ]
-  set gate [ create_bd_port -dir O gate ]
-  set sig [ create_bd_port -dir O sig ]
-  set trig [ create_bd_port -dir I trig ]
+  set led_o [ create_bd_port -dir O led_o ]
+  set pwm_n_out [ create_bd_port -dir O -from 0 -to 0 pwm_n_out ]
+  set pwm_n_out_1 [ create_bd_port -dir O -from 0 -to 0 pwm_n_out_1 ]
+  set pwm_out [ create_bd_port -dir O -from 0 -to 0 pwm_out ]
+  set pwm_out_1 [ create_bd_port -dir O -from 0 -to 0 pwm_out_1 ]
 
   # Create instance: processing_system7_0, and set properties
   set processing_system7_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:processing_system7:5.5 processing_system7_0 ]
@@ -1029,60 +1030,35 @@ CONFIG.PCW_WDT_WDT_IO {<Select>} \
 CONFIG.NUM_MI {1} \
  ] $processing_system7_0_axi_periph
 
+  # Create instance: rfx_pwmgen_0, and set properties
+  set rfx_pwmgen_0 [ create_bd_cell -type ip -vlnv user.org:user:rfx_pwmgen:1.0 rfx_pwmgen_0 ]
+  set_property -dict [ list \
+CONFIG.bits_resolution {8} \
+CONFIG.pwm_freq {10} \
+CONFIG.sys_clk {125000000} \
+ ] $rfx_pwmgen_0
+
   # Create instance: rst_processing_system7_0_125M, and set properties
   set rst_processing_system7_0_125M [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset:5.0 rst_processing_system7_0_125M ]
-
-  # Create instance: w7x_timing_0, and set properties
-  set w7x_timing_0 [ create_bd_cell -type ip -vlnv user.org:user:w7x_timing:1.0 w7x_timing_0 ]
 
   # Create interface connections
   connect_bd_intf_net -intf_net processing_system7_0_DDR [get_bd_intf_ports DDR] [get_bd_intf_pins processing_system7_0/DDR]
   connect_bd_intf_net -intf_net processing_system7_0_FIXED_IO [get_bd_intf_ports FIXED_IO] [get_bd_intf_pins processing_system7_0/FIXED_IO]
   connect_bd_intf_net -intf_net processing_system7_0_M_AXI_GP0 [get_bd_intf_pins processing_system7_0/M_AXI_GP0] [get_bd_intf_pins processing_system7_0_axi_periph/S00_AXI]
-  connect_bd_intf_net -intf_net processing_system7_0_axi_periph_M00_AXI [get_bd_intf_pins processing_system7_0_axi_periph/M00_AXI] [get_bd_intf_pins w7x_timing_0/S00_AXI]
+  connect_bd_intf_net -intf_net processing_system7_0_axi_periph_M00_AXI [get_bd_intf_pins processing_system7_0_axi_periph/M00_AXI] [get_bd_intf_pins rfx_pwmgen_0/S00_AXI]
 
   # Create port connections
-  connect_bd_net -net clk_1 [get_bd_ports clk] [get_bd_pins w7x_timing_0/clk]
-  connect_bd_net -net processing_system7_0_FCLK_CLK0 [get_bd_pins processing_system7_0/FCLK_CLK0] [get_bd_pins processing_system7_0/M_AXI_GP0_ACLK] [get_bd_pins processing_system7_0/S_AXI_HP0_ACLK] [get_bd_pins processing_system7_0/S_AXI_HP1_ACLK] [get_bd_pins processing_system7_0_axi_periph/ACLK] [get_bd_pins processing_system7_0_axi_periph/M00_ACLK] [get_bd_pins processing_system7_0_axi_periph/S00_ACLK] [get_bd_pins rst_processing_system7_0_125M/slowest_sync_clk] [get_bd_pins w7x_timing_0/s00_axi_aclk]
+  connect_bd_net -net processing_system7_0_FCLK_CLK0 [get_bd_pins processing_system7_0/FCLK_CLK0] [get_bd_pins processing_system7_0/M_AXI_GP0_ACLK] [get_bd_pins processing_system7_0/S_AXI_HP0_ACLK] [get_bd_pins processing_system7_0/S_AXI_HP1_ACLK] [get_bd_pins processing_system7_0_axi_periph/ACLK] [get_bd_pins processing_system7_0_axi_periph/M00_ACLK] [get_bd_pins processing_system7_0_axi_periph/S00_ACLK] [get_bd_pins rfx_pwmgen_0/clk] [get_bd_pins rfx_pwmgen_0/s00_axi_aclk] [get_bd_pins rst_processing_system7_0_125M/slowest_sync_clk]
   connect_bd_net -net processing_system7_0_FCLK_RESET0_N [get_bd_pins processing_system7_0/FCLK_RESET0_N] [get_bd_pins rst_processing_system7_0_125M/ext_reset_in]
+  connect_bd_net -net rfx_pwmgen_0_led_o [get_bd_ports led_o] [get_bd_pins rfx_pwmgen_0/led_o]
+  connect_bd_net -net rfx_pwmgen_0_pwm_n_out [get_bd_ports pwm_n_out] [get_bd_ports pwm_n_out_1] [get_bd_pins rfx_pwmgen_0/pwm_n_out]
+  connect_bd_net -net rfx_pwmgen_0_pwm_out [get_bd_ports pwm_out] [get_bd_ports pwm_out_1] [get_bd_pins rfx_pwmgen_0/pwm_out]
   connect_bd_net -net rst_processing_system7_0_125M_interconnect_aresetn [get_bd_pins processing_system7_0_axi_periph/ARESETN] [get_bd_pins rst_processing_system7_0_125M/interconnect_aresetn]
-  connect_bd_net -net rst_processing_system7_0_125M_peripheral_aresetn [get_bd_pins processing_system7_0_axi_periph/M00_ARESETN] [get_bd_pins processing_system7_0_axi_periph/S00_ARESETN] [get_bd_pins rst_processing_system7_0_125M/peripheral_aresetn] [get_bd_pins w7x_timing_0/s00_axi_aresetn]
-  connect_bd_net -net trig_1 [get_bd_ports trig] [get_bd_pins w7x_timing_0/trig]
-  connect_bd_net -net w7x_timing_0_gate [get_bd_ports gate] [get_bd_pins w7x_timing_0/gate]
-  connect_bd_net -net w7x_timing_0_sig [get_bd_ports sig] [get_bd_pins w7x_timing_0/sig]
+  connect_bd_net -net rst_processing_system7_0_125M_peripheral_aresetn [get_bd_pins processing_system7_0_axi_periph/M00_ARESETN] [get_bd_pins processing_system7_0_axi_periph/S00_ARESETN] [get_bd_pins rfx_pwmgen_0/reset_n] [get_bd_pins rfx_pwmgen_0/s00_axi_aresetn] [get_bd_pins rst_processing_system7_0_125M/peripheral_aresetn]
 
   # Create address segments
-  create_bd_addr_seg -range 0x10000 -offset 0x43C00000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs w7x_timing_0/S00_AXI/S00_AXI_reg] SEG_w7x_timing_0_S00_AXI_reg
+  create_bd_addr_seg -range 0x10000 -offset 0x43C00000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs rfx_pwmgen_0/S00_AXI/S00_AXI_reg] SEG_rfx_pwmgen_0_S00_AXI_reg
 
-  # Perform GUI Layout
-  regenerate_bd_layout -layout_string {
-   guistr: "# # String gsaved with Nlview 6.5.5  2015-06-26 bk=1.3371 VDI=38 GEI=35 GUI=JA:1.8
-#  -string -flagsOSRD
-preplace port DDR -pg 1 -y 50 -defaultsOSRD
-preplace port gate -pg 1 -y 340 -defaultsOSRD
-preplace port FIXED_IO -pg 1 -y 70 -defaultsOSRD
-preplace port trig -pg 1 -y 580 -defaultsOSRD
-preplace port sig -pg 1 -y 320 -defaultsOSRD
-preplace port clk -pg 1 -y 380 -defaultsOSRD
-preplace inst rst_processing_system7_0_125M -pg 1 -lvl 1 -y 490 -defaultsOSRD
-preplace inst w7x_timing_0 -pg 1 -lvl 3 -y 330 -defaultsOSRD
-preplace inst processing_system7_0_axi_periph -pg 1 -lvl 2 -y 230 -defaultsOSRD
-preplace inst processing_system7_0 -pg 1 -lvl 1 -y 190 -defaultsOSRD
-preplace netloc processing_system7_0_DDR 1 1 3 NJ 50 NJ 50 NJ
-preplace netloc rst_processing_system7_0_125M_interconnect_aresetn 1 1 1 490
-preplace netloc processing_system7_0_axi_periph_M00_AXI 1 2 1 800
-preplace netloc processing_system7_0_M_AXI_GP0 1 1 1 480
-preplace netloc processing_system7_0_FCLK_RESET0_N 1 0 2 30 400 470
-preplace netloc clk_1 1 0 3 NJ 380 NJ 360 NJ
-preplace netloc processing_system7_0_FIXED_IO 1 1 3 NJ 70 NJ 70 NJ
-preplace netloc w7x_timing_0_sig 1 3 1 NJ
-preplace netloc rst_processing_system7_0_125M_peripheral_aresetn 1 1 2 510 370 NJ
-preplace netloc processing_system7_0_FCLK_CLK0 1 0 3 20 390 480 350 N
-preplace netloc w7x_timing_0_gate 1 3 1 NJ
-preplace netloc trig_1 1 0 3 NJ 580 NJ 580 NJ
-levelinfo -pg 1 0 250 660 920 1040 -top 0 -bot 600
-",
-}
 
   # Restore current instance
   current_bd_instance $oldCurInst
@@ -1098,6 +1074,4 @@ levelinfo -pg 1 0 250 660 920 1040 -top 0 -bot 600
 
 create_root_design ""
 
-
-puts "\n\nWARNING: This Tcl script was generated from a block design that has not been validated. It is possible that design <$design_name> may result in errors during validation."
 

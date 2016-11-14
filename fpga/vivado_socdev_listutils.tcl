@@ -20,8 +20,6 @@ namespace eval ::tclapp::socdev::listutils {
   namespace export ls_find_bd_wrapper
 }
 
-
-
 source -notrace $top_srcdir/fpga/vivado_socdev_env.tcl
 
 ## ////////////////////////////////////////////////////////////////////////// ##
@@ -177,7 +175,7 @@ proc ls_find_bd_wrapper { list_bd } {
   foreach file_bd $list_bd {
     set bd_name [file rootname [file tail $file_bd]]
     foreach file [get_files] {
-      if { [regexp "(${bd_name}_wrapper).*|(${bd_name}_WRAPPER).*" $file] == 1 } {
+      if { [regexp "(${bd_name}_wrapper).*" [string tolower $file]] == 1 } {
 	lappend files_out $file
       }
     }

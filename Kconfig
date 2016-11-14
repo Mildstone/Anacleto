@@ -94,6 +94,75 @@ endmenu # LINUX_BUILD
 
 
 # //////////////////////////////////////////////////////////////////////////// #
+# //  YOCTO  ///////////////////////////////////////////////////////////////// #
+# //////////////////////////////////////////////////////////////////////////// #
+
+menu YOCTO
+  config ENABLE_YOCTO
+	bool  "Enable Yocto build"
+	default "no"
+
+  config YOCTO_DIR
+	string  "Yocto src directory"
+	depends on ENABLE_YOCTO
+	default "yocto"
+
+  choice YOCTO_DLMETHOD
+	prompt "Yocto sources download method"
+	config WITH_YOCTO_TAR
+	 bool "tar archive"
+	config WITH_YOCTO_GIT
+	 bool "git repository"
+  endchoice
+
+  config YOCTO_TAR
+	string  "Yocto tar repository"
+	depends on WITH_YOCTO_TAR
+	default "http://downloads.yoctoproject.org/releases/yocto/yocto-2.2/poky-morty-16.0.0.tar.bz2"
+
+  config YOCTO_GIT
+	string  "Yocto git repository"
+	depends on WITH_YOCTO_GIT
+	default "git://git.yoctoproject.org/poky.git"
+
+  config YOCTO_VERSION
+	string  "Yocto version"
+	depends on WITH_YOCTO_GIT
+	default "morty"
+
+  config ENABLE_YOCTO_XILINX
+	bool  "Enable Yocto meta-xilinx build"
+	depends on ENABLE_YOCTO
+	default "no"
+
+  choice YOCTO_XILINX_DLMETHOD
+	prompt "Yocto meta-xilinx sources download method"
+	config WITH_YOCTO_XILINX_TAR
+	 bool "tar archive"
+	config WITH_YOCTO_XILINX_GIT
+	 bool "git repository"
+  endchoice
+
+  config YOCTO_XILINX_TAR
+	string  "Yocto meta-xilinx tar repository"
+	depends on WITH_YOCTO_XILINX_TAR
+	default ""
+
+  config YOCTO_XILINX_GIT
+	string  "Yocto meta-xilinx git repository"
+	depends on WITH_YOCTO_XILINX_GIT
+	default "https://github.com/Xilinx/meta-xilinx.git"
+
+  config YOCTO_LINARO_GIT
+	string  "Yocto meta-linaro-toolchain git repository"
+	depends on ENABLE_YOCTO_XILINX
+	default "https://github.com/Xilinx/meta-xilinx.git"
+
+
+
+endmenu # YOCTO
+
+# //////////////////////////////////////////////////////////////////////////// #
 # //  DOCKER  //////////////////////////////////////////////////////////////// #
 # //////////////////////////////////////////////////////////////////////////// #
 

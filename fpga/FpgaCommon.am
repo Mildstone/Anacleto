@@ -1,4 +1,5 @@
 
+
 # Vivado from Xilinx provides IP handling, FPGA compilation
 # hsi (hardware software interface) provides software integration
 # both tools are run in batch mode with an option to avoid log/journal files
@@ -7,11 +8,17 @@ VIVADO_SHELL = vivado -nolog -nojournal -mode tcl
 HSI    = hsi    -nolog -nojournal -mode batch
 HSI_SHELL    = hsi    -nolog -nojournal -mode tcl
 
+FPGA_BIT  ?= out/${SOC_BOARD}.bit
+FSBL_ELF  ?= sdk/fsbl/executable.elf
+DTS       ?= sdk/dts/devicetree.dts
+DTB       ?= sdk/dts/devicetree.dtb
 
 
 define _envset
 . $(VIVADO_SETUP_SCRIPT); \
 . $(VIVADO_SDK_SETUP_SCRIPT); \
+. /opt/Xilinx/petalinux-v2015.4-final/settings.sh; \
+export PETALINUX=$${PETALINUX}; \
 export srcdir=$(srcdir); \
 export top_srcdir=$(top_srcdir); \
 export tmp=$(TMP); \
@@ -19,6 +26,7 @@ export maxThreads=8; \
 export FPGA_REPO_DIR=${FPGA_REPO_DIR}; \
 export FPGA_DIR=${FPGA_DIR}; \
 export FPGA_BIT=${FPGA_BIT}; \
+export DTREE_DIR=${DTREE_DIR}; \
 export SOC_BOARD=${SOC_BOARD}; \
 export VIVADO_VERSION=${VIVADO_VERSION}; \
 export VIVADO_SOC_PART=${VIVADO_SOC_PART}; \
@@ -27,32 +35,39 @@ export BD_SOURCES="${BD_SOURCES}"; \
 export IP_SOURCES="${IP_SOURCES}"
 endef
 
-.PHONY: all clean project fpga bit fsbl dts dtb
+.PHONY: project fpga bit fsbl dts dtb
+
 
 ## ////////////////////////////////////////////////////////////////////////// ##
 ## ///  VIVADO PROJECT  ///////////////////////////////////////////////////// ##
 ## ////////////////////////////////////////////////////////////////////////// ##
 
-project:
-	( ${_envset}; \
-	vivado -source $(FPGA_DIR)/red_pitaya_vivado_project.tcl )
+.PHONY: vivado_shell
+vivado_shell:
+	@ ${_envset}; \
+	$(VIVADO_SHELL) -source $(FPGA_DIR)/vivado_make.tcl
 
-create_new_project write_project write_bitstream:
-	( ${_envset}; \
-	$(VIVADO) -source $(FPGA_DIR)/vivado_$@.tcl )
+.PHONY: hsi_shell
+hsi_shell:
+	@ ${_envset}; \
+	$(HSI_SHELL) -source $(FPGA_DIR)/vivado_make.tcl
+
+
+## ////////////////////////////////////////////////////////////////////////// ##
+## ///  VIVADO PROJECT  ///////////////////////////////////////////////////// ##
+## ////////////////////////////////////////////////////////////////////////// ##
+
+
+new_project write_project write_bitstream:
+	@ ( ${_envset}; \
+	    $(VIVADO) -source $(FPGA_DIR)/vivado_make.tcl -tclargs $@ )
 
 open_project edit_peripheral:
-	( ${_envset}; \
-	$(VIVADO_SHELL) -source $(FPGA_DIR)/vivado_$@.tcl )
-
-
-# .PHONY: vivado_shell
-# vivado_shell:
-#	${_envset}; \
-#	vivado -source $(FPGA_DIR)/red_pitaya_vivado_project.tcl -mode tcl
+	@ ( ${_envset}; \
+	    $(VIVADO_SHELL) -source $(FPGA_DIR)/vivado_make.tcl -tclargs $@ )
 
 clean_project:
-	-rm -rf project  vivado.jou  vivado.log  \
+	-rm -rf vivado_project vivado.jou  vivado.log  \
 		vivado_*.backup.jou  vivado_*.backup.log  vivado_pid*.str \
 		webtalk.jou  webtalk.log  \
 		webtalk_*.backup.jou  webtalk_*.backup.log
@@ -66,9 +81,7 @@ clean_project:
 
 fpga bit: $(FPGA_BIT)
 
-$(FPGA_BIT):
-	( ${_envset}; \
-	  $(VIVADO) -source $(srcdir)/red_pitaya_vivado.tcl )
+$(FPGA_BIT): write_bitstream
 
 
 ## ////////////////////////////////////////////////////////////////////////// ##
@@ -79,7 +92,7 @@ fsbl: $(FSBL_ELF)
 
 $(FSBL_ELF):  $(FPGA_BIT)
 	${_envset}; \
-	$(HSI_SHELL) -source $(FPGA_DIR)/red_pitaya_hsi_fsbl.tcl
+	$(HSI) -source $(FPGA_DIR)/vivado_make.tcl -tclargs write_fsbl
 
 
 
@@ -94,8 +107,8 @@ xlnx-devicetree:
 	$(MAKE) -C $(top_builddir)/fpga xlnx-devicetree
 
 sdk/dts/system.dts:  $(FPGA_BIT) xlnx-devicetree
-	( ${_envset}; \
-	  $(HSI) -source $(FPGA_DIR)/red_pitaya_hsi_dts.tcl )
+	@ ( ${_envset}; \
+	    $(HSI) -source $(FPGA_DIR)/vivado_make.tcl -tclargs write_devicetree )
 
 $(DTS): sdk/dts/system.dts $(LINUX_IMAGE)
 	$(LINUX_BUILDDIR)/scripts/dtc/dtc -I dts -O dts -o $@ -i sdk/dts/ $<
@@ -142,3 +155,4 @@ if WITH_DEVICE_SSHPASSWD
 	  ssh $(DEVICE_USER)@$(DEVICE_IP) "cat /tmp/fpga.bit > /dev/xdevcfg";
 endif
 endif
+

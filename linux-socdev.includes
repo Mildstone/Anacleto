@@ -25,3 +25,9 @@ projects/rfx_RPHctl/logic/project_src/red_pitaya.srcs/sources_1/new
 projects/rfx_RPHctl/logic/hdl
 fpga/makeutils
 projects/rfx_RPHctl/logic/red_pitaya_project_src/red_pitaya.srcs/sources_1/bd/design_1_src
+projects/rfx_RPHctl/logic/ip
+fpga/xlnx-devicetree
+projects/rfx_RPHctl/logic/ip/myip_1.0/drivers/myip_lnx_v1_0/data
+projects/rfx_RPHctl/logic/ip/linux_os
+projects/rfx_RPHctl/logic/ip/linux_os/data
+projects/rfx_pwmgen/logic/vivado_src

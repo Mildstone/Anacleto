@@ -115,18 +115,18 @@ module red_pitaya_top (
    input  [ 2-1: 0] daisy_p_i          ,  // line 1 is clock capable
    input  [ 2-1: 0] daisy_n_i  ,        
    // LED
-   // output [ 8-1: 0] led_o      
+   output  [0:0] pwm_led_e,      
    output  [1:0] pwm_out,
-   output  [1:0] pwm_out_1,
-//   output  [1:0] pwm_n_out,
-   output  [0:0] pwm_led_o
-    
+   output  [1:0] pwm_n_out,
+   output  [1:0] pwm_led_o,
+   output  hk_led_o
 );
 
-
-  wire pwm_led_o;
+  wire pwm_led_e;
+  wire [1:0]pwm_led_o;
   wire [1:0]pwm_out;
-  wire [1:0]pwm_out_1;
+  wire [1:0]pwm_n_out;
+  
 
 
 //---------------------------------------------------------------------------------
@@ -210,9 +210,10 @@ red_pitaya_ps i_ps (
   .axi1_wfixed_i (axi1_wfixed ),  .axi0_wfixed_i (axi0_wfixed ),  // system write burst type (fixed / incremental)
   .axi1_werr_o   (axi1_werr   ),  .axi0_werr_o   (axi0_werr   ),  // system write error
   .axi1_wrdy_o   (axi1_wrdy   ),  .axi0_wrdy_o   (axi0_wrdy   ),  // system write ready
+          .pwm_led_e(pwm_led_e),
           .pwm_led_o(pwm_led_o),
           .pwm_out(pwm_out),
-          .pwm_out_1(pwm_out_1)
+          .pwm_n_out(pwm_out_1)
 );
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -403,7 +404,7 @@ red_pitaya_hk i_hk (
   .clk_i           (  adc_clk                    ),  // clock
   .rstn_i          (  adc_rstn                   ),  // reset - active low
   // LED
-  .led_o           (  led_o                      ),  // LED output
+  .hk_led_o           (  hk_led_o                      ),  // LED output
   // global configuration
   .digital_loop    (  digital_loop               ),
   // Expansion connector

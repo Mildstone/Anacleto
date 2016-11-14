@@ -1,5 +1,5 @@
 package provide makeutils 1.0
-package require Vivado 1.2014.1
+# package require Vivado 1.2014.1
 
 global env
 set srcdir       $env(srcdir)
@@ -11,18 +11,33 @@ namespace eval ::tclapp::socdev::makeutils {
   namespace export make_write_project
   namespace export reset_project_vars
   namespace export make_edit_peripheral
+  namespace export make_write_bitstream
+  namespace export make_write_devicetree
+  namespace export make_write_fsbl
 }
 
 ## INCLUDES ##
-source -notrace $top_srcdir/fpga/vivado_socdev_env.tcl
-source -notrace $top_srcdir/fpga/write_project_tcl_devel.tcl
+catch {
+  source -notrace $top_srcdir/fpga/vivado_socdev_env.tcl
+  source -notrace $top_srcdir/fpga/write_project_tcl_devel.tcl
+}
 
 
+## NAMESPACE ###################################################################
 namespace eval ::tclapp::socdev::makeutils {
 
 ## ////////////////////////////////////////////////////////////////////////// ##
 ## /// GLOBALS ////////////////////////////////////////////////////////////// ##
 ## ////////////////////////////////////////////////////////////////////////// ##
+
+
+proc set_compatible_with { program } {
+  set current_parser [lindex [split [version] " "] 0]
+  if { [string tolower $current_parser] != [string tolower $program] } {
+    error "This script requires to be fired within $program environment."
+  }
+}
+
 
 proc get_abs_path { file } {
   return [string trim [file normalize [string map {\\ /} $file]]]
@@ -59,7 +74,7 @@ variable a_project_vars
 proc reset_project_vars { } {
   variable make_env
   variable a_project_vars
-  variable ::tclapp::xilinx::projutils::a_make_vars
+
 
   set a_project_vars(VIVADO_VERSION) $make_env(VIVADO_VERSION)
   set a_project_vars(project_name) $make_env(project_name)
@@ -72,11 +87,16 @@ proc reset_project_vars { } {
   set a_project_vars(dir_src)      "hdl"
   set a_project_vars(dir_bd)       "bd"
   set a_project_vars(dir_sdc)      "sdc"
+  set a_project_vars(dir_out)      "out"
+  set a_project_vars(dir_sdk)      "sdk"
 
   set a_project_vars(sources_list) [split $make_env(SOURCES) " "]
 
   # save to projutils global variable
-  array set a_make_vars [array get a_project_vars]
+  catch {
+    variable ::tclapp::xilinx::projutils::a_make_vars
+    array set a_make_vars [array get a_project_vars]
+  }
 }
 reset_project_vars
 
@@ -100,7 +120,8 @@ proc make_set_repo_path {} {
 ## /// CREATE PROJECT /////////////////////////////////////////////////////// ##
 ## ////////////////////////////////////////////////////////////////////////// ##
 
-proc make_create_project { } {
+proc make_new_project { } {
+  set_compatible_with Vivado
   variable make_env
   variable a_project_vars
 
@@ -136,6 +157,7 @@ proc make_create_project { } {
 ## ////////////////////////////////////////////////////////////////////////// ##
 
 proc make_edit_peripheral { } {
+  set_compatible_with Vivado
   variable a_project_vars
   variable make_env
 
@@ -266,8 +288,10 @@ proc make_load_sources {} {
 }
 
 proc make_open_project {} {
+  set_compatible_with Vivado
   variable make_env
   variable a_project_vars
+
   set project_name $make_env(project_name)
   catch {::open_project -part $make_env(VIVADO_SOC_PART) \
 	 $a_project_vars(rel_dir_prj)/$project_name.xpr}
@@ -290,6 +314,8 @@ proc make_open_project {} {
 ## ////////////////////////////////////////////////////////////////////////// ##
 
 proc make_write_project {} {
+  set_compatible_with Vivado
+
   variable make_env
   variable a_project_vars
 
@@ -299,4 +325,129 @@ proc make_write_project {} {
     -force -target_proj_dir $a_project_vars(rel_dir_prj) \
     $a_project_vars(rel_src_prj)/$a_project_vars(project_name).tcl
 }
+
+
+
+## ////////////////////////////////////////////////////////////////////////// ##
+## /// WRITE BITSTREAM ////////////////////////////////////////////////////// ##
+## ////////////////////////////////////////////////////////////////////////// ##
+
+proc make_write_bitstream {} {
+  set_compatible_with Vivado
+  variable make_env
+  variable a_project_vars
+
+  make_open_project
+  set prj_name $a_project_vars(project_name)
+  set path_out $a_project_vars(dir_out)
+  set path_sdk $a_project_vars(dir_sdk)
+
+  file mkdir $path_out
+  file mkdir $path_sdk
+
+  ## ////////////////////////////////////////////////////// ##
+  ## generate a bitstream
+
+  proc get_major { code } {
+   return [lindex [split $code '.'] 0]
+  }
+
+  if { [lsearch -exact [get_runs] auto_synth_1] == -1 } {
+    set flow "Vivado Synthesis [get_major $env(VIVADO_VERSION)]"
+    create_run -flow $flow auto_synth_1
+  }
+  if { [lsearch -exact [get_runs] auto_impl_1] == -1 } {
+    set flow "Vivado Implementation [get_major $env(VIVADO_VERSION)]"
+    create_run auto_impl_1 -parent_run auto_synth_1 -flow $flow
+  }
+
+  ## customize directory output for run ##
+  #  file mkdir $a_project_vars(rel_dir_prj)/$path_out/synth
+  #  file mkdir $a_project_vars(rel_dir_prj)/$path_out/impl
+  #  set_property DIRECTORY $a_project_vars(rel_dir_prj)/$path_out/synth [get_runs auto_synth_1]
+  #  set_property DIRECTORY $a_project_vars(rel_dir_prj)/$path_out/impl  [get_runs auto_impl_1 ]
+
+  ## START SYNTH ##
+  reset_run auto_synth_1
+  launch_runs auto_impl_1 -jobs $make_env(maxThreads)
+  wait_on_run auto_synth_1
+
+  open_run auto_synth_1
+  set_property BITSTREAM.GENERAL.COMPRESS TRUE [current_design]
+
+  ## START IMPL ##
+  reset_run auto_impl_1
+  launch_runs auto_impl_1 -to_step write_bitstream -jobs $make_env(maxThreads)
+  wait_on_run auto_impl_1
+
+  ## ////////////////////////////////////////////////////// ##
+  ## generate system definition ##
+
+  set  synth_dir [get_property DIRECTORY [get_runs auto_synth_1]]
+  set  impl_dir  [get_property DIRECTORY [get_runs auto_impl_1 ]]
+  set  top_name  [get_property TOP [current_design]]
+  file  copy -force  $impl_dir/${top_name}.hwdef $path_sdk/$prj_name.hwdef
+  file  copy -force  $impl_dir/${top_name}.bit   $path_sdk/$prj_name.bit
+  file  copy -force  $impl_dir/${top_name}.bit   $path_out/$prj_name.bit
+
+  write_sysdef    -force   -hwdef   $path_sdk/$prj_name.hwdef \
+			   -bitfile $path_sdk/$prj_name.bit \
+			   -file    $path_sdk/$prj_name.sysdef
+  # Export Hardware for petalinux inclusion #
+  write_hwdef     -force   -file    $path_sdk/$prj_name.hdf
+
 }
+
+
+## ////////////////////////////////////////////////////////////////////////// ##
+## /// WRITE DEVICETREE ///////////////////////////////////////////////////// ##
+## ////////////////////////////////////////////////////////////////////////// ##
+
+proc make_write_devicetree {} {
+  set_compatible_with Hsi
+  variable make_env
+  variable a_project_vars
+
+  set prj_name $a_project_vars(project_name)
+  set path_out $a_project_vars(dir_out)
+  set path_sdk $a_project_vars(dir_sdk)
+
+  #  set boot_args { console=ttyPS0,115200n8 root=/dev/ram rw \
+  #		  initrd=0x00800000,16M earlyprintk \
+  #		  mtdparts=physmap-flash.0:512K(nor-fsbl),512K(nor-u-boot),\
+  #		  5M(nor-linux),9M(nor-user),1M(nor-scratch),-(nor-rootfs) }
+
+  open_hw_design $path_sdk/$prj_name.sysdef
+  set_repo_path $make_env(DTREE_DIR)
+  create_sw_design device-tree -os device_tree -proc ps7_cortexa9_0
+
+  set_property CONFIG.kernel_version {2015.4} [get_os]
+  #set_property CONFIG.bootargs $boot_args [get_os]
+
+  generate_target -dir $path_sdk/dts
+}
+
+
+proc make_write_fsbl {} {
+  set_compatible_with Hsi
+  variable make_env
+  variable a_project_vars
+
+  set prj_name $a_project_vars(project_name)
+  set path_out $a_project_vars(dir_out)
+  set path_sdk $a_project_vars(dir_sdk)
+
+  #  set boot_args { console=ttyPS0,115200n8 root=/dev/ram rw \
+  #		  initrd=0x00800000,16M earlyprintk \
+  #		  mtdparts=physmap-flash.0:512K(nor-fsbl),512K(nor-u-boot),\
+  #		  5M(nor-linux),9M(nor-user),1M(nor-scratch),-(nor-rootfs) }
+
+  open_hw_design $path_sdk/$prj_name.sysdef
+  set_repo_path $make_env(DTREE_DIR)
+
+  #  generate_app  -os standalone -proc ps7_cortexa9_0 -app zynq_fsbl \
+  #    -compile -sw fsbl -dir $path_sdk/fsbl
+}
+
+}
+## END NAMESPACE

@@ -45,6 +45,7 @@ proc reset_make_env {} {
   set    make_env(top_srcdir)       [getenv top_srcdir]
   set    make_env(maxThreads)       [getenv maxThreads]
   set    make_env(fpga_dir)         [getenv FPGA_DIR]
+  set    make_env(DTREE_DIR)        [getenv DTREE_DIR]
   set    make_env(ip_repo)          [getenv FPGA_REPO_DIR]
   set    make_env(SOURCES)          [getenv SOURCES]
   set    make_env(BD_SOURCES)       [getenv BD_SOURCES]

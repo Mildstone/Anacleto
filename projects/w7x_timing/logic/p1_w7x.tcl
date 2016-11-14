@@ -7,25 +7,15 @@
 # IP Integrator Tcl commands easier.
 ################################################################
 
-namespace eval _tcl {
-proc get_script_folder {} {
-   set script_path [file normalize [info script]]
-   set script_folder [file dirname $script_path]
-   return $script_folder
-}
-}
-variable script_folder
-set script_folder [_tcl::get_script_folder]
-
 ################################################################
 # Check if script is running in correct Vivado version.
 ################################################################
-set scripts_vivado_version 2016.2
+set scripts_vivado_version 2015.4
 set current_vivado_version [version -short]
 
 if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
    puts ""
-   catch {common::send_msg_id "BD_TCL-109" "ERROR" "This script was generated using Vivado <$scripts_vivado_version> and is being run in <$current_vivado_version> of Vivado. Please run the script in Vivado <$scripts_vivado_version> then open the design in Vivado <$current_vivado_version>. Upgrade the design by running \"Tools => Report => Report IP Status...\", then run write_bd_tcl to create an updated script."}
+   puts "ERROR: This script was generated using Vivado <$scripts_vivado_version> and is being run in <$current_vivado_version> of Vivado. Please run the script in Vivado <$scripts_vivado_version> then open the design in Vivado <$current_vivado_version>. Upgrade the design by running \"Tools => Report => Report IP Status...\", then run write_bd_tcl to create an updated script."
 
    return 1
 }
@@ -37,14 +27,16 @@ if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
 # To test this script, run the following commands from Vivado Tcl console:
 # source system_script.tcl
 
-# If there is no project opened, this script will create a
-# project, but make sure you do not have an existing project
-# <./myproj/project_1.xpr> in the current working folder.
+# If you do not already have a project created,
+# you can create a project using the following command:
+#    create_project project_1 myproj -part xc7z010clg400-1
 
-set list_projs [get_projects -quiet]
-if { $list_projs eq "" } {
-   create_project project_1 myproj -part xc7z010clg400-1
+# CHECKING IF PROJECT EXISTS
+if { [get_projects -quiet] eq "" } {
+   puts "ERROR: Please open or create a project!"
+   return 1
 }
+
 
 
 # CHANGE DESIGN NAME HERE
@@ -65,7 +57,7 @@ if { ${design_name} eq "" } {
    # USE CASES:
    #    1) Design_name not set
 
-   set errMsg "Please set the variable <design_name> to a non-empty value."
+   set errMsg "ERROR: Please set the variable <design_name> to a non-empty value."
    set nRet 1
 
 } elseif { ${cur_design} ne "" && ${list_cells} eq "" } {
@@ -75,23 +67,23 @@ if { ${design_name} eq "" } {
    #    4): Current design opened AND is empty AND names diff; design_name exists in project.
 
    if { $cur_design ne $design_name } {
-      common::send_msg_id "BD_TCL-001" "INFO" "Changing value of <design_name> from <$design_name> to <$cur_design> since current design is empty."
+      puts "INFO: Changing value of <design_name> from <$design_name> to <$cur_design> since current design is empty."
       set design_name [get_property NAME $cur_design]
    }
-   common::send_msg_id "BD_TCL-002" "INFO" "Constructing design in IPI design <$cur_design>..."
+   puts "INFO: Constructing design in IPI design <$cur_design>..."
 
 } elseif { ${cur_design} ne "" && $list_cells ne "" && $cur_design eq $design_name } {
    # USE CASES:
    #    5) Current design opened AND has components AND same names.
 
-   set errMsg "Design <$design_name> already exists in your project, please set the variable <design_name> to another value."
+   set errMsg "ERROR: Design <$design_name> already exists in your project, please set the variable <design_name> to another value."
    set nRet 1
 } elseif { [get_files -quiet ${design_name}.bd] ne "" } {
    # USE CASES: 
    #    6) Current opened design, has components, but diff names, design_name exists in project.
    #    7) No opened design, design_name exists in project.
 
-   set errMsg "Design <$design_name> already exists in your project, please set the variable <design_name> to another value."
+   set errMsg "ERROR: Design <$design_name> already exists in your project, please set the variable <design_name> to another value."
    set nRet 2
 
 } else {
@@ -99,19 +91,19 @@ if { ${design_name} eq "" } {
    #    8) No opened design, design_name not in project.
    #    9) Current opened design, has components, but diff names, design_name not in project.
 
-   common::send_msg_id "BD_TCL-003" "INFO" "Currently there is no design <$design_name> in project, so creating one..."
+   puts "INFO: Currently there is no design <$design_name> in project, so creating one..."
 
    create_bd_design $design_name
 
-   common::send_msg_id "BD_TCL-004" "INFO" "Making design <$design_name> as current_bd_design."
+   puts "INFO: Making design <$design_name> as current_bd_design."
    current_bd_design $design_name
 
 }
 
-common::send_msg_id "BD_TCL-005" "INFO" "Currently the variable <design_name> is equal to \"$design_name\"."
+puts "INFO: Currently the variable <design_name> is equal to \"$design_name\"."
 
 if { $nRet != 0 } {
-   catch {common::send_msg_id "BD_TCL-114" "ERROR" $errMsg}
+   puts $errMsg
    return $nRet
 }
 
@@ -125,8 +117,6 @@ if { $nRet != 0 } {
 # procedure reusable. If parentCell is "", will use root.
 proc create_root_design { parentCell } {
 
-  variable script_folder
-
   if { $parentCell eq "" } {
      set parentCell [get_bd_cells /]
   }
@@ -134,14 +124,14 @@ proc create_root_design { parentCell } {
   # Get object for parentCell
   set parentObj [get_bd_cells $parentCell]
   if { $parentObj == "" } {
-     catch {common::send_msg_id "BD_TCL-100" "ERROR" "Unable to find parent cell <$parentCell>!"}
+     puts "ERROR: Unable to find parent cell <$parentCell>!"
      return
   }
 
   # Make sure parentObj is hier blk
   set parentType [get_property TYPE $parentObj]
   if { $parentType ne "hier" } {
-     catch {common::send_msg_id "BD_TCL-101" "ERROR" "Parent <$parentObj> has TYPE = <$parentType>. Expected to be <hier>."}
+     puts "ERROR: Parent <$parentObj> has TYPE = <$parentType>. Expected to be <hier>."
      return
   }
 
@@ -157,11 +147,15 @@ proc create_root_design { parentCell } {
   set FIXED_IO [ create_bd_intf_port -mode Master -vlnv xilinx.com:display_processing_system7:fixedio_rtl:1.0 FIXED_IO ]
 
   # Create ports
-  set led_o [ create_bd_port -dir O led_o ]
-  set pwm_n_out [ create_bd_port -dir O -from 0 -to 0 pwm_n_out ]
-  set pwm_n_out_1 [ create_bd_port -dir O -from 0 -to 0 pwm_n_out_1 ]
-  set pwm_out [ create_bd_port -dir O -from 0 -to 0 pwm_out ]
-  set pwm_out_1 [ create_bd_port -dir O -from 0 -to 0 pwm_out_1 ]
+  set clk [ create_bd_port -dir I clk ]
+  set clk_led [ create_bd_port -dir O -from 0 -to 0 clk_led ]
+  set gate [ create_bd_port -dir O gate ]
+  set gate_led [ create_bd_port -dir O gate_led ]
+  set on_led [ create_bd_port -dir O -from 0 -to 0 on_led ]
+  set sig [ create_bd_port -dir O sig ]
+  set sig_led [ create_bd_port -dir O sig_led ]
+  set trig [ create_bd_port -dir I trig ]
+  set trig_led [ create_bd_port -dir O -from 0 -to 0 trig_led ]
 
   # Create instance: processing_system7_0, and set properties
   set processing_system7_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:processing_system7:5.5 processing_system7_0 ]
@@ -170,7 +164,7 @@ CONFIG.PCW_ACT_APU_PERIPHERAL_FREQMHZ {666.666687} \
 CONFIG.PCW_ACT_CAN0_PERIPHERAL_FREQMHZ {23.8095} \
 CONFIG.PCW_ACT_CAN1_PERIPHERAL_FREQMHZ {23.8095} \
 CONFIG.PCW_ACT_CAN_PERIPHERAL_FREQMHZ {10.000000} \
-CONFIG.PCW_ACT_DCI_PERIPHERAL_FREQMHZ {10.158730} \
+CONFIG.PCW_ACT_DCI_PERIPHERAL_FREQMHZ {10.158731} \
 CONFIG.PCW_ACT_ENET0_PERIPHERAL_FREQMHZ {125.000000} \
 CONFIG.PCW_ACT_ENET1_PERIPHERAL_FREQMHZ {10.000000} \
 CONFIG.PCW_ACT_FPGA0_PERIPHERAL_FREQMHZ {125.000000} \
@@ -233,8 +227,8 @@ CONFIG.PCW_CPU_PERIPHERAL_CLKSRC {ARM PLL} \
 CONFIG.PCW_CPU_PERIPHERAL_DIVISOR0 {2} \
 CONFIG.PCW_CRYSTAL_PERIPHERAL_FREQMHZ {33.333333} \
 CONFIG.PCW_DCI_PERIPHERAL_CLKSRC {DDR PLL} \
-CONFIG.PCW_DCI_PERIPHERAL_DIVISOR0 {15} \
-CONFIG.PCW_DCI_PERIPHERAL_DIVISOR1 {7} \
+CONFIG.PCW_DCI_PERIPHERAL_DIVISOR0 {35} \
+CONFIG.PCW_DCI_PERIPHERAL_DIVISOR1 {3} \
 CONFIG.PCW_DCI_PERIPHERAL_FREQMHZ {10.159} \
 CONFIG.PCW_DDRPLL_CTRL_FBDIV {32} \
 CONFIG.PCW_DDR_DDR_PLL_FREQMHZ {1066.667} \
@@ -354,14 +348,14 @@ CONFIG.PCW_EN_USB0 {1} \
 CONFIG.PCW_EN_USB1 {0} \
 CONFIG.PCW_EN_WDT {0} \
 CONFIG.PCW_FCLK0_PERIPHERAL_CLKSRC {IO PLL} \
-CONFIG.PCW_FCLK0_PERIPHERAL_DIVISOR0 {4} \
-CONFIG.PCW_FCLK0_PERIPHERAL_DIVISOR1 {2} \
+CONFIG.PCW_FCLK0_PERIPHERAL_DIVISOR0 {8} \
+CONFIG.PCW_FCLK0_PERIPHERAL_DIVISOR1 {1} \
 CONFIG.PCW_FCLK1_PERIPHERAL_CLKSRC {IO PLL} \
-CONFIG.PCW_FCLK1_PERIPHERAL_DIVISOR0 {2} \
-CONFIG.PCW_FCLK1_PERIPHERAL_DIVISOR1 {2} \
+CONFIG.PCW_FCLK1_PERIPHERAL_DIVISOR0 {4} \
+CONFIG.PCW_FCLK1_PERIPHERAL_DIVISOR1 {1} \
 CONFIG.PCW_FCLK2_PERIPHERAL_CLKSRC {IO PLL} \
-CONFIG.PCW_FCLK2_PERIPHERAL_DIVISOR0 {5} \
-CONFIG.PCW_FCLK2_PERIPHERAL_DIVISOR1 {4} \
+CONFIG.PCW_FCLK2_PERIPHERAL_DIVISOR0 {20} \
+CONFIG.PCW_FCLK2_PERIPHERAL_DIVISOR1 {1} \
 CONFIG.PCW_FCLK3_PERIPHERAL_CLKSRC {IO PLL} \
 CONFIG.PCW_FCLK3_PERIPHERAL_DIVISOR0 {5} \
 CONFIG.PCW_FCLK3_PERIPHERAL_DIVISOR1 {1} \
@@ -1038,64 +1032,73 @@ CONFIG.PCW_WDT_WDT_IO {<Select>} \
   set processing_system7_0_axi_periph [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 processing_system7_0_axi_periph ]
   set_property -dict [ list \
 CONFIG.NUM_MI {1} \
+CONFIG.S00_HAS_DATA_FIFO {1} \
+CONFIG.S00_HAS_REGSLICE {3} \
  ] $processing_system7_0_axi_periph
-
-  # Create instance: rfx_pwmgen_0, and set properties
-  set rfx_pwmgen_0 [ create_bd_cell -type ip -vlnv user.org:user:rfx_pwmgen:1.0 rfx_pwmgen_0 ]
-  set_property -dict [ list \
-CONFIG.bits_resolution {8} \
-CONFIG.pwm_freq {10} \
-CONFIG.sys_clk {125000000} \
- ] $rfx_pwmgen_0
 
   # Create instance: rst_processing_system7_0_125M, and set properties
   set rst_processing_system7_0_125M [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset:5.0 rst_processing_system7_0_125M ]
+
+  # Create instance: w7x_timing_0, and set properties
+  set w7x_timing_0 [ create_bd_cell -type ip -vlnv user.org:user:w7x_timing:1.0 w7x_timing_0 ]
+
+  # Create instance: xlconstant_0, and set properties
+  set xlconstant_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 xlconstant_0 ]
 
   # Create interface connections
   connect_bd_intf_net -intf_net processing_system7_0_DDR [get_bd_intf_ports DDR] [get_bd_intf_pins processing_system7_0/DDR]
   connect_bd_intf_net -intf_net processing_system7_0_FIXED_IO [get_bd_intf_ports FIXED_IO] [get_bd_intf_pins processing_system7_0/FIXED_IO]
   connect_bd_intf_net -intf_net processing_system7_0_M_AXI_GP0 [get_bd_intf_pins processing_system7_0/M_AXI_GP0] [get_bd_intf_pins processing_system7_0_axi_periph/S00_AXI]
-  connect_bd_intf_net -intf_net processing_system7_0_axi_periph_M00_AXI [get_bd_intf_pins processing_system7_0_axi_periph/M00_AXI] [get_bd_intf_pins rfx_pwmgen_0/S00_AXI]
+  connect_bd_intf_net -intf_net processing_system7_0_axi_periph_M00_AXI [get_bd_intf_pins processing_system7_0_axi_periph/M00_AXI] [get_bd_intf_pins w7x_timing_0/S00_AXI]
 
   # Create port connections
-  connect_bd_net -net processing_system7_0_FCLK_CLK0 [get_bd_pins processing_system7_0/FCLK_CLK0] [get_bd_pins processing_system7_0/M_AXI_GP0_ACLK] [get_bd_pins processing_system7_0/S_AXI_HP0_ACLK] [get_bd_pins processing_system7_0/S_AXI_HP1_ACLK] [get_bd_pins processing_system7_0_axi_periph/ACLK] [get_bd_pins processing_system7_0_axi_periph/M00_ACLK] [get_bd_pins processing_system7_0_axi_periph/S00_ACLK] [get_bd_pins rfx_pwmgen_0/clk] [get_bd_pins rfx_pwmgen_0/s00_axi_aclk] [get_bd_pins rst_processing_system7_0_125M/slowest_sync_clk]
+  connect_bd_net -net clk_1 [get_bd_ports clk] [get_bd_ports clk_led] [get_bd_pins w7x_timing_0/clk]
+  connect_bd_net -net processing_system7_0_FCLK_CLK0 [get_bd_pins processing_system7_0/FCLK_CLK0] [get_bd_pins processing_system7_0/M_AXI_GP0_ACLK] [get_bd_pins processing_system7_0/S_AXI_HP0_ACLK] [get_bd_pins processing_system7_0/S_AXI_HP1_ACLK] [get_bd_pins processing_system7_0_axi_periph/ACLK] [get_bd_pins processing_system7_0_axi_periph/M00_ACLK] [get_bd_pins processing_system7_0_axi_periph/S00_ACLK] [get_bd_pins rst_processing_system7_0_125M/slowest_sync_clk] [get_bd_pins w7x_timing_0/s00_axi_aclk]
   connect_bd_net -net processing_system7_0_FCLK_RESET0_N [get_bd_pins processing_system7_0/FCLK_RESET0_N] [get_bd_pins rst_processing_system7_0_125M/ext_reset_in]
-  connect_bd_net -net rfx_pwmgen_0_led_o [get_bd_ports led_o] [get_bd_pins rfx_pwmgen_0/led_o]
-  connect_bd_net -net rfx_pwmgen_0_pwm_n_out [get_bd_ports pwm_n_out] [get_bd_ports pwm_n_out_1] [get_bd_pins rfx_pwmgen_0/pwm_n_out]
-  connect_bd_net -net rfx_pwmgen_0_pwm_out [get_bd_ports pwm_out] [get_bd_ports pwm_out_1] [get_bd_pins rfx_pwmgen_0/pwm_out]
   connect_bd_net -net rst_processing_system7_0_125M_interconnect_aresetn [get_bd_pins processing_system7_0_axi_periph/ARESETN] [get_bd_pins rst_processing_system7_0_125M/interconnect_aresetn]
-  connect_bd_net -net rst_processing_system7_0_125M_peripheral_aresetn [get_bd_pins processing_system7_0_axi_periph/M00_ARESETN] [get_bd_pins processing_system7_0_axi_periph/S00_ARESETN] [get_bd_pins rfx_pwmgen_0/reset_n] [get_bd_pins rfx_pwmgen_0/s00_axi_aresetn] [get_bd_pins rst_processing_system7_0_125M/peripheral_aresetn]
+  connect_bd_net -net rst_processing_system7_0_125M_peripheral_aresetn [get_bd_pins processing_system7_0_axi_periph/M00_ARESETN] [get_bd_pins processing_system7_0_axi_periph/S00_ARESETN] [get_bd_pins rst_processing_system7_0_125M/peripheral_aresetn] [get_bd_pins w7x_timing_0/s00_axi_aresetn]
+  connect_bd_net -net trig_1 [get_bd_ports trig] [get_bd_ports trig_led] [get_bd_pins w7x_timing_0/trig]
+  connect_bd_net -net w7x_timing_0_gate [get_bd_ports gate] [get_bd_ports gate_led] [get_bd_pins w7x_timing_0/gate]
+  connect_bd_net -net w7x_timing_0_sig [get_bd_ports sig] [get_bd_ports sig_led] [get_bd_pins w7x_timing_0/sig]
+  connect_bd_net -net xlconstant_0_dout [get_bd_ports on_led] [get_bd_pins xlconstant_0/dout]
 
   # Create address segments
-  create_bd_addr_seg -range 0x00010000 -offset 0x43C00000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs rfx_pwmgen_0/S00_AXI/S00_AXI_reg] SEG_rfx_pwmgen_0_S00_AXI_reg
+  create_bd_addr_seg -range 0x10000 -offset 0x43C00000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs w7x_timing_0/S00_AXI/S00_AXI_reg] SEG_w7x_timing_0_S00_AXI_reg
 
   # Perform GUI Layout
   regenerate_bd_layout -layout_string {
-   guistr: "# # String gsaved with Nlview 6.5.12  2016-01-29 bk=1.3547 VDI=39 GEI=35 GUI=JA:1.6
+   guistr: "# # String gsaved with Nlview 6.5.5  2015-06-26 bk=1.3371 VDI=38 GEI=35 GUI=JA:1.8
 #  -string -flagsOSRD
 preplace port DDR -pg 1 -y 50 -defaultsOSRD
-preplace port led_o -pg 1 -y 260 -defaultsOSRD
+preplace port gate_led -pg 1 -y 280 -defaultsOSRD
+preplace port gate -pg 1 -y 260 -defaultsOSRD
+preplace port sig_led -pg 1 -y 240 -defaultsOSRD
 preplace port FIXED_IO -pg 1 -y 70 -defaultsOSRD
-preplace portBus pwm_out_1 -pg 1 -y 200 -defaultsOSRD
-preplace portBus pwm_n_out_1 -pg 1 -y 240 -defaultsOSRD
-preplace portBus pwm_n_out -pg 1 -y 220 -defaultsOSRD
-preplace portBus pwm_out -pg 1 -y 180 -defaultsOSRD
-preplace inst rst_processing_system7_0_125M -pg 1 -lvl 1 -y 470 -defaultsOSRD
-preplace inst rfx_pwmgen_0 -pg 1 -lvl 3 -y 240 -defaultsOSRD
-preplace inst processing_system7_0_axi_periph -pg 1 -lvl 2 -y 200 -defaultsOSRD
+preplace port trig -pg 1 -y 580 -defaultsOSRD
+preplace port sig -pg 1 -y 220 -defaultsOSRD
+preplace port clk -pg 1 -y 380 -defaultsOSRD
+preplace portBus clk_led -pg 1 -y 120 -defaultsOSRD
+preplace portBus on_led -pg 1 -y 470 -defaultsOSRD
+preplace portBus trig_led -pg 1 -y 380 -defaultsOSRD
+preplace inst rst_processing_system7_0_125M -pg 1 -lvl 1 -y 490 -defaultsOSRD
+preplace inst xlconstant_0 -pg 1 -lvl 3 -y 470 -defaultsOSRD
+preplace inst w7x_timing_0 -pg 1 -lvl 3 -y 250 -defaultsOSRD
+preplace inst processing_system7_0_axi_periph -pg 1 -lvl 2 -y 160 -defaultsOSRD
 preplace inst processing_system7_0 -pg 1 -lvl 1 -y 190 -defaultsOSRD
-preplace netloc processing_system7_0_DDR 1 1 3 NJ 50 NJ 50 NJ
+preplace netloc processing_system7_0_DDR 1 1 3 NJ 40 NJ 40 NJ
 preplace netloc rst_processing_system7_0_125M_interconnect_aresetn 1 1 1 500
-preplace netloc processing_system7_0_axi_periph_M00_AXI 1 2 1 N
-preplace netloc processing_system7_0_M_AXI_GP0 1 1 1 470
-preplace netloc processing_system7_0_FCLK_RESET0_N 1 0 2 20 560 470
-preplace netloc rfx_pwmgen_0_pwm_out 1 3 1 1090
-preplace netloc processing_system7_0_FIXED_IO 1 1 3 NJ 60 NJ 60 NJ
-preplace netloc rst_processing_system7_0_125M_peripheral_aresetn 1 1 2 480 40 800
-preplace netloc rfx_pwmgen_0_led_o 1 3 1 NJ
-preplace netloc rfx_pwmgen_0_pwm_n_out 1 3 1 1100
-preplace netloc processing_system7_0_FCLK_CLK0 1 0 3 20 380 490 80 790
-levelinfo -pg 1 0 250 650 950 1120 -top 0 -bot 570
+preplace netloc processing_system7_0_axi_periph_M00_AXI 1 2 1 840
+preplace netloc processing_system7_0_M_AXI_GP0 1 1 1 520
+preplace netloc processing_system7_0_FCLK_RESET0_N 1 0 2 30 400 480
+preplace netloc xlconstant_0_dout 1 3 1 NJ
+preplace netloc clk_1 1 0 4 NJ 380 NJ 280 830 120 NJ
+preplace netloc processing_system7_0_FIXED_IO 1 1 3 NJ 20 NJ 20 NJ
+preplace netloc w7x_timing_0_sig 1 3 1 1070
+preplace netloc rst_processing_system7_0_125M_peripheral_aresetn 1 1 2 520 290 NJ
+preplace netloc processing_system7_0_FCLK_CLK0 1 0 3 20 390 490 10 850
+preplace netloc w7x_timing_0_gate 1 3 1 1080
+preplace netloc trig_1 1 0 4 NJ 580 NJ 580 860 380 NJ
+levelinfo -pg 1 0 250 680 970 1100 -top 0 -bot 600
 ",
 }
 
