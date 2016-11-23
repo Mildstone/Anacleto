@@ -14,10 +14,12 @@ DTS       ?= sdk/dts/devicetree.dts
 DTB       ?= sdk/dts/devicetree.dtb
 
 
+# Petalinux ...
+# . /opt/Xilinx/petalinux-v2015.4-final/settings.sh;
+
 define _envset
 . $(VIVADO_SETUP_SCRIPT); \
 . $(VIVADO_SDK_SETUP_SCRIPT); \
-. /opt/Xilinx/petalinux-v2015.4-final/settings.sh; \
 export PETALINUX=$${PETALINUX}; \
 export srcdir=$(srcdir); \
 export top_srcdir=$(top_srcdir); \
