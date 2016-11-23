@@ -611,8 +611,7 @@ projects/rfx_AD7641/logic/rfx_pwmgen_1.0/xgui/rfx_pwmgen_v1_0.tcl
 projects/rfx_AD7641/logic/rfx_pwmgen_1.0/component.xml
 projects/rfx_AD7641/logic/Makefile.am
 projects/rfx_AD7641/logic/Makefile.in
-projects/rfx_AD7641/logic/red_pitaya_2015.4.tcl
-projects/rfx_AD7641/logic/red_pitaya_2015.4.xdc
+projects/rfx_AD7641/logic/red_pitaya.xdc
 projects/rfx_AD7641/src/Kbuild.in
 projects/rfx_AD7641/src/Makefile.am
 projects/rfx_AD7641/src/Makefile.in
@@ -733,9 +732,10 @@ projects/rfx_RPHctl/src/rfx_RPHctl_test2.c
 projects/rfx_RPHctl/src/rp_test.c
 projects/rfx_RPHctl/Makefile.am
 projects/rfx_RPHctl/Makefile.in
-projects/w7x_timing/logic/edit_w7x_timing_v1_0.hw/webtalk/labtool_webtalk.log
-projects/w7x_timing/logic/edit_w7x_timing_v1_0.hw/webtalk/usage_statistics_ext_labtool.html
-projects/w7x_timing/logic/edit_w7x_timing_v1_0.hw/webtalk/usage_statistics_ext_labtool.xml
+projects/w7x_timing/logic/vivado_src/red_pitaya.srcs/sources_1/bd/system/hdl/system_wrapper.v
+projects/w7x_timing/logic/vivado_src/red_pitaya.srcs/sources_1/bd/system/system.bd
+projects/w7x_timing/logic/vivado_src/red_pitaya.srcs/sources_1/bd/system/system_2015.4.tcl
+projects/w7x_timing/logic/vivado_src/red_pitaya.tcl
 projects/w7x_timing/logic/w7x_timing_1.0/bd/bd.tcl
 projects/w7x_timing/logic/w7x_timing_1.0/drivers/w7x_timing_v1_0/data/w7x_timing.mdd
 projects/w7x_timing/logic/w7x_timing_1.0/drivers/w7x_timing_v1_0/data/w7x_timing.tcl
@@ -755,7 +755,7 @@ projects/w7x_timing/logic/w7x_timing_1.0/component.xml
 projects/w7x_timing/logic/clock_trig_gen.vhd
 projects/w7x_timing/logic/Makefile.am
 projects/w7x_timing/logic/Makefile.in
-projects/w7x_timing/logic/red_pitaya_2015.4.tcl
+projects/w7x_timing/logic/p1_w7x.tcl
 projects/w7x_timing/logic/red_pitaya.xdc
 projects/w7x_timing/src/Kbuild.in
 projects/w7x_timing/src/Makefile.am
