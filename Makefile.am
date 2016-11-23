@@ -90,12 +90,12 @@ savedefconfig: $(LINUX_SRCDIR) $(LINUX_BUILDDIR) print-env
 
 $(LINUX_BUILDDIR)/.config: $(LINUX_SRCDIR) $(LINUX_BUILDDIR)
 	$(_set_export); \
+	$(MAKE) $(AM_MAKEFLAGS) -C $< mrproper; \
 	$(MAKE) -s $(AM_MAKEFLAGS) -C $< O=$$O CFLAGS="$(LINUX_CFLAGS)" defconfig; \
 	$(MAKE) -s linux-init;
 
 $(LINUX_IMAGE): $(LINUX_SRCDIR) $(LINUX_BUILDDIR) $(LINUX_BUILDDIR)/.config
 	$(_set_export); \
-	$(MAKE) $(AM_MAKEFLAGS) -C $< mrproper; \
 	$(MAKE) $(AM_MAKEFLAGS) -C $< O=$$O CFLAGS="$(LINUX_CFLAGS)" \
 		UIMAGE_LOADADDR=$(LINUX_UIMAGE_LOADADDR) $(LINUX_PACKAGE); \
 	$(MAKE) $(AM_MAKEFLAGS) -C $< O=$$O CFLAGS="$(LINUX_CFLAGS)" modules; \
