@@ -43,6 +43,7 @@ if WITH_LINUX_GIT
 else
 if WITH_LINUX_TAR
 	@ \
+	  mkdir -p ${DL} $@; \
 	  echo " getting linux from tar:  ${LINUX_TAR}"; \
 	  _tar=${DL}/$$(echo $(LINUX_TAR) | sed -e 's|.*/||'); \
 	  test -f $$_tar || curl -SL $(LINUX_TAR) > $$_tar; \
