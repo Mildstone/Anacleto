@@ -14,7 +14,9 @@ BD_SOURCES =
 ## NOTE: the ip name must be formatted as: [ip_path]/[ipname]_[major.minor]
 IP_SOURCES = w7x_timing_1.0
 
-all: $(FPGA_BIT) $(DTB)
+
+
+all: $(FPGA_BIT) $(DTB) ##@all Write bitstream and devicetree
 
 clean:
 	-rm -rf out .Xil .srcs sdk webtalk_*

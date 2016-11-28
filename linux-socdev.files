@@ -802,3 +802,4 @@ Makefile.in
 README.md
 rp-linux-config
 settings.sh.in
+m4/ax_target_selfhelp.m4

@@ -31,3 +31,4 @@ projects/rfx_RPHctl/logic/ip/myip_1.0/drivers/myip_lnx_v1_0/data
 projects/rfx_RPHctl/logic/ip/linux_os
 projects/rfx_RPHctl/logic/ip/linux_os/data
 projects/rfx_pwmgen/logic/vivado_src
+m4

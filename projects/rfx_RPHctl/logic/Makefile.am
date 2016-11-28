@@ -28,7 +28,7 @@ BD_SOURCES =
 IP_SOURCES = ip/myip_1.0 ip/myip2_1.0
 
 
-all: $(FPGA_BIT) $(DTB)
+all: $(FPGA_BIT) $(DTB) ##@all Write bitstream and devicetree
 
 clean:
 	-rm -rf out .Xil .srcs sdk webtalk_*

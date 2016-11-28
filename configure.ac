@@ -25,6 +25,9 @@ AS_VAR_SET([srcdir],[${srcdir}])
 AS_VAR_SET([builddir],[$(pwd)])
 AX_KCONFIG([conf/kconfig])
 
+dnl AX_TARGET_SELFHELP /////////////////////////////////////////////////////////
+AX_TARGET_SELFHELP
+
 dnl AX_DOCKER_BUILD ////////////////////////////////////////////////////////////
 dnl see: m4_ax_docker_build.m4
 dnl /// Kconfig docker variables import example ...

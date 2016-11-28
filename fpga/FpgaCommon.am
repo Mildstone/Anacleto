@@ -40,17 +40,39 @@ endef
 .PHONY: project fpga bit fsbl dts dtb
 
 
+GREEN  := $(shell tput -Txterm setaf 2)
+WHITE  := $(shell tput -Txterm setaf 7)
+YELLOW := $(shell tput -Txterm setaf 3)
+RESET  := $(shell tput -Txterm sgr0)
+
+SELFHELP_FUNC = \
+    %help; \
+    while(<>) { \
+	if(/^([a-z0-9_-]+):.*\#\#(?:@(\w+))?\s(.*)$$/) { \
+	    push(@{$$help{$$2}}, [$$1, $$3]); \
+	} \
+    }; \
+    print "${GREEN}usage: make [target]${WHITE}\n\n"; \
+    for ( sort keys %help ) { \
+	print "${YELLOW}$$_${WHITE}:\n"; \
+	printf("  %-20s %s\n", $$_->[0], $$_->[1]) for @{$$help{$$_}}; \
+	print "\n"; \
+    }
+
+help:           ##@miscellaneous Show this help.
+	@perl -e '$(SELFHELP_FUNC)' $(MAKEFILE_LIST)
+
 ## ////////////////////////////////////////////////////////////////////////// ##
 ## ///  VIVADO PROJECT  ///////////////////////////////////////////////////// ##
 ## ////////////////////////////////////////////////////////////////////////// ##
 
 .PHONY: vivado_shell
-vivado_shell:
+vivado_shell: ##@vivado open a vivado shell with configured env
 	@ ${_envset}; \
 	$(VIVADO_SHELL) -source $(FPGA_DIR)/vivado_make.tcl
 
 .PHONY: hsi_shell
-hsi_shell:
+hsi_shell:  ##@vivado open hsi shell with configured env
 	@ ${_envset}; \
 	$(HSI_SHELL) -source $(FPGA_DIR)/vivado_make.tcl
 
@@ -59,21 +81,25 @@ hsi_shell:
 ## ///  VIVADO PROJECT  ///////////////////////////////////////////////////// ##
 ## ////////////////////////////////////////////////////////////////////////// ##
 
+new_project:   ##@vivado Create a new vivado project in vivado_project folder named as the currently selected board.
+open_project:  ##@vivado Open the current project in vivado_project folder  or generate it using previously stored tcl script.
+write_project: ##@vivado Store the current  project saving all related local sources in vivado_src folder.
+write_bitstream:  ##@vivado generate bitstream using auto_synth and auto_impl runs.
+edit_peripheral:  ##@vivado open all module pheripherals projects for edit.
 
-new_project write_project write_bitstream:
+write_project write_bitstream:
 	@ ( ${_envset}; \
 	    $(VIVADO) -source $(FPGA_DIR)/vivado_make.tcl -tclargs $@ )
 
-open_project edit_peripheral:
+new_project open_project edit_peripheral:
 	@ ( ${_envset}; \
 	    $(VIVADO_SHELL) -source $(FPGA_DIR)/vivado_make.tcl -tclargs $@ )
 
-clean_project:
+clean_project: ##@vivado Clean all build project files from disk (make write_project before this)
 	-rm -rf vivado_project vivado.jou  vivado.log  \
 		vivado_*.backup.jou  vivado_*.backup.log  vivado_pid*.str \
 		webtalk.jou  webtalk.log  \
 		webtalk_*.backup.jou  webtalk_*.backup.log
-
 
 
 
@@ -126,6 +152,7 @@ $(DTB):  $(DTS) $(LINUX_IMAGE)
 ## ////////////////////////////////////////////////////////////////////////// ##
 
 .PHONY: deploy
+deploy: ##@miscellaneous Copy all files to target device
 deploy: $(FPGA_BIT) $(LINUX_IMAGE) $(DTB)
 if WITH_DEVICE_SSHKEY
 	@ echo " --- deploying to target device: ${DEVICE_NAME} using key ---";
@@ -140,6 +167,7 @@ endif
 endif
 
 .PHONY: deploy_fpga
+deploy_fpga: ##@miscellaneous Start generated bitstream in target device
 deploy_fpga: $(FPGA_BIT)
 	@ echo ""; \
 	  echo " WARNING: This will reprogram fpga without setting devicetree and kernel "
