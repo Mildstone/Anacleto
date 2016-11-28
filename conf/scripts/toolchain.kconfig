@@ -17,7 +17,7 @@
   config LINARO_BIN_TAR
 	 string "url path for Linaro toolchain binaries"
 	 depends on TOOLCHAIN_LINARO_BIN
-	 default "http://releases.linaro.org/14.11/components/toolchain/binaries/arm-linux-gnueabihf/gcc-linaro-4.9-2014.11-x86_64_arm-linux-gnueabihf.tar.xz"
+	 default "http://releases.linaro.org/components/toolchain/binaries/latest/arm-linux-gnueabihf/gcc-linaro-6.1.1-2016.08-x86_64_arm-linux-gnueabihf.tar.xz"
 
   config WITH_TOOLCHAIN_DIR
 	 string  "toolchain root path"

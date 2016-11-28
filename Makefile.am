@@ -43,6 +43,7 @@ if WITH_LINUX_GIT
 else
 if WITH_LINUX_TAR
 	@ \
+	  mkdir -p ${DL} $@; \
 	  echo " getting linux from tar:  ${LINUX_TAR}"; \
 	  _tar=${DL}/$$(echo $(LINUX_TAR) | sed -e 's|.*/||'); \
 	  test -f $$_tar || curl -SL $(LINUX_TAR) > $$_tar; \
@@ -89,12 +90,12 @@ savedefconfig: $(LINUX_SRCDIR) $(LINUX_BUILDDIR) print-env
 
 $(LINUX_BUILDDIR)/.config: $(LINUX_SRCDIR) $(LINUX_BUILDDIR)
 	$(_set_export); \
+	$(MAKE) $(AM_MAKEFLAGS) -C $< mrproper; \
 	$(MAKE) -s $(AM_MAKEFLAGS) -C $< O=$$O CFLAGS="$(LINUX_CFLAGS)" defconfig; \
 	$(MAKE) -s linux-init;
 
 $(LINUX_IMAGE): $(LINUX_SRCDIR) $(LINUX_BUILDDIR) $(LINUX_BUILDDIR)/.config
 	$(_set_export); \
-	$(MAKE) $(AM_MAKEFLAGS) -C $< mrproper; \
 	$(MAKE) $(AM_MAKEFLAGS) -C $< O=$$O CFLAGS="$(LINUX_CFLAGS)" \
 		UIMAGE_LOADADDR=$(LINUX_UIMAGE_LOADADDR) $(LINUX_PACKAGE); \
 	$(MAKE) $(AM_MAKEFLAGS) -C $< O=$$O CFLAGS="$(LINUX_CFLAGS)" modules; \
@@ -106,6 +107,65 @@ $(LINUX_IMAGE): $(LINUX_SRCDIR) $(LINUX_BUILDDIR) $(LINUX_BUILDDIR)/.config
 .PHONY: linux
 linux: $(LINUX_IMAGE)
 
+
+
+################################################################################
+# Yocto download
+################################################################################
+
+YOCTO_DIR ?= yocto
+
+yocto: $(YOCTO_DIR)
+
+$(YOCTO_DIR):
+	@ echo "Download Yocto sources"; \
+	  mkdir -p $@;
+if WITH_YOCTO_GIT
+	@ echo "git clone -b ${YOCTO_VERSION} ${YOCTO_GIT} $@"; \
+	  git clone -b ${YOCTO_VERSION} ${YOCTO_GIT} $@;
+else
+if WITH_YOCTO_TAR
+	@ \
+	  echo " getting Yocto from tar:  ${YOCTO_TAR}"; \
+	  _tar=${DL}/$$(echo $(YOCTO_TAR) | sed -e 's|.*/||'); \
+	  test -f $$_tar || curl -SL $(YOCTO_TAR) > $$_tar; \
+	  _wcl=$$(tar -tjf $$_tar | sed -e 's|/.*||' | uniq | wc -l); \
+	  if test $$_wcl = 1; then \
+	  tar -xjf $$_tar -C $@ --strip 1; \
+	  else \
+	  tar -xjf $$_tar -C $@; \
+	  fi
+endif
+endif
+
+################################################################################
+# Yocto meta-xilinx download
+################################################################################
+
+YOCTO_XILINX_DIR ?= ${YOCTO_DIR}/meta-xilinx
+
+yocto_xilinx: $(YOCTO_XILINX_DIR)
+
+$(YOCTO_XILINX_DIR): ${YOCTO_DIR}
+	@ echo "Download Yocto meta-xilinx sources"; \
+	  mkdir -p $@;
+if WITH_YOCTO_XILINX_GIT
+	@ echo "git clone ${YOCTO_XILINX_GIT} $@"; \
+	  git clone ${YOCTO_XILINX_GIT} $@;
+else
+if WITH_YOCTO_XILINX_TAR
+	@ \
+	  echo " getting Yocto meta-xilinx from tar: ${YOCTO_XILINX_TAR}"; \
+	  _tar=${DL}/$$(echo $(YOCTO_XILINX_TAR) | sed -e 's|.*/||'); \
+	  test -f $$_tar || curl -SL $(YOCTO_XILINX_TAR) > $$_tar; \
+	  _wcl=$$(tar -tzf $$_tar | sed -e 's|/.*||' | uniq | wc -l); \
+	  if test $$_wcl = 1; then \
+	  tar -xzf $$_tar -C $@ --strip 1; \
+	  else \
+	  tar -xzf $$_tar -C $@; \
+	  fi
+endif
+endif
 
 
 

@@ -20,10 +20,12 @@ extern "C" {
 # pragma pack(1)
 struct w7x_timing {
 	int init;
-	int delay;
+	int delay_l;
+	int delay_h;
 	int wid;
 	int period;
-	int cycle;
+	int cycle_l;
+	int cycle_h;
 	int repeat;
 	int count;
 	int seq[32];

@@ -1,0 +1,5 @@
+
+obj = $(builddir)
+src = $(srcdir)
+
+obj-m += rfx_RPHctl.o

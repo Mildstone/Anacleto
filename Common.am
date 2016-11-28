@@ -5,7 +5,8 @@ MAKE_PROCESS ?= $(shell grep -c ^processor /proc/cpuinfo)
 TMP          ?= $(abs_top_builddir)
 FPGA_DIR      = $(abs_top_srcdir)/fpga
 FPGA_REPO_DIR = $(abs_top_srcdir)/fpga/ip_repo
-DL           ?= $(top_builddir)/download
+DTREE_DIR    ?= $(abs_top_builddir)/fpga/device-tree-xlnx-${VIVADO_VERSION}
+DL           ?= $(abs_top_builddir)/download
 
 VIVADO_VERSION ?= 2015.4
 

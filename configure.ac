@@ -25,6 +25,9 @@ AS_VAR_SET([srcdir],[${srcdir}])
 AS_VAR_SET([builddir],[$(pwd)])
 AX_KCONFIG([conf/kconfig])
 
+dnl AX_TARGET_SELFHELP /////////////////////////////////////////////////////////
+AX_TARGET_SELFHELP
+
 dnl AX_DOCKER_BUILD ////////////////////////////////////////////////////////////
 dnl see: m4_ax_docker_build.m4
 dnl /// Kconfig docker variables import example ...
@@ -204,6 +207,37 @@ AC_SUBST([LINUX_DEF_CONFIG])
 dnl AS_VAR_IF([WITH_LINUX_TAR],[yes],
 dnl	  [AS_ECHO("---- DOWNLOAD LINUX ----")
 dnl	   AX_DOWNLOAD_TAR(${LINUX_TAR},${LINUX_DIR},[tmp])])
+
+# //////////////////////////////////////////////////////////////////////////// #
+# //  YOCTO  ///////////////////////////////////////////////////////////////// #
+# //////////////////////////////////////////////////////////////////////////// #
+
+AX_KCONFIG_CONDITIONAL([ENABLE_YOCTO])
+AX_KCONFIG_CONDITIONAL([WITH_YOCTO_GIT])
+AX_KCONFIG_CONDITIONAL([WITH_YOCTO_TAR])
+
+AX_KCONFIG_VAR([YOCTO_DIR])
+AC_SUBST([YOCTO_DIR])
+AX_KCONFIG_VAR([YOCTO_VERSION])
+AC_SUBST([YOCTO_VERSION])
+
+AX_KCONFIG_VAR([YOCTO_GIT])
+AC_SUBST([YOCTO_GIT])
+AX_KCONFIG_VAR([YOCTO_TAR])
+AC_SUBST([YOCTO_TAR])
+AX_KCONFIG_VAR([YOCTO_VERSION])
+AC_SUBST([YOCTO_VERSION])
+
+# Yocto meta-xilinx support
+AX_KCONFIG_CONDITIONAL([ENABLE_YOCTO_XILINX])
+AX_KCONFIG_CONDITIONAL([WITH_YOCTO_XILINX_GIT])
+AX_KCONFIG_CONDITIONAL([WITH_YOCTO_XILINX_TAR])
+AX_KCONFIG_VAR([YOCTO_XILINX_GIT])
+AC_SUBST([YOCTO_XILINX_GIT])
+AX_KCONFIG_VAR([YOCTO_XILINX_TAR])
+AC_SUBST([YOCTO_XILINX_TAR])
+
+
 
 
 

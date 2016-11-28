@@ -92,6 +92,8 @@ architecture arch_imp of w7x_timing_v1_0 is
     signal transfer_36: std_logic_vector(32-1 downto 0);
     signal transfer_37: std_logic_vector(32-1 downto 0);
     signal transfer_38: std_logic_vector(32-1 downto 0);
+    signal transfer_39: std_logic_vector(32-1 downto 0);
+    signal transfer_40: std_logic_vector(32-1 downto 0);
     
 	-- component declaration
 	component w7x_timing_v1_0_S00_AXI is
@@ -160,7 +162,9 @@ architecture arch_imp of w7x_timing_v1_0 is
         OUT_REG_35: out std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
         OUT_REG_36: out std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
         OUT_REG_37: out std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
-        OUT_REG_38: out std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0)
+        OUT_REG_38: out std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
+        OUT_REG_39: out std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
+        OUT_REG_40: out std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0)
         
 		
 		
@@ -176,10 +180,12 @@ architecture arch_imp of w7x_timing_v1_0 is
            sig  : out STD_LOGIC;
            gate : out STD_LOGIC;
            init : in STD_LOGIC;
-           delay : in STD_LOGIC_VECTOR (31 downto 0);
+           delay_l : in STD_LOGIC_VECTOR (31 downto 0);
+           delay_h : in STD_LOGIC_VECTOR (31 downto 0);
            wid : in STD_LOGIC_VECTOR (31 downto 0);
            period : in STD_LOGIC_VECTOR (31 downto 0);
-           cycle : in STD_LOGIC_VECTOR (31 downto 0);
+           cycle_l : in STD_LOGIC_VECTOR (31 downto 0);
+           cycle_h : in STD_LOGIC_VECTOR (31 downto 0);
            repeat : in STD_LOGIC_VECTOR (31 downto 0);
            count : in STD_LOGIC_VECTOR (31 downto 0);
            seq_0_l : in STD_LOGIC_VECTOR (31 downto 0);
@@ -291,7 +297,9 @@ w7x_timing_v1_0_S00_AXI_inst : w7x_timing_v1_0_S00_AXI
 		OUT_REG_35  => transfer_35,
 		OUT_REG_36  => transfer_36,
 		OUT_REG_37  => transfer_37,
-		OUT_REG_38  => transfer_38
+		OUT_REG_38  => transfer_38,
+		OUT_REG_39  => transfer_39,
+		OUT_REG_40  => transfer_40
 		
 		
 		
@@ -302,44 +310,46 @@ w7x_timing_inst : w7x_timing
 	port map (
 
            init => transfer_0(0),
-           delay => transfer_1,
-           wid  => transfer_2,
-           period  => transfer_3,
-           cycle  => transfer_4,
-           repeat  => transfer_5,
-           count  => transfer_6,
-           seq_0_l  => transfer_7,
-           seq_0_h  => transfer_8,
-           seq_1_l  => transfer_9,
-           seq_1_h  => transfer_10,
-           seq_2_l  => transfer_11,
-           seq_2_h  => transfer_12,
-           seq_3_l  => transfer_13,
-           seq_3_h  => transfer_14,
-           seq_4_l  => transfer_15,
-           seq_4_h  => transfer_16,
-           seq_5_l  => transfer_17,
-           seq_5_h  => transfer_18,
-           seq_6_l  => transfer_19,
-           seq_6_h  => transfer_20,
-           seq_7_l  => transfer_21,
-           seq_7_h  => transfer_22,
-           seq_8_l  => transfer_23,
-           seq_8_h  => transfer_24,
-           seq_9_l  => transfer_25,
-           seq_9_h  => transfer_26,
-           seq_10_l  => transfer_27,
-           seq_10_h  => transfer_28,
-           seq_11_l  => transfer_29,
-           seq_11_h  => transfer_30,
-           seq_12_l  => transfer_31,
-           seq_12_h  => transfer_32,
-           seq_13_l  => transfer_33,
-           seq_13_h  => transfer_34,
-           seq_14_l  => transfer_35,
-           seq_14_h  => transfer_36,
-           seq_15_l  => transfer_37,
-           seq_15_h  => transfer_38,
+           delay_l => transfer_1,
+           delay_h => transfer_2,
+           wid  => transfer_3,
+           period  => transfer_4,
+           cycle_l  => transfer_5,
+           cycle_h  => transfer_6,
+           repeat  => transfer_7,
+           count  => transfer_8,
+           seq_0_l  => transfer_9,
+           seq_0_h  => transfer_10,
+           seq_1_l  => transfer_11,
+           seq_1_h  => transfer_12,
+           seq_2_l  => transfer_13,
+           seq_2_h  => transfer_14,
+           seq_3_l  => transfer_15,
+           seq_3_h  => transfer_16,
+           seq_4_l  => transfer_17,
+           seq_4_h  => transfer_18,
+           seq_5_l  => transfer_19,
+           seq_5_h  => transfer_20,
+           seq_6_l  => transfer_21,
+           seq_6_h  => transfer_22,
+           seq_7_l  => transfer_23,
+           seq_7_h  => transfer_24,
+           seq_8_l  => transfer_25,
+           seq_8_h  => transfer_26,
+           seq_9_l  => transfer_27,
+           seq_9_h  => transfer_28,
+           seq_10_l  => transfer_29,
+           seq_10_h  => transfer_30,
+           seq_11_l  => transfer_31,
+           seq_11_h  => transfer_32,
+           seq_12_l  => transfer_33,
+           seq_12_h  => transfer_34,
+           seq_13_l  => transfer_35,
+           seq_13_h  => transfer_36,
+           seq_14_l  => transfer_37,
+           seq_14_h  => transfer_38,
+           seq_15_l  => transfer_39,
+           seq_15_h  => transfer_40,
            
            clk => clk,
            trig => trig,

@@ -119,7 +119,9 @@ entity w7x_timing_v1_0_S00_AXI is
 		OUT_REG_35: out std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
 		OUT_REG_36: out std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
 		OUT_REG_37: out std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
-		OUT_REG_38: out std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0)
+		OUT_REG_38: out std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
+		OUT_REG_39: out std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
+		OUT_REG_40: out std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0)
 		
 		
 	);
@@ -270,6 +272,8 @@ begin
 	OUT_REG_36  <= slv_reg36;
 	OUT_REG_37  <= slv_reg37;
 	OUT_REG_38  <= slv_reg38;
+	OUT_REG_39  <= slv_reg39;
+	OUT_REG_40  <= slv_reg40;
 	
 	-- Implement axi_awready generation
 	-- axi_awready is asserted for one S_AXI_ACLK clock cycle when both
