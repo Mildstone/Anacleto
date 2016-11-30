@@ -238,9 +238,6 @@ AX_KCONFIG_VAR([YOCTO_XILINX_TAR])
 AC_SUBST([YOCTO_XILINX_TAR])
 
 
-
-
-
 AC_CONFIG_FILES( 
                  Makefile
 		 fpga/Makefile
