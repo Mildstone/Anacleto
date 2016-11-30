@@ -1,8 +1,9 @@
 include Common.am
-
 AM_MAKEFLAGS = -j$(MAKE_PROCESS)
 
+@TARGET_SELFHELP@
 
+all: ##@all download and build the selected toolchain and the linux image
 all: $(top_builddir)/toolchain $(LINUX_IMAGE)
 
 ################################################################################
@@ -61,6 +62,7 @@ $(LINUX_BUILDDIR):
 	mkdir -p $@;
 endif
 
+menuconfig: ##@linux enter menuconfig inside linux sources
 nconfig menuconfig xconfig gconfig: $(LINUX_SRCDIR) $(LINUX_BUILDDIR)
 	$(MAKE) -C $< $@
 
@@ -79,6 +81,8 @@ linux-init:
 	$(MAKE) -s linux-init-s
 
 .PHONY: kernelversion kernelrelease
+kernelversion: ##@linux display the current kernel version
+kernelrelease: ##@linux display the current kernel release
 kernelversion kernelrelease: $(LINUX_SRCDIR) $(LINUX_BUILDDIR)
 	@ $(_set_export); \
 	  $(MAKE) -s $(AM_MAKEFLAGS) -C $< O=$$O CFLAGS="$(LINUX_CFLAGS)" $@
@@ -105,6 +109,7 @@ $(LINUX_IMAGE): $(LINUX_SRCDIR) $(LINUX_BUILDDIR) $(LINUX_BUILDDIR)/.config
 	cp $(LINUX_BUILDDIR)/arch/arm/boot/uImage $@
 
 .PHONY: linux
+linux: ##@linux build linux image
 linux: $(LINUX_IMAGE)
 
 
@@ -115,6 +120,7 @@ linux: $(LINUX_IMAGE)
 
 YOCTO_DIR ?= yocto
 
+yocto: ##@yocto download and prepare yocto poky build environment
 yocto: $(YOCTO_DIR)
 
 $(YOCTO_DIR):
@@ -144,6 +150,7 @@ endif
 
 YOCTO_XILINX_DIR ?= ${YOCTO_DIR}/meta-xilinx
 
+yocto_xilinx: ##@yocto download and prepare the meta-xilinx yocto layer
 yocto_xilinx: $(YOCTO_XILINX_DIR)
 
 $(YOCTO_XILINX_DIR): ${YOCTO_DIR}
