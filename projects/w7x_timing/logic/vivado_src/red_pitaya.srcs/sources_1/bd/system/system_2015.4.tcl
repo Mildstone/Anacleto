@@ -785,42 +785,6 @@ CONFIG.S00_HAS_REGSLICE {3} \
   # Create address segments
   create_bd_addr_seg -range 0x10000 -offset 0x43C00000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs w7x_timing_0/S00_AXI/S00_AXI_reg] SEG_w7x_timing_0_S00_AXI_reg
 
-  # Perform GUI Layout
-  regenerate_bd_layout -layout_string {
-   guistr: "# # String gsaved with Nlview 6.5.5  2015-06-26 bk=1.3371 VDI=38 GEI=35 GUI=JA:1.8
-#  -string -flagsOSRD
-preplace port DDR -pg 1 -y 40 -defaultsOSRD
-preplace port gate_led -pg 1 -y 260 -defaultsOSRD
-preplace port gate -pg 1 -y 280 -defaultsOSRD
-preplace port sig_led -pg 1 -y 240 -defaultsOSRD
-preplace port FIXED_IO -pg 1 -y 60 -defaultsOSRD
-preplace port trig -pg 1 -y 570 -defaultsOSRD
-preplace port sig -pg 1 -y 220 -defaultsOSRD
-preplace port clk -pg 1 -y 550 -defaultsOSRD
-preplace portBus clk_led -pg 1 -y 80 -defaultsOSRD
-preplace portBus on_led -pg 1 -y 390 -defaultsOSRD
-preplace portBus trig_led -pg 1 -y 340 -defaultsOSRD
-preplace inst rst_processing_system7_0_125M -pg 1 -lvl 1 -y 460 -defaultsOSRD
-preplace inst xlconstant_0 -pg 1 -lvl 3 -y 390 -defaultsOSRD
-preplace inst w7x_timing_0 -pg 1 -lvl 3 -y 250 -defaultsOSRD
-preplace inst processing_system7_0_axi_periph -pg 1 -lvl 2 -y 210 -defaultsOSRD
-preplace inst processing_system7_0 -pg 1 -lvl 1 -y 180 -defaultsOSRD
-preplace netloc processing_system7_0_DDR 1 1 3 NJ 40 NJ 40 NJ
-preplace netloc rst_processing_system7_0_125M_interconnect_aresetn 1 1 1 490
-preplace netloc processing_system7_0_axi_periph_M00_AXI 1 2 1 N
-preplace netloc processing_system7_0_M_AXI_GP0 1 1 1 450
-preplace netloc processing_system7_0_FCLK_RESET0_N 1 0 2 10 370 450
-preplace netloc xlconstant_0_dout 1 3 1 NJ
-preplace netloc clk_1 1 0 4 NJ 550 NJ 80 810 80 NJ
-preplace netloc processing_system7_0_FIXED_IO 1 1 3 NJ 60 NJ 60 NJ
-preplace netloc w7x_timing_0_sig 1 3 1 1010
-preplace netloc rst_processing_system7_0_125M_peripheral_aresetn 1 1 2 480 90 790
-preplace netloc processing_system7_0_FCLK_CLK0 1 0 3 0 560 460 70 800
-preplace netloc w7x_timing_0_gate 1 3 1 1010
-preplace netloc trig_1 1 0 4 NJ 570 NJ 570 810 340 NJ
-levelinfo -pg 1 -20 230 640 910 1030 -top -10 -bot 590
-",
-}
 
   # Restore current instance
   current_bd_instance $oldCurInst
