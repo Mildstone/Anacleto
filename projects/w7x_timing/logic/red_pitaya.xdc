@@ -3,7 +3,6 @@
 ############################################################################
 # IO constraints                                                           #
 ############################################################################
-current_instance -quiet
 set_property IOSTANDARD LVCMOS33 [get_ports gate]
 set_property SLEW FAST [get_ports gate]
 set_property DRIVE 8 [get_ports gate]
@@ -96,3 +95,6 @@ set_property PACKAGE_PIN L17 [get_ports trig]
 set_property PULLDOWN true [get_ports clk]
 set_property PULLDOWN true [get_ports trig]
 
+
+set_property PACKAGE_PIN L16 [get_ports clk]
+set_property PACKAGE_PIN L17 [get_ports trig]
