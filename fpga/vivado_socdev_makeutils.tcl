@@ -237,7 +237,7 @@ proc make_open_project {} {
 	 $v::pe(dir_prj)/$project_name.xpr}
   ## restore project from tcl script ##
   if { [catch {current_project}] } {
-    set  ::origin_dir_loc    $v::pe(dir_src)
+    set  ::origin_dir_loc    $v::me(srcdir)
     set  ::orig_proj_dir_loc $v::pe(dir_prj)
     puts "RESTORING PROJECT FROM: $v::pe(dir_src)/$project_name.tcl"
     source $v::pe(dir_src)/../$project_name.tcl
