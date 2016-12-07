@@ -147,6 +147,9 @@ proc create_root_design { parentCell } {
   set FIXED_IO [ create_bd_intf_port -mode Master -vlnv xilinx.com:display_processing_system7:fixedio_rtl:1.0 FIXED_IO ]
 
   # Create ports
+  set IBUF_N [ create_bd_port -dir I -from 0 -to 0 IBUF_N ]
+  set IBUF_OUT [ create_bd_port -dir O -from 0 -to 0 IBUF_OUT ]
+  set IBUF_P [ create_bd_port -dir I -from 0 -to 0 IBUF_P ]
   set led_o [ create_bd_port -dir O -from 0 -to 0 led_o ]
   set prescaler_output_clk [ create_bd_port -dir O prescaler_output_clk ]
   set prescaler_output_clk_1 [ create_bd_port -dir O prescaler_output_clk_1 ]
@@ -166,6 +169,9 @@ CONFIG.NUM_MI {1} \
   # Create instance: rst_processing_system7_0_50M, and set properties
   set rst_processing_system7_0_50M [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset:5.0 rst_processing_system7_0_50M ]
 
+  # Create instance: util_ds_buf_0, and set properties
+  set util_ds_buf_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_ds_buf:2.1 util_ds_buf_0 ]
+
   # Create instance: xlconstant_0, and set properties
   set xlconstant_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 xlconstant_0 ]
 
@@ -176,11 +182,14 @@ CONFIG.NUM_MI {1} \
   connect_bd_intf_net -intf_net processing_system7_0_axi_periph_M00_AXI [get_bd_intf_pins prescaler_clock_0/S00_AXI] [get_bd_intf_pins processing_system7_0_axi_periph/M00_AXI]
 
   # Create port connections
+  connect_bd_net -net IBUF_DS_N_1 [get_bd_ports IBUF_N] [get_bd_pins util_ds_buf_0/IBUF_DS_N]
+  connect_bd_net -net IBUF_DS_P_1 [get_bd_ports IBUF_P] [get_bd_pins util_ds_buf_0/IBUF_DS_P]
   connect_bd_net -net prescaler_clock_0_prescaler_output_clk [get_bd_ports prescaler_output_clk] [get_bd_ports prescaler_output_clk_1] [get_bd_pins prescaler_clock_0/prescaler_output_clk]
   connect_bd_net -net processing_system7_0_FCLK_CLK0 [get_bd_pins prescaler_clock_0/s00_axi_aclk] [get_bd_pins processing_system7_0/FCLK_CLK0] [get_bd_pins processing_system7_0/M_AXI_GP0_ACLK] [get_bd_pins processing_system7_0_axi_periph/ACLK] [get_bd_pins processing_system7_0_axi_periph/M00_ACLK] [get_bd_pins processing_system7_0_axi_periph/S00_ACLK] [get_bd_pins rst_processing_system7_0_50M/slowest_sync_clk]
   connect_bd_net -net processing_system7_0_FCLK_RESET0_N [get_bd_pins processing_system7_0/FCLK_RESET0_N] [get_bd_pins rst_processing_system7_0_50M/ext_reset_in]
   connect_bd_net -net rst_processing_system7_0_50M_interconnect_aresetn [get_bd_pins processing_system7_0_axi_periph/ARESETN] [get_bd_pins rst_processing_system7_0_50M/interconnect_aresetn]
   connect_bd_net -net rst_processing_system7_0_50M_peripheral_aresetn [get_bd_pins prescaler_clock_0/s00_axi_aresetn] [get_bd_pins processing_system7_0_axi_periph/M00_ARESETN] [get_bd_pins processing_system7_0_axi_periph/S00_ARESETN] [get_bd_pins rst_processing_system7_0_50M/peripheral_aresetn]
+  connect_bd_net -net util_ds_buf_0_IBUF_OUT [get_bd_ports IBUF_OUT] [get_bd_pins util_ds_buf_0/IBUF_OUT]
   connect_bd_net -net xlconstant_0_dout [get_bd_ports led_o] [get_bd_pins xlconstant_0/dout]
 
   # Create address segments
