@@ -6,10 +6,9 @@ set srcdir       $env(srcdir)
 set top_srcdir   $env(top_srcdir)
 
 namespace eval ::tclapp::socdev::makeutils {
-  namespace export make_create_project
+  namespace export make_new_project
   namespace export make_open_project
   namespace export make_write_project
-  namespace export reset_project_vars
   namespace export make_edit_peripheral
   namespace export make_write_bitstream
   namespace export make_write_devicetree
@@ -30,6 +29,19 @@ namespace eval ::tclapp::socdev::makeutils {
 ## /// GLOBALS ////////////////////////////////////////////////////////////// ##
 ## ////////////////////////////////////////////////////////////////////////// ##
 
+namespace eval v {
+ upvar 1 make_env me
+ upvar 1 project_env pe
+ upvar 1 project_set ps
+}
+
+## export to write_project (FIX THIS using sourceOnce)
+catch {
+    array set ::tclapp::xilinx::projutils::make_env [array get make_env]
+    array set ::tclapp::xilinx::projutils::project_env [array get project_env]
+    array set ::tclapp::xilinx::projutils::project_set [array get project_set]
+  }
+
 
 proc set_compatible_with { program } {
   set current_parser [lindex [split [version] " "] 0]
@@ -39,79 +51,13 @@ proc set_compatible_with { program } {
 }
 
 
-proc get_abs_path { file } {
-  return [string trim [file normalize [string map {\\ /} $file]]]
-}
-
-# Get relative path to target file from current path
-# First argument is a file name, second a directory name (not checked)
-proc get_rel_path {file currentpath} {
-  set cc [file split [file normalize $currentpath]]
-  set tt [file split [file normalize $file]]
-  if {![string equal [lindex $cc 0] [lindex $tt 0]]} {
-      # not on *n*x then
-      return -code error "$file not on same volume as $currentpath"
-  }
-  while {[string equal [lindex $cc 0] [lindex $tt 0]] && [llength $cc] > 0} {
-      # discard matching components from the front
-      set cc [lreplace $cc 0 0]
-      set tt [lreplace $tt 0 0]
-  }
-  set prefix ""
-  if {[llength $cc] == 0} {
-      # just the file name, so file is lower down (or in same place)
-      set prefix "."
-  }
-  # step up the tree
-  for {set i 0} {$i < [llength $cc]} {incr i} {
-      append prefix " .."
-  }
-  # stick it all together (the eval is to flatten the file list)
-  return [eval file join $prefix $tt]
-}
-
-variable a_project_vars
-proc reset_project_vars { } {
-  variable make_env
-  variable a_project_vars
-
-
-  set a_project_vars(VIVADO_VERSION) $make_env(VIVADO_VERSION)
-  set a_project_vars(project_name) $make_env(project_name)
-  set a_project_vars(srcdir)       $make_env(srcdir)
-  set a_project_vars(top_srcdir)   $make_env(top_srcdir)
-  set a_project_vars(rel_dir_prj)  [get_rel_path vivado_project .]
-  set a_project_vars(abs_dir_prj)  [get_abs_path vivado_project  ]
-  set a_project_vars(rel_src_prj)  [get_rel_path $a_project_vars(srcdir)/vivado_src .]
-  set a_project_vars(abs_src_prj)  [get_abs_path $a_project_vars(srcdir)/vivado_src  ]
-  set a_project_vars(dir_src)      "hdl"
-  set a_project_vars(dir_bd)       "bd"
-  set a_project_vars(dir_sdc)      "sdc"
-  set a_project_vars(dir_out)      "out"
-  set a_project_vars(dir_sdk)      "sdk"
-
-  set a_project_vars(sources_list) [split $make_env(SOURCES) " "]
-
-  # save to projutils global variable
-  catch {
-    variable ::tclapp::xilinx::projutils::a_make_vars
-    array set a_make_vars [array get a_project_vars]
-  }
-}
-reset_project_vars
-
-
-
 proc make_set_repo_path {} {
-  variable make_env
-  variable a_project_vars
-
   set path_list [list]
-  foreach ip_name [split $make_env(IP_SOURCES) " "] {
-    set ip_path [file normalize [file dirname $a_project_vars(srcdir)/$ip_name]]
+  foreach ip_name [split $v::me(IP_SOURCES) " "] {
+    set ip_path [file normalize [file dirname $v::me(srcdir)/$ip_name]]
     lappend path_list $ip_path
   }
-  lappend path_list $make_env(ip_repo)
+  lappend path_list $v::me(ip_repo)
   if { [catch {current_project}] } { error "project not defined"
   } else { set_property ip_repo_paths [lsort -unique $path_list] [current_project] }
 }
@@ -122,23 +68,22 @@ proc make_set_repo_path {} {
 
 proc make_new_project { } {
   set_compatible_with Vivado
-  variable make_env
-  variable a_project_vars
 
-  set project_name $make_env(project_name)
+  set project_name $v::me(project_name)
 
   # setup a project
-  create_project -part $make_env(VIVADO_SOC_PART) -force ${project_name} ./vivado_project
+  create_project -part $v::me(VIVADO_SOC_PART) -force ${project_name} ./vivado_project
   if { [catch {current_project}] } { error "Could not start a new project" }
-  reset_project_vars
+  # reset_project_vars
+  reset_make_env
 
   # setup common ip catalog
-  #  set_property ip_repo_paths $make_env(ip_repo) [current_project]
+  #  set_property ip_repo_paths $v::me(ip_repo) [current_project]
   make_set_repo_path
   update_ip_catalog
 
   # create flows
-  set vivado_major_num [lindex [split $make_env(VIVADO_VERSION) '.'] 0]
+  set vivado_major_num [lindex [split $v::me(VIVADO_VERSION) '.'] 0]
   set flow "Vivado Synthesis $vivado_major_num"
   create_run -flow $flow auto_synth_1
   set flow "Vivado Implementation $vivado_major_num"
@@ -158,21 +103,19 @@ proc make_new_project { } {
 
 proc make_edit_peripheral { } {
   set_compatible_with Vivado
-  variable a_project_vars
-  variable make_env
 
   if { [catch {current_project}] } {
-    create_project -in_memory -part $make_env(VIVADO_SOC_PART) -force _dummy_edit_ip
+    create_project -in_memory -part $v::me(VIVADO_SOC_PART) -force _dummy_edit_ip
   }
-  foreach ip_name [split $make_env(IP_SOURCES) " "] {
+  foreach ip_name [split $v::me(IP_SOURCES) " "] {
     set ip_path [file dirname $ip_name]
     set ip_name [file tail $ip_name]
     set missing_components [list]
-    if {![file exists $a_project_vars(srcdir)/${ip_path}/$ip_name/component.xml]} {
+    if {![file exists $v::me(srcdir)/${ip_path}/$ip_name/component.xml]} {
 	  #  set ip_name_seed    [join [lrange [split $ip_name "_"] 0 end-1] "_"]
 	  #  set ip_name_version [lindex [split $ip_name "_"] end]
 	  #  create_peripheral user.org user ${ip_name_seed} ${ip_name_version} \
-	  #    -dir $a_project_vars(srcdir)/${ip_path}
+	  #    -dir $v::me(srcdir)/${ip_path}
 	  #  ipx::create_core user.org user ${ip_name_seed} ${ip_name_version}
 	  #  add_peripheral_interface S00_AXI -interface_mode slave -axi_type lite \
 	  #    [ipx::find_open_core user.org:user:${ip_name_seed}:${ip_name_version}]
@@ -180,12 +123,12 @@ proc make_edit_peripheral { } {
 	  #    [ipx::find_open_core user.org:user:${ip_name_seed}:${ip_name_version}]
 	  #  write_peripheral [ipx::find_open_core user.org:user:${ip_name_seed}:${ip_name_version}]
 	  lappend missing_components $ip_name
-	  create_project -part $make_env(VIVADO_SOC_PART) -force $ip_name \
-	    $a_project_vars(rel_dir_prj)/${ip_path}/${ip_name}_project
+	  create_project -part $v::me(VIVADO_SOC_PART) -force $ip_name \
+	    $v::pe(dir_prj)/${ip_path}/${ip_name}_project
 	} else {
 	  ipx::edit_ip_in_project -upgrade true -name $ip_name \
-	    -directory $a_project_vars(rel_dir_prj)/${ip_path}/${ip_name}_project \
-	    $a_project_vars(srcdir)/${ip_path}/$ip_name/component.xml
+	    -directory $v::pe(dir_prj)/${ip_path}/${ip_name}_project \
+	    $v::me(srcdir)/${ip_path}/$ip_name/component.xml
 	}
   }
   # Print warning message
@@ -216,9 +159,8 @@ proc make_edit_peripheral { } {
 
 # find file in directories
 proc make_find_path {file} {
-  variable make_env
   set file [string map {\\ /} $file]
-  set src_relative $make_env(srcdir)/$file
+  set src_relative $v::me(srcdir)/$file
   set bld_relative $file
   if {[file exists $bld_relative]} { set file $bld_relative }
   if {[file exists $src_relative]} { set file $src_relative }
@@ -247,11 +189,11 @@ proc make_remove_bd_design { design_name } {
 
 # load remote sources
 proc make_load_sources {} {
-  variable make_env
+
   # refer to https://www.xilinx.com/itp/xilinx10/isehelp/ise_r_source_types.htm
   # import all remote sources
-  if {!($make_env(SOURCES) eq "")} {
-   foreach file [split $make_env(SOURCES) " "] {
+  if {!($v::me(SOURCES) eq "")} {
+   foreach file [split $v::me(SOURCES) " "] {
      set ftype [file extension $file]
      set path [make_find_path $file]
      if {$path eq ""} {continue}
@@ -265,8 +207,8 @@ proc make_load_sources {} {
    }
   }
   # import all remote BD from TCL scripts
-  if {!($make_env(BD_SOURCES) eq "")} {
-   foreach file [split $make_env(BD_SOURCES) " "] {
+  if {!($v::me(BD_SOURCES) eq "")} {
+   foreach file [split $v::me(BD_SOURCES) " "] {
      set ftype [file extension $file]
      set path [make_find_path $file]
      if {$path eq ""} {continue}
@@ -289,18 +231,16 @@ proc make_load_sources {} {
 
 proc make_open_project {} {
   set_compatible_with Vivado
-  variable make_env
-  variable a_project_vars
 
-  set project_name $make_env(project_name)
-  catch {::open_project -part $make_env(VIVADO_SOC_PART) \
-	 $a_project_vars(rel_dir_prj)/$project_name.xpr}
+  set project_name $v::me(project_name)
+  catch {::open_project -part $v::me(VIVADO_SOC_PART) \
+	 $v::pe(dir_prj)/$project_name.xpr}
   ## restore project from tcl script ##
   if { [catch {current_project}] } {
-    set  ::origin_dir_loc    $a_project_vars(rel_src_prj)
-    set  ::orig_proj_dir_loc $a_project_vars(rel_dir_prj)
-    puts "RESTORING PROJECT FROM: $a_project_vars(rel_src_prj)/$project_name.tcl"
-    source -quiet $a_project_vars(rel_src_prj)/$project_name.tcl
+    set  ::origin_dir_loc    $v::pe(dir_src)
+    set  ::orig_proj_dir_loc $v::pe(dir_prj)
+    puts "RESTORING PROJECT FROM: $v::pe(dir_src)/$project_name.tcl"
+    source $v::pe(dir_src)/../$project_name.tcl
   }
   ## no chance to open project ##
   if { [catch {current_project}] } { error "Could not open project" }
@@ -316,14 +256,11 @@ proc make_open_project {} {
 proc make_write_project {} {
   set_compatible_with Vivado
 
-  variable make_env
-  variable a_project_vars
-
   if { [catch {current_project}] } { make_open_project }
-  file mkdir $a_project_vars(rel_src_prj)
+  file mkdir $v::pe(dir_src)
   write_project_tcl \
-    -force -target_proj_dir $a_project_vars(rel_dir_prj) \
-    $a_project_vars(rel_src_prj)/$a_project_vars(project_name).tcl
+    -force -target_proj_dir $v::pe(dir_prj) \
+    $v::pe(dir_src)/../$v::pe(project_name).tcl
 }
 
 
@@ -334,13 +271,11 @@ proc make_write_project {} {
 
 proc make_write_bitstream {} {
   set_compatible_with Vivado
-  variable make_env
-  variable a_project_vars
 
   make_open_project
-  set prj_name $a_project_vars(project_name)
-  set path_out $a_project_vars(dir_out)
-  set path_sdk $a_project_vars(dir_sdk)
+  set prj_name $v::pe(project_name)
+  set path_out $v::pe(dir_out)
+  set path_sdk $v::pe(dir_sdk)
 
   file mkdir $path_out
   file mkdir $path_sdk
@@ -362,14 +297,14 @@ proc make_write_bitstream {} {
   }
 
   ## customize directory output for run ##
-  #  file mkdir $a_project_vars(rel_dir_prj)/$path_out/synth
-  #  file mkdir $a_project_vars(rel_dir_prj)/$path_out/impl
-  #  set_property DIRECTORY $a_project_vars(rel_dir_prj)/$path_out/synth [get_runs auto_synth_1]
-  #  set_property DIRECTORY $a_project_vars(rel_dir_prj)/$path_out/impl  [get_runs auto_impl_1 ]
+  #  file mkdir $v::pe(rel_dir_prj)/$path_out/synth
+  #  file mkdir $v::pe(rel_dir_prj)/$path_out/impl
+  #  set_property DIRECTORY $v::pe(rel_dir_prj)/$path_out/synth [get_runs auto_synth_1]
+  #  set_property DIRECTORY $v::pe(rel_dir_prj)/$path_out/impl  [get_runs auto_impl_1 ]
 
   ## START SYNTH ##
   reset_run auto_synth_1
-  launch_runs auto_impl_1 -jobs $make_env(maxThreads)
+  launch_runs auto_impl_1 -jobs $v::me(maxThreads)
   wait_on_run auto_synth_1
 
   open_run auto_synth_1
@@ -377,7 +312,7 @@ proc make_write_bitstream {} {
 
   ## START IMPL ##
   reset_run auto_impl_1
-  launch_runs auto_impl_1 -to_step write_bitstream -jobs $make_env(maxThreads)
+  launch_runs auto_impl_1 -to_step write_bitstream -jobs $v::me(maxThreads)
   wait_on_run auto_impl_1
 
   ## ////////////////////////////////////////////////////// ##
@@ -405,12 +340,10 @@ proc make_write_bitstream {} {
 
 proc make_write_devicetree {} {
   set_compatible_with Hsi
-  variable make_env
-  variable a_project_vars
 
-  set prj_name $a_project_vars(project_name)
-  set path_out $a_project_vars(dir_out)
-  set path_sdk $a_project_vars(dir_sdk)
+  set prj_name $v::pe(project_name)
+  set path_out $v::pe(dir_out)
+  set path_sdk $v::pe(dir_sdk)
 
   #  set boot_args { console=ttyPS0,115200n8 root=/dev/ram rw \
   #		  initrd=0x00800000,16M earlyprintk \
@@ -418,7 +351,7 @@ proc make_write_devicetree {} {
   #		  5M(nor-linux),9M(nor-user),1M(nor-scratch),-(nor-rootfs) }
 
   open_hw_design $path_sdk/$prj_name.sysdef
-  set_repo_path $make_env(DTREE_DIR)
+  set_repo_path $v::me(DTREE_DIR)
   create_sw_design device-tree -os device_tree -proc ps7_cortexa9_0
 
   set_property CONFIG.kernel_version {2015.4} [get_os]
@@ -430,12 +363,10 @@ proc make_write_devicetree {} {
 
 proc make_write_fsbl {} {
   set_compatible_with Hsi
-  variable make_env
-  variable a_project_vars
 
-  set prj_name $a_project_vars(project_name)
-  set path_out $a_project_vars(dir_out)
-  set path_sdk $a_project_vars(dir_sdk)
+  set prj_name $v::pe(project_name)
+  set path_out $v::pe(dir_out)
+  set path_sdk $v::pe(dir_sdk)
 
   #  set boot_args { console=ttyPS0,115200n8 root=/dev/ram rw \
   #		  initrd=0x00800000,16M earlyprintk \
@@ -443,7 +374,7 @@ proc make_write_fsbl {} {
   #		  5M(nor-linux),9M(nor-user),1M(nor-scratch),-(nor-rootfs) }
 
   open_hw_design $path_sdk/$prj_name.sysdef
-  set_repo_path $make_env(DTREE_DIR)
+  set_repo_path $v::me(DTREE_DIR)
 
   #  generate_app  -os standalone -proc ps7_cortexa9_0 -app zynq_fsbl \
   #    -compile -sw fsbl -dir $path_sdk/fsbl
