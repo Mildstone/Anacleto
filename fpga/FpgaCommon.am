@@ -8,7 +8,7 @@ VIVADO_SHELL = vivado -nolog -nojournal -mode tcl
 HSI    = hsi    -nolog -nojournal -mode batch
 HSI_SHELL    = hsi    -nolog -nojournal -mode tcl
 
-FPGA_BIT  ?= out/${SOC_BOARD}.bit
+FPGA_BIT  ?= out/$(SOC_BOARD).bit
 FSBL_ELF  ?= sdk/fsbl/executable.elf
 DTS       ?= sdk/dts/devicetree.dts
 DTB       ?= sdk/dts/devicetree.dtb
@@ -36,8 +36,6 @@ export SOURCES="${SOURCES}"; \
 export BD_SOURCES="${BD_SOURCES}"; \
 export IP_SOURCES="${IP_SOURCES}"
 endef
-
-.PHONY: project fpga bit fsbl dts dtb
 
 ## ////////////////////////////////////////////////////////////////////////// ##
 ## /// ACTIVATE HELP TARGET ///////////////////////////////////////////////// ##
@@ -73,12 +71,12 @@ write_bitstream:  ##@vivado generate bitstream using auto_synth and auto_impl ru
 edit_peripheral:  ##@vivado open all module pheripherals projects for edit.
 
 write_project write_bitstream:
-	@ ( ${_envset}; \
-	    $(VIVADO) -source $(FPGA_DIR)/vivado_make.tcl -tclargs $@ )
+	@ ${_envset}; \
+	  $(VIVADO) -source $(FPGA_DIR)/vivado_make.tcl -tclargs $@
 
 new_project open_project edit_peripheral:
-	@ ( ${_envset}; \
-	    $(VIVADO_SHELL) -source $(FPGA_DIR)/vivado_make.tcl -tclargs $@ )
+	@ ${_envset}; \
+	  $(VIVADO_SHELL) -source $(FPGA_DIR)/vivado_make.tcl -tclargs $@
 
 clean_project: ##@vivado Clean all build project files from disk (make write_project before this)
 	-rm -rf vivado_project vivado.jou  vivado.log  \
@@ -92,20 +90,23 @@ clean_project: ##@vivado Clean all build project files from disk (make write_pro
 ## ///  BITSTREAM  ////////////////////////////////////////////////////////// ##
 ## ////////////////////////////////////////////////////////////////////////// ##
 
+.PHONY: fpga bit
 fpga bit: $(FPGA_BIT)
 
-$(FPGA_BIT): write_bitstream
+$(FPGA_BIT):
+	@ $(MAKE) write_bitstream
 
 
 ## ////////////////////////////////////////////////////////////////////////// ##
 ## ///  FSBL  /////////////////////////////////////////////////////////////// ##
 ## ////////////////////////////////////////////////////////////////////////// ##
 
+.PHONY: fsbl
 fsbl: $(FSBL_ELF)
 
 $(FSBL_ELF):  $(FPGA_BIT)
-	${_envset}; \
-	$(HSI) -source $(FPGA_DIR)/vivado_make.tcl -tclargs write_fsbl
+	@ ${_envset}; \
+	  $(HSI) -source $(FPGA_DIR)/vivado_make.tcl -tclargs write_fsbl
 
 
 
@@ -113,15 +114,14 @@ $(FSBL_ELF):  $(FPGA_BIT)
 ## ///  DEVICE TREEE  /////////////////////////////////////////////////////// ##
 ## ////////////////////////////////////////////////////////////////////////// ##
 
+.PHONY: dts dtb
 dts: $(DTS)
 dtb: $(DTB)
 
-xlnx-devicetree:
-	$(MAKE) -C $(top_builddir)/fpga xlnx-devicetree
-
-sdk/dts/system.dts:  $(FPGA_BIT) xlnx-devicetree
-	@ ( ${_envset}; \
-	    $(HSI) -source $(FPGA_DIR)/vivado_make.tcl -tclargs write_devicetree )
+sdk/dts/system.dts:  $(FPGA_BIT)
+	@ $(MAKE) -C $(top_builddir)/fpga xlnx-devicetree;
+	@ ${_envset}; \
+	  $(HSI) -source $(FPGA_DIR)/vivado_make.tcl -tclargs write_devicetree
 
 $(DTS): sdk/dts/system.dts $(LINUX_IMAGE)
 	$(LINUX_BUILDDIR)/scripts/dtc/dtc -I dts -O dts -o $@ -i sdk/dts/ $<

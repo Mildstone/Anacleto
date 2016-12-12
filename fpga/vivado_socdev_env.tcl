@@ -74,7 +74,7 @@ proc reset_project_env { } {
   set project_set(sources_list) [split $make_env(SOURCES) " "]
 
   foreach { key val } [array get project_set] {
-   puts "project_env($key) [subst $val]"
+   # puts "project_env($key) [subst $val]"
    set project_env($key) [subst $val]
   }
 
