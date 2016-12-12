@@ -103,6 +103,7 @@ proc make_new_project { } {
 
 proc make_edit_peripheral { } {
   set_compatible_with Vivado
+  set missing_components [list]
 
   if { [catch {current_project}] } {
     create_project -in_memory -part $v::me(VIVADO_SOC_PART) -force _dummy_edit_ip
@@ -110,7 +111,6 @@ proc make_edit_peripheral { } {
   foreach ip_name [split $v::me(IP_SOURCES) " "] {
     set ip_path [file dirname $ip_name]
     set ip_name [file tail $ip_name]
-    set missing_components [list]
     if {![file exists $v::me(srcdir)/${ip_path}/$ip_name/component.xml]} {
 	  #  set ip_name_seed    [join [lrange [split $ip_name "_"] 0 end-1] "_"]
 	  #  set ip_name_version [lindex [split $ip_name "_"] end]
@@ -132,7 +132,7 @@ proc make_edit_peripheral { } {
 	}
   }
   # Print warning message
-  if { [llength missing_components] != 0 } {
+  if { [llength $missing_components] > 0 } {
     puts " "
     puts "  ------------------------------------------------------------------------- "
     puts " | Valid IP definitions were not found in the specified source  directory.  "
