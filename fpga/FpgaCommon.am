@@ -148,6 +148,8 @@ if WITH_DEVICE_SSHPASSWD
 	@ echo " --- deploying to target device: ${DEVICE_NAME} using passwd ---";
 	sshpass -p ${DEVICE_PASSWD} scp $^ \
 	  $(DEVICE_USER)@$(DEVICE_IP):$(DEVICE_INSTALL_DIR);
+else
+	@ echo "none of sshpass command or configured ssh key was found"
 endif
 endif
 
@@ -168,6 +170,8 @@ if WITH_DEVICE_SSHPASSWD
 	  $(DEVICE_USER)@$(DEVICE_IP):/tmp; \
 	sshpass -p ${DEVICE_PASSWD} \
 	  ssh $(DEVICE_USER)@$(DEVICE_IP) "cat /tmp/fpga.bit > /dev/xdevcfg";
+else
+	@ echo "none of sshpass command or configured ssh key was found"
 endif
 endif
 
