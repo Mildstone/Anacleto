@@ -288,11 +288,11 @@ proc make_write_bitstream {} {
   }
 
   if { [lsearch -exact [get_runs] auto_synth_1] == -1 } {
-    set flow "Vivado Synthesis [get_major $env(VIVADO_VERSION)]"
+    set flow "Vivado Synthesis [get_major $v::me(VIVADO_VERSION)]"
     create_run -flow $flow auto_synth_1
   }
   if { [lsearch -exact [get_runs] auto_impl_1] == -1 } {
-    set flow "Vivado Implementation [get_major $env(VIVADO_VERSION)]"
+    set flow "Vivado Implementation [get_major $v::me(VIVADO_VERSION)]"
     create_run auto_impl_1 -parent_run auto_synth_1 -flow $flow
   }
 
@@ -301,6 +301,7 @@ proc make_write_bitstream {} {
   #  file mkdir $v::pe(rel_dir_prj)/$path_out/impl
   #  set_property DIRECTORY $v::pe(rel_dir_prj)/$path_out/synth [get_runs auto_synth_1]
   #  set_property DIRECTORY $v::pe(rel_dir_prj)/$path_out/impl  [get_runs auto_impl_1 ]
+
 
   ## START SYNTH ##
   reset_run auto_synth_1

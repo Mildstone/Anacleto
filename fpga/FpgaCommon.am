@@ -119,8 +119,8 @@ dts: $(DTS)
 dtb: $(DTB)
 
 sdk/dts/system.dts:  $(FPGA_BIT)
-	@ $(MAKE) -C $(top_builddir)/fpga xlnx-devicetree;
-	@ ${_envset}; \
+	@ $(MAKE) -C $(top_builddir)/fpga xlnx-devicetree; \
+	  ${_envset}; \
 	  $(HSI) -source $(FPGA_DIR)/vivado_make.tcl -tclargs write_devicetree
 
 $(DTS): sdk/dts/system.dts $(LINUX_IMAGE)
