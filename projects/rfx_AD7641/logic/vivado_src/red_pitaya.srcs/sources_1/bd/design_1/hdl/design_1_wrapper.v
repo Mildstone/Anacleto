@@ -1,7 +1,7 @@
 //Copyright 1986-2015 Xilinx, Inc. All Rights Reserved.
 //--------------------------------------------------------------------------------
 //Tool Version: Vivado v.2015.4 (lin64) Build 1412921 Wed Nov 18 09:44:32 MST 2015
-//Date        : Tue Nov 22 15:08:07 2016
+//Date        : Thu Dec  1 16:10:28 2016
 //Host        : c99a4b2000d0 running 64-bit Ubuntu 14.04.4 LTS
 //Command     : generate_target design_1_wrapper.bd
 //Design      : design_1_wrapper
@@ -31,6 +31,9 @@ module design_1_wrapper
     FIXED_IO_ps_clk,
     FIXED_IO_ps_porb,
     FIXED_IO_ps_srstb,
+    IBUF_N,
+    IBUF_OUT,
+    IBUF_P,
     led_o,
     prescaler_output_clk,
     prescaler_output_clk_1);
@@ -55,6 +58,9 @@ module design_1_wrapper
   inout FIXED_IO_ps_clk;
   inout FIXED_IO_ps_porb;
   inout FIXED_IO_ps_srstb;
+  input [0:0]IBUF_N;
+  output [0:0]IBUF_OUT;
+  input [0:0]IBUF_P;
   output [0:0]led_o;
   output prescaler_output_clk;
   output prescaler_output_clk_1;
@@ -80,6 +86,9 @@ module design_1_wrapper
   wire FIXED_IO_ps_clk;
   wire FIXED_IO_ps_porb;
   wire FIXED_IO_ps_srstb;
+  wire [0:0]IBUF_N;
+  wire [0:0]IBUF_OUT;
+  wire [0:0]IBUF_P;
   wire [0:0]led_o;
   wire prescaler_output_clk;
   wire prescaler_output_clk_1;
@@ -106,6 +115,9 @@ module design_1_wrapper
         .FIXED_IO_ps_clk(FIXED_IO_ps_clk),
         .FIXED_IO_ps_porb(FIXED_IO_ps_porb),
         .FIXED_IO_ps_srstb(FIXED_IO_ps_srstb),
+        .IBUF_N(IBUF_N),
+        .IBUF_OUT(IBUF_OUT),
+        .IBUF_P(IBUF_P),
         .led_o(led_o),
         .prescaler_output_clk(prescaler_output_clk),
         .prescaler_output_clk_1(prescaler_output_clk_1));

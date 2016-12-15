@@ -1,6 +1,6 @@
 
 ################################################################
-# This is a generated script based on design: design_1
+# This is a generated script based on design: system
 #
 # Though there are limitations about the generated script,
 # the main purpose of this utility is to make learning
@@ -25,7 +25,7 @@ if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
 ################################################################
 
 # To test this script, run the following commands from Vivado Tcl console:
-# source design_1_script.tcl
+# source system_script.tcl
 
 # If you do not already have a project created,
 # you can create a project using the following command:
@@ -40,7 +40,7 @@ if { [get_projects -quiet] eq "" } {
 
 
 # CHANGE DESIGN NAME HERE
-set design_name design_1
+set design_name system
 
 # If you do not already have an existing IP Integrator design open,
 # you can create a design using the following command:
@@ -147,12 +147,20 @@ proc create_root_design { parentCell } {
   set FIXED_IO [ create_bd_intf_port -mode Master -vlnv xilinx.com:display_processing_system7:fixedio_rtl:1.0 FIXED_IO ]
 
   # Create ports
-  set IBUF_N [ create_bd_port -dir I -from 0 -to 0 IBUF_N ]
-  set IBUF_OUT [ create_bd_port -dir O -from 0 -to 0 IBUF_OUT ]
-  set IBUF_P [ create_bd_port -dir I -from 0 -to 0 IBUF_P ]
-  set led_o [ create_bd_port -dir O -from 0 -to 0 led_o ]
-  set prescaler_output_clk [ create_bd_port -dir O prescaler_output_clk ]
+  set IDS_N [ create_bd_port -dir I -from 0 -to 0 IDS_N ]
+  set IDS_P [ create_bd_port -dir I -from 0 -to 0 IDS_P ]
+  set IDS_led [ create_bd_port -dir O -from 0 -to 0 IDS_led ]
+  set clock_out_N [ create_bd_port -dir O -from 0 -to 0 clock_out_N ]
+  set clock_out_P [ create_bd_port -dir O -from 0 -to 0 clock_out_P ]
+  set led_o [ create_bd_port -dir O led_o ]
+  set prescaler_output_LED_clk [ create_bd_port -dir O prescaler_output_LED_clk ]
   set prescaler_output_clk_1 [ create_bd_port -dir O prescaler_output_clk_1 ]
+  set prescaler_output_clk_negato_2 [ create_bd_port -dir O prescaler_output_clk_negato_2 ]
+  set pwm_n_out [ create_bd_port -dir O -from 0 -to 0 pwm_n_out ]
+  set pwm_n_out_1 [ create_bd_port -dir O -from 0 -to 0 pwm_n_out_1 ]
+  set pwm_out [ create_bd_port -dir O -from 0 -to 0 pwm_out ]
+  set pwm_out_1 [ create_bd_port -dir O -from 0 -to 0 pwm_out_1 ]
+  set test_speed_out_led [ create_bd_port -dir O test_speed_out_led ]
 
   # Create instance: prescaler_clock_0, and set properties
   set prescaler_clock_0 [ create_bd_cell -type ip -vlnv rfxoffline.local:user:prescaler_clock:1.0 prescaler_clock_0 ]
@@ -163,7 +171,7 @@ proc create_root_design { parentCell } {
   # Create instance: processing_system7_0_axi_periph, and set properties
   set processing_system7_0_axi_periph [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 processing_system7_0_axi_periph ]
   set_property -dict [ list \
-CONFIG.NUM_MI {1} \
+CONFIG.NUM_MI {2} \
  ] $processing_system7_0_axi_periph
 
   # Create instance: rst_processing_system7_0_50M, and set properties
@@ -171,30 +179,84 @@ CONFIG.NUM_MI {1} \
 
   # Create instance: util_ds_buf_0, and set properties
   set util_ds_buf_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_ds_buf:2.1 util_ds_buf_0 ]
+  set_property -dict [ list \
+CONFIG.C_BUF_TYPE {OBUFDS} \
+ ] $util_ds_buf_0
 
-  # Create instance: xlconstant_0, and set properties
-  set xlconstant_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 xlconstant_0 ]
+  # Create instance: util_ds_buf_1, and set properties
+  set util_ds_buf_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_ds_buf:2.1 util_ds_buf_1 ]
+  set_property -dict [ list \
+CONFIG.C_BUF_TYPE {IBUFDS} \
+ ] $util_ds_buf_1
 
   # Create interface connections
   connect_bd_intf_net -intf_net processing_system7_0_DDR [get_bd_intf_ports DDR] [get_bd_intf_pins processing_system7_0/DDR]
   connect_bd_intf_net -intf_net processing_system7_0_FIXED_IO [get_bd_intf_ports FIXED_IO] [get_bd_intf_pins processing_system7_0/FIXED_IO]
   connect_bd_intf_net -intf_net processing_system7_0_M_AXI_GP0 [get_bd_intf_pins processing_system7_0/M_AXI_GP0] [get_bd_intf_pins processing_system7_0_axi_periph/S00_AXI]
-  connect_bd_intf_net -intf_net processing_system7_0_axi_periph_M00_AXI [get_bd_intf_pins prescaler_clock_0/S00_AXI] [get_bd_intf_pins processing_system7_0_axi_periph/M00_AXI]
+  connect_bd_intf_net -intf_net processing_system7_0_axi_periph_M01_AXI [get_bd_intf_pins prescaler_clock_0/S00_AXI] [get_bd_intf_pins processing_system7_0_axi_periph/M01_AXI]
 
   # Create port connections
-  connect_bd_net -net IBUF_DS_N_1 [get_bd_ports IBUF_N] [get_bd_pins util_ds_buf_0/IBUF_DS_N]
-  connect_bd_net -net IBUF_DS_P_1 [get_bd_ports IBUF_P] [get_bd_pins util_ds_buf_0/IBUF_DS_P]
-  connect_bd_net -net prescaler_clock_0_prescaler_output_clk [get_bd_ports prescaler_output_clk] [get_bd_ports prescaler_output_clk_1] [get_bd_pins prescaler_clock_0/prescaler_output_clk]
-  connect_bd_net -net processing_system7_0_FCLK_CLK0 [get_bd_pins prescaler_clock_0/s00_axi_aclk] [get_bd_pins processing_system7_0/FCLK_CLK0] [get_bd_pins processing_system7_0/M_AXI_GP0_ACLK] [get_bd_pins processing_system7_0_axi_periph/ACLK] [get_bd_pins processing_system7_0_axi_periph/M00_ACLK] [get_bd_pins processing_system7_0_axi_periph/S00_ACLK] [get_bd_pins rst_processing_system7_0_50M/slowest_sync_clk]
+  connect_bd_net -net IBUF_DS_N_1 [get_bd_ports IDS_N] [get_bd_pins util_ds_buf_1/IBUF_DS_N]
+  connect_bd_net -net IBUF_DS_P_1 [get_bd_ports IDS_P] [get_bd_pins util_ds_buf_1/IBUF_DS_P]
+  connect_bd_net -net prescaler_clock_0_prescaler_output_clk [get_bd_ports prescaler_output_LED_clk] [get_bd_ports prescaler_output_clk_1] [get_bd_pins prescaler_clock_0/prescaler_output_clk] [get_bd_pins util_ds_buf_0/OBUF_IN]
+  connect_bd_net -net prescaler_clock_0_prescaler_output_clk_negato_2 [get_bd_ports prescaler_output_clk_negato_2] [get_bd_pins prescaler_clock_0/prescaler_output_clk_negato_2]
+  connect_bd_net -net prescaler_clock_0_test_speed_out_led [get_bd_ports test_speed_out_led] [get_bd_pins prescaler_clock_0/test_speed_out_led]
+  connect_bd_net -net processing_system7_0_FCLK_CLK0 [get_bd_pins prescaler_clock_0/s00_axi_aclk] [get_bd_pins processing_system7_0/FCLK_CLK0] [get_bd_pins processing_system7_0/M_AXI_GP0_ACLK] [get_bd_pins processing_system7_0_axi_periph/ACLK] [get_bd_pins processing_system7_0_axi_periph/M00_ACLK] [get_bd_pins processing_system7_0_axi_periph/M01_ACLK] [get_bd_pins processing_system7_0_axi_periph/S00_ACLK] [get_bd_pins rst_processing_system7_0_50M/slowest_sync_clk]
   connect_bd_net -net processing_system7_0_FCLK_RESET0_N [get_bd_pins processing_system7_0/FCLK_RESET0_N] [get_bd_pins rst_processing_system7_0_50M/ext_reset_in]
   connect_bd_net -net rst_processing_system7_0_50M_interconnect_aresetn [get_bd_pins processing_system7_0_axi_periph/ARESETN] [get_bd_pins rst_processing_system7_0_50M/interconnect_aresetn]
-  connect_bd_net -net rst_processing_system7_0_50M_peripheral_aresetn [get_bd_pins prescaler_clock_0/s00_axi_aresetn] [get_bd_pins processing_system7_0_axi_periph/M00_ARESETN] [get_bd_pins processing_system7_0_axi_periph/S00_ARESETN] [get_bd_pins rst_processing_system7_0_50M/peripheral_aresetn]
-  connect_bd_net -net util_ds_buf_0_IBUF_OUT [get_bd_ports IBUF_OUT] [get_bd_pins util_ds_buf_0/IBUF_OUT]
-  connect_bd_net -net xlconstant_0_dout [get_bd_ports led_o] [get_bd_pins xlconstant_0/dout]
+  connect_bd_net -net rst_processing_system7_0_50M_peripheral_aresetn [get_bd_pins prescaler_clock_0/s00_axi_aresetn] [get_bd_pins processing_system7_0_axi_periph/M00_ARESETN] [get_bd_pins processing_system7_0_axi_periph/M01_ARESETN] [get_bd_pins processing_system7_0_axi_periph/S00_ARESETN] [get_bd_pins rst_processing_system7_0_50M/peripheral_aresetn]
+  connect_bd_net -net util_ds_buf_0_OBUF_DS_N [get_bd_ports clock_out_N] [get_bd_pins util_ds_buf_0/OBUF_DS_N]
+  connect_bd_net -net util_ds_buf_0_OBUF_DS_P [get_bd_ports clock_out_P] [get_bd_pins util_ds_buf_0/OBUF_DS_P]
+  connect_bd_net -net util_ds_buf_1_IBUF_OUT [get_bd_pins prescaler_clock_0/speed_test] [get_bd_pins util_ds_buf_1/IBUF_OUT]
 
   # Create address segments
-  create_bd_addr_seg -range 0x10000 -offset 0x43C00000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs prescaler_clock_0/S00_AXI/S00_AXI_reg] SEG_prescaler_clock_0_S00_AXI_reg
+  create_bd_addr_seg -range 0x10000 -offset 0x43C10000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs prescaler_clock_0/S00_AXI/S00_AXI_reg] SEG_prescaler_clock_0_S00_AXI_reg
 
+  # Perform GUI Layout
+  regenerate_bd_layout -layout_string {
+   guistr: "# # String gsaved with Nlview 6.5.5  2015-06-26 bk=1.3371 VDI=38 GEI=35 GUI=JA:1.8
+#  -string -flagsOSRD
+preplace port DDR -pg 1 -y 280 -defaultsOSRD
+preplace port test_speed_out_led -pg 1 -y 190 -defaultsOSRD
+preplace port led_o -pg 1 -y 40 -defaultsOSRD
+preplace port prescaler_output_LED_clk -pg 1 -y 130 -defaultsOSRD
+preplace port FIXED_IO -pg 1 -y 300 -defaultsOSRD
+preplace port prescaler_output_clk_1 -pg 1 -y 150 -defaultsOSRD
+preplace port prescaler_output_clk_negato_2 -pg 1 -y 170 -defaultsOSRD
+preplace portBus clock_out_P -pg 1 -y 80 -defaultsOSRD
+preplace portBus IDS_N -pg 1 -y 430 -defaultsOSRD
+preplace portBus pwm_out_1 -pg 1 -y 250 -defaultsOSRD
+preplace portBus pwm_n_out_1 -pg 1 -y 210 -defaultsOSRD
+preplace portBus IDS_P -pg 1 -y 410 -defaultsOSRD
+preplace portBus pwm_n_out -pg 1 -y 60 -defaultsOSRD
+preplace portBus IDS_led -pg 1 -y 20 -defaultsOSRD
+preplace portBus pwm_out -pg 1 -y 230 -defaultsOSRD
+preplace portBus clock_out_N -pg 1 -y 100 -defaultsOSRD
+preplace inst util_ds_buf_1 -pg 1 -lvl 2 -y 410 -defaultsOSRD
+preplace inst rst_processing_system7_0_50M -pg 1 -lvl 1 -y 140 -defaultsOSRD
+preplace inst prescaler_clock_0 -pg 1 -lvl 3 -y 170 -defaultsOSRD
+preplace inst processing_system7_0_axi_periph -pg 1 -lvl 2 -y 130 -defaultsOSRD
+preplace inst processing_system7_0 -pg 1 -lvl 1 -y 320 -defaultsOSRD
+preplace inst util_ds_buf_0 -pg 1 -lvl 4 -y 90 -defaultsOSRD
+preplace netloc processing_system7_0_DDR 1 1 4 NJ 280 NJ 280 NJ 280 NJ
+preplace netloc util_ds_buf_1_IBUF_OUT 1 2 1 750
+preplace netloc prescaler_clock_0_test_speed_out_led 1 3 2 NJ 190 NJ
+preplace netloc rst_processing_system7_0_50M_interconnect_aresetn 1 1 1 440
+preplace netloc util_ds_buf_0_OBUF_DS_N 1 4 1 NJ
+preplace netloc processing_system7_0_M_AXI_GP0 1 1 1 430
+preplace netloc processing_system7_0_FCLK_RESET0_N 1 0 2 30 230 410
+preplace netloc util_ds_buf_0_OBUF_DS_P 1 4 1 NJ
+preplace netloc rst_processing_system7_0_50M_peripheral_aresetn 1 1 2 450 270 NJ
+preplace netloc IBUF_DS_N_1 1 0 2 NJ 430 NJ
+preplace netloc processing_system7_0_FIXED_IO 1 1 4 NJ 300 NJ 300 NJ 300 NJ
+preplace netloc IBUF_DS_P_1 1 0 2 NJ 410 NJ
+preplace netloc prescaler_clock_0_prescaler_output_clk_negato_2 1 3 2 NJ 170 NJ
+preplace netloc processing_system7_0_FCLK_CLK0 1 0 3 20 50 420 290 760
+preplace netloc processing_system7_0_axi_periph_M01_AXI 1 2 1 N
+preplace netloc prescaler_clock_0_prescaler_output_clk 1 3 2 1130 150 NJ
+levelinfo -pg 1 0 220 600 950 1260 1410 -top 0 -bot 480
+",
+}
 
   # Restore current instance
   current_bd_instance $oldCurInst

@@ -1,0 +1,542 @@
+Copyright 1986-2015 Xilinx, Inc. All Rights Reserved.
+------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2015.4 (lin64) Build 1412921 Wed Nov 18 09:44:32 MST 2015
+| Date         : Mon Dec 12 14:41:23 2016
+| Host         : c99a4b2000d0 running 64-bit Ubuntu 14.04.4 LTS
+| Command      : upgrade_ip
+| Device       : xc7z010clg400-1
+------------------------------------------------------------------------------------
+
+Upgrade Log for IP 'system_prescaler_clock_0_0'
+
+1. Summary
+----------
+
+SUCCESS in the upgrade of system_prescaler_clock_0_0 (rfxoffline.local:user:prescaler_clock:1.0) from (Rev. 26) to (Rev. 27)
+
+
+
+
+
+
+Copyright 1986-2015 Xilinx, Inc. All Rights Reserved.
+------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2015.4 (win64) Build 1412921 Wed Nov 18 09:43:45 MST 2015
+| Date         : Wed Dec 07 17:32:50 2016
+| Host         : win717 running 64-bit Service Pack 1  (build 7601)
+| Command      : upgrade_ip
+| Device       : xc7z010clg400-1
+------------------------------------------------------------------------------------
+
+Upgrade Log for IP 'system_prescaler_clock_0_0'
+
+1. Summary
+----------
+
+SUCCESS in the upgrade of system_prescaler_clock_0_0 (rfxoffline.local:user:prescaler_clock:1.0) from (Rev. 25) to (Rev. 26)
+
+
+
+
+
+
+Copyright 1986-2015 Xilinx, Inc. All Rights Reserved.
+------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2015.4 (win64) Build 1412921 Wed Nov 18 09:43:45 MST 2015
+| Date         : Wed Dec 07 16:58:50 2016
+| Host         : win717 running 64-bit Service Pack 1  (build 7601)
+| Command      : upgrade_ip
+| Device       : xc7z010clg400-1
+------------------------------------------------------------------------------------
+
+Upgrade Log for IP 'system_prescaler_clock_0_0'
+
+1. Summary
+----------
+
+SUCCESS in the update of system_prescaler_clock_0_0 (rfxoffline.local:user:prescaler_clock:1.0 (Rev. 25)) to current project options.
+
+
+
+
+
+
+Copyright 1986-2015 Xilinx, Inc. All Rights Reserved.
+------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2015.4 (win64) Build 1412921 Wed Nov 18 09:43:45 MST 2015
+| Date         : Wed Nov 30 16:17:19 2016
+| Host         : win717 running 64-bit Service Pack 1  (build 7601)
+| Command      : upgrade_ip
+| Device       : xc7z010clg400-1
+------------------------------------------------------------------------------------
+
+Upgrade Log for IP 'system_prescaler_clock_0_0'
+
+1. Summary
+----------
+
+SUCCESS in the upgrade of system_prescaler_clock_0_0 (rfxoffline.local:user:prescaler_clock:1.0) from (Rev. 23) to (Rev. 25)
+
+
+
+
+
+
+Copyright 1986-2015 Xilinx, Inc. All Rights Reserved.
+------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2015.4 (win64) Build 1412921 Wed Nov 18 09:43:45 MST 2015
+| Date         : Wed Nov 30 15:52:16 2016
+| Host         : win717 running 64-bit Service Pack 1  (build 7601)
+| Command      : upgrade_ip
+| Device       : xc7z010clg400-1
+------------------------------------------------------------------------------------
+
+Upgrade Log for IP 'system_prescaler_clock_0_0'
+
+1. Summary
+----------
+
+SUCCESS in the upgrade of system_prescaler_clock_0_0 (rfxoffline.local:user:prescaler_clock:1.0) from (Rev. 21) to (Rev. 23)
+
+
+
+
+
+
+Copyright 1986-2015 Xilinx, Inc. All Rights Reserved.
+------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2015.4 (win64) Build 1412921 Wed Nov 18 09:43:45 MST 2015
+| Date         : Wed Nov 30 15:34:58 2016
+| Host         : win717 running 64-bit Service Pack 1  (build 7601)
+| Command      : upgrade_ip
+| Device       : xc7z010clg400-1
+------------------------------------------------------------------------------------
+
+Upgrade Log for IP 'system_prescaler_clock_0_0'
+
+1. Summary
+----------
+
+SUCCESS in the upgrade of system_prescaler_clock_0_0 (rfxoffline.local:user:prescaler_clock:1.0) from (Rev. 20) to (Rev. 21)
+
+
+
+
+
+
+Copyright 1986-2015 Xilinx, Inc. All Rights Reserved.
+------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2015.4 (win64) Build 1412921 Wed Nov 18 09:43:45 MST 2015
+| Date         : Tue Nov 29 18:00:15 2016
+| Host         : win717 running 64-bit Service Pack 1  (build 7601)
+| Command      : upgrade_ip
+| Device       : xc7z010clg400-1
+------------------------------------------------------------------------------------
+
+Upgrade Log for IP 'system_prescaler_clock_0_0'
+
+1. Summary
+----------
+
+SUCCESS in the upgrade of system_prescaler_clock_0_0 (rfxoffline.local:user:prescaler_clock:1.0) from (Rev. 19) to (Rev. 20)
+
+
+
+
+
+
+Copyright 1986-2015 Xilinx, Inc. All Rights Reserved.
+------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2015.4 (win64) Build 1412921 Wed Nov 18 09:43:45 MST 2015
+| Date         : Tue Nov 29 17:36:55 2016
+| Host         : win717 running 64-bit Service Pack 1  (build 7601)
+| Command      : upgrade_ip
+| Device       : xc7z010clg400-1
+------------------------------------------------------------------------------------
+
+Upgrade Log for IP 'system_prescaler_clock_0_0'
+
+1. Summary
+----------
+
+SUCCESS in the upgrade of system_prescaler_clock_0_0 (rfxoffline.local:user:prescaler_clock:1.0) from (Rev. 18) to (Rev. 19)
+
+
+
+
+
+
+Copyright 1986-2015 Xilinx, Inc. All Rights Reserved.
+------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2015.4 (win64) Build 1412921 Wed Nov 18 09:43:45 MST 2015
+| Date         : Tue Nov 29 17:29:15 2016
+| Host         : win717 running 64-bit Service Pack 1  (build 7601)
+| Command      : upgrade_ip
+| Device       : xc7z010clg400-1
+------------------------------------------------------------------------------------
+
+Upgrade Log for IP 'system_prescaler_clock_0_0'
+
+1. Summary
+----------
+
+CAUTION (success, with warnings) in the upgrade of system_prescaler_clock_0_0 (rfxoffline.local:user:prescaler_clock:1.0) from (Rev. 17) to (Rev. 18)
+
+After upgrade, an IP may have parameter and port differences compared to the original customization. Please review the parameters within the IP customization GUI to ensure proper functionality. Also, please review the updated IP instantiation template to ensure proper connectivity, and update your design if required.
+
+2. Connection Warnings
+----------------------
+
+Detected external port differences while upgrading IP 'system_prescaler_clock_0_0'. These changes may impact your design.
+
+
+-upgrade has added port 'speed_test'
+-upgrade has added port 'test_speed_out_led'
+
+
+
+
+
+
+Copyright 1986-2015 Xilinx, Inc. All Rights Reserved.
+------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2015.4 (win64) Build 1412921 Wed Nov 18 09:43:45 MST 2015
+| Date         : Wed Nov 23 14:12:17 2016
+| Host         : win717 running 64-bit Service Pack 1  (build 7601)
+| Command      : upgrade_ip
+| Device       : xc7z010clg400-1
+------------------------------------------------------------------------------------
+
+Upgrade Log for IP 'system_prescaler_clock_0_0'
+
+1. Summary
+----------
+
+SUCCESS in the upgrade of system_prescaler_clock_0_0 (rfxoffline.local:user:prescaler_clock:1.0) from (Rev. 16) to (Rev. 17)
+
+
+
+
+
+
+Copyright 1986-2015 Xilinx, Inc. All Rights Reserved.
+------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2015.4 (win64) Build 1412921 Wed Nov 18 09:43:45 MST 2015
+| Date         : Tue Nov 22 15:35:32 2016
+| Host         : win717 running 64-bit Service Pack 1  (build 7601)
+| Command      : upgrade_ip
+| Device       : xc7z010clg400-1
+------------------------------------------------------------------------------------
+
+Upgrade Log for IP 'system_prescaler_clock_0_0'
+
+1. Summary
+----------
+
+SUCCESS in the upgrade of system_prescaler_clock_0_0 (rfxoffline.local:user:prescaler_clock:1.0) from (Rev. 12) to (Rev. 16)
+
+
+
+
+
+
+Copyright 1986-2015 Xilinx, Inc. All Rights Reserved.
+------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2015.4 (win64) Build 1412921 Wed Nov 18 09:43:45 MST 2015
+| Date         : Mon Nov 21 16:20:57 2016
+| Host         : win717 running 64-bit Service Pack 1  (build 7601)
+| Command      : upgrade_ip
+| Device       : xc7z010clg400-1
+------------------------------------------------------------------------------------
+
+Upgrade Log for IP 'system_prescaler_clock_0_0'
+
+1. Summary
+----------
+
+SUCCESS in the update of system_prescaler_clock_0_0 (rfxoffline.local:user:prescaler_clock:1.0 (Rev. 12)) to current project options.
+
+
+
+
+
+
+Copyright 1986-2015 Xilinx, Inc. All Rights Reserved.
+------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2015.4 (win64) Build 1412921 Wed Nov 18 09:43:45 MST 2015
+| Date         : Mon Nov 21 16:08:50 2016
+| Host         : win717 running 64-bit Service Pack 1  (build 7601)
+| Command      : upgrade_ip
+| Device       : xc7z010clg400-1
+------------------------------------------------------------------------------------
+
+Upgrade Log for IP 'system_prescaler_clock_0_0'
+
+1. Summary
+----------
+
+SUCCESS in the update of system_prescaler_clock_0_0 (rfxoffline.local:user:prescaler_clock:1.0 (Rev. 12)) to current project options.
+
+
+
+
+
+
+Copyright 1986-2015 Xilinx, Inc. All Rights Reserved.
+------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2015.4 (win64) Build 1412921 Wed Nov 18 09:43:45 MST 2015
+| Date         : Mon Nov 21 16:05:44 2016
+| Host         : win717 running 64-bit Service Pack 1  (build 7601)
+| Command      : upgrade_ip
+| Device       : xc7z010clg400-1
+------------------------------------------------------------------------------------
+
+Upgrade Log for IP 'system_prescaler_clock_0_0'
+
+1. Summary
+----------
+
+SUCCESS in the update of system_prescaler_clock_0_0 (rfxoffline.local:user:prescaler_clock:1.0 (Rev. 12)) to current project options.
+
+
+
+
+
+
+Copyright 1986-2015 Xilinx, Inc. All Rights Reserved.
+------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2015.4 (win64) Build 1412921 Wed Nov 18 09:43:45 MST 2015
+| Date         : Mon Nov 21 16:02:31 2016
+| Host         : win717 running 64-bit Service Pack 1  (build 7601)
+| Command      : upgrade_ip
+| Device       : xc7z010clg400-1
+------------------------------------------------------------------------------------
+
+Upgrade Log for IP 'system_prescaler_clock_0_0'
+
+1. Summary
+----------
+
+SUCCESS in the update of system_prescaler_clock_0_0 (rfxoffline.local:user:prescaler_clock:1.0 (Rev. 12)) to current project options.
+
+
+
+
+
+
+Copyright 1986-2015 Xilinx, Inc. All Rights Reserved.
+------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2015.4 (win64) Build 1412921 Wed Nov 18 09:43:45 MST 2015
+| Date         : Mon Nov 21 15:58:42 2016
+| Host         : win717 running 64-bit Service Pack 1  (build 7601)
+| Command      : upgrade_ip
+| Device       : xc7z010clg400-1
+------------------------------------------------------------------------------------
+
+Upgrade Log for IP 'system_prescaler_clock_0_0'
+
+1. Summary
+----------
+
+SUCCESS in the upgrade of system_prescaler_clock_0_0 (rfxoffline.local:user:prescaler_clock:1.0) from (Rev. 9) to (Rev. 12)
+
+
+
+
+
+
+Copyright 1986-2015 Xilinx, Inc. All Rights Reserved.
+------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2015.4 (win64) Build 1412921 Wed Nov 18 09:43:45 MST 2015
+| Date         : Mon Nov 21 15:54:04 2016
+| Host         : win717 running 64-bit Service Pack 1  (build 7601)
+| Command      : upgrade_ip
+| Device       : xc7z010clg400-1
+------------------------------------------------------------------------------------
+
+Upgrade Log for IP 'system_prescaler_clock_0_0'
+
+1. Summary
+----------
+
+SUCCESS in the update of system_prescaler_clock_0_0 (rfxoffline.local:user:prescaler_clock:1.0 (Rev. 9)) to current project options.
+
+
+
+
+
+
+Copyright 1986-2015 Xilinx, Inc. All Rights Reserved.
+------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2015.4 (win64) Build 1412921 Wed Nov 18 09:43:45 MST 2015
+| Date         : Mon Nov 21 15:52:12 2016
+| Host         : win717 running 64-bit Service Pack 1  (build 7601)
+| Command      : upgrade_ip
+| Device       : xc7z010clg400-1
+------------------------------------------------------------------------------------
+
+Upgrade Log for IP 'system_prescaler_clock_0_0'
+
+1. Summary
+----------
+
+SUCCESS in the update of system_prescaler_clock_0_0 (rfxoffline.local:user:prescaler_clock:1.0 (Rev. 9)) to current project options.
+
+
+
+
+
+
+Copyright 1986-2015 Xilinx, Inc. All Rights Reserved.
+------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2015.4 (win64) Build 1412921 Wed Nov 18 09:43:45 MST 2015
+| Date         : Mon Nov 21 15:42:24 2016
+| Host         : win717 running 64-bit Service Pack 1  (build 7601)
+| Command      : upgrade_ip
+| Device       : xc7z010clg400-1
+------------------------------------------------------------------------------------
+
+Upgrade Log for IP 'system_prescaler_clock_0_0'
+
+1. Summary
+----------
+
+SUCCESS in the upgrade of system_prescaler_clock_0_0 (rfxoffline.local:user:prescaler_clock:1.0) from (Rev. 8) to (Rev. 9)
+
+
+
+
+
+
+Copyright 1986-2015 Xilinx, Inc. All Rights Reserved.
+------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2015.4 (win64) Build 1412921 Wed Nov 18 09:43:45 MST 2015
+| Date         : Fri Nov 18 17:43:22 2016
+| Host         : win717 running 64-bit Service Pack 1  (build 7601)
+| Command      : upgrade_ip
+| Device       : xc7z010clg400-1
+------------------------------------------------------------------------------------
+
+Upgrade Log for IP 'system_prescaler_clock_0_0'
+
+1. Summary
+----------
+
+SUCCESS in the update of system_prescaler_clock_0_0 (rfxoffline.local:user:prescaler_clock:1.0 (Rev. 8)) to current project options.
+
+
+
+
+
+
+Copyright 1986-2015 Xilinx, Inc. All Rights Reserved.
+------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2015.4 (win64) Build 1412921 Wed Nov 18 09:43:45 MST 2015
+| Date         : Wed Nov 16 17:44:19 2016
+| Host         : win717 running 64-bit Service Pack 1  (build 7601)
+| Command      : upgrade_ip
+| Device       : xc7z010clg400-1
+------------------------------------------------------------------------------------
+
+Upgrade Log for IP 'system_prescaler_clock_0_0'
+
+1. Summary
+----------
+
+SUCCESS in the upgrade of system_prescaler_clock_0_0 (rfxoffline.local:user:prescaler_clock:1.0) from (Rev. 7) to (Rev. 8)
+
+
+
+
+
+
+Copyright 1986-2015 Xilinx, Inc. All Rights Reserved.
+------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2015.4 (win64) Build 1412921 Wed Nov 18 09:43:45 MST 2015
+| Date         : Tue Nov 15 16:16:01 2016
+| Host         : win717 running 64-bit Service Pack 1  (build 7601)
+| Command      : upgrade_ip
+| Device       : xc7z010clg400-1
+------------------------------------------------------------------------------------
+
+Upgrade Log for IP 'system_prescaler_clock_0_0'
+
+1. Summary
+----------
+
+SUCCESS in the update of system_prescaler_clock_0_0 (rfxoffline.local:user:prescaler_clock:1.0 (Rev. 7)) to current project options.
+
+
+
+
+
+
+Copyright 1986-2015 Xilinx, Inc. All Rights Reserved.
+------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2015.4 (win64) Build 1412921 Wed Nov 18 09:43:45 MST 2015
+| Date         : Tue Nov 15 14:15:55 2016
+| Host         : win717 running 64-bit Service Pack 1  (build 7601)
+| Command      : upgrade_ip
+| Device       : xc7z010clg400-1
+------------------------------------------------------------------------------------
+
+Upgrade Log for IP 'system_prescaler_clock_0_0'
+
+1. Summary
+----------
+
+SUCCESS in the upgrade of system_prescaler_clock_0_0 (rfxoffline.local:user:prescaler_clock:1.0) from (Rev. 6) to (Rev. 7)
+
+
+
+
+
+
+Copyright 1986-2015 Xilinx, Inc. All Rights Reserved.
+------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2015.4 (win64) Build 1412921 Wed Nov 18 09:43:45 MST 2015
+| Date         : Wed Nov 09 14:47:54 2016
+| Host         : win717 running 64-bit Service Pack 1  (build 7601)
+| Command      : upgrade_ip
+| Device       : xc7z010clg400-1
+------------------------------------------------------------------------------------
+
+Upgrade Log for IP 'system_prescaler_clock_0_0'
+
+1. Summary
+----------
+
+SUCCESS in the update of system_prescaler_clock_0_0 (rfxoffline.local:user:prescaler_clock:1.0 (Rev. 6)) to current project options.
+
+
+
+
+
+
+Copyright 1986-2015 Xilinx, Inc. All Rights Reserved.
+------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2015.4 (win64) Build 1412921 Wed Nov 18 09:43:45 MST 2015
+| Date         : Wed Nov 09 14:32:42 2016
+| Host         : win717 running 64-bit Service Pack 1  (build 7601)
+| Command      : upgrade_ip
+| Device       : xc7z010clg400-1
+------------------------------------------------------------------------------------
+
+Upgrade Log for IP 'system_prescaler_clock_0_0'
+
+1. Summary
+----------
+
+CAUTION (success, with warnings) in the upgrade of system_prescaler_clock_0_0 (rfxoffline.local:user:prescaler_clock:1.0) from (Rev. 5) to (Rev. 6)
+
+After upgrade, an IP may have parameter and port differences compared to the original customization. Please review the parameters within the IP customization GUI to ensure proper functionality. Also, please review the updated IP instantiation template to ensure proper connectivity, and update your design if required.
+
+2. Connection Warnings
+----------------------
+
+Detected external port differences while upgrading IP 'system_prescaler_clock_0_0'. These changes may impact your design.
+
+
+-upgrade has removed port 'prescaler_output_clk_negato'
+-upgrade has added port 'prescaler_output_clk_negato_2'
+

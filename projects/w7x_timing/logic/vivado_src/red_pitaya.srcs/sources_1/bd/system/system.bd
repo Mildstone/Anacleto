@@ -169,25 +169,25 @@
           </spirit:wire>
         </spirit:port>
         <spirit:port>
-          <spirit:name>gate_led</spirit:name>
-          <spirit:wire>
-            <spirit:direction>out</spirit:direction>
-          </spirit:wire>
-        </spirit:port>
-        <spirit:port>
           <spirit:name>gate</spirit:name>
           <spirit:wire>
             <spirit:direction>out</spirit:direction>
           </spirit:wire>
         </spirit:port>
         <spirit:port>
-          <spirit:name>sig_led</spirit:name>
+          <spirit:name>gate_led</spirit:name>
           <spirit:wire>
             <spirit:direction>out</spirit:direction>
           </spirit:wire>
         </spirit:port>
         <spirit:port>
           <spirit:name>sig</spirit:name>
+          <spirit:wire>
+            <spirit:direction>out</spirit:direction>
+          </spirit:wire>
+        </spirit:port>
+        <spirit:port>
+          <spirit:name>sig_led</spirit:name>
           <spirit:wire>
             <spirit:direction>out</spirit:direction>
           </spirit:wire>
@@ -891,14 +891,14 @@
       <spirit:adHocConnection>
         <spirit:name>w7x_timing_0_gate</spirit:name>
         <spirit:internalPortReference spirit:componentRef="w7x_timing_0" spirit:portRef="gate"/>
-        <spirit:externalPortReference spirit:portRef="gate"/>
         <spirit:externalPortReference spirit:portRef="gate_led"/>
+        <spirit:externalPortReference spirit:portRef="gate"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>w7x_timing_0_sig</spirit:name>
         <spirit:internalPortReference spirit:componentRef="w7x_timing_0" spirit:portRef="sig"/>
-        <spirit:externalPortReference spirit:portRef="sig"/>
         <spirit:externalPortReference spirit:portRef="sig_led"/>
+        <spirit:externalPortReference spirit:portRef="sig"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>xlconstant_0_dout</spirit:name>

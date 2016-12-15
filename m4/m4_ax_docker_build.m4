@@ -182,6 +182,12 @@ AC_DEFUN_LOCAL([m4_ax_docker_build],[DK_CMD_CNTRUN], [
   AS_VAR_SET([group_entry],[$(awk -F: "{if (\$[]3 == \"${user_group}\") {print \$[]0} }" /etc/group)])
   AS_VAR_SET([user_groups],[$(id -G ${USER} | sed 's/ /,/g')])
   AS_VAR_SET([abs_srcdir],[$(cd ${srcdir}; pwd)])
+  AS_VAR_SET_IF([DOCKER_SHARES],[
+		 for _share in ${DOCKER_SHARES}; do
+		  AS_VAR_APPEND([DOCKER_SHARES_VAR],"-v ${_share} ");
+		 done
+		])
+
   dnl run container
   m4_normalize([ docker run -d -it --entrypoint=${SHELL} \
                      -e USER=${USER} \
@@ -193,6 +199,7 @@ AC_DEFUN_LOCAL([m4_ax_docker_build],[DK_CMD_CNTRUN], [
                      -v ${abs_srcdir}:${abs_srcdir} \
                      -v ${user_home}:${user_home} \
                      -v $(pwd):$(pwd) \
+		     ${DOCKER_SHARES_VAR} \
                      -w $(pwd) \
                      --name $2 \
                      $1;
@@ -439,6 +446,7 @@ start:
 			     -v \${abs_top_srcdir}:\${abs_top_srcdir}
 			     -v \${abs_top_builddir}:\${abs_top_builddir}
 			     -v \${user_home}:\${user_home}
+			     \$(foreach share,\${DOCKER_SHARES},-v \$(share) )
 			     -w \${abs_top_builddir}
 			     --name \${DOCKER_CONTAINER}
 			     \${DOCKER_IMAGE}; )
@@ -457,7 +465,6 @@ shell:
 	@echo "Starting docker shell";
 	docker exec -ti --user \${USER} \${DOCKER_CONTAINER} \
 	 \${SHELL} -c "cd \$(shell pwd); export MAKESHELL=\${SHELL}; bash"
-
 
 endif
 

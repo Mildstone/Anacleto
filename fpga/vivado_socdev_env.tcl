@@ -11,7 +11,10 @@ set_param general.maxThreads $env(maxThreads)
 
 
 namespace eval ::tclapp::socdev::makeutils {
+
   variable make_env
+  variable project_set
+  variable project_env
 
 
 proc  getenv { name {default ""}} {
@@ -33,9 +36,7 @@ proc compute_project_name {} {
   return $project_name
 }
 
-
 proc reset_make_env {} {
-  variable ::env
   variable make_env
   set    make_env(project_name)     [compute_project_name]
   set    make_env(soc_board)        [getenv SOC_BOARD]
@@ -54,6 +55,54 @@ proc reset_make_env {} {
 
 # set env by default when included
 reset_make_env
+
+
+variable project_env
+proc reset_project_env { } {
+  variable make_env
+  variable project_set
+  variable project_env
+
+  set project_set(VIVADO_VERSION) "\$make_env(VIVADO_VERSION)"
+  set project_set(project_name)   "\$make_env(project_name)"
+  set project_set(dir_prj)        "vivado_project"
+  set project_set(dir_src)        "\$make_env(srcdir)/vivado_src/\${make_env(project_name)}.srcs"
+  set project_set(dir_sdc)        "sdc"
+  set project_set(dir_out)        "out"
+  set project_set(dir_sdk)        "sdk"
+
+  set project_set(sources_list) [split $make_env(SOURCES) " "]
+
+  foreach { key val } [array get project_set] {
+   # puts "project_env($key) [subst $val]"
+   set project_env($key) [subst $val]
+  }
+
+  # save to projutils global variable
+  #  catch {
+  #    variable ::tclapp::xilinx::projutils::a_make_vars
+  #    array set a_make_vars [array get a_project_vars]
+  #  }
+}
+reset_project_env
+
+proc set_socdev_env {} {
+  variable make_env
+  set introspection [list]
+  set fp [open [info script] r]
+  set file_data [read $fp]
+  set data [split $file_data "\n"]
+  foreach line $data {
+    lappend introspection $line
+  }
+  lappend introspection "namespace upvar ::tclapp::socdev::makeutils make_env make_env"
+  lappend introspection "namespace upvar ::tclapp::socdev::makeutils project_env project_env"
+  lappend introspection "namespace upvar ::tclapp::socdev::makeutils project_set project_set"
+  close $fp
+  set make_env(self) [list]
+  lappend make_env(self) {*}$introspection
+}
+set_socdev_env
 
 }
 

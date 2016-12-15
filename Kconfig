@@ -200,6 +200,11 @@ menu   DOCKER_BUILD
         depends on WITH_DOCKER_URL
         default "."
 
+  config DOCKER_SHARES
+	string "User shares"
+	depends on ENABLE_DOCKER
+	default ""
+
 endmenu # DOCKER_BUILD
 
 
