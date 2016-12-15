@@ -182,12 +182,12 @@ menu   DOCKER_BUILD
   choice DOCKER_BUILD
         prompt "Select the docker build method"
         depends on ENABLE_DOCKER
+	config WITH_DOCKER_URL
+	 bool "Create from url with a Dockerfile"
         config WITH_DOCKER_IMAGE
          bool "Pull docker image"
         config WITH_DOCKER_CONTAINER
          bool "Start existing docker container"
-        config WITH_DOCKER_URL
-         bool "Create from url with a Dockerfile"
   endchoice
 
   config DOCKER_IMAGE
