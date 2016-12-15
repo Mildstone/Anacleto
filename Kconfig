@@ -168,6 +168,13 @@ endmenu # YOCTO
 
 config ENABLE_DOCKER
         bool "Enable docker build"
+	---help---
+	  This enables the docker build mechanism provided by a m4 macro
+	  that uses a custom script for SHELL command in  make  to enter
+	  a given running docker container. The actual  configure script
+	  and all make commands are executed  within that container.
+	  To see  how to manage  this please run "make docker" after the
+	  configuration completes.
 
 menu   DOCKER_BUILD
         depends on ENABLE_DOCKER
@@ -198,12 +205,23 @@ menu   DOCKER_BUILD
         string "Url"
         depends on ENABLE_DOCKER
         depends on WITH_DOCKER_URL
-        default "."
+        default "${srcdir}/conf/docker/ub14"
+	---help---
+	  Url or path to a directory wiht a valid Dockerfile
 
   config DOCKER_SHARES
-	string "User shares"
+	string "Additional user shares"
 	depends on ENABLE_DOCKER
 	default ""
+	---help---
+	  Read a list of additional docker shares in the form:
+	  <local_path_1>:<remote_path_> [<lcoal_path_2>:<remote_path_2>] [...]
+	  This could be used to add common paths such the Vivado local install
+	  or toolchains.
+	  
+	  Note:
+	  The srcdir and current build dir are always shared to the container
+         
 
 endmenu # DOCKER_BUILD
 
