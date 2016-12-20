@@ -10,6 +10,9 @@ MODULES = \
 
 TEST_EXAMPLES = \
 	  w7x_timing_test 
+
+RUN_LIBRARY = \
+	  w7x_timing_lib
           
 MOSTLYCLEANFILES = $(TEST_EXAMPLES)
 
@@ -35,7 +38,12 @@ test_examples: $(TEST_EXAMPLES)
 $(TEST_EXAMPLES):
 	echo " --- building $@ ---"; \
 	$(_set_export); \
-	${CROSS_COMPILE}${CC} $(LINUX_CFLAGS) $(srcdir)/$@.c -o $@ -lpthread
+	${CROSS_COMPILE}${CC} $(LINUX_CFLAGS) $(srcdir)/$@.c -o $@ -lpthread -O0
+
+$(RUN_LIBRARY):
+	echo " --- building $@ ---"; \
+	$(_set_export); \
+	${CROSS_COMPILE}${CC} $(LINUX_CFLAGS) $(srcdir)/$@.c -fPIC -o lib$@.so -O0 -shared 
 
 
 .PHONY: deploy
@@ -53,7 +61,7 @@ endif
 endif
 
 
-all: modules test_examples
+all: modules test_examples $(RUN_LIBRARY)
 
 
 
