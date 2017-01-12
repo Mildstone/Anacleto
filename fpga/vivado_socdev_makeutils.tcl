@@ -304,21 +304,28 @@ proc make_write_bitstream {} {
 
 
   ## START SYNTH ##
+  reset_run auto_impl_1
   reset_run auto_synth_1
-  launch_runs auto_impl_1 -jobs $v::me(maxThreads)
-  wait_on_run auto_synth_1
 
-  open_run auto_synth_1
-  set_property BITSTREAM.GENERAL.COMPRESS TRUE [current_design]
+#  launch_runs auto_impl_1 -jobs $v::me(maxThreads)
+#  wait_on_run auto_synth_1
+
+#  open_run auto_synth_1
+#  set_property BITSTREAM.GENERAL.COMPRESS TRUE [current_design]
 
   ## START IMPL ##
-  reset_run auto_impl_1
+  #  launch_runs auto_impl_1 -jobs $v::me(maxThreads)
+  #  launch_runs auto_impl_1
+  #  wait_on_run auto_impl_1
+
   launch_runs auto_impl_1 -to_step write_bitstream -jobs $v::me(maxThreads)
+  wait_on_run auto_synth_1
   wait_on_run auto_impl_1
 
   ## ////////////////////////////////////////////////////// ##
   ## generate system definition ##
 
+  open_run auto_synth_1
   set  synth_dir [get_property DIRECTORY [get_runs auto_synth_1]]
   set  impl_dir  [get_property DIRECTORY [get_runs auto_impl_1 ]]
   set  top_name  [get_property TOP [current_design]]
@@ -330,6 +337,7 @@ proc make_write_bitstream {} {
 			   -bitfile $path_sdk/$prj_name.bit \
 			   -file    $path_sdk/$prj_name.sysdef
   # Export Hardware for petalinux inclusion #
+
   write_hwdef     -force   -file    $path_sdk/$prj_name.hdf
 
 }
