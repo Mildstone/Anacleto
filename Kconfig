@@ -194,7 +194,7 @@ menu   DOCKER_BUILD
         string "Docker image"
         depends on ENABLE_DOCKER
         depends on WITH_DOCKER_IMAGE
-        default "mdsplus/docker:build_fc22"
+	default "rigoni/linux-socdev:latest"
 
   config DOCKER_CONTAINER
         string "Container name or ID"
@@ -205,14 +205,14 @@ menu   DOCKER_BUILD
         string "Url"
         depends on ENABLE_DOCKER
         depends on WITH_DOCKER_URL
-        default "${srcdir}/conf/docker/ub14"
+	default "${srcdir}"
 	---help---
 	  Url or path to a directory wiht a valid Dockerfile
 
   config DOCKER_SHARES
 	string "Additional user shares"
 	depends on ENABLE_DOCKER
-	default ""
+	default "/opt:/opt"
 	---help---
 	  Read a list of additional docker shares in the form:
 	  <local_path_1>:<remote_path_> [<lcoal_path_2>:<remote_path_2>] [...]
