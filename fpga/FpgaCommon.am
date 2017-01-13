@@ -142,12 +142,12 @@ deploy: $(FPGA_BIT) $(LINUX_IMAGE) $(DTB)
 if WITH_DEVICE_SSHKEY
 	@ echo " --- deploying to target device: ${DEVICE_NAME} using key ---";
 	scp -i $(DEVICE_SSHKEY) $^ \
-	  $(DEVICE_USER)@$(DEVICE_IP):$(DEVICE_INSTALL_DIR);
+	  $(DEVICE_USER)@$(DEVICE_IP):$(DEVICE_BOOT_DIR);
 else
 if WITH_DEVICE_SSHPASSWD
 	@ echo " --- deploying to target device: ${DEVICE_NAME} using passwd ---";
 	sshpass -p ${DEVICE_PASSWD} scp $^ \
-	  $(DEVICE_USER)@$(DEVICE_IP):$(DEVICE_INSTALL_DIR);
+	  $(DEVICE_USER)@$(DEVICE_IP):$(DEVICE_BOOT_DIR);
 else
 	@ echo "none of sshpass command or configured ssh key was found"
 endif
