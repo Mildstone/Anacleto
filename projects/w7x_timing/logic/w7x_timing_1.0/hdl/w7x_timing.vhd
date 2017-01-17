@@ -92,13 +92,13 @@ signal out_clock_count : STD_LOGIC_VECTOR(31 downto 0);
 begin
    
    clock_gen:  process(clk, init, trig) is
-     constant IDLE : integer := 0;
-     constant ARMED : integer := 1;
-     constant TRIGGERED : integer := 2;
-     constant RUNNING_CLOCK : integer := 3;
-     constant RUNNING_SEQUENCE_UP : integer := 4;
-     constant RUNNING_SEQUENCE_DOWN : integer := 5;
-     constant WAITING_REPEAT : integer := 6;
+     constant IDLE : integer := 1;
+     constant ARMED : integer := 2;
+     constant TRIGGERED : integer := 3;
+     constant RUNNING_CLOCK : integer := 4;
+     constant RUNNING_SEQUENCE_UP : integer := 5;
+     constant RUNNING_SEQUENCE_DOWN : integer := 6;
+     constant WAITING_REPEAT : integer := 7;
      
      variable blink : integer := 0;
 
