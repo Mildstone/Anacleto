@@ -16,10 +16,13 @@ entity w7x_timing_v1_0 is
 	);
 	port (
 		-- Users to add ports here
-        clk: in std_logic;
-        trig: in std_logic;
-        sig: out std_logic;
-        gate: out std_logic;
+        clk: in STD_LOGIC;
+        trig: in STD_LOGIC;
+        sig: out STD_LOGIC;
+        gate: out STD_LOGIC;
+        prog: out STD_LOGIC;
+        armed: out STD_LOGIC;
+        triged: out STD_LOGIC;
         
 		-- User ports ends
 		-- Do not modify the ports beyond this line
@@ -165,21 +168,19 @@ architecture arch_imp of w7x_timing_v1_0 is
         OUT_REG_38: out std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
         OUT_REG_39: out std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
         OUT_REG_40: out std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0)
-        
-		
-		
-		
-		
-		);
+    );
 	end component w7x_timing_v1_0_S00_AXI;
 
 
     component w7x_timing is
     port ( clk : in STD_LOGIC;
            trig : in STD_LOGIC;
-           sig  : out STD_LOGIC;
-           gate : out STD_LOGIC;
            init : in STD_LOGIC;
+           sig: out STD_LOGIC;
+           gate: out STD_LOGIC;
+           prog: out STD_LOGIC;
+           arm: out STD_LOGIC;
+           triged: out STD_LOGIC;
            delay_l : in STD_LOGIC_VECTOR (31 downto 0);
            delay_h : in STD_LOGIC_VECTOR (31 downto 0);
            wid : in STD_LOGIC_VECTOR (31 downto 0);
@@ -300,15 +301,11 @@ w7x_timing_v1_0_S00_AXI_inst : w7x_timing_v1_0_S00_AXI
 		OUT_REG_38  => transfer_38,
 		OUT_REG_39  => transfer_39,
 		OUT_REG_40  => transfer_40
-		
-		
-		
 	);
 
 w7x_timing_inst : w7x_timing
 
 	port map (
-
            init => transfer_0(0),
            delay_l => transfer_1,
            delay_h => transfer_2,
@@ -350,13 +347,15 @@ w7x_timing_inst : w7x_timing
            seq_14_h  => transfer_38,
            seq_15_l  => transfer_39,
            seq_15_h  => transfer_40,
-           
            clk => clk,
            trig => trig,
+           prog => prog,
            sig => sig,
-           gate => gate
+           gate => gate,
+           triged => triged,
+           arm => armed
            
-           );
+      );
 
 
 	-- Add user logic here

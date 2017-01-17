@@ -34,8 +34,11 @@ use IEEE.NUMERIC_STD.ALL;
 entity w7x_timing is
     Port ( clk : in STD_LOGIC;
            trig : in STD_LOGIC;
-           sig  : out STD_LOGIC;
-           gate : out STD_LOGIC;
+           sig: out STD_LOGIC;
+           gate: out STD_LOGIC;
+           prog: out STD_LOGIC;
+           arm: out STD_LOGIC;
+           triged: out STD_LOGIC;
            init : in STD_LOGIC;
            delay_l : in STD_LOGIC_VECTOR (31 downto 0);
            delay_h : in STD_LOGIC_VECTOR (31 downto 0);
@@ -100,6 +103,8 @@ begin
      constant RUNNING_SEQUENCE_DOWN : integer := 6;
      constant WAITING_REPEAT : integer := 7;
      
+     variable blink : integer := 0;
+
      type LONG_ARRAY_TYPE is array(0 to 15) of unsigned(63 downto 0);
      variable times : LONG_ARRAY_TYPE;
      
@@ -155,7 +160,14 @@ begin
        out_clock_count <= std_logic_vector(to_unsigned(clock_count, 32));
        out_state <= std_logic_vector(to_unsigned(state, 32));
        
-       if rising_edge(clk) then 
+       if rising_edge(clk) then
+         if blink = 0 then
+             prog <= 1;
+             blink := 1;
+         else
+             prog <= 0;
+             blink := 0;
+         end if;
          case state is
              when IDLE => 
                if init = '1' then 
@@ -302,8 +314,24 @@ begin
                state := IDLE;
                sig <= '0';
                gate <= '0';
-            
            end case;
+           if state = IDLE then
+              arm <= '0';
+           --   prog <= '0';
+              triged <= '0';
+           else
+             arm <= '1';
+             if state = ARMED then
+                triged <= '0';
+             else
+                triged <= '1';
+            --   if state = TRIGGERED then
+            --      prog <= '0';
+            --   else
+            --      prog <= '1';
+            --   end if;
+             end if;
+           end if;
          end if;
       
       end process clock_gen; 
