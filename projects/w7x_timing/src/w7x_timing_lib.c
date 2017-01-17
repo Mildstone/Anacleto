@@ -15,7 +15,7 @@ int prova(int arg, int arg1)
 int makeClock(unsigned int delayH, unsigned int delayL, unsigned int wid, unsigned int period, unsigned int count, unsigned int cycleH, unsigned int cycleL, unsigned int repeat)
 {
     int i;
- 
+
    printf("MAKE CLOCK delayH: %d delayL: %dwidth: %d period: %d count: %d cycleH: %d cycleL: %d repeat: %d\n",
 	delayH, delayL, wid, period, count, cycleH, cycleL, repeat); 
 //Consistency check
@@ -42,8 +42,7 @@ int makeClock(unsigned int delayH, unsigned int delayL, unsigned int wid, unsign
         printf("ERROR: unable to get device\n");
 	return 0;
     }
-    
-    dev->init = 0;
+
     nanosleep(&t,0);
     dev->delay_h = delayH;
     nanosleep(&t,0);
@@ -108,8 +107,7 @@ int makeSequence(unsigned int delayH, unsigned int delayL, unsigned int wid, uns
         printf("ERROR: unable to get device\n");
 	return 0;
     }
-    
-    dev->init = 0;
+
     dev->delay_h = delayH;
     nanosleep(&t,0);
     dev->delay_l = delayL;
@@ -125,7 +123,7 @@ int makeSequence(unsigned int delayH, unsigned int delayL, unsigned int wid, uns
     dev->repeat = repeat;
     nanosleep(&t,0);
     dev->count = count;
-    for(i = 0; i < 32; i++) 
+    for(i = 0; i < 32; i++)
     {
        nanosleep(&t,0);
        dev->seq[i] = times[i];
@@ -142,9 +140,9 @@ int arm()
         printf("ERROR: unable to get device\n");
 	return 0;
     }
-    
+
     dev->init = 1;
-   
+
     return 1;
 }
 int disarm()
@@ -156,9 +154,9 @@ int disarm()
         printf("ERROR: unable to get device\n");
 	return 0;
     }
-    
+
     dev->init = 0;
-   
+
     return 1;
 }
 
