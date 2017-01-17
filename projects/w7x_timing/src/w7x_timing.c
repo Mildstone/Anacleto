@@ -99,7 +99,7 @@ static ssize_t device_write(struct file *filp, const char *buff, size_t len,
 
 // MMAP //
 
-static struct vm_operations_struct vm_ops;
+//static struct vm_operations_struct vm_ops;
 static void mmap_close_cb(struct vm_area_struct *vma) {
     ; // do nothing
 }
@@ -137,10 +137,10 @@ static int device_mmap(struct file *filp, struct vm_area_struct *vma)
 
     printk(KERN_DEBUG "<%s> file: mmap()\n", DEVICE_NAME);
 
-    printk(KERN_DEBUG "<%s> file: set physical = %x, size = %d\n",
+    printk(KERN_DEBUG "<%s> file: set physical = %lx, size = %d\n",
            MODULE_NAME, physical, psize);
 
-    printk(KERN_DEBUG "<%s> file: destination = %x, size = %d\n",
+    printk(KERN_DEBUG "<%s> file: destination = %lx, size = %d\n",
            MODULE_NAME, vma->vm_start, vsize);
 
     vma->vm_page_prot = phys_mem_access_prot(filp, vma->vm_pgoff,
