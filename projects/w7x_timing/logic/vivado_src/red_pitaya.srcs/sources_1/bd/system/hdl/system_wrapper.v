@@ -1,8 +1,8 @@
-//Copyright 1986-2015 Xilinx, Inc. All Rights Reserved.
+//Copyright 1986-2016 Xilinx, Inc. All Rights Reserved.
 //--------------------------------------------------------------------------------
-//Tool Version: Vivado v.2015.4 (lin64) Build 1412921 Wed Nov 18 09:44:32 MST 2015
-//Date        : Wed Dec  7 13:19:32 2016
-//Host        : c99a4b2000d0 running 64-bit Ubuntu 14.04.4 LTS
+//Tool Version: Vivado v.2016.4 (lin64) Build 1733598 Wed Dec 14 22:35:42 MST 2016
+//Date        : Tue Jan 17 15:45:18 2017
+//Host        : mds-comp-1 running 64-bit Debian GNU/Linux 8.6 (jessie)
 //Command     : generate_target system_wrapper.bd
 //Design      : system_wrapper
 //Purpose     : IP block netlist
@@ -35,9 +35,9 @@ module system_wrapper
     clk_led,
     gate,
     gate_led,
-    on_led,
     sig,
     sig_led,
+    state_leds,
     trig,
     trig_led);
   inout [14:0]DDR_addr;
@@ -65,9 +65,9 @@ module system_wrapper
   output [0:0]clk_led;
   output gate;
   output gate_led;
-  output [0:0]on_led;
   output sig;
   output sig_led;
+  output [3:0]state_leds;
   input trig;
   output [0:0]trig_led;
 
@@ -96,9 +96,9 @@ module system_wrapper
   wire [0:0]clk_led;
   wire gate;
   wire gate_led;
-  wire [0:0]on_led;
   wire sig;
   wire sig_led;
+  wire [3:0]state_leds;
   wire trig;
   wire [0:0]trig_led;
 
@@ -128,9 +128,9 @@ module system_wrapper
         .clk_led(clk_led),
         .gate(gate),
         .gate_led(gate_led),
-        .on_led(on_led),
         .sig(sig),
         .sig_led(sig_led),
+        .state_leds(state_leds),
         .trig(trig),
         .trig_led(trig_led));
 endmodule

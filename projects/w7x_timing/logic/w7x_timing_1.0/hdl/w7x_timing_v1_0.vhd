@@ -16,14 +16,11 @@ entity w7x_timing_v1_0 is
 	);
 	port (
 		-- Users to add ports here
-        clk: in STD_LOGIC;
-        trig: in STD_LOGIC;
-        sig: out STD_LOGIC;
-        gate: out STD_LOGIC;
-        prog: out STD_LOGIC;
-        armed: out STD_LOGIC;
-        triged: out STD_LOGIC;
-        
+		clk: in STD_LOGIC;
+		trig: in STD_LOGIC;
+		sig: out STD_LOGIC;
+		gate: out STD_LOGIC;
+		leds : out STD_LOGIC_VECTOR (3 downto 0);        
 		-- User ports ends
 		-- Do not modify the ports beyond this line
 
@@ -54,7 +51,6 @@ entity w7x_timing_v1_0 is
 end w7x_timing_v1_0;
 
 architecture arch_imp of w7x_timing_v1_0 is
-
     signal transfer_bit: std_logic;
     signal transfer_0: std_logic_vector(32-1 downto 0);
     signal transfer_1: std_logic_vector(32-1 downto 0);
@@ -176,11 +172,9 @@ architecture arch_imp of w7x_timing_v1_0 is
     port ( clk : in STD_LOGIC;
            trig : in STD_LOGIC;
            init : in STD_LOGIC;
-           sig: out STD_LOGIC;
-           gate: out STD_LOGIC;
-           prog: out STD_LOGIC;
-           arm: out STD_LOGIC;
-           triged: out STD_LOGIC;
+           sig : out STD_LOGIC;
+           gate : out STD_LOGIC;
+           bstate : out STD_LOGIC_VECTOR (3 downto 0);
            delay_l : in STD_LOGIC_VECTOR (31 downto 0);
            delay_h : in STD_LOGIC_VECTOR (31 downto 0);
            wid : in STD_LOGIC_VECTOR (31 downto 0);
@@ -347,14 +341,11 @@ w7x_timing_inst : w7x_timing
            seq_14_h  => transfer_38,
            seq_15_l  => transfer_39,
            seq_15_h  => transfer_40,
-           clk => clk,
+           clk  => clk,
            trig => trig,
-           prog => prog,
-           sig => sig,
+           sig  => sig,
            gate => gate,
-           triged => triged,
-           arm => armed
-           
+           bstate => leds
       );
 
 

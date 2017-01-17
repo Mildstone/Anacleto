@@ -36,10 +36,8 @@ entity w7x_timing is
            trig : in STD_LOGIC;
            sig: out STD_LOGIC;
            gate: out STD_LOGIC;
-           prog: out STD_LOGIC;
-           arm: out STD_LOGIC;
-           triged: out STD_LOGIC;
            init : in STD_LOGIC;
+           bstate : out STD_LOGIC_VECTOR (3 downto 0);
            delay_l : in STD_LOGIC_VECTOR (31 downto 0);
            delay_h : in STD_LOGIC_VECTOR (31 downto 0);
            wid : in STD_LOGIC_VECTOR (31 downto 0);
@@ -86,7 +84,6 @@ end  w7x_timing;
 
 architecture Behavioral of w7x_timing is
 signal buf: STD_LOGIC_VECTOR (31 downto 0);
-signal out_state: STD_LOGIC_VECTOR (31 downto 0);
 signal times0 : STD_LOGIC_VECTOR(63 downto 0); 
 signal times1 : STD_LOGIC_VECTOR(63 downto 0); 
 signal times2 : STD_LOGIC_VECTOR(63 downto 0); 
@@ -95,13 +92,13 @@ signal out_clock_count : STD_LOGIC_VECTOR(31 downto 0);
 begin
    
    clock_gen:  process(clk, init, trig) is
-     constant IDLE : integer := 1;
-     constant ARMED : integer := 2;
-     constant TRIGGERED : integer := 3;
-     constant RUNNING_CLOCK : integer := 4;
-     constant RUNNING_SEQUENCE_UP : integer := 5;
-     constant RUNNING_SEQUENCE_DOWN : integer := 6;
-     constant WAITING_REPEAT : integer := 7;
+     constant IDLE : integer := 0;
+     constant ARMED : integer := 1;
+     constant TRIGGERED : integer := 2;
+     constant RUNNING_CLOCK : integer := 3;
+     constant RUNNING_SEQUENCE_UP : integer := 4;
+     constant RUNNING_SEQUENCE_DOWN : integer := 5;
+     constant WAITING_REPEAT : integer := 6;
      
      variable blink : integer := 0;
 
@@ -158,16 +155,8 @@ begin
        times2 <= std_logic_vector(times(2));
        out_long_counter <= std_logic_vector(long_counter);
        out_clock_count <= std_logic_vector(to_unsigned(clock_count, 32));
-       out_state <= std_logic_vector(to_unsigned(state, 32));
-       
+      
        if rising_edge(clk) then
-         if blink = 0 then
-             prog <= 1;
-             blink := 1;
-         else
-             prog <= 0;
-             blink := 0;
-         end if;
          case state is
              when IDLE => 
                if init = '1' then 
@@ -315,27 +304,7 @@ begin
                sig <= '0';
                gate <= '0';
            end case;
-           if state = IDLE then
-              arm <= '0';
-           --   prog <= '0';
-              triged <= '0';
-           else
-             arm <= '1';
-             if state = ARMED then
-                triged <= '0';
-             else
-                triged <= '1';
-            --   if state = TRIGGERED then
-            --      prog <= '0';
-            --   else
-            --      prog <= '1';
-            --   end if;
-             end if;
-           end if;
+           bstate <= std_logic_vector(to_unsigned(state, 4));
          end if;
-      
-      end process clock_gen; 
-
- 
-  
+    end process clock_gen;
 end Behavioral;
