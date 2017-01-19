@@ -30,281 +30,172 @@ use IEEE.NUMERIC_STD.ALL;
 -- any Xilinx leaf cells in this code.
 --library UNISIM;
 --use UNISIM.VComponents.all;
-
 entity w7x_timing is
-    Port ( clk : in STD_LOGIC;
-           trig : in STD_LOGIC;
-           sig: out STD_LOGIC;
-           gate: out STD_LOGIC;
-           init : in STD_LOGIC;
-           bstate : out STD_LOGIC_VECTOR (3 downto 0);
-           delay_l : in STD_LOGIC_VECTOR (31 downto 0);
-           delay_h : in STD_LOGIC_VECTOR (31 downto 0);
-           wid : in STD_LOGIC_VECTOR (31 downto 0);
-           period : in STD_LOGIC_VECTOR (31 downto 0);
-           cycle_l : in STD_LOGIC_VECTOR (31 downto 0);
-           cycle_h : in STD_LOGIC_VECTOR (31 downto 0);
-           repeat : in STD_LOGIC_VECTOR (31 downto 0);
-           count : in STD_LOGIC_VECTOR (31 downto 0);
-           seq_0_l : in STD_LOGIC_VECTOR (31 downto 0);
-           seq_0_h : in STD_LOGIC_VECTOR (31 downto 0);
-           seq_1_l : in STD_LOGIC_VECTOR (31 downto 0);
-           seq_1_h : in STD_LOGIC_VECTOR (31 downto 0);
-           seq_2_l : in STD_LOGIC_VECTOR (31 downto 0);
-           seq_2_h : in STD_LOGIC_VECTOR (31 downto 0);
-           seq_3_l : in STD_LOGIC_VECTOR (31 downto 0);
-           seq_3_h : in STD_LOGIC_VECTOR (31 downto 0);
-           seq_4_l : in STD_LOGIC_VECTOR (31 downto 0);
-           seq_4_h : in STD_LOGIC_VECTOR (31 downto 0);
-           seq_5_l : in STD_LOGIC_VECTOR (31 downto 0);
-           seq_5_h : in STD_LOGIC_VECTOR (31 downto 0);
-           seq_6_l : in STD_LOGIC_VECTOR (31 downto 0);
-           seq_6_h : in STD_LOGIC_VECTOR (31 downto 0);
-           seq_7_l : in STD_LOGIC_VECTOR (31 downto 0);
-           seq_7_h : in STD_LOGIC_VECTOR (31 downto 0);
-           seq_8_l : in STD_LOGIC_VECTOR (31 downto 0);
-           seq_8_h : in STD_LOGIC_VECTOR (31 downto 0);
-           seq_9_l : in STD_LOGIC_VECTOR (31 downto 0);
-           seq_9_h : in STD_LOGIC_VECTOR (31 downto 0);
-           seq_10_l : in STD_LOGIC_VECTOR (31 downto 0);
-           seq_10_h : in STD_LOGIC_VECTOR (31 downto 0);
-           seq_11_l : in STD_LOGIC_VECTOR (31 downto 0);
-           seq_11_h : in STD_LOGIC_VECTOR (31 downto 0);
-           seq_12_l : in STD_LOGIC_VECTOR (31 downto 0);
-           seq_12_h : in STD_LOGIC_VECTOR (31 downto 0);
-           seq_13_l : in STD_LOGIC_VECTOR (31 downto 0);
-           seq_13_h : in STD_LOGIC_VECTOR (31 downto 0);
-           seq_14_l : in STD_LOGIC_VECTOR (31 downto 0);
-           seq_14_h : in STD_LOGIC_VECTOR (31 downto 0);
-           seq_15_l : in STD_LOGIC_VECTOR (31 downto 0);
-           seq_15_h : in STD_LOGIC_VECTOR (31 downto 0));
-           
+    generic(
+      MAX_SAMPLES : integer := 16
+    );
+    port (
+       clk   : in  STD_LOGIC;
+       trig  : in  STD_LOGIC;
+       init  : in  STD_LOGIC;
+       bstate: out STD_LOGIC_VECTOR (0 to 5);
+
+       width : in  STD_LOGIC_VECTOR (31 downto 0);
+       period: in  STD_LOGIC_VECTOR (31 downto 0);
+       repeat: in  STD_LOGIC_VECTOR (31 downto 0);
+       sample: in  STD_LOGIC_VECTOR (31 downto 0);
+ 
+       delay : in  STD_LOGIC_VECTOR (63 downto 0);
+       cycle : in  STD_LOGIC_VECTOR (63 downto 0);
+       seq   : in  STD_LOGIC_VECTOR (MAX_SAMPLES*64-1 downto 0)
+    );
 end  w7x_timing;
 
 
 architecture Behavioral of w7x_timing is
-signal buf: STD_LOGIC_VECTOR (31 downto 0);
-signal times0 : STD_LOGIC_VECTOR(63 downto 0); 
-signal times1 : STD_LOGIC_VECTOR(63 downto 0); 
-signal times2 : STD_LOGIC_VECTOR(63 downto 0); 
-signal out_long_counter : STD_LOGIC_VECTOR(63 downto 0); 
-signal out_clock_count : STD_LOGIC_VECTOR(31 downto 0); 
 begin
-   
-   clock_gen:  process(clk, init, trig) is
-     constant IDLE : integer := 1;
-     constant ARMED : integer := 2;
-     constant TRIGGERED : integer := 3;
-     constant RUNNING_CLOCK : integer := 4;
-     constant RUNNING_SEQUENCE_UP : integer := 5;
-     constant RUNNING_SEQUENCE_DOWN : integer := 6;
-     constant WAITING_REPEAT : integer := 7;
-     
-     variable blink : integer := 0;
-
-     type LONG_ARRAY_TYPE is array(0 to 15) of unsigned(63 downto 0);
-     variable times : LONG_ARRAY_TYPE;
-     
-     variable curr_wid : integer := to_integer(unsigned(wid));
-     variable curr_period : integer := to_integer(unsigned(period));
---     variable curr_delay : integer := to_integer(unsigned(delay));
-     variable curr_delay : unsigned(63 downto 0);
---     variable curr_cycle : integer := to_integer(unsigned(cycle));
-     variable curr_cycle : unsigned(63 downto 0);
-     variable curr_count : integer := to_integer(unsigned(count));
-     variable curr_repeat : integer := to_integer(unsigned(repeat));
-     variable state : integer := IDLE;
-     variable wait_count : integer := 0;                      -- Used to count delay clocks
-     variable counter : integer := 0;                         -- Used to generate clock
-     variable long_counter : unsigned(63 downto 0) := x"0000000000000000";     -- Used for time count within burst
-     variable clock_count : integer := 0;                     -- Used to count clocks within burst 
-     variable repeat_count: integer := 0;                     -- Used to count bursts
-
- 
-
-
-     begin
- 
-       curr_wid := to_integer(unsigned(wid));
-       curr_period := to_integer(unsigned(period));
-       curr_delay := unsigned(delay_h & delay_l);
-       curr_cycle := unsigned(cycle_h & cycle_l);
-       curr_count := to_integer(unsigned(count));
-       curr_repeat := to_integer(unsigned(repeat));
+  clock_gen:  process(clk, init, trig) is
+    type LONG_ARRAY_TYPE is array(0 to MAX_SAMPLES) of unsigned(63 downto 0);
+    constant ZERO64         : unsigned(63 downto 0) := x"0000000000000000";
+    --                                                     SG0PWA
+    constant IDLE           : std_logic_vector(0 to 5) := "000000";
+    constant ARMED          : std_logic_vector(0 to 5) := "000001";
+    constant WAITING_DELAY  : std_logic_vector(0 to 5) := "000010";
+    constant WAITING_SAMPLE : std_logic_vector(0 to 5) := "010110";
+    constant WAITING_LOW    : std_logic_vector(0 to 5) := "010010";
+    constant WAITING_HIGH   : std_logic_vector(0 to 5) := "110010";
+    constant WAITING_REPEAT : std_logic_vector(0 to 5) := "000110";
+    constant ERROR          : std_logic_vector(0 to 5) := "000111";
       
--- Copy passed times       
-       times(0) := unsigned(seq_0_h & seq_0_l);
-       times(1) := unsigned(seq_1_h & seq_1_l);
-       times(2) := unsigned(seq_2_h & seq_2_l);
-       times(3) := unsigned(seq_3_h & seq_3_l);
-       times(4) := unsigned(seq_4_h & seq_4_l);
-       times(5) := unsigned(seq_5_h & seq_5_l);
-       times(6) := unsigned(seq_6_h & seq_6_l);
-       times(7) := unsigned(seq_7_h & seq_7_l);
-       times(8) := unsigned(seq_8_h & seq_8_l);
-       times(9) := unsigned(seq_9_h & seq_9_l);
-       times(10) := unsigned(seq_10_h & seq_10_l);
-       times(11) := unsigned(seq_11_h & seq_11_l);
-       times(12) := unsigned(seq_12_h & seq_12_l);
-       times(13) := unsigned(seq_13_h & seq_13_l);
-       times(14) := unsigned(seq_14_h & seq_14_l);
-       times(15) := unsigned(seq_15_h & seq_15_l);
-       
-       times0 <= std_logic_vector(times(0));
-       times1 <= std_logic_vector(times(1));
-       times2 <= std_logic_vector(times(2));
-       out_long_counter <= std_logic_vector(long_counter);
-       out_clock_count <= std_logic_vector(to_unsigned(clock_count, 32));
+    variable times : LONG_ARRAY_TYPE;
+     
+    variable state       : std_logic_vector(0 to 5) := IDLE;
+    variable sample_count: integer := 0;  -- Used to count clocks within burst 
+    variable sample_total: integer := 0;
+    variable repeat_count: integer := 0;  -- Used to count bursts
+    variable repeat_total: integer := 0;
+    -- Used to measure high signal
+    variable period_ticks: integer := 0; 
+    variable high_total  : integer := 0;
+    variable period_total: integer := 0;
+    -- sequence counter
+    variable cycle_ticks : unsigned(63 downto 0) := ZERO64;
+    variable delay_total : unsigned(63 downto 0) := ZERO64;
+    variable cycle_total : unsigned(63 downto 0) := ZERO64;
+    
+    procedure start_sample is
+    begin
+      period_ticks := 0;
+      sample_count := sample_count +1;
+      state := WAITING_HIGH;
+    end start_sample;
+
+    procedure do_waiting_sample is
+    begin
+      if cycle_ticks >= times(sample_count) then
+        start_sample;
+      end if;
+    end do_waiting_sample;
+
+    procedure start_cycle is
+    begin
+      sample_count := 0;
+      cycle_ticks := ZERO64;
+      repeat_count := repeat_count + 1;
+      state := WAITING_SAMPLE;
+      do_waiting_sample;
+    end start_cycle;
+    
+    procedure do_waiting_repeat is
+    begin
+      if repeat_count < repeat_total then
+        if cycle_ticks >= cycle_total then
+          start_cycle;
+        end if;
+      else
+        state := ARMED;
+      end if;
+    end do_waiting_repeat;
+
+    procedure do_waiting_low is
+    begin
+      if period_ticks >= period_total then
+        if sample_count < sample_total then
+          state := WAITING_SAMPLE;
+          do_waiting_sample;       
+        else
+          state := WAITING_REPEAT;
+          do_waiting_repeat;
+        end if;
+      end if;
+    end do_waiting_low;
+
+    procedure do_waiting_high is
+    begin
+      if period_ticks >= high_total then
+        state := WAITING_LOW;
+        do_waiting_low;
+      end if;
+    end do_waiting_high;
+
+    procedure do_waiting_delay is
+    begin
       
-       if rising_edge(clk) then
-         case state is
-             when IDLE => 
-               if init = '1' then 
-                 state := ARMED;
-                 sig <= '0';
-                 gate <= '0';
-               end if;
-             when ARMED =>
-               if init = '0' then
-                 state := IDLE; 
-                 sig <= '0';
-                 gate <= '0';
-               elsif trig = '1' then
-                 wait_count := 0;
-                 if wait_count = curr_delay then --In case delay == 0
-                   if times(0) = times(1) then    --Same value for first two times means clock generation
-                     state := RUNNING_CLOCK;
-                     sig <= '1';
-                     clock_count := 0;
-                   else
-                     if times(0) = 0 then
-                       sig <= '1';
-                       state := RUNNING_SEQUENCE_UP;
-                       clock_count := 1;
-                     else
-                       sig <= '0';
-                       state := RUNNING_SEQUENCE_DOWN;
-                       clock_count := 0;
-                     end if;
-                   end if;
-                   gate <= '1';
-                   counter := 0;
-                   long_counter := x"0000000000000000";
-                   repeat_count := 0;
-                 else
-                   state := TRIGGERED;  
-                 end if;
-               end if;
-             when TRIGGERED =>
-               if init = '0' then
-                 state := IDLE;
-                 sig <= '0';
-                 gate <= '0';
-               else
-                 wait_count := wait_count + 1;
-                 if wait_count = curr_delay then 
-                   if times(0) = times(1) then    --Same value for first two times means clock generation
-                     state := RUNNING_CLOCK;
-                     sig <= '1';
-                     clock_count := 0;
-                   else
-                      if times(0) = 0 then
-                       sig <= '1';
-                       clock_count := 1;
-                       state := RUNNING_SEQUENCE_UP;
-                     else
-                       clock_count := 0;
-                       sig <= '0';
-                       state := RUNNING_SEQUENCE_DOWN;
-                     end if;
-                   end if;
-                   counter := 0;
-                   long_counter := x"0000000000000000";
-                   repeat_count := 0;
-                   gate <= '1';
-                 end if;
-               end if;
-             when RUNNING_CLOCK =>
-               if init = '0' then
-                 state := IDLE;
-                 sig <= '0';
-                 gate <= '0';
-               else
-                 long_counter := long_counter + 1;
-                 counter := counter + 1;
-                 if counter = curr_period then   --End of current clock period
-                   sig <= '1';
-                   counter := 0;
-                 elsif counter = curr_wid then  --End of width ticks (when output is high)
-                   sig <= '0';
-                   clock_count := clock_count + 1;
-                   if clock_count >= curr_count then  --End of clocks within burst
-                     state := WAITING_REPEAT;
-                   end if;
-                 end if;
-               end if;
-             when WAITING_REPEAT =>
-               if init = '0' then
-                 state := IDLE;
-                 sig <= '0';
-                 gate <= '0';
-               else
-                 long_counter := long_counter + 1;
-                 if long_counter >= curr_cycle then     --End of current burst
-                   repeat_count := repeat_count + 1;
-                   if repeat_count >= curr_repeat then   --Finished generating bursts
-                     state := IDLE;
-                     sig <= '0';
-                     gate <= '0';
-                   else  
-                     if times(0) = times(1) then    --Same value for first two times means clock generation
-                       state := RUNNING_CLOCK;
-                       sig <= '1';
-                       clock_count := 0;
-                     else
-                       counter := 0;
-                       if times(0) = 0 then
-                         sig <= '1';
-                         state := RUNNING_SEQUENCE_UP;
-                         clock_count := 1;
-                       else
-                         sig <= '0';
-                         state := RUNNING_SEQUENCE_DOWN;
-                         clock_count := 0;
-                       end if;
-                     end if;
-                     counter := 0;
-                     long_counter := x"0000000000000000";
-                  end if;
-                 end if;
-               end if;
-             when RUNNING_SEQUENCE_UP =>
-               counter := counter + 1;
-               if counter = curr_wid then
-                 sig <= '0';
-                 if clock_count = curr_count then  
-                   state := WAITING_REPEAT;
-                 else
-                   state := RUNNING_SEQUENCE_DOWN;
-                 end if;
-               end if;
-               long_counter := long_counter + 1;
-             when RUNNING_SEQUENCE_DOWN =>
-               long_counter := long_counter + 1;
-               if long_counter = times(clock_count) then
-                 sig <= '1';
-                 counter := 0;
-                 state := RUNNING_SEQUENCE_UP;
-                 clock_count := clock_count + 1;
-               end if;   
- --              long_counter := long_counter + 1;
-              
-             when others =>        --Should never happen
-               state := IDLE;
-               sig <= '0';
-               gate <= '0';
-           end case;
-           bstate <= std_logic_vector(to_unsigned(state, 4));
-         end if;
-    end process clock_gen;
+      if cycle_ticks >= delay_total then
+        start_cycle;
+      end if;
+    end do_waiting_delay;
+
+    procedure start_program is
+    begin
+      cycle_ticks := ZERO64;
+      repeat_count := 0;
+      state := WAITING_DELAY;
+      do_waiting_delay;
+    end start_program;
+
+  begin
+    high_total   := to_integer(unsigned(width));
+    period_total := to_integer(unsigned(period));
+    delay_total  := unsigned(delay);
+    cycle_total  := unsigned(cycle);
+    sample_total := to_integer(unsigned(sample));
+    repeat_total := to_integer(unsigned(repeat));
+-- Copy passed times
+    for i in 0 to MAX_SAMPLES-1 loop   
+      times(i)  := unsigned(seq(i*64+63 downto i*64));
+    end loop;
+    if state = IDLE then
+      if init = '1' then
+        state := ARMED;
+      end if;
+    elsif init = '0' then
+      state := IDLE;
+    end if;
+    if rising_edge(clk) then
+      cycle_ticks := cycle_ticks + 1;
+      period_ticks:= period_ticks + 1;
+      case state is
+      when IDLE =>
+      when ARMED => 
+        if trig = '1' then
+          start_program;
+        end if;
+      when WAITING_DELAY =>
+        do_waiting_delay;
+      when WAITING_SAMPLE =>
+        do_waiting_sample;
+      when WAITING_HIGH =>
+        do_waiting_high;
+      when WAITING_LOW =>
+        do_waiting_low;
+      when WAITING_REPEAT =>
+        do_waiting_repeat;
+      when others =>
+        state := ERROR;
+      end case;
+    end if; -- rising_edge(clk)
+    bstate <= state;
+  end process clock_gen;
+
 end Behavioral;

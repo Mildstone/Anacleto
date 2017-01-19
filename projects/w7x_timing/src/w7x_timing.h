@@ -13,22 +13,21 @@ extern "C" {
 
 #define DEVICE_NAME "w7x_timing"  /* Dev name as it appears in /proc/devices */
 #define MODULE_NAME "w7x_timing"
-
+#define MAX_SAMPLES  59//4096/64-5
 #define W7X_TIMING_IOCTL_BASE	'W'
 #define W7X_TIMING_RESOFFSET _IO(W7X_TIMING_IOCTL_BASE, 0)
 
 # pragma pack(1)
 struct w7x_timing {
-	int init;
-	int delay_l;
-	int delay_h;
-	int wid;
-	int period;
-	int cycle_l;
-	int cycle_h;
-	int repeat;
-	int count;
-	int seq[32];
+	unsigned      int init;
+        unsigned      int trig;
+	unsigned long int delay;
+	unsigned      int width;
+	unsigned      int period;
+	unsigned long int cycle;
+	unsigned      int repeat;
+	unsigned      int count;
+	unsigned long int seq[MAX_SAMPLES];
 };
 
 
