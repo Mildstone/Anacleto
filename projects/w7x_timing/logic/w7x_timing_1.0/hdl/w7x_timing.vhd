@@ -39,15 +39,13 @@ entity w7x_timing is
        trig  : in  STD_LOGIC;
        init  : in  STD_LOGIC;
        bstate: out STD_LOGIC_VECTOR (0 to 5);
-
+       delay : in  STD_LOGIC_VECTOR (63 downto 0);
        width : in  STD_LOGIC_VECTOR (31 downto 0);
        period: in  STD_LOGIC_VECTOR (31 downto 0);
-       repeat: in  STD_LOGIC_VECTOR (31 downto 0);
-       sample: in  STD_LOGIC_VECTOR (31 downto 0);
- 
-       delay : in  STD_LOGIC_VECTOR (63 downto 0);
        cycle : in  STD_LOGIC_VECTOR (63 downto 0);
-       seq   : in  STD_LOGIC_VECTOR (MAX_SAMPLES*64-1 downto 0)
+       repeat: in  STD_LOGIC_VECTOR (31 downto 0);
+       count : in  STD_LOGIC_VECTOR (31 downto 0);
+       times : in  STD_LOGIC_VECTOR (MAX_SAMPLES*64-1 downto 0)
     );
 end  w7x_timing;
 
@@ -55,7 +53,6 @@ end  w7x_timing;
 architecture Behavioral of w7x_timing is
 begin
   clock_gen:  process(clk, init, trig) is
-    type LONG_ARRAY_TYPE is array(0 to MAX_SAMPLES) of unsigned(63 downto 0);
     constant ZERO64         : unsigned(63 downto 0) := x"0000000000000000";
     --                                                     SG0PWA
     constant IDLE           : std_logic_vector(0 to 5) := "000000";
@@ -66,15 +63,15 @@ begin
     constant WAITING_HIGH   : std_logic_vector(0 to 5) := "110010";
     constant WAITING_REPEAT : std_logic_vector(0 to 5) := "000110";
     constant ERROR          : std_logic_vector(0 to 5) := "000111";
-      
-    variable times : LONG_ARRAY_TYPE;
      
-    variable state       : std_logic_vector(0 to 5) := IDLE;
-    variable sample_count: integer := 0;  -- Used to count clocks within burst 
-    variable sample_total: integer := 0;
-    variable repeat_count: integer := 0;  -- Used to count bursts
-    variable repeat_total: integer := 0;
-    -- Used to measure high signal
+    variable state        : std_logic_vector(0 to 5) := IDLE;
+    -- measure number of samples in sequence, i.e. len(times)
+    variable sample_count : integer := 0;
+    variable sample_total : integer := 0;
+    -- measure number of repititions
+    variable repeat_count : integer := 0;
+    variable repeat_total : integer := 0;
+    -- measure high and low of signal
     variable period_ticks: integer := 0; 
     variable high_total  : integer := 0;
     variable period_total: integer := 0;
@@ -83,6 +80,12 @@ begin
     variable delay_total : unsigned(63 downto 0) := ZERO64;
     variable cycle_total : unsigned(63 downto 0) := ZERO64;
     
+    --used to read from times vector
+    impure function samples(i : integer) return unsigned(63 downto 0) is
+    begin
+      return unsigned(times(i*64+63 downto i*64));
+    end samples;
+
     procedure start_sample is
     begin
       period_ticks := 0;
@@ -92,7 +95,7 @@ begin
 
     procedure do_waiting_sample is
     begin
-      if cycle_ticks >= times(sample_count) then
+      if cycle_ticks >= samples(sample_count) then
         start_sample;
       end if;
     end do_waiting_sample;
@@ -109,8 +112,10 @@ begin
     procedure do_waiting_repeat is
     begin
       if repeat_count < repeat_total then
-        if cycle_ticks >= cycle_total then
+        if cycle_ticks = cycle_total then
           start_cycle;
+        elsif cycle_ticks > delay_total then
+          state := ERROR;
         end if;
       else
         state := ARMED;
@@ -140,9 +145,10 @@ begin
 
     procedure do_waiting_delay is
     begin
-      
-      if cycle_ticks >= delay_total then
+      if cycle_ticks = delay_total then
         start_cycle;
+      elsif cycle_ticks > delay_total then
+        state := ERROR;
       end if;
     end do_waiting_delay;
 
@@ -159,12 +165,12 @@ begin
     period_total := to_integer(unsigned(period));
     delay_total  := unsigned(delay);
     cycle_total  := unsigned(cycle);
-    sample_total := to_integer(unsigned(sample));
+    sample_total := to_integer(unsigned(count));
     repeat_total := to_integer(unsigned(repeat));
 -- Copy passed times
-    for i in 0 to MAX_SAMPLES-1 loop   
-      times(i)  := unsigned(seq(i*64+63 downto i*64));
-    end loop;
+    --for i in 0 to MAX_SAMPLES-1 loop   
+    --  samples(i)  := unsigned(times(i*64+63 downto i*64));
+    --end loop;
     if state = IDLE then
       if init = '1' then
         state := ARMED;

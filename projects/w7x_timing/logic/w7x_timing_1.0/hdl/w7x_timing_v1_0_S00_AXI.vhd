@@ -120,14 +120,14 @@ architecture arch_imp of w7x_timing_v1_0_S00_AXI is
 begin
 	-- I/O Connections assignments
 
-	S_AXI_AWREADY	<= axi_awready;
-	S_AXI_WREADY	<= axi_wready;
-	S_AXI_BRESP	<= axi_bresp;
-	S_AXI_BVALID	<= axi_bvalid;
-	S_AXI_ARREADY	<= axi_arready;
-	S_AXI_RDATA	<= axi_rdata;
-	S_AXI_RRESP	<= axi_rresp;
-	S_AXI_RVALID	<= axi_rvalid;
+	S_AXI_AWREADY <= axi_awready;
+	S_AXI_WREADY  <= axi_wready;
+	S_AXI_BRESP   <= axi_bresp;
+	S_AXI_BVALID  <= axi_bvalid;
+	S_AXI_ARREADY <= axi_arready;
+	S_AXI_RDATA   <= axi_rdata;
+	S_AXI_RRESP   <= axi_rresp;
+	S_AXI_RVALID  <= axi_rvalid;
 	
 	OUT_REG  <= slv_reg;
 	

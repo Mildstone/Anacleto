@@ -1,6 +1,213 @@
 Copyright 1986-2015 Xilinx, Inc. All Rights Reserved.
 ------------------------------------------------------------------------------------
 | Tool Version : Vivado v.2015.4 (lin64) Build 1412921 Wed Nov 18 09:44:32 MST 2015
+| Date         : Thu Jan 19 16:54:58 2017
+| Host         : mds-comp-1 running 64-bit Debian GNU/Linux 8.6 (jessie)
+| Command      : upgrade_ip
+| Device       : xc7z010clg400-1
+------------------------------------------------------------------------------------
+
+Upgrade Log for IP 'system_w7x_timing_0_0'
+
+1. Summary
+----------
+
+SUCCESS in the update of system_w7x_timing_0_0 (user.org:user:w7x_timing:1.0 (Rev. 20)) to current project options.
+
+
+
+
+
+
+Copyright 1986-2015 Xilinx, Inc. All Rights Reserved.
+------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2015.4 (lin64) Build 1412921 Wed Nov 18 09:44:32 MST 2015
+| Date         : Thu Jan 19 16:52:17 2017
+| Host         : mds-comp-1 running 64-bit Debian GNU/Linux 8.6 (jessie)
+| Command      : upgrade_ip
+| Device       : xc7z010clg400-1
+------------------------------------------------------------------------------------
+
+Upgrade Log for IP 'system_w7x_timing_0_0'
+
+1. Summary
+----------
+
+SUCCESS in the update of system_w7x_timing_0_0 (user.org:user:w7x_timing:1.0 (Rev. 20)) to current project options.
+
+
+
+
+
+
+Copyright 1986-2015 Xilinx, Inc. All Rights Reserved.
+------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2015.4 (lin64) Build 1412921 Wed Nov 18 09:44:32 MST 2015
+| Date         : Thu Jan 19 16:38:38 2017
+| Host         : mds-comp-1 running 64-bit Debian GNU/Linux 8.6 (jessie)
+| Command      : upgrade_ip
+| Device       : xc7z010clg400-1
+------------------------------------------------------------------------------------
+
+Upgrade Log for IP 'system_w7x_timing_0_0'
+
+1. Summary
+----------
+
+SUCCESS in the update of system_w7x_timing_0_0 (user.org:user:w7x_timing:1.0 (Rev. 20)) to current project options.
+
+
+
+
+
+
+Copyright 1986-2015 Xilinx, Inc. All Rights Reserved.
+------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2015.4 (lin64) Build 1412921 Wed Nov 18 09:44:32 MST 2015
+| Date         : Thu Jan 19 16:34:23 2017
+| Host         : mds-comp-1 running 64-bit Debian GNU/Linux 8.6 (jessie)
+| Command      : upgrade_ip
+| Device       : xc7z010clg400-1
+------------------------------------------------------------------------------------
+
+Upgrade Log for IP 'system_w7x_timing_0_0'
+
+1. Summary
+----------
+
+CAUTION (success, with warnings) in the update of system_w7x_timing_0_0 (user.org:user:w7x_timing:1.0 (Rev. 20)) to current project options.
+
+After upgrade, an IP may have parameter and port differences compared to the original customization. Please review the parameters within the IP customization GUI to ensure proper functionality. Also, please review the updated IP instantiation template to ensure proper connectivity, and update your design if required.
+
+2. Interface Information
+------------------------
+
+Detected external interface differences while upgrading IP 'system_w7x_timing_0_0'.
+
+
+-upgrade has removed interface 'clk'
+
+3. Connection Warnings
+----------------------
+
+Detected external port differences while upgrading IP 'system_w7x_timing_0_0'. These changes may impact your design.
+
+
+-upgraded port order differs after port 's00_axi_awprot'
+
+
+
+
+
+
+Copyright 1986-2015 Xilinx, Inc. All Rights Reserved.
+------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2015.4 (lin64) Build 1412921 Wed Nov 18 09:44:32 MST 2015
+| Date         : Thu Jan 19 15:41:58 2017
+| Host         : mds-comp-1 running 64-bit Debian GNU/Linux 8.6 (jessie)
+| Command      : upgrade_ip
+| Device       : xc7z010clg400-1
+------------------------------------------------------------------------------------
+
+Upgrade Log for IP 'system_w7x_timing_0_0'
+
+1. Summary
+----------
+
+SUCCESS in the update of system_w7x_timing_0_0 (user.org:user:w7x_timing:1.0 (Rev. 20)) to current project options.
+
+
+
+
+
+
+Copyright 1986-2015 Xilinx, Inc. All Rights Reserved.
+------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2015.4 (lin64) Build 1412921 Wed Nov 18 09:44:32 MST 2015
+| Date         : Thu Jan 19 15:24:47 2017
+| Host         : mds-comp-1 running 64-bit Debian GNU/Linux 8.6 (jessie)
+| Command      : upgrade_ip
+| Device       : xc7z010clg400-1
+------------------------------------------------------------------------------------
+
+Upgrade Log for IP 'system_w7x_timing_0_0'
+
+1. Summary
+----------
+
+SUCCESS in the update of system_w7x_timing_0_0 (user.org:user:w7x_timing:1.0 (Rev. 20)) to current project options.
+
+
+
+
+
+
+Copyright 1986-2015 Xilinx, Inc. All Rights Reserved.
+------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2015.4 (lin64) Build 1412921 Wed Nov 18 09:44:32 MST 2015
+| Date         : Thu Jan 19 15:20:45 2017
+| Host         : mds-comp-1 running 64-bit Debian GNU/Linux 8.6 (jessie)
+| Command      : upgrade_ip
+| Device       : xc7z010clg400-1
+------------------------------------------------------------------------------------
+
+Upgrade Log for IP 'system_w7x_timing_0_0'
+
+1. Summary
+----------
+
+SUCCESS in the update of system_w7x_timing_0_0 (user.org:user:w7x_timing:1.0 (Rev. 20)) to current project options.
+
+
+
+
+
+
+Copyright 1986-2015 Xilinx, Inc. All Rights Reserved.
+------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2015.4 (lin64) Build 1412921 Wed Nov 18 09:44:32 MST 2015
+| Date         : Thu Jan 19 13:55:02 2017
+| Host         : mds-comp-1 running 64-bit Debian GNU/Linux 8.6 (jessie)
+| Command      : upgrade_ip
+| Device       : xc7z010clg400-1
+------------------------------------------------------------------------------------
+
+Upgrade Log for IP 'system_w7x_timing_0_0'
+
+1. Summary
+----------
+
+SUCCESS in the update of system_w7x_timing_0_0 (user.org:user:w7x_timing:1.0 (Rev. 20)) to current project options.
+
+
+
+
+
+
+Copyright 1986-2015 Xilinx, Inc. All Rights Reserved.
+------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2015.4 (lin64) Build 1412921 Wed Nov 18 09:44:32 MST 2015
+| Date         : Thu Jan 19 13:54:20 2017
+| Host         : mds-comp-1 running 64-bit Debian GNU/Linux 8.6 (jessie)
+| Command      : upgrade_ip
+| Device       : xc7z010clg400-1
+------------------------------------------------------------------------------------
+
+Upgrade Log for IP 'system_w7x_timing_0_0'
+
+1. Summary
+----------
+
+SUCCESS in the update of system_w7x_timing_0_0 (user.org:user:w7x_timing:1.0 (Rev. 20)) to current project options.
+
+
+
+
+
+
+Copyright 1986-2015 Xilinx, Inc. All Rights Reserved.
+------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2015.4 (lin64) Build 1412921 Wed Nov 18 09:44:32 MST 2015
 | Date         : Thu Jan 19 13:31:16 2017
 | Host         : mds-comp-1 running 64-bit Debian GNU/Linux 8.6 (jessie)
 | Command      : upgrade_ip

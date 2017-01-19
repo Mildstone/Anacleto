@@ -12,9 +12,9 @@ entity w7x_timing_v1_0 is
 
 		-- Parameters of Axi Slave Bus Interface S00_AXI
 		MAX_MEMORY           : integer := 4096;
-		C_S00_AXI_DATA_COUNT : integer := 128;--4096/32;
+		C_S00_AXI_DATA_COUNT : integer := 64;--4096/64;
 		MAX_SAMPLES          : integer := 59;--4096/64-5;
-		C_S00_AXI_DATA_WIDTH : integer := 32;
+		C_S00_AXI_DATA_WIDTH : integer := 64;
 		C_S00_AXI_ADDR_WIDTH : integer := 24
 	);
 	port (
@@ -28,7 +28,7 @@ entity w7x_timing_v1_0 is
 		-- Ports of Axi Slave Bus Interface S00_AXI
 		s00_axi_aclk	: in std_logic;
 		s00_axi_aresetn	: in std_logic;
-		s00_axi_awaddr	: in std_logic_vector(C_S00_AXI_ADDR_WIDTH-1 downto 0);
+		s00_axi_awaddr  : in std_logic_vector(C_S00_AXI_ADDR_WIDTH-1 downto 0);
 		s00_axi_awprot	: in std_logic_vector(2 downto 0);
 		s00_axi_awvalid	: in std_logic;
 		s00_axi_awready	: out std_logic;
@@ -51,9 +51,12 @@ entity w7x_timing_v1_0 is
 end w7x_timing_v1_0;
 
 architecture arch_imp of w7x_timing_v1_0 is
-    type INT_BUF_TYPE is array(0 to 9) of std_logic_vector(31 downto 0);
-    signal transfer : INT_BUF_TYPE;
-    signal buf : std_logic_vector(MAX_SAMPLES*2*C_S00_AXI_DATA_WIDTH-1 downto 0);
+    signal init_trig    : std_logic_vector(63 downto 0);
+    signal delay        : std_logic_vector(63 downto 0);
+    signal width_period : std_logic_vector(63 downto 0);
+    signal cycle        : std_logic_vector(63 downto 0);
+    signal repeat_count : std_logic_vector(63 downto 0);
+    signal times        : std_logic_vector(MAX_SAMPLES*64-1 downto 0);
  -- component declaration
 	component w7x_timing_v1_0_S00_AXI is
 		generic (
@@ -98,15 +101,13 @@ architecture arch_imp of w7x_timing_v1_0 is
            trig  : in  STD_LOGIC;
            init  : in  STD_LOGIC;
            bstate: out STD_LOGIC_VECTOR (0 to 5);
-    
+           delay : in  STD_LOGIC_VECTOR (63 downto 0);
            width : in  STD_LOGIC_VECTOR (31 downto 0);
            period: in  STD_LOGIC_VECTOR (31 downto 0);
-           repeat: in  STD_LOGIC_VECTOR (31 downto 0);
-           sample: in  STD_LOGIC_VECTOR (31 downto 0);
-     
-           delay : in  STD_LOGIC_VECTOR (63 downto 0);
            cycle : in  STD_LOGIC_VECTOR (63 downto 0);
-           seq   : in  STD_LOGIC_VECTOR (MAX_SAMPLES*64-1 downto 0)
+           repeat: in  STD_LOGIC_VECTOR (31 downto 0);
+           count : in  STD_LOGIC_VECTOR (31 downto 0);
+           times : in  STD_LOGIC_VECTOR (MAX_SAMPLES*64-1 downto 0)
         );
 	end component w7x_timing;
 
@@ -143,18 +144,13 @@ w7x_timing_v1_0_S00_AXI_inst : w7x_timing_v1_0_S00_AXI
 		S_AXI_RDATA   => s00_axi_rdata,
 		S_AXI_RRESP	  => s00_axi_rresp,
 		S_AXI_RVALID  => s00_axi_rvalid,
-		S_AXI_RREADY  => s00_axi_rready,		
-		OUT_REG(C_S00_AXI_DATA_COUNT*C_S00_AXI_DATA_WIDTH-1 downto 10*C_S00_AXI_DATA_WIDTH) => buf,
-		OUT_REG(0*C_S00_AXI_DATA_WIDTH+C_S00_AXI_DATA_WIDTH-1 downto 0*C_S00_AXI_DATA_WIDTH) => transfer(0),
-		OUT_REG(1*C_S00_AXI_DATA_WIDTH+C_S00_AXI_DATA_WIDTH-1 downto 1*C_S00_AXI_DATA_WIDTH) => transfer(1),
-		OUT_REG(2*C_S00_AXI_DATA_WIDTH+C_S00_AXI_DATA_WIDTH-1 downto 2*C_S00_AXI_DATA_WIDTH) => transfer(2),
-		OUT_REG(3*C_S00_AXI_DATA_WIDTH+C_S00_AXI_DATA_WIDTH-1 downto 3*C_S00_AXI_DATA_WIDTH) => transfer(3),
-		OUT_REG(4*C_S00_AXI_DATA_WIDTH+C_S00_AXI_DATA_WIDTH-1 downto 4*C_S00_AXI_DATA_WIDTH) => transfer(4),
-        OUT_REG(5*C_S00_AXI_DATA_WIDTH+C_S00_AXI_DATA_WIDTH-1 downto 5*C_S00_AXI_DATA_WIDTH) => transfer(5),
-        OUT_REG(6*C_S00_AXI_DATA_WIDTH+C_S00_AXI_DATA_WIDTH-1 downto 6*C_S00_AXI_DATA_WIDTH) => transfer(6),
-		OUT_REG(7*C_S00_AXI_DATA_WIDTH+C_S00_AXI_DATA_WIDTH-1 downto 7*C_S00_AXI_DATA_WIDTH) => transfer(7),
-		OUT_REG(8*C_S00_AXI_DATA_WIDTH+C_S00_AXI_DATA_WIDTH-1 downto 8*C_S00_AXI_DATA_WIDTH) => transfer(8),
-		OUT_REG(9*C_S00_AXI_DATA_WIDTH+C_S00_AXI_DATA_WIDTH-1 downto 9*C_S00_AXI_DATA_WIDTH) => transfer(9)
+		S_AXI_RREADY  => s00_axi_rready,
+		OUT_REG(0*C_S00_AXI_DATA_WIDTH+C_S00_AXI_DATA_WIDTH-1 downto 0*C_S00_AXI_DATA_WIDTH) => init_trig,
+		OUT_REG(1*C_S00_AXI_DATA_WIDTH+C_S00_AXI_DATA_WIDTH-1 downto 1*C_S00_AXI_DATA_WIDTH) => delay,
+		OUT_REG(2*C_S00_AXI_DATA_WIDTH+C_S00_AXI_DATA_WIDTH-1 downto 2*C_S00_AXI_DATA_WIDTH) => width_period,
+		OUT_REG(3*C_S00_AXI_DATA_WIDTH+C_S00_AXI_DATA_WIDTH-1 downto 3*C_S00_AXI_DATA_WIDTH) => cycle,
+		OUT_REG(4*C_S00_AXI_DATA_WIDTH+C_S00_AXI_DATA_WIDTH-1 downto 4*C_S00_AXI_DATA_WIDTH) => repeat_count,
+        OUT_REG(C_S00_AXI_DATA_COUNT * C_S00_AXI_DATA_WIDTH-1 downto 5*C_S00_AXI_DATA_WIDTH) => times
 	);
 
 w7x_timing_inst : w7x_timing
@@ -164,15 +160,13 @@ w7x_timing_inst : w7x_timing
            clk    => clk,
            trig   => trig,
            bstate => state,
-           init   => transfer(0)(0),
-           width  => transfer(4),
-           period => transfer(5),
-           repeat => transfer(8),
-           sample => transfer(9),
-           delay(31 downto 0)  => transfer(2),
-           delay(63 downto 32) => transfer(3),
-           cycle(31 downto 0)  => transfer(6),
-           cycle(63 downto 32) => transfer(7),
-           seq => buf
+           init   => init_trig(0),
+           delay  => delay,
+           width  => width_period(31 downto  0),
+           period => width_period(63 downto 32),
+           cycle  => cycle,
+           repeat => repeat_count(31 downto  0),
+           count  => repeat_count(63 downto 32),
+           times  => times
       );
 end arch_imp;

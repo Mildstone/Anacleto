@@ -3,7 +3,7 @@
 
 #include <linux/types.h>
 #include <asm/ioctl.h>
-
+#include <stdint-gcc.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -21,12 +21,12 @@ extern "C" {
 
 # pragma pack(1)
 struct w7x_timing {//packing 64 bit
-	unsigned      int init;   unsigned int trig;
-	unsigned long int delay;
-	unsigned      int width;  unsigned int period;
-	unsigned long int cycle;
-	unsigned      int repeat; unsigned int count;
-	unsigned long int seq[MAX_SAMPLES];
+    uint32_t init;   uint32_t trig;
+    uint64_t delay;
+    uint32_t width;  uint32_t period;
+    uint64_t cycle;
+    uint32_t repeat; uint32_t count;
+    uint64_t times[MAX_SAMPLES];
 };
 
 
@@ -49,7 +49,7 @@ struct w7x_timing *w7x_timing_get_device(const char *dev_file) {
             printf(" ERROR: failed to open device file\n");
             return NULL;
         }
-        printf("trying to allocate %u bytes of data",(unsigned int)sizeof(struct w7x_timing));
+        printf("trying to allocate %u bytes of data\n",(unsigned int)sizeof(struct w7x_timing));
         dev = mmap(NULL, sizeof(struct w7x_timing), PROT_READ | PROT_WRITE, MAP_SHARED,fd,0);
     }
     if(!dev) {
