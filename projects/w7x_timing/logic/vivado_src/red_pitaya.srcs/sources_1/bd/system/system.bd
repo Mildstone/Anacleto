@@ -879,7 +879,8 @@
         <spirit:configurableElementValues>
           <spirit:configurableElementValue spirit:referenceId="bd:xciName">system_w7x_timing_0_0</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_S00_AXI_DATA_WIDTH">64</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="C_S00_AXI_DATA_COUNT">64</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_S00_AXI_DATA_COUNT">21</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="MAX_SAMPLES">16</spirit:configurableElementValue>
         </spirit:configurableElementValues>
       </spirit:componentInstance>
     </spirit:componentInstances>

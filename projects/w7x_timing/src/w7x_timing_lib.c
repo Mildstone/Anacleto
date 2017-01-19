@@ -1,4 +1,3 @@
-#include <time.h>
 #include <string.h>
 #include "w7x_timing.h"
 
@@ -14,8 +13,7 @@ int getDev() {
 }
 
 int setParams(uint64_t *delay, uint32_t *width, uint32_t *period, uint64_t *cycle, uint32_t *repeat, uint32_t *count) {
-   printf("delay: %lu, width: %u, period: %u, count: %u, cycle: %lu, repeat: %u\n",
-        *delay, *width, *period, *count, *cycle, *repeat);
+   printf("delay: %llu, width: %u, period: %u, count: %u, cycle: %llu, repeat: %u\n", *delay, *width, *period, *count, *cycle, *repeat);
 
    if(*period<=1){
         printf("ERROR: period must be greater than 1\n");
@@ -47,49 +45,49 @@ int setParams(uint64_t *delay, uint32_t *width, uint32_t *period, uint64_t *cycl
     return C_OK;
 }
 
-int makeClock(uint64_t delay, uint32_t width, uint32_t period, uint32_t count, uint64_t cycle, uint32_t repeat){
+int makeClock(uint64_t *delay, uint32_t *width, uint32_t *period, uint64_t *cycle, uint32_t *repeat, uint32_t *count){
     printf("MAKE CLOCK: ");
-    int i,c_status = setParams(&delay, &width, &period, &cycle, &repeat, &count);
+    int i,c_status = setParams(delay, width, period, cycle, repeat, count);
     if(c_status) return c_status;
     dev->times[0] = 0;
-    for(i = 1; i < count; i++)
-	dev->times[i] = dev->times[i-1] + period;
-    dev->count = count;
+    for(i = 1; i < *count; i++)
+	dev->times[i] = dev->times[i-1] + *period;
+    dev->count = *count;
     return C_OK;
 }
 
-int makeSequence(uint64_t delay, uint32_t width, uint32_t period, uint32_t count, uint64_t cycle, uint32_t repeat, const uint64_t *times){
+int makeSequence(uint64_t *delay, uint32_t *width, uint32_t *period, uint64_t *cycle, uint32_t *repeat, uint32_t *count, const uint64_t *times){
     printf("MAKE SEQUENCE: ");
-    int i,c_status = setParams(&delay, &width, &period, &cycle, &repeat, &count);
+    int i,c_status = setParams(delay, width, period, cycle, repeat, count);
     if(c_status) return c_status;
     printf("%d: time: %ld\n", 0, times[0]);
-    for(i = 1; i < count; i++){
+    for(i = 1; i < *count; i++){
        printf("%d: time: %ld\n", i, times[0]);
-       if(times[i] < times[i-1]+period) {
+       if(times[i] < times[i-1]+*period) {
          printf("ERROR: delta times must be greater or equal period\n");
          return C_PARAM_ERROR;
        }
     }
-    memcpy(dev->times, times, count*sizeof(uint64_t));
-    dev->count = count;
+    memcpy(dev->times, times, *count*sizeof(uint64_t));
+    dev->count = *count;
     return C_OK;
 }
 
 int trig() {
     if (getDev()) return C_DEV_ERROR;
-    dev->trig = 1;
+    dev->trig = -1;
     return C_OK;
 }
 
 int arm() {
     if (getDev()) return C_DEV_ERROR;
-    dev->init = 1;
+    dev->init = -1;
     return C_OK;
 }
 
 int disarm() {
     if (getDev()) return C_DEV_ERROR;
-    dev->init = 0;
+    dev->init = -1;
     return C_OK;
 }
 

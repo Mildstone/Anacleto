@@ -3,7 +3,6 @@
 
 #include <linux/types.h>
 #include <asm/ioctl.h>
-#include <stdint-gcc.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -15,9 +14,12 @@ extern "C" {
 
 #define DEVICE_NAME "w7x_timing"  /* Dev name as it appears in /proc/devices */
 #define MODULE_NAME "w7x_timing"
-#define MAX_SAMPLES  59//4096/64-5
+#define MAX_SAMPLES  16            //59//4096/64-5
 #define W7X_TIMING_IOCTL_BASE	'W'
 #define W7X_TIMING_RESOFFSET _IO(W7X_TIMING_IOCTL_BASE, 0)
+
+typedef unsigned long long   uint64_t;
+typedef unsigned int         uint32_t;
 
 # pragma pack(1)
 struct w7x_timing {//packing 64 bit

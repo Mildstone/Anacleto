@@ -106,7 +106,7 @@ architecture arch_imp of w7x_timing_v1_0_S00_AXI is
 	-- ADDR_LSB = 2 for 32 bits (n downto 2)
 	-- ADDR_LSB = 3 for 64 bits (n downto 3)
 	constant ADDR_LSB  : integer := (C_S_AXI_DATA_WIDTH/32)+ 1;
-	constant OPT_MEM_ADDR_BITS : integer := 20;
+	constant OPT_MEM_ADDR_BITS : integer := 5;
 	------------------------------------------------
 	---- Signals for user logic register space example
 	--------------------------------------------------
