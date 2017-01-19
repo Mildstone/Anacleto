@@ -148,14 +148,11 @@ proc create_root_design { parentCell } {
 
   # Create ports
   set clk [ create_bd_port -dir I clk ]
-  set clk_led [ create_bd_port -dir O -from 0 -to 0 clk_led ]
-  set gate [ create_bd_port -dir O gate ]
-  set gate_led [ create_bd_port -dir O gate_led ]
-  set on_led [ create_bd_port -dir O -from 0 -to 0 on_led ]
-  set sig [ create_bd_port -dir O sig ]
-  set sig_led [ create_bd_port -dir O sig_led ]
+  set clk_led [ create_bd_port -dir O -type clk clk_led ]
+  set state [ create_bd_port -dir O -from 0 -to 5 state ]
+  set state_leds [ create_bd_port -dir O -from 0 -to 5 state_leds ]
   set trig [ create_bd_port -dir I trig ]
-  set trig_led [ create_bd_port -dir O -from 0 -to 0 trig_led ]
+  set trig_led [ create_bd_port -dir O -type clk trig_led ]
 
   # Create instance: processing_system7_0, and set properties
   set processing_system7_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:processing_system7:5.5 processing_system7_0 ]
@@ -758,9 +755,6 @@ CONFIG.S00_HAS_REGSLICE {3} \
   # Create instance: w7x_timing_0, and set properties
   set w7x_timing_0 [ create_bd_cell -type ip -vlnv user.org:user:w7x_timing:1.0 w7x_timing_0 ]
 
-  # Create instance: xlconstant_0, and set properties
-  set xlconstant_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 xlconstant_0 ]
-
   # Create interface connections
   connect_bd_intf_net -intf_net processing_system7_0_DDR [get_bd_intf_ports DDR] [get_bd_intf_pins processing_system7_0/DDR]
   connect_bd_intf_net -intf_net processing_system7_0_FIXED_IO [get_bd_intf_ports FIXED_IO] [get_bd_intf_pins processing_system7_0/FIXED_IO]
@@ -774,9 +768,7 @@ CONFIG.S00_HAS_REGSLICE {3} \
   connect_bd_net -net rst_processing_system7_0_125M_interconnect_aresetn [get_bd_pins processing_system7_0_axi_periph/ARESETN] [get_bd_pins rst_processing_system7_0_125M/interconnect_aresetn]
   connect_bd_net -net rst_processing_system7_0_125M_peripheral_aresetn [get_bd_pins processing_system7_0_axi_periph/M00_ARESETN] [get_bd_pins processing_system7_0_axi_periph/S00_ARESETN] [get_bd_pins rst_processing_system7_0_125M/peripheral_aresetn] [get_bd_pins w7x_timing_0/s00_axi_aresetn]
   connect_bd_net -net trig_1 [get_bd_ports trig] [get_bd_ports trig_led] [get_bd_pins w7x_timing_0/trig]
-  connect_bd_net -net w7x_timing_0_gate [get_bd_ports gate] [get_bd_ports gate_led] [get_bd_pins w7x_timing_0/gate]
-  connect_bd_net -net w7x_timing_0_sig [get_bd_ports sig] [get_bd_ports sig_led] [get_bd_pins w7x_timing_0/sig]
-  connect_bd_net -net xlconstant_0_dout [get_bd_ports on_led] [get_bd_pins xlconstant_0/dout]
+  connect_bd_net -net w7x_timing_0_state [get_bd_ports state] [get_bd_ports state_leds] [get_bd_pins w7x_timing_0/state]
 
   # Create address segments
   create_bd_addr_seg -range 0x10000 -offset 0x43C00000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs w7x_timing_0/S00_AXI/S00_AXI_reg] SEG_w7x_timing_0_S00_AXI_reg
