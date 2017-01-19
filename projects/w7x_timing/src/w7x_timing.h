@@ -5,11 +5,13 @@
 #include <asm/ioctl.h>
 
 
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#define C_OK           0
+#define C_DEV_ERROR    1
+#define C_PARAM_ERROR  2
 
 #define DEVICE_NAME "w7x_timing"  /* Dev name as it appears in /proc/devices */
 #define MODULE_NAME "w7x_timing"
@@ -18,15 +20,12 @@ extern "C" {
 #define W7X_TIMING_RESOFFSET _IO(W7X_TIMING_IOCTL_BASE, 0)
 
 # pragma pack(1)
-struct w7x_timing {
-	unsigned      int init;
-        unsigned      int trig;
+struct w7x_timing {//packing 64 bit
+	unsigned      int init;   unsigned int trig;
 	unsigned long int delay;
-	unsigned      int width;
-	unsigned      int period;
+	unsigned      int width;  unsigned int period;
 	unsigned long int cycle;
-	unsigned      int repeat;
-	unsigned      int count;
+	unsigned      int repeat; unsigned int count;
 	unsigned long int seq[MAX_SAMPLES];
 };
 
@@ -50,9 +49,9 @@ struct w7x_timing *w7x_timing_get_device(const char *dev_file) {
             printf(" ERROR: failed to open device file\n");
             return NULL;
         }
+        printf("trying to allocate %u bytes of data",(unsigned int)sizeof(struct w7x_timing));
         dev = mmap(NULL, sizeof(struct w7x_timing), PROT_READ | PROT_WRITE, MAP_SHARED,fd,0);
     }
-
     if(!dev) {
         printf(" ERROR: failed to mmap device memory\n");
         return NULL;
@@ -62,12 +61,12 @@ struct w7x_timing *w7x_timing_get_device(const char *dev_file) {
 
 int w7x_timing_release_device() {
     struct w7x_timing *dev = w7x_timing_get_device(0);
-    int status;
-    if(dev) {
-        status = munmap(dev, sizeof(struct w7x_timing));
-        if(status == 0) dev = NULL;
+    int c_status;
+    if(dev) {// release
+        c_status = munmap(dev, sizeof(struct w7x_timing));
+        if(c_status == C_OK) dev = NULL;
     }
-    return status;
+    return c_status;
 }
 
 

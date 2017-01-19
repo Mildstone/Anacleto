@@ -18,8 +18,6 @@
 
 #include "w7x_timing.h"
 
-#define SUCCESS 0
-
 static struct platform_device *s_pdev = 0;
 static int s_device_open = 0;
 
@@ -67,7 +65,7 @@ static int device_open(struct inode *inode, struct file *file)
 static int device_release(struct inode *inode, struct file *file)
 {
    s_device_open --;
-   return 0;
+   return C_OK;
 }
 
 
@@ -123,9 +121,8 @@ pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
 
 static int device_mmap(struct file *filp, struct vm_area_struct *vma)
 {
-    int status = 0;
+    int c_status;
     struct resource *r_mem = platform_get_resource(s_pdev, IORESOURCE_MEM, 0);
-
     unsigned long off = vma->vm_pgoff << PAGE_SHIFT;
     unsigned long physical = r_mem->start + off;
     size_t vsize = vma->vm_end - vma->vm_start;
@@ -150,15 +147,15 @@ static int device_mmap(struct file *filp, struct vm_area_struct *vma)
     if (vsize > psize)
         return -EINVAL; /* spans too high */
 
-    status = remap_pfn_range(vma, vma->vm_start,
+    c_status = remap_pfn_range(vma, vma->vm_start,
                              pageFrameNo, vsize, vma->vm_page_prot);
-    if (status) {
+    if (c_status) {
         printk(KERN_ERR
                "<%s> Error: in calling remap_pfn_range: returned %d\n",
-               MODULE_NAME, status);
+               MODULE_NAME, c_status);
         return -EAGAIN;
     }
-        return status;
+    return c_status;
 }
 
 
@@ -194,7 +191,6 @@ static loff_t memory_lseek(struct file *file, loff_t offset, int orig)
 static long device_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
     u32 res_offset;
-    int status = 0;
     struct resource *r_mem = platform_get_resource(s_pdev, IORESOURCE_MEM, 0);
     res_offset = r_mem->start & ~PAGE_MASK;
 
@@ -210,7 +206,7 @@ static long device_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
         return -EAGAIN;
         break;
     }
-    return status;
+    return C_OK;
 }
 
 
@@ -256,14 +252,14 @@ static int w7x_timing_probe(struct platform_device *pdev)
     if (!r_mem)
     {
       dev_err(dev, "Can't find device base address\n");
-      return 1;
+      return C_DEV_ERROR;
     }
 
     printk(KERN_DEBUG"mem start: %x\n",r_mem->start);
     printk(KERN_DEBUG"mem end: %x\n",r_mem->end);
     printk(KERN_DEBUG"mem offset: %x\n",r_mem->start & ~PAGE_MASK);
 
-    return 0;
+    return C_OK;
 }
 
 static int w7x_timing_remove(struct platform_device *pdev)
@@ -274,7 +270,7 @@ static int w7x_timing_remove(struct platform_device *pdev)
         class_destroy(pwmgen_class);
     }
     unregister_chrdev(id_major, DEVICE_NAME);
-	return 0;
+	return C_OK;
 }
 
 static const struct of_device_id w7x_timing_of_ids[] = {

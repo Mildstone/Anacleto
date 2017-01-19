@@ -13,15 +13,14 @@ int main(int argc, char *argv[])
 {
     int i;
 
-    if(argc < 7)
-    {
+    if(argc < 7) {
 	printf("Usage: %s Delay Wid Period Cycle Repeat Count [Seq1..Seq16]\n", argv[0]);
-	exit(0);
+	exit(C_PARAM_ERROR);
     }
     struct w7x_timing *dev = w7x_timing_get_device(0);
     if(!dev) {
         printf("ERROR: unable to get device\n");
-	exit(0);
+	exit(C_DEV_ERROR);
     }
     dev->init   = 0;
     dev->delay  = (unsigned long)atoi(argv[1]);
@@ -30,13 +29,12 @@ int main(int argc, char *argv[])
     dev->cycle  = (unsigned long)atoi(argv[4]);
     dev->repeat = atoi(argv[5]);
     dev->count = atoi(argv[6]);
-    for(i = 7; i < argc; i++) {
+    for(i = 7; i < argc; i++)
 	dev->seq[i-7] = (unsigned long)atoi(argv[i]);
-    }
     dev->init = 1;
     dev->trig = 1;
     w7x_timing_release_device();
-    return 0;
+    exit(C_OK);
 }
 
 
