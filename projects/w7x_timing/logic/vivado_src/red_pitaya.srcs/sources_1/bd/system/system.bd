@@ -878,7 +878,7 @@
         <spirit:componentRef spirit:library="user" spirit:name="w7x_timing" spirit:vendor="user.org" spirit:version="1.0"/>
         <spirit:configurableElementValues>
           <spirit:configurableElementValue spirit:referenceId="bd:xciName">system_w7x_timing_0_0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="C_S00_AXI_DATA_WIDTH">64</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_S00_AXI_DATA_WIDTH">32</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="C_S00_AXI_DATA_COUNT">21</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="MAX_SAMPLES">16</spirit:configurableElementValue>
         </spirit:configurableElementValues>
@@ -1425,38 +1425,12 @@
           <spirit:configurableElementValue spirit:referenceId="MI_PROTOCOL">AXI4LITE</spirit:configurableElementValue>
         </spirit:configurableElementValues>
       </spirit:componentInstance>
-      <spirit:componentInstance>
-        <spirit:instanceName>auto_us</spirit:instanceName>
-        <spirit:componentRef spirit:library="ip" spirit:name="axi_dwidth_converter" spirit:vendor="xilinx.com" spirit:version="2.1"/>
-        <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">system_auto_us_0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="SI_DATA_WIDTH">32</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="MI_DATA_WIDTH">64</spirit:configurableElementValue>
-        </spirit:configurableElementValues>
-      </spirit:componentInstance>
-      <spirit:componentInstance>
-        <spirit:instanceName>auto_rs</spirit:instanceName>
-        <spirit:componentRef spirit:library="ip" spirit:name="axi_register_slice" spirit:vendor="xilinx.com" spirit:version="2.1"/>
-        <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">system_auto_rs_0</spirit:configurableElementValue>
-        </spirit:configurableElementValues>
-      </spirit:componentInstance>
     </spirit:componentInstances>
     <spirit:interconnections>
       <spirit:interconnection>
-        <spirit:name>auto_us_to_s00_data_fifo</spirit:name>
+        <spirit:name>auto_pc_to_s00_data_fifo</spirit:name>
         <spirit:activeInterface spirit:busRef="S_AXI" spirit:componentRef="s00_data_fifo"/>
-        <spirit:activeInterface spirit:busRef="M_AXI" spirit:componentRef="auto_us"/>
-      </spirit:interconnection>
-      <spirit:interconnection>
-        <spirit:name>auto_pc_to_auto_rs</spirit:name>
         <spirit:activeInterface spirit:busRef="M_AXI" spirit:componentRef="auto_pc"/>
-        <spirit:activeInterface spirit:busRef="S_AXI" spirit:componentRef="auto_rs"/>
-      </spirit:interconnection>
-      <spirit:interconnection>
-        <spirit:name>auto_rs_to_auto_us</spirit:name>
-        <spirit:activeInterface spirit:busRef="S_AXI" spirit:componentRef="auto_us"/>
-        <spirit:activeInterface spirit:busRef="M_AXI" spirit:componentRef="auto_rs"/>
       </spirit:interconnection>
     </spirit:interconnections>
     <spirit:adHocConnections>
@@ -1474,15 +1448,11 @@
         <spirit:name>S_ACLK_1</spirit:name>
         <spirit:externalPortReference spirit:portRef="S_ACLK"/>
         <spirit:internalPortReference spirit:componentRef="auto_pc" spirit:portRef="aclk"/>
-        <spirit:internalPortReference spirit:componentRef="auto_us" spirit:portRef="s_axi_aclk"/>
-        <spirit:internalPortReference spirit:componentRef="auto_rs" spirit:portRef="aclk"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>S_ARESETN_1</spirit:name>
         <spirit:externalPortReference spirit:portRef="S_ARESETN"/>
         <spirit:internalPortReference spirit:componentRef="auto_pc" spirit:portRef="aresetn"/>
-        <spirit:internalPortReference spirit:componentRef="auto_us" spirit:portRef="s_axi_aresetn"/>
-        <spirit:internalPortReference spirit:componentRef="auto_rs" spirit:portRef="aresetn"/>
       </spirit:adHocConnection>
     </spirit:adHocConnections>
     <spirit:hierConnections>

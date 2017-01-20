@@ -756,7 +756,7 @@ CONFIG.S00_HAS_REGSLICE {3} \
   set w7x_timing_0 [ create_bd_cell -type ip -vlnv user.org:user:w7x_timing:1.0 w7x_timing_0 ]
   set_property -dict [ list \
 CONFIG.C_S00_AXI_DATA_COUNT {21} \
-CONFIG.C_S00_AXI_DATA_WIDTH {64} \
+CONFIG.C_S00_AXI_DATA_WIDTH {32} \
 CONFIG.MAX_SAMPLES {16} \
  ] $w7x_timing_0
 
