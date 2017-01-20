@@ -87,7 +87,7 @@ int arm() {
 
 int disarm() {
     if (getDev()) return C_DEV_ERROR;
-    dev->init = -1;
+    dev->init = 0;
     return C_OK;
 }
 
