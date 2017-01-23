@@ -54,6 +54,9 @@ architecture Behavioral of w7x_timing is
 begin
   clock_gen:  process(clk, init, trig) is
     constant ZERO64         : unsigned(63 downto 0) := x"0000000000000000";
+    constant ZERO32         : unsigned(31 downto 0) := x"00000000";
+    constant INF64          : unsigned(63 downto 0) := x"FFFFFFFFFFFFFFFF";
+    constant INF32          : unsigned(31 downto 0) := x"FFFFFFFF";
     --                                                     SG0PWA
     constant IDLE           : std_logic_vector(0 to 5) := "000000";
     constant ARMED          : std_logic_vector(0 to 5) := "000001";
@@ -72,13 +75,13 @@ begin
     variable repeat_count : integer := 0;
     variable repeat_total : integer := 0;
     -- measure high and low of signal
-    variable period_ticks: integer := 0; 
-    variable high_total  : integer := 0;
-    variable period_total: integer := 0;
+    variable period_ticks : unsigned(31 downto 0) := ZERO32;
+    variable high_total   : unsigned(31 downto 0) := ZERO32;
+    variable period_total : unsigned(31 downto 0) := ZERO32;
     -- sequence counter
-    variable cycle_ticks : unsigned(63 downto 0) := ZERO64;
-    variable delay_total : unsigned(63 downto 0) := ZERO64;
-    variable cycle_total : unsigned(63 downto 0) := ZERO64;
+    variable cycle_ticks  : unsigned(63 downto 0) := ZERO64;
+    variable delay_total  : unsigned(63 downto 0) := ZERO64;
+    variable cycle_total  : unsigned(63 downto 0) := ZERO64;
     
     --used to read from times vector
     impure function samples(i : integer) return unsigned(63 downto 0) is
@@ -88,22 +91,25 @@ begin
 
     procedure start_sample is
     begin
-      period_ticks := 0;
+      period_ticks := ZERO32;
       sample_count := sample_count +1;
       state := WAITING_HIGH;
     end start_sample;
 
     procedure do_waiting_sample is
+    variable curr_sample : unsigned(63 downto 0) := samples(sample_count);
     begin
-      if cycle_ticks >= samples(sample_count) then
+      if cycle_ticks = curr_sample then
         start_sample;
+      elsif cycle_ticks > curr_sample then
+        state := ERROR;
       end if;
     end do_waiting_sample;
 
     procedure start_cycle is
     begin
       sample_count := 0;
-      cycle_ticks := ZERO64;
+      cycle_ticks  := ZERO64;
       repeat_count := repeat_count + 1;
       state := WAITING_SAMPLE;
       do_waiting_sample;
@@ -114,7 +120,7 @@ begin
       if repeat_count < repeat_total then
         if cycle_ticks = cycle_total then
           start_cycle;
-        elsif cycle_ticks > delay_total then
+        elsif cycle_ticks > cycle_total then
           state := ERROR;
         end if;
       else
@@ -124,7 +130,7 @@ begin
 
     procedure do_waiting_low is
     begin
-      if period_ticks >= period_total then
+      if period_ticks = period_total then
         if sample_count < sample_total then
           state := WAITING_SAMPLE;
           do_waiting_sample;       
@@ -132,14 +138,18 @@ begin
           state := WAITING_REPEAT;
           do_waiting_repeat;
         end if;
-      end if;
+     elsif period_ticks > period_total then
+       state := ARMED;
+     end if;
     end do_waiting_low;
 
     procedure do_waiting_high is
     begin
-      if period_ticks >= high_total then
+      if period_ticks = high_total then
         state := WAITING_LOW;
         do_waiting_low;
+      elsif period_ticks > high_total then
+       state := ARMED;
       end if;
     end do_waiting_high;
 
@@ -161,8 +171,8 @@ begin
     end start_program;
 
   begin
-    high_total   := to_integer(unsigned(width));
-    period_total := to_integer(unsigned(period));
+    high_total   := unsigned(width);
+    period_total := unsigned(period);
     delay_total  := unsigned(delay);
     cycle_total  := unsigned(cycle);
     sample_total := to_integer(unsigned(count));
@@ -179,8 +189,6 @@ begin
       state := IDLE;
     end if;
     if rising_edge(clk) then
-      cycle_ticks := cycle_ticks + 1;
-      period_ticks:= period_ticks + 1;
       case state is
       when IDLE =>
       when ARMED => 
@@ -200,6 +208,14 @@ begin
       when others =>
         state := ERROR;
       end case;
+      if state = IDLE or state = ARMED then
+        cycle_ticks  := INF64;
+        period_ticks := INF32;
+        sample_count := 0;
+      else
+        cycle_ticks := cycle_ticks  + 1;
+        period_ticks:= period_ticks + 1;
+      end if;
     end if; -- rising_edge(clk)
     bstate <= state;
   end process clock_gen;

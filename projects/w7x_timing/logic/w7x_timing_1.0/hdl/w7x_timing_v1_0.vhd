@@ -15,7 +15,7 @@ entity w7x_timing_v1_0 is
 		C_S00_AXI_DATA_COUNT : integer := 21;  --MAX_MEMORY/8 bytes/64bit;
 		MAX_SAMPLES          : integer := 16;  --MAX_MEMORY/8-5;
 		C_S00_AXI_DATA_WIDTH : integer := 64;
-		C_S00_AXI_ADDR_WIDTH : integer := 8
+		C_S00_AXI_ADDR_WIDTH : integer := 25
 	);
 	port (
 		-- Users to add ports here
@@ -51,11 +51,11 @@ entity w7x_timing_v1_0 is
 end w7x_timing_v1_0;
 
 architecture arch_imp of w7x_timing_v1_0 is
-    signal init_trig    : std_logic_vector(63 downto 0);
+    signal initNtrig    : std_logic_vector(63 downto 0);
     signal delay        : std_logic_vector(63 downto 0);
-    signal width_period : std_logic_vector(63 downto 0);
+    signal widthNperiod : std_logic_vector(63 downto 0);
     signal cycle        : std_logic_vector(63 downto 0);
-    signal repeat_count : std_logic_vector(63 downto 0);
+    signal repeatNcount : std_logic_vector(63 downto 0);
     signal times        : std_logic_vector(MAX_SAMPLES*64-1 downto 0);
  -- component declaration
 	component w7x_timing_v1_0_S00_AXI is
@@ -86,7 +86,6 @@ architecture arch_imp of w7x_timing_v1_0 is
 		S_AXI_RRESP   : out std_logic_vector(1 downto 0);
 		S_AXI_RVALID  : out std_logic;
 		S_AXI_RREADY  : in  std_logic;
-		
 		OUT_REG: out std_logic_vector(C_S_AXI_DATA_COUNT*C_S_AXI_DATA_WIDTH-1 downto 0)
     );
 	end component w7x_timing_v1_0_S00_AXI;
@@ -144,12 +143,12 @@ w7x_timing_v1_0_S00_AXI_inst : w7x_timing_v1_0_S00_AXI
 		S_AXI_RDATA   => s00_axi_rdata,
 		S_AXI_RRESP	  => s00_axi_rresp,
 		S_AXI_RVALID  => s00_axi_rvalid,
-		S_AXI_RREADY  => s00_axi_rready,
-		OUT_REG(0*C_S00_AXI_DATA_WIDTH+C_S00_AXI_DATA_WIDTH-1 downto 0*C_S00_AXI_DATA_WIDTH) => init_trig,
-		OUT_REG(1*C_S00_AXI_DATA_WIDTH+C_S00_AXI_DATA_WIDTH-1 downto 1*C_S00_AXI_DATA_WIDTH) => delay,
-		OUT_REG(2*C_S00_AXI_DATA_WIDTH+C_S00_AXI_DATA_WIDTH-1 downto 2*C_S00_AXI_DATA_WIDTH) => width_period,
+		S_AXI_RREADY  => s00_axi_rready,		
+		OUT_REG(0*C_S00_AXI_DATA_WIDTH+C_S00_AXI_DATA_WIDTH-1 downto 0*C_S00_AXI_DATA_WIDTH) => initNtrig,
+        OUT_REG(1*C_S00_AXI_DATA_WIDTH+C_S00_AXI_DATA_WIDTH-1 downto 1*C_S00_AXI_DATA_WIDTH) => delay,
+		OUT_REG(2*C_S00_AXI_DATA_WIDTH+C_S00_AXI_DATA_WIDTH-1 downto 2*C_S00_AXI_DATA_WIDTH) => widthNperiod,
 		OUT_REG(3*C_S00_AXI_DATA_WIDTH+C_S00_AXI_DATA_WIDTH-1 downto 3*C_S00_AXI_DATA_WIDTH) => cycle,
-		OUT_REG(4*C_S00_AXI_DATA_WIDTH+C_S00_AXI_DATA_WIDTH-1 downto 4*C_S00_AXI_DATA_WIDTH) => repeat_count,
+		OUT_REG(4*C_S00_AXI_DATA_WIDTH+C_S00_AXI_DATA_WIDTH-1 downto 4*C_S00_AXI_DATA_WIDTH) => repeatNcount,
         OUT_REG(C_S00_AXI_DATA_COUNT * C_S00_AXI_DATA_WIDTH-1 downto 5*C_S00_AXI_DATA_WIDTH) => times
 	);
 
@@ -160,13 +159,13 @@ w7x_timing_inst : w7x_timing
            clk    => clk,
            trig   => trig,
            bstate => state,
-           init   => init_trig(0),
+           init   => initNtrig(0),
            delay  => delay,
-           width  => width_period(31 downto  0),
-           period => width_period(63 downto 32),
+           width  => widthNperiod(31 downto  0),
+           period => widthNperiod(63 downto 32),
            cycle  => cycle,
-           repeat => repeat_count(31 downto  0),
-           count  => repeat_count(63 downto 32),
+           repeat => repeatNcount(31 downto  0),
+           count  => repeatNcount(63 downto 32),
            times  => times
       );
 end arch_imp;
