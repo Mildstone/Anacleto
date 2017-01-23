@@ -18,8 +18,6 @@
 
 #include "w7x_timing.h"
 
-#define SUCCESS 0
-
 static struct platform_device *s_pdev = 0;
 static int s_device_open = 0;
 
@@ -67,13 +65,12 @@ static int device_open(struct inode *inode, struct file *file)
 static int device_release(struct inode *inode, struct file *file)
 {
    s_device_open --;
-   return 0;
+   return C_OK;
 }
 
 
 // READ //
-static ssize_t device_read(struct file *filp, char *buffer, size_t length,
-                           loff_t *offset)
+static ssize_t device_read(struct file *filp, char *buffer, size_t length, loff_t *offset)
 {
    int bytes_read = 0;
    const char *msg = "use mmap to access device memory\n";
@@ -87,8 +84,7 @@ static ssize_t device_read(struct file *filp, char *buffer, size_t length,
 
 
 // WRITE //
-static ssize_t device_write(struct file *filp, const char *buff, size_t len,
-                            loff_t *off)
+static ssize_t device_write(struct file *filp, const char *buff, size_t len, loff_t *off)
 {
    printk ("<1>Sorry, this operation isn't supported.\n");
    return -EINVAL;
@@ -99,7 +95,7 @@ static ssize_t device_write(struct file *filp, const char *buff, size_t len,
 
 // MMAP //
 
-static struct vm_operations_struct vm_ops;
+//static struct vm_operations_struct vm_ops;
 static void mmap_close_cb(struct vm_area_struct *vma) {
     ; // do nothing
 }
@@ -112,8 +108,7 @@ static const struct vm_operations_struct mmap_mem_ops = {
 };
 
 pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
-                  unsigned long size, pgprot_t vma_prot)
-{
+                  unsigned long size, pgprot_t vma_prot) {
     if (!pfn_valid(pfn))
         return pgprot_noncached(vma_prot);
     else if (file->f_flags & O_SYNC)
@@ -121,11 +116,9 @@ pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
     return vma_prot;
 }
 
-static int device_mmap(struct file *filp, struct vm_area_struct *vma)
-{
-    int status = 0;
+static int device_mmap(struct file *filp, struct vm_area_struct *vma) {
+    int c_status;
     struct resource *r_mem = platform_get_resource(s_pdev, IORESOURCE_MEM, 0);
-
     unsigned long off = vma->vm_pgoff << PAGE_SHIFT;
     unsigned long physical = r_mem->start + off;
     size_t vsize = vma->vm_end - vma->vm_start;
@@ -137,10 +130,10 @@ static int device_mmap(struct file *filp, struct vm_area_struct *vma)
 
     printk(KERN_DEBUG "<%s> file: mmap()\n", DEVICE_NAME);
 
-    printk(KERN_DEBUG "<%s> file: set physical = %x, size = %d\n",
+    printk(KERN_DEBUG "<%s> file: set physical = %lx, size = %d\n",
            MODULE_NAME, physical, psize);
 
-    printk(KERN_DEBUG "<%s> file: destination = %x, size = %d\n",
+    printk(KERN_DEBUG "<%s> file: destination = %lx, size = %d\n",
            MODULE_NAME, vma->vm_start, vsize);
 
     vma->vm_page_prot = phys_mem_access_prot(filp, vma->vm_pgoff,
@@ -150,21 +143,20 @@ static int device_mmap(struct file *filp, struct vm_area_struct *vma)
     if (vsize > psize)
         return -EINVAL; /* spans too high */
 
-    status = remap_pfn_range(vma, vma->vm_start,
+    c_status = remap_pfn_range(vma, vma->vm_start,
                              pageFrameNo, vsize, vma->vm_page_prot);
-    if (status) {
+    if (c_status) {
         printk(KERN_ERR
                "<%s> Error: in calling remap_pfn_range: returned %d\n",
-               MODULE_NAME, status);
+               MODULE_NAME, c_status);
         return -EAGAIN;
     }
-        return status;
+    return c_status;
 }
 
 
 // LSEEK //
-static loff_t memory_lseek(struct file *file, loff_t offset, int orig)
-{
+static loff_t memory_lseek(struct file *file, loff_t offset, int orig) {
     loff_t ret;
 
     mutex_lock(&file_inode(file)->i_mutex);
@@ -191,10 +183,8 @@ static loff_t memory_lseek(struct file *file, loff_t offset, int orig)
 
 
 // IOCTL //
-static long device_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
-{
+static long device_ioctl(struct file *file, unsigned int cmd, unsigned long arg) {
     u32 res_offset;
-    int status = 0;
     struct resource *r_mem = platform_get_resource(s_pdev, IORESOURCE_MEM, 0);
     res_offset = r_mem->start & ~PAGE_MASK;
 
@@ -210,7 +200,7 @@ static long device_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
         return -EAGAIN;
         break;
     }
-    return status;
+    return C_OK;
 }
 
 
@@ -224,8 +214,7 @@ static long device_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 static int id_major;
 static struct class *pwmgen_class;
 
-static int w7x_timing_probe(struct platform_device *pdev)
-{
+static int w7x_timing_probe(struct platform_device *pdev) {
 
     struct resource *r_mem;
     struct device *dev = &pdev->dev;
@@ -256,25 +245,24 @@ static int w7x_timing_probe(struct platform_device *pdev)
     if (!r_mem)
     {
       dev_err(dev, "Can't find device base address\n");
-      return 1;
+      return C_DEV_ERROR;
     }
 
     printk(KERN_DEBUG"mem start: %x\n",r_mem->start);
     printk(KERN_DEBUG"mem end: %x\n",r_mem->end);
     printk(KERN_DEBUG"mem offset: %x\n",r_mem->start & ~PAGE_MASK);
 
-    return 0;
+    return C_OK;
 }
 
-static int w7x_timing_remove(struct platform_device *pdev)
-{
+static int w7x_timing_remove(struct platform_device *pdev) {
     printk("PLATFORM DEVICE REMOVE...\n");
     if(pwmgen_class) {
         device_destroy(pwmgen_class,MKDEV(id_major, 0));
         class_destroy(pwmgen_class);
     }
     unregister_chrdev(id_major, DEVICE_NAME);
-	return 0;
+	return C_OK;
 }
 
 static const struct of_device_id w7x_timing_of_ids[] = {

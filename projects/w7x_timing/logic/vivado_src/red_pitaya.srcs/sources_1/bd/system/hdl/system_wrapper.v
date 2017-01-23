@@ -1,8 +1,8 @@
 //Copyright 1986-2015 Xilinx, Inc. All Rights Reserved.
 //--------------------------------------------------------------------------------
 //Tool Version: Vivado v.2015.4 (lin64) Build 1412921 Wed Nov 18 09:44:32 MST 2015
-//Date        : Wed Dec  7 13:19:32 2016
-//Host        : c99a4b2000d0 running 64-bit Ubuntu 14.04.4 LTS
+//Date        : Mon Jan 23 14:50:37 2017
+//Host        : mds-comp-1 running 64-bit Debian GNU/Linux 8.6 (jessie)
 //Command     : generate_target system_wrapper.bd
 //Design      : system_wrapper
 //Purpose     : IP block netlist
@@ -33,11 +33,8 @@ module system_wrapper
     FIXED_IO_ps_srstb,
     clk,
     clk_led,
-    gate,
-    gate_led,
-    on_led,
-    sig,
-    sig_led,
+    state,
+    state_leds,
     trig,
     trig_led);
   inout [14:0]DDR_addr;
@@ -62,14 +59,11 @@ module system_wrapper
   inout FIXED_IO_ps_porb;
   inout FIXED_IO_ps_srstb;
   input clk;
-  output [0:0]clk_led;
-  output gate;
-  output gate_led;
-  output [0:0]on_led;
-  output sig;
-  output sig_led;
+  output clk_led;
+  output [0:5]state;
+  output [0:5]state_leds;
   input trig;
-  output [0:0]trig_led;
+  output trig_led;
 
   wire [14:0]DDR_addr;
   wire [2:0]DDR_ba;
@@ -93,14 +87,11 @@ module system_wrapper
   wire FIXED_IO_ps_porb;
   wire FIXED_IO_ps_srstb;
   wire clk;
-  wire [0:0]clk_led;
-  wire gate;
-  wire gate_led;
-  wire [0:0]on_led;
-  wire sig;
-  wire sig_led;
+  wire clk_led;
+  wire [0:5]state;
+  wire [0:5]state_leds;
   wire trig;
-  wire [0:0]trig_led;
+  wire trig_led;
 
   system system_i
        (.DDR_addr(DDR_addr),
@@ -126,11 +117,8 @@ module system_wrapper
         .FIXED_IO_ps_srstb(FIXED_IO_ps_srstb),
         .clk(clk),
         .clk_led(clk_led),
-        .gate(gate),
-        .gate_led(gate_led),
-        .on_led(on_led),
-        .sig(sig),
-        .sig_led(sig_led),
+        .state(state),
+        .state_leds(state_leds),
         .trig(trig),
         .trig_led(trig_led));
 endmodule
