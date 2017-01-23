@@ -134,7 +134,7 @@ begin
 	
 	HEAD_OUT  <= slv_reg(C_S_AXI_HEAD_COUNT*C_S_AXI_DATA_WIDTH-1 downto 0);
 	
-	process (DATA_INDEX)
+	process (DATA_INDEX, USR_CLK)
     variable base_bit : integer; 
 	begin
 	  if falling_edge(USR_CLK) then 
@@ -148,7 +148,7 @@ begin
 	-- S_AXI_AWVALID and S_AXI_WVALID are asserted. axi_awready is
 	-- de-asserted when reset is low.
 
-	process (S_AXI_ACLK)
+	process (S_AXI_ACLK,S_AXI_ARESETN,S_AXI_AWVALID,S_AXI_WVALID)
 	begin
 	  if rising_edge(S_AXI_ACLK) then 
 	    if S_AXI_ARESETN = '0' then
@@ -171,7 +171,7 @@ begin
 	-- This process is used to latch the address when both 
 	-- S_AXI_AWVALID and S_AXI_WVALID are valid. 
 
-	process (S_AXI_ACLK)
+	process (S_AXI_ACLK,S_AXI_ARESETN,S_AXI_AWVALID,S_AXI_WVALID,S_AXI_AWADDR)
 	begin
 	  if rising_edge(S_AXI_ACLK) then 
 	    if S_AXI_ARESETN = '0' then
@@ -190,7 +190,7 @@ begin
 	-- S_AXI_AWVALID and S_AXI_WVALID are asserted. axi_wready is 
 	-- de-asserted when reset is low. 
 
-	process (S_AXI_ACLK)
+	process (S_AXI_ACLK,S_AXI_ARESETN,S_AXI_AWVALID,S_AXI_WVALID)
 	begin
 	  if rising_edge(S_AXI_ACLK) then 
 	    if S_AXI_ARESETN = '0' then
@@ -218,7 +218,7 @@ begin
 	-- and the slave is ready to accept the write address and write data.
 	slv_reg_wren <= axi_wready and S_AXI_WVALID and axi_awready and S_AXI_AWVALID ;
 
-	process (S_AXI_ACLK)
+	process (S_AXI_ACLK,S_AXI_ARESETN, axi_awaddr, slv_reg_wren, S_AXI_WSTRB, S_AXI_WDATA)
 	variable loc_addr : integer; 
 	begin
 	  if rising_edge(S_AXI_ACLK) then 
@@ -247,7 +247,7 @@ begin
 	-- This marks the acceptance of address and indicates the status of 
 	-- write transaction.
 
-	process (S_AXI_ACLK)
+	process (S_AXI_ACLK, S_AXI_ARESETN, axi_awready, S_AXI_AWVALID, axi_wready, S_AXI_WVALID, axi_bvalid, S_AXI_BREADY)
 	begin
 	  if rising_edge(S_AXI_ACLK) then 
 	    if S_AXI_ARESETN = '0' then
@@ -271,7 +271,7 @@ begin
 	-- The read address is also latched when S_AXI_ARVALID is 
 	-- asserted. axi_araddr is reset to zero on reset assertion.
 
-	process (S_AXI_ACLK)
+	process (S_AXI_ACLK,S_AXI_ARESETN,axi_arready,S_AXI_ARVALID,S_AXI_ARADDR)
 	begin
 	  if rising_edge(S_AXI_ACLK) then 
 	    if S_AXI_ARESETN = '0' then
@@ -298,7 +298,7 @@ begin
 	-- bus and axi_rresp indicates the status of read transaction.axi_rvalid 
 	-- is deasserted on reset (active low). axi_rresp and axi_rdata are 
 	-- cleared to zero on reset (active low).  
-	process (S_AXI_ACLK)
+	process (S_AXI_ACLK,S_AXI_ARESETN,axi_arready,S_AXI_ARVALID,axi_rvalid,S_AXI_RREADY)
 	begin
 	  if rising_edge(S_AXI_ACLK) then
 	    if S_AXI_ARESETN = '0' then
@@ -326,7 +326,7 @@ begin
 	variable loc_addr : integer; 
     begin
 	    -- Address decoding for reading registers
-        loc_addr := to_integer(unsigned(axi_awaddr(ADDR_LSB + OPT_MEM_ADDR_BITS downto ADDR_LSB)));
+        loc_addr := to_integer(unsigned(axi_araddr(ADDR_LSB + OPT_MEM_ADDR_BITS downto ADDR_LSB)));
 	    if loc_addr < C_S_AXI_DATA_COUNT then
 	        reg_data_out <= slv_reg(loc_addr*C_S_AXI_DATA_WIDTH+C_S_AXI_DATA_WIDTH-1 downto loc_addr*C_S_AXI_DATA_WIDTH);
 	    else
@@ -335,7 +335,7 @@ begin
 	end process; 
 
 	-- Output register or memory read data
-	process( S_AXI_ACLK ) is
+	process( S_AXI_ACLK, S_AXI_ARESETN, slv_reg_rden, reg_data_out) is
 	begin
 	  if (rising_edge (S_AXI_ACLK)) then
 	    if ( S_AXI_ARESETN = '0' ) then

@@ -723,9 +723,9 @@ CONFIG.S00_HAS_REGSLICE {3} \
   # Create instance: w7x_timing_0, and set properties
   set w7x_timing_0 [ create_bd_cell -type ip -vlnv user.org:user:w7x_timing:1.0 w7x_timing_0 ]
   set_property -dict [ list \
-CONFIG.C_S00_AXI_ADDR_WIDTH {25} \
+CONFIG.C_S00_AXI_ADDR_WIDTH {20} \
 CONFIG.C_S00_AXI_DATA_WIDTH {64} \
-CONFIG.MAX_SAMPLES {16} \
+CONFIG.MAX_SAMPLES {48} \
  ] $w7x_timing_0
 
   # Create interface connections

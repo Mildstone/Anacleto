@@ -53,7 +53,7 @@ end  w7x_timing;
 
 architecture Behavioral of w7x_timing is
 begin
-  clock_gen:  process(clk, init, trig) is
+  clock_gen:  process(clk, init, trig, width, period, delay, cycle, count, repeat, sample) is
     constant ZERO64         : unsigned(TIME_WIDTH-1 downto 0) := (others => '0');
     constant ZERO32         : unsigned(31 downto 0) := (others => '0');
     constant INF64          : unsigned(TIME_WIDTH-1 downto 0) := (others => '1');
