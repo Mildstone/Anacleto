@@ -31,21 +31,22 @@ use IEEE.NUMERIC_STD.ALL;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 entity w7x_timing is
-    generic(
-      MAX_SAMPLES : integer := 16
+    generic (
+      TIME_WIDTH : integer := 48
     );
     port (
        clk   : in  STD_LOGIC;
        trig  : in  STD_LOGIC;
        init  : in  STD_LOGIC;
        bstate: out STD_LOGIC_VECTOR (0 to 5);
+       index:  out STD_LOGIC_VECTOR (31 downto 0);
        delay : in  STD_LOGIC_VECTOR (63 downto 0);
        width : in  STD_LOGIC_VECTOR (31 downto 0);
        period: in  STD_LOGIC_VECTOR (31 downto 0);
        cycle : in  STD_LOGIC_VECTOR (63 downto 0);
        repeat: in  STD_LOGIC_VECTOR (31 downto 0);
        count : in  STD_LOGIC_VECTOR (31 downto 0);
-       times : in  STD_LOGIC_VECTOR (MAX_SAMPLES*64-1 downto 0)
+       sample: in  STD_LOGIC_VECTOR (63 downto 0)
     );
 end  w7x_timing;
 
@@ -53,10 +54,10 @@ end  w7x_timing;
 architecture Behavioral of w7x_timing is
 begin
   clock_gen:  process(clk, init, trig) is
-    constant ZERO64         : unsigned(63 downto 0) := x"0000000000000000";
-    constant ZERO32         : unsigned(31 downto 0) := x"00000000";
-    constant INF64          : unsigned(63 downto 0) := x"FFFFFFFFFFFFFFFF";
-    constant INF32          : unsigned(31 downto 0) := x"FFFFFFFF";
+    constant ZERO64         : unsigned(TIME_WIDTH-1 downto 0) := (others => '0');
+    constant ZERO32         : unsigned(31 downto 0) := (others => '0');
+    constant INF64          : unsigned(TIME_WIDTH-1 downto 0) := (others => '1');
+    constant INF32          : unsigned(31 downto 0) := (others => '1');
     --                                                     SG0PWA
     constant IDLE           : std_logic_vector(0 to 5) := "000000";
     constant ARMED          : std_logic_vector(0 to 5) := "000001";
@@ -79,16 +80,12 @@ begin
     variable high_total   : unsigned(31 downto 0) := ZERO32;
     variable period_total : unsigned(31 downto 0) := ZERO32;
     -- sequence counter
-    variable cycle_ticks  : unsigned(63 downto 0) := ZERO64;
-    variable delay_total  : unsigned(63 downto 0) := ZERO64;
-    variable cycle_total  : unsigned(63 downto 0) := ZERO64;
+    variable cycle_ticks  : unsigned(TIME_WIDTH-1 downto 0) := ZERO64;
+    variable delay_total  : unsigned(TIME_WIDTH-1 downto 0) := ZERO64;
+    variable cycle_total  : unsigned(TIME_WIDTH-1 downto 0) := ZERO64;
     
-    --used to read from times vector
-    impure function samples(i : integer) return unsigned(63 downto 0) is
-    begin
-      return unsigned(times(i*64+63 downto i*64));
-    end samples;
-
+    variable curr_sample  : unsigned(TIME_WIDTH-1 downto 0) := ZERO64;
+    
     procedure start_sample is
     begin
       period_ticks := ZERO32;
@@ -97,7 +94,6 @@ begin
     end start_sample;
 
     procedure do_waiting_sample is
-    variable curr_sample : unsigned(63 downto 0) := samples(sample_count);
     begin
       if cycle_ticks = curr_sample then
         start_sample;
@@ -173,14 +169,12 @@ begin
   begin
     high_total   := unsigned(width);
     period_total := unsigned(period);
-    delay_total  := unsigned(delay);
-    cycle_total  := unsigned(cycle);
+    delay_total  := unsigned(delay(TIME_WIDTH-1 downto 0));
+    cycle_total  := unsigned(cycle(TIME_WIDTH-1 downto 0));
     sample_total := to_integer(unsigned(count));
     repeat_total := to_integer(unsigned(repeat));
--- Copy passed times
-    --for i in 0 to MAX_SAMPLES-1 loop   
-    --  samples(i)  := unsigned(times(i*64+63 downto i*64));
-    --end loop;
+    curr_sample  := unsigned(sample(TIME_WIDTH-1 downto 0));
+
     if state = IDLE then
       if init = '1' then
         state := ARMED;
@@ -218,6 +212,7 @@ begin
       end if;
     end if; -- rising_edge(clk)
     bstate <= state;
+    index  <= std_logic_vector(to_unsigned(sample_count,32));
   end process clock_gen;
 
 end Behavioral;

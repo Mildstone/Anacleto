@@ -10,13 +10,19 @@ entity w7x_timing_v1_0_S00_AXI is
 		-- Do not modify the parameters beyond this line
 
 		-- Width of S_AXI data bus
-		C_S_AXI_DATA_COUNT	: integer	:= 16;
-		C_S_AXI_DATA_WIDTH	: integer	:= 32;
+		C_S_AXI_HEAD_COUNT	  : integer	:= 5;
+        C_S_AXI_DATA_COUNT	  : integer	:= 8;
+		C_S_AXI_DATA_WIDTH	  : integer	:= 64;
 		-- Width of S_AXI address bus
-		C_S_AXI_ADDR_WIDTH	: integer	:= 25
+		C_S_AXI_ADDR_WIDTH	  : integer	:= 25
 	);
 	port (
 		-- Users to add ports here
+		
+        USR_CLK    : in std_logic;
+		HEAD_OUT   : out std_logic_vector(C_S_AXI_HEAD_COUNT*C_S_AXI_DATA_WIDTH-1 downto 0);		
+        DATA_OUT   : out std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
+        DATA_INDEX : in std_logic_vector(31 downto 0);
 
 		-- User ports ends
 		-- Do not modify the ports beyond this line
@@ -80,9 +86,7 @@ entity w7x_timing_v1_0_S00_AXI is
 		S_AXI_RVALID	: out std_logic;
 		-- Read ready. This signal indicates that the master can
     		-- accept the read data and response information.
-		S_AXI_RREADY	: in std_logic;
-		
-		OUT_REG: out std_logic_vector(C_S_AXI_DATA_COUNT*C_S_AXI_DATA_WIDTH-1 downto 0)
+		S_AXI_RREADY	: in std_logic
 	);
 end w7x_timing_v1_0_S00_AXI;
 
@@ -111,12 +115,11 @@ architecture arch_imp of w7x_timing_v1_0_S00_AXI is
 	---- Signals for user logic register space example
 	--------------------------------------------------
 	---- Number of Slave Registers 64
-	signal slv_reg	:std_logic_vector(C_S_AXI_DATA_COUNT*C_S_AXI_DATA_WIDTH-1 downto 0);
+	signal slv_reg	    : std_logic_vector((C_S_AXI_HEAD_COUNT*C_S_AXI_DATA_COUNT)*C_S_AXI_DATA_WIDTH-1 downto 0);
 	signal slv_reg_rden	: std_logic;
 	signal slv_reg_wren	: std_logic;
-	signal reg_data_out	:std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
+	signal reg_data_out	: std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
 	signal byte_index	: integer;
-
 begin
 	-- I/O Connections assignments
 
@@ -129,7 +132,16 @@ begin
 	S_AXI_RRESP   <= axi_rresp;
 	S_AXI_RVALID  <= axi_rvalid;
 	
-	OUT_REG  <= slv_reg;
+	HEAD_OUT  <= slv_reg(C_S_AXI_HEAD_COUNT*C_S_AXI_DATA_WIDTH-1 downto 0);
+	
+	process (DATA_INDEX)
+    variable base_bit : integer; 
+	begin
+	  if falling_edge(USR_CLK) then 
+        base_bit  := (C_S_AXI_HEAD_COUNT+to_integer(unsigned(DATA_INDEX)))*C_S_AXI_DATA_WIDTH;
+        DATA_OUT  <= slv_reg(base_bit+C_S_AXI_DATA_WIDTH-1 downto base_bit);
+      end if;
+    end process;
 	
 	-- Implement axi_awready generation
 	-- axi_awready is asserted for one S_AXI_ACLK clock cycle when both
