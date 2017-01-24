@@ -725,7 +725,7 @@ CONFIG.S00_HAS_REGSLICE {3} \
   set_property -dict [ list \
 CONFIG.C_S00_AXI_ADDR_WIDTH {20} \
 CONFIG.C_S00_AXI_DATA_WIDTH {64} \
-CONFIG.MAX_SAMPLES {48} \
+CONFIG.MAX_SAMPLES {16} \
  ] $w7x_timing_0
 
   # Create interface connections
