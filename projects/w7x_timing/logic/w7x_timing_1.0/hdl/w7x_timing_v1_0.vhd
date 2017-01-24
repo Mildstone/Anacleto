@@ -19,7 +19,7 @@ entity w7x_timing_v1_0 is
 		-- Users to add ports here
         clk  : in  STD_LOGIC;
 		trig : in  STD_LOGIC;
-		state: out STD_LOGIC_VECTOR (0 to 5);          
+		state: out STD_LOGIC_VECTOR (0 to 5);
         -- User ports ends
 		-- Do not modify the ports beyond this line
 
@@ -102,7 +102,7 @@ architecture arch_imp of w7x_timing_v1_0 is
     port (
        clk   : in  STD_LOGIC;
        trig  : in  STD_LOGIC;
-       init  : in  STD_LOGIC;
+       init  : in  STD_LOGIC; 
        bstate: out STD_LOGIC_VECTOR (0 to 5);
        index:  out STD_LOGIC_VECTOR (31 downto 0);
        delay : in  STD_LOGIC_VECTOR (63 downto 0);
@@ -114,9 +114,6 @@ architecture arch_imp of w7x_timing_v1_0 is
        sample: in  STD_LOGIC_VECTOR (63 downto 0)
     );
 	end component w7x_timing;
-
-
-
 
 begin
 

@@ -76,6 +76,7 @@ set_property DRIVE 4             [get_ports trig_led]
 
 
 create_clock -period 100.000 -name clk -waveform {0.0 50.0} [get_ports clk]
+create_clock -period 8.000 -name clk_fpga_0 -waveform {0.0 4.0}
 #
 #set [get_pins {state[*]}]
 

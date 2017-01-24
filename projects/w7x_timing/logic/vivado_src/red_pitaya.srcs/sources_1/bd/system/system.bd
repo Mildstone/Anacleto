@@ -237,7 +237,7 @@
           </spirit:wire>
         </spirit:port>
         <spirit:port>
-          <spirit:name>state_leds</spirit:name>
+          <spirit:name>state</spirit:name>
           <spirit:wire>
             <spirit:direction>out</spirit:direction>
             <spirit:vector>
@@ -247,7 +247,7 @@
           </spirit:wire>
         </spirit:port>
         <spirit:port>
-          <spirit:name>state</spirit:name>
+          <spirit:name>state_leds</spirit:name>
           <spirit:wire>
             <spirit:direction>out</spirit:direction>
             <spirit:vector>
@@ -902,8 +902,8 @@
       <spirit:adHocConnection>
         <spirit:name>w7x_timing_0_state</spirit:name>
         <spirit:internalPortReference spirit:componentRef="w7x_timing_0" spirit:portRef="state"/>
-        <spirit:externalPortReference spirit:portRef="state"/>
         <spirit:externalPortReference spirit:portRef="state_leds"/>
+        <spirit:externalPortReference spirit:portRef="state"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>processing_system7_0_FCLK_RESET0_N</spirit:name>

@@ -63,6 +63,7 @@ architecture Behavioral of w7x_timing is
     constant ERROR          : std_logic_vector(0 to 5) := "000111";
     signal   state          : std_logic_vector(0 to 5) := IDLE;
     -- measure number of samples in sequence, i.e. len(times)
+    signal reset        : std_logic := '1'; -- start_cycle   =0, do_waiting_sample ++
     signal sample_count : integer := 0; -- start_cycle   =0, do_waiting_sample ++
     signal sample_total : integer := 0;
     -- measure number of repititions
@@ -79,6 +80,16 @@ architecture Behavioral of w7x_timing is
     
     signal curr_sample  : unsigned(TIME_WIDTH-1 downto 0) := (others => '0');
 begin
+    -- set input
+    sample_total <= to_integer(unsigned(count));
+    repeat_total <= to_integer(unsigned(repeat));
+    high_total   <= unsigned(width);
+    period_total <= unsigned(period);
+    delay_total  <= unsigned(delay (TIME_WIDTH-1 downto 0));
+    cycle_total  <= unsigned(cycle (TIME_WIDTH-1 downto 0));
+    curr_sample  <= unsigned(sample(TIME_WIDTH-1 downto 0));
+    bstate       <= state;
+
   clock_gen:  process(clk, init, trig, width, period, delay, cycle, count, repeat, sample) is
   
     procedure inc_cycle is
@@ -220,16 +231,7 @@ begin
         cycle_ticks <= (0=> '1', others => '0');
        end if;
     end start_program;
-
   begin
-    -- set input
-    sample_total <= to_integer(unsigned(count));
-    repeat_total <= to_integer(unsigned(repeat));
-    high_total   <= unsigned(width);
-    period_total <= unsigned(period);
-    delay_total  <= unsigned(delay (TIME_WIDTH-1 downto 0));
-    cycle_total  <= unsigned(cycle (TIME_WIDTH-1 downto 0));
-    curr_sample  <= unsigned(sample(TIME_WIDTH-1 downto 0));
     -- main program
     if init = '0' then
       state <= IDLE;
@@ -257,9 +259,10 @@ begin
           state <= ERROR;
       end case;
     end if; -- rising_edge(clk)
-    -- set output
-    bstate <= state;
-    index  <= std_logic_vector(to_unsigned(sample_count,32));
+    if sample_count<sample_total then
+      index <= std_logic_vector(to_unsigned(sample_count,32));
+    else
+      index <= (others => '0');
+    end if;
   end process clock_gen;
-
 end Behavioral;

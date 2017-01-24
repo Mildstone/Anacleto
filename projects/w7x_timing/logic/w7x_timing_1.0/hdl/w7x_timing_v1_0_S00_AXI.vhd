@@ -18,9 +18,8 @@ entity w7x_timing_v1_0_S00_AXI is
 	);
 	port (
 		-- Users to add ports here
-		
         USR_CLK    : in std_logic;
-		HEAD_OUT   : out std_logic_vector(C_S_AXI_HEAD_COUNT*C_S_AXI_DATA_WIDTH-1 downto 0);		
+        HEAD_OUT   : out std_logic_vector(C_S_AXI_HEAD_COUNT*C_S_AXI_DATA_WIDTH-1 downto 0);		
         DATA_OUT   : out std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
         DATA_INDEX : in std_logic_vector(31 downto 0);
 
@@ -118,11 +117,11 @@ architecture arch_imp of w7x_timing_v1_0_S00_AXI is
 	signal slv_reg	    : std_logic_vector((C_S_AXI_HEAD_COUNT*C_S_AXI_DATA_COUNT)*C_S_AXI_DATA_WIDTH-1 downto 0);
 	signal slv_reg_rden	: std_logic;
 	signal slv_reg_wren	: std_logic;
+	signal curr_data_out: std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0) := (others => '0');
 	signal reg_data_out	: std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
 	signal byte_index	: integer;
 begin
 	-- I/O Connections assignments
-
 	S_AXI_AWREADY <= axi_awready;
 	S_AXI_WREADY  <= axi_wready;
 	S_AXI_BRESP   <= axi_bresp;
@@ -133,13 +132,25 @@ begin
 	S_AXI_RVALID  <= axi_rvalid;
 	
 	HEAD_OUT  <= slv_reg(C_S_AXI_HEAD_COUNT*C_S_AXI_DATA_WIDTH-1 downto 0);
+    DATA_OUT  <= curr_data_out;
+	process (slv_reg, axi_araddr, S_AXI_ARESETN, slv_reg_rden)
+	variable loc_addr : integer; 
+    begin
+	    -- Address decoding for reading registers
+        loc_addr := to_integer(unsigned(axi_araddr(ADDR_LSB + OPT_MEM_ADDR_BITS downto ADDR_LSB)));
+	    if loc_addr < C_S_AXI_DATA_COUNT then
+	        reg_data_out <= slv_reg(loc_addr*C_S_AXI_DATA_WIDTH+C_S_AXI_DATA_WIDTH-1 downto loc_addr*C_S_AXI_DATA_WIDTH);
+	    else
+	        reg_data_out  <= (others => '0');
+	    end if;
+	end process; 
 	
 	process (DATA_INDEX, USR_CLK)
-    variable base_bit : integer; 
+	variable curr_addr : integer; 
 	begin
-	  if falling_edge(USR_CLK) then 
-        base_bit  := (C_S_AXI_HEAD_COUNT+to_integer(unsigned(DATA_INDEX)))*C_S_AXI_DATA_WIDTH;
-        DATA_OUT  <= slv_reg(base_bit+C_S_AXI_DATA_WIDTH-1 downto base_bit);
+	  if falling_edge(USR_CLK) then
+	    curr_addr := (C_S_AXI_HEAD_COUNT+to_integer(unsigned(DATA_INDEX)))*C_S_AXI_DATA_WIDTH;
+        curr_data_out  <= slv_reg(curr_addr+C_S_AXI_DATA_WIDTH-1 downto curr_addr);
       end if;
     end process;
 	
