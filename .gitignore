@@ -1,1 +1,4 @@
 vivado_project/
+.cache/
+.hw/
+.xpr
