@@ -76,12 +76,15 @@ set_property DRIVE 4             [get_ports trig_led]
 
 
 create_clock -period 100.000 -name clk -waveform {0.0 50.0} [get_ports clk]
+create_clock -period 8.000 -name clk_fpga_0 -waveform {0.0 4.0}
 #
-set_input_delay  -clock [get_clocks clk] -min -add_delay  0.0 [get_ports trig]
-set_input_delay  -clock [get_clocks clk] -max -add_delay 10.0 [get_ports trig]
+#set [get_pins {state[*]}]
+
+set_input_delay  -clock [get_clocks clk] -min  0.0 [get_ports trig]
+set_input_delay  -clock [get_clocks clk] -max 10.0 [get_ports trig]
 #
-set_output_delay -clock [get_clocks clk] -min -add_delay  0.0 [get_ports {state[*]}]
-set_output_delay -clock [get_clocks clk] -max -add_delay 10.0 [get_ports {state[*]}]
+set_output_delay -clock [get_clocks clk] -min  0.0 [get_ports {state[*]}]
+set_output_delay -clock [get_clocks clk] -max 10.0 [get_ports {state[*]}]
 #
-set_output_delay -clock [get_clocks clk] -min -add_delay  0.0 [get_ports {state_leds[*]}]
-set_output_delay -clock [get_clocks clk] -max -add_delay 50.0 [get_ports {state_leds[*]}]
+set_output_delay -clock [get_clocks clk] -min  0.0 [get_ports {state_leds[*]}]
+set_output_delay -clock [get_clocks clk] -max 50.0 [get_ports {state_leds[*]}]
