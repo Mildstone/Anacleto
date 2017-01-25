@@ -100,11 +100,11 @@ architecture arch_imp of w7x_timing_v1_0 is
       TIME_WIDTH : integer
     );
     port (
-       clk   : in  STD_LOGIC;
-       trig  : in  STD_LOGIC;
-       init  : in  STD_LOGIC; 
-       bstate: out STD_LOGIC_VECTOR (0 to 5);
-       index:  out STD_LOGIC_VECTOR (31 downto 0);
+       clk_in    : in  STD_LOGIC;
+       trig_in   : in  STD_LOGIC;
+       init_in   : in  STD_LOGIC; 
+       state_out : out STD_LOGIC_VECTOR (0 to 5);
+       index_out :  out STD_LOGIC_VECTOR (31 downto 0);
        delay : in  STD_LOGIC_VECTOR (63 downto 0);
        width : in  STD_LOGIC_VECTOR (31 downto 0);
        period: in  STD_LOGIC_VECTOR (31 downto 0);
@@ -162,17 +162,17 @@ w7x_timing_inst : w7x_timing
         TIME_WIDTH => TIME_WIDTH
     )
     port map (
-           clk    => clk,
-           trig   => trig,
-           bstate => state,
-           index  => index,
-           init   => initNtrig(0),
+           clk_in    => clk,
+           trig_in   => trig,
+           init_in   => initNtrig(0),
+           state_out => state,
+           index_out => index,
            delay  => delay,
            width  => widthNperiod(31 downto  0),
            period => widthNperiod(63 downto 32),
            cycle  => cycle,
            repeat => repeatNcount(31 downto  0),
            count  => repeatNcount(63 downto 32),
-           sample  => sample
+           sample => sample
       );
 end arch_imp;
