@@ -35,11 +35,11 @@ entity w7x_timing is
       TIME_WIDTH : integer := 48
     );
     port (
-       clk   : in  STD_LOGIC;
-       trig  : in  STD_LOGIC;
-       init  : in  STD_LOGIC;
-       bstate: out STD_LOGIC_VECTOR (0 to 5);
-       index:  out STD_LOGIC_VECTOR (31 downto 0);
+       clk_in    : in  STD_LOGIC;
+       trig_in   : in  STD_LOGIC;
+       init_in   : in  STD_LOGIC;
+       state_out : out STD_LOGIC_VECTOR (0 to 5);
+       index_out : out STD_LOGIC_VECTOR (31 downto 0);
        delay : in  STD_LOGIC_VECTOR (63 downto 0);
        width : in  STD_LOGIC_VECTOR (31 downto 0);
        period: in  STD_LOGIC_VECTOR (31 downto 0);
@@ -52,7 +52,7 @@ end  w7x_timing;
 
 
 architecture Behavioral of w7x_timing is
-    --                                                     SG0PWA
+    -- summary of valid states                             SG0PWA
     constant IDLE           : std_logic_vector(0 to 5) := "000000";
     constant ARMED          : std_logic_vector(0 to 5) := "000001";
     constant WAITING_DELAY  : std_logic_vector(0 to 5) := "000010";
@@ -61,12 +61,13 @@ architecture Behavioral of w7x_timing is
     constant WAITING_HIGH   : std_logic_vector(0 to 5) := "110010";
     constant WAITING_REPEAT : std_logic_vector(0 to 5) := "000110";
     constant ERROR          : std_logic_vector(0 to 5) := "000111";
+		-- -- signals
     signal   state          : std_logic_vector(0 to 5) := IDLE;
     -- measure number of samples in sequence, i.e. len(times)
     signal reset        : std_logic := '1'; -- start_cycle   =0, do_waiting_sample ++
     signal sample_count : integer := 0; -- start_cycle   =0, do_waiting_sample ++
     signal sample_total : integer := 0;
-    -- measure number of repititions
+    -- measure number of repetitions
     signal repeat_count : integer := 0; -- start_program =0, start_waiting_repeat ++
     signal repeat_total : integer := 0;
     -- measure high and low of signal
@@ -77,20 +78,25 @@ architecture Behavioral of w7x_timing is
     signal cycle_ticks  : unsigned(TIME_WIDTH-1 downto 0) := (others => '0');
     signal delay_total  : unsigned(TIME_WIDTH-1 downto 0) := (others => '0');
     signal cycle_total  : unsigned(TIME_WIDTH-1 downto 0) := (others => '0');
-    
+    -- contains the next sample of interrest defined by index_out of the previous cycle
     signal curr_sample  : unsigned(TIME_WIDTH-1 downto 0) := (others => '0');
 begin
     -- set input
-    sample_total <= to_integer(unsigned(count));
-    repeat_total <= to_integer(unsigned(repeat));
+    delay_total  <= unsigned(delay (TIME_WIDTH-1 downto 0));
     high_total   <= unsigned(width);
     period_total <= unsigned(period);
-    delay_total  <= unsigned(delay (TIME_WIDTH-1 downto 0));
     cycle_total  <= unsigned(cycle (TIME_WIDTH-1 downto 0));
+    repeat_total <= to_integer(unsigned(repeat));
+    sample_total <= to_integer(unsigned(count));
     curr_sample  <= unsigned(sample(TIME_WIDTH-1 downto 0));
-    bstate       <= state;
+    state_out    <= state;
 
-  clock_gen:  process(clk, init, trig, width, period, delay, cycle, count, repeat, sample) is
+  clock_gen:  process(clk_in, init_in, trig_in,
+                      delay_total,
+                      period_ticks, high_total, period_total,
+                      cycle_ticks, cycle_total,
+                      repeat_total,
+                      sample_total, sample_count, curr_sample) is
   
     procedure inc_cycle is
     begin
@@ -161,16 +167,16 @@ begin
       repeat_count <= 0;
       state <= ARMED;
     end start_armed;
-
-   procedure start_waiting_repeat is
+		
+    procedure start_waiting_repeat is
     -- increments repeat_count
-   begin
-     if repeat_count < repeat_total then
-       repeat_count <= repeat_count + 1;
-       do_waiting_repeat;
-     else
-       start_armed;
-     end if;
+    begin
+      if repeat_count < repeat_total then
+        repeat_count <= repeat_count + 1;
+        do_waiting_repeat;
+      else
+        start_armed;
+      end if;
     end start_waiting_repeat;
 
     procedure start_waiting_sample is
@@ -210,7 +216,11 @@ begin
     procedure do_waiting_delay is
     begin
       if cycle_ticks = delay_total then
-        start_cycle;
+        if repeat_total > 0 and sample_total > 0 then
+          start_cycle;
+        else
+          start_armed;
+        end if;
       elsif cycle_ticks > delay_total then
         state <= ERROR;
       else
@@ -231,14 +241,15 @@ begin
         cycle_ticks <= (0=> '1', others => '0');
        end if;
     end start_program;
-  begin
-    -- main program
-    if init = '0' then
+
+  begin  -- main program
+
+    if init_in = '0' then
       state <= IDLE;
-    elsif rising_edge(clk) then
+    elsif rising_edge(clk_in) then
       case state is
         when ARMED => 
-          if trig = '1' then
+          if trig_in = '1' then
             start_program;
           end if;
         when WAITING_DELAY =>
@@ -252,17 +263,16 @@ begin
         when WAITING_REPEAT =>
           do_waiting_repeat;
         when IDLE =>
-          if init = '1' then
-            start_armed;
-          end if;
+          start_armed;
         when others =>
           state <= ERROR;
       end case;
     end if; -- rising_edge(clk)
     if sample_count<sample_total then
-      index <= std_logic_vector(to_unsigned(sample_count,32));
+      index_out <= std_logic_vector(to_unsigned(sample_count,32));
     else
-      index <= (others => '0');
+      index_out <= (others => '0');
     end if;
+
   end process clock_gen;
 end Behavioral;
