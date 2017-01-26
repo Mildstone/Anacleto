@@ -553,6 +553,7 @@ fpga/vivado_socdev_utils.tcl
 fpga/write_project_tcl.tcl
 fpga/write_project_tcl_devel.tcl
 fpga/write_project_tcl_import_files.tcl
+linux-socdev.includes
 m4/ac_defun_local.m4
 m4/ac_defun_local_example.m4
 m4/ax_check_java_home.m4
@@ -561,6 +562,7 @@ m4/ax_compiler_vendor.m4
 m4/ax_compiler_version.m4
 m4/ax_download_repository.m4
 m4/ax_enable_kconfig.m4
+m4/ax_gitignore_list.m4
 m4/m4_ac_search_readline.m4
 m4/m4_am_path_xml2.m4
 m4/m4_ax_check_enable_debug.m4
@@ -762,6 +764,7 @@ projects/w7x_timing/src/Makefile.am
 projects/w7x_timing/src/Makefile.in
 projects/w7x_timing/src/w7x_timing.c
 projects/w7x_timing/src/w7x_timing.h
+projects/w7x_timing/src/w7x_timing_lib.c
 projects/w7x_timing/src/w7x_timing_test.c
 projects/w7x_timing/Makefile.am
 projects/w7x_timing/Makefile.in
