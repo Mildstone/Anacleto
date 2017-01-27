@@ -1,8 +1,8 @@
 //Copyright 1986-2015 Xilinx, Inc. All Rights Reserved.
 //--------------------------------------------------------------------------------
 //Tool Version: Vivado v.2015.4 (lin64) Build 1412921 Wed Nov 18 09:44:32 MST 2015
-//Date        : Mon Nov 14 10:50:09 2016
-//Host        : c99a4b2000d0 running 64-bit Ubuntu 14.04.4 LTS
+//Date        : Fri Jan 27 16:02:21 2017
+//Host        : ff9f051bc3f5 running 64-bit Ubuntu 14.04.5 LTS
 //Command     : generate_target system_wrapper.bd
 //Design      : system_wrapper
 //Purpose     : IP block netlist
@@ -30,12 +30,7 @@ module system_wrapper
     FIXED_IO_mio,
     FIXED_IO_ps_clk,
     FIXED_IO_ps_porb,
-    FIXED_IO_ps_srstb,
-    led_o,
-    pwm_n_out,
-    pwm_n_out_1,
-    pwm_out,
-    pwm_out_1);
+    FIXED_IO_ps_srstb);
   inout [14:0]DDR_addr;
   inout [2:0]DDR_ba;
   inout DDR_cas_n;
@@ -57,11 +52,6 @@ module system_wrapper
   inout FIXED_IO_ps_clk;
   inout FIXED_IO_ps_porb;
   inout FIXED_IO_ps_srstb;
-  output led_o;
-  output [0:0]pwm_n_out;
-  output [0:0]pwm_n_out_1;
-  output [0:0]pwm_out;
-  output [0:0]pwm_out_1;
 
   wire [14:0]DDR_addr;
   wire [2:0]DDR_ba;
@@ -84,11 +74,6 @@ module system_wrapper
   wire FIXED_IO_ps_clk;
   wire FIXED_IO_ps_porb;
   wire FIXED_IO_ps_srstb;
-  wire led_o;
-  wire [0:0]pwm_n_out;
-  wire [0:0]pwm_n_out_1;
-  wire [0:0]pwm_out;
-  wire [0:0]pwm_out_1;
 
   system system_i
        (.DDR_addr(DDR_addr),
@@ -111,10 +96,5 @@ module system_wrapper
         .FIXED_IO_mio(FIXED_IO_mio),
         .FIXED_IO_ps_clk(FIXED_IO_ps_clk),
         .FIXED_IO_ps_porb(FIXED_IO_ps_porb),
-        .FIXED_IO_ps_srstb(FIXED_IO_ps_srstb),
-        .led_o(led_o),
-        .pwm_n_out(pwm_n_out),
-        .pwm_n_out_1(pwm_n_out_1),
-        .pwm_out(pwm_out),
-        .pwm_out_1(pwm_out_1));
+        .FIXED_IO_ps_srstb(FIXED_IO_ps_srstb));
 endmodule

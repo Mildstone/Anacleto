@@ -32,6 +32,6 @@ projects/rfx_RPHctl/logic/ip/linux_os
 projects/rfx_RPHctl/logic/ip/linux_os/data
 projects/rfx_pwmgen/logic/vivado_src
 linux/include
-linux/
+linux/arch/arm/include
 m4
 .

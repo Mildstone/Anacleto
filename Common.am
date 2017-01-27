@@ -10,6 +10,12 @@ DL           ?= $(abs_top_builddir)/download
 
 VIVADO_VERSION ?= 2015.4
 
+## ////////////////////////////////////////////////////////////////////////// ##
+## /// ACTIVATE HELP TARGET ///////////////////////////////////////////////// ##
+## ////////////////////////////////////////////////////////////////////////// ##
+
+@TARGET_SELFHELP@
+
 
 ## LINUX ##
 
@@ -65,7 +71,7 @@ endef
 ## /////////////////////////////////////////////////////////////////////////////
 
 .PHONY: reconfigure
-reconfigure:
+reconfigure: ##@micellaneous re-run configure with last passed arguments
 	@ \
 	echo " -- Reconfiguring build with following parameters: -----------"; \
 	echo $(shell $(abs_top_builddir)/config.status --config);              \
@@ -79,7 +85,7 @@ reconfigure:
 ## // DUMPS  ///////////////////////////////////////////////////////////////////
 ## /////////////////////////////////////////////////////////////////////////////
 
-print-env:
+print-env: ##@micellaneous print environment used for crosscompiling linux
 	@\
 	$(_set_export); \
 	echo ""; \

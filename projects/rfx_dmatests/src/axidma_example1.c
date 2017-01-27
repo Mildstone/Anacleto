@@ -13,7 +13,7 @@
 #include <linux/kernel.h>
 #include <linux/dma-mapping.h>
 #include <linux/slab.h>
-#include <linux/amba/xilinx_dma.h>
+#include <linux/dma/xilinx_dma.h>
 
 #include <linux/platform_device.h>
 

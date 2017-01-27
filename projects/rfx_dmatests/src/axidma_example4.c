@@ -30,7 +30,7 @@
 #include <linux/vmalloc.h>
 
 #include <linux/dmaengine.h>         // dma api
-#include <linux/amba/xilinx_dma.h>   // axi dma driver
+#include <linux/dma/xilinx_dma.h>   // axi dma driver
 
 // First of all, you should make sure #include <linux/dma-mapping.h> is in your
 // driver, which provides the definition of dma_addr_t. This type can hold any

@@ -1,8 +1,6 @@
 include Common.am
 AM_MAKEFLAGS = -j$(MAKE_PROCESS)
 
-@TARGET_SELFHELP@
-
 all: ##@all download and build the selected toolchain and the linux image
 all: $(top_builddir)/toolchain $(LINUX_IMAGE)
 
@@ -62,9 +60,6 @@ $(LINUX_BUILDDIR):
 	mkdir -p $@;
 endif
 
-menuconfig: ##@linux enter menuconfig inside linux sources
-nconfig menuconfig xconfig gconfig: $(LINUX_SRCDIR) $(LINUX_BUILDDIR)
-	$(MAKE) -C $< $@
 
 .PHONY: linux-init linux-init-s
 linux-init-s: $(LINUX_SRCDIR) $(LINUX_BUILDDIR) print-env
@@ -77,20 +72,38 @@ linux-init-s: $(LINUX_SRCDIR) $(LINUX_BUILDDIR) print-env
 	export srctree=$(LINUX_SRCDIR); \
 	$(LINUX_BUILDDIR)/scripts/kconfig/conf --defconfig=$${DEFCONFIG} Kconfig
 
-linux-init:
+linux-init: ##@linux initialize linux sources applying the soc defconfig
 	$(MAKE) -s linux-init-s
 
-.PHONY: kernelversion kernelrelease
-kernelversion: ##@linux display the current kernel version
-kernelrelease: ##@linux display the current kernel release
-kernelversion kernelrelease: $(LINUX_SRCDIR) $(LINUX_BUILDDIR)
-	@ $(_set_export); \
-	  $(MAKE) -s $(AM_MAKEFLAGS) -C $< O=$$O CFLAGS="$(LINUX_CFLAGS)" $@
+linux-:     ##@linux_target use: "make linux-<target>" to build target in linux directory
+linux-help: ##@linux_target get linux build help
+linux-menuconfig: ##@linux_target enter menuconfig inside linux sources
+linux-nconfig: ##@linux_target enter ncurses config inside linux sources
+linux-xconfig: ##@linux_target enter xlib config inside linux sources
+linux-gconfig: ##@linux_target enter gnome config inside linux sources
+linux-savedefconfig: ##@linux_target save default configuration in linux builddir defconfig file
+linux-kernelversion: ##@linux_target display the current kernel version
+linux-kernelrelease: ##@linux_target display the current kernel release
 
-.PHONY: savedefconfig
-savedefconfig: $(LINUX_SRCDIR) $(LINUX_BUILDDIR) print-env
+.PHONY: linux-%
+linux-nconfig linux-menuconfig linux-xconfig linux-gconfig: \
+ $(LINUX_SRCDIR) $(LINUX_BUILDDIR) $(LINUX_BUILDDIR)/.config
 	$(_set_export); \
-	$(MAKE) $(AM_MAKEFLAGS) -C $< O=$$O CFLAGS="$(LINUX_CFLAGS)" $@
+	_target=$@; \
+	$(MAKE) -C $< O=$$O $${_target//linux-/}
+
+
+linux-updateconfig: ##@linux update the soc defconf in /conf/linux/...
+linux-updateconfig: $(LINUX_SRCDIR) $(LINUX_BUILDDIR) $(LINUX_BUILDDIR)/.config
+	$(_set_export); \
+	KERNELVERSION=$$($(MAKE) -s -C $< kernelversion); \
+	DEFCONFIG=${abs_top_srcdir}/conf/linux/$${KERNELVERSION}/${SOC_BOARD}.def; \
+	$(MAKE) linux-savedefconfig && cp $(LINUX_BUILDDIR)/defconfig $${DEFCONFIG}
+
+linux-%: $(LINUX_SRCDIR) $(LINUX_BUILDDIR)
+	$(_set_export); \
+	_target=$@; \
+	$(MAKE) $(AM_MAKEFLAGS) -C $< O=$$O CFLAGS="$(LINUX_CFLAGS)" $${_target//linux-/}
 
 $(LINUX_BUILDDIR)/.config: $(LINUX_SRCDIR) $(LINUX_BUILDDIR)
 	$(_set_export); \

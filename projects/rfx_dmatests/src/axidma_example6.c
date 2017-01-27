@@ -12,7 +12,7 @@
 
 // dma //
 #include <linux/dmaengine.h>         // dma api
-#include <linux/amba/xilinx_dma.h>   // axi dma driver
+#include <linux/dma/xilinx_dma.h>   // axi dma driver
 #include <linux/dma-mapping.h>
 #include <linux/delay.h>
 #include <linux/kthread.h>
