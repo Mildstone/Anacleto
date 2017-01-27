@@ -1,7 +1,7 @@
-//Copyright 1986-2015 Xilinx, Inc. All Rights Reserved.
+//Copyright 1986-2016 Xilinx, Inc. All Rights Reserved.
 //--------------------------------------------------------------------------------
-//Tool Version: Vivado v.2015.4 (lin64) Build 1412921 Wed Nov 18 09:44:32 MST 2015
-//Date        : Tue Jan 24 18:47:00 2017
+//Tool Version: Vivado v.2016.4 (lin64) Build 1733598 Wed Dec 14 22:35:42 MST 2016
+//Date        : Fri Jan 27 12:02:46 2017
 //Host        : mds-comp-1 running 64-bit Debian GNU/Linux 8.6 (jessie)
 //Command     : generate_target system_wrapper.bd
 //Design      : system_wrapper
@@ -63,7 +63,7 @@ module system_wrapper
   output [0:5]state;
   output [0:5]state_leds;
   input trig;
-  output trig_led;
+  output [0:0]trig_led;
 
   wire [14:0]DDR_addr;
   wire [2:0]DDR_ba;
@@ -91,7 +91,7 @@ module system_wrapper
   wire [0:5]state;
   wire [0:5]state_leds;
   wire trig;
-  wire trig_led;
+  wire [0:0]trig_led;
 
   system system_i
        (.DDR_addr(DDR_addr),

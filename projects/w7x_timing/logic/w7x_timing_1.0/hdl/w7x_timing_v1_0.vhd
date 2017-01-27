@@ -6,20 +6,21 @@ entity w7x_timing_v1_0 is
 	generic (
 		-- Users to add parameters here
 		HEADER_SIZE          : integer := 5;
-        MAX_SAMPLES          : integer := 16;
+        MAX_SAMPLES          : integer := 32;
         TIME_WIDTH           : integer := 40;  -- ca 30h @ 10MHz
+        READ_COUNT           : integer := 1;
 		-- User parameters ends
 		-- Do not modify the parameters beyond this line
 
 		-- Parameters of Axi Slave Bus Interface S00_AXI
 		C_S00_AXI_DATA_WIDTH : integer := 64;
-		C_S00_AXI_ADDR_WIDTH : integer := 25
+		C_S00_AXI_ADDR_WIDTH : integer := 8 --min:8, 512->16
 	);
 	port (
 		-- Users to add ports here
-        clk  : in  STD_LOGIC;
-		trig : in  STD_LOGIC;
-		state: out STD_LOGIC_VECTOR (0 to 5);
+        clk_in   : in  STD_LOGIC;
+		trig_in  : in  STD_LOGIC;
+		state_out: out STD_LOGIC_VECTOR (0 to 5);
         -- User ports ends
 		-- Do not modify the ports beyond this line
 
@@ -50,25 +51,31 @@ end w7x_timing_v1_0;
 
 architecture arch_imp of w7x_timing_v1_0 is
     signal index        : std_logic_vector(31 downto 0);
-    signal initNtrig    : std_logic_vector(63 downto 0);
+    signal control      : std_logic_vector(63 downto 0);
     signal delay        : std_logic_vector(63 downto 0);
     signal widthNperiod : std_logic_vector(63 downto 0);
     signal cycle        : std_logic_vector(63 downto 0);
     signal repeatNcount : std_logic_vector(63 downto 0);
     signal sample       : std_logic_vector(63 downto 0);
+    signal data_in_buf  : std_logic_vector(READ_COUNT*C_S00_AXI_DATA_WIDTH-1 downto 0);
+    signal state        : std_logic_vector(0 to 7);
+    signal trigger      : std_logic;
+    --signal state_buf    : std_logic_vector(0 to STATE_SIZE-1);
  -- component declaration
 	component w7x_timing_v1_0_S00_AXI is
 	generic (
-		C_S_AXI_HEAD_COUNT  : integer;
-        C_S_AXI_DATA_COUNT  : integer;
+		READ_COUNT  : integer   :=  1;
+        HEAD_COUNT  : integer   :=  5;
+        DATA_COUNT  : integer   := 16;
 		C_S_AXI_DATA_WIDTH	: integer;
 		C_S_AXI_ADDR_WIDTH	: integer
 	);
 	port (
-        USR_CLK       : in  std_logic;
-		DATA_INDEX    : in  std_logic_vector(31 downto 0);
-		HEAD_OUT      : out std_logic_vector(C_S_AXI_HEAD_COUNT*C_S_AXI_DATA_WIDTH-1 downto 0);		
-		DATA_OUT      : out std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
+        USR_CLK    : in std_logic;
+        DATA_INDEX : in std_logic_vector(31 downto 0);
+        DATA_IN    : in std_logic_vector(READ_COUNT*C_S_AXI_DATA_WIDTH-1 downto 0);
+        HEAD_OUT   : out std_logic_vector(HEAD_COUNT*C_S_AXI_DATA_WIDTH-1 downto 0);        
+        DATA_OUT   : out std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
 
 		S_AXI_ACLK    : in  std_logic;
 		S_AXI_ARESETN : in  std_logic;
@@ -97,43 +104,58 @@ architecture arch_imp of w7x_timing_v1_0 is
 
     component w7x_timing is
     generic (
-      TIME_WIDTH : integer
+      TIME_WIDTH  : integer;
+      ERROR_COUNT : integer
     );
     port (
-       clk_in    : in  STD_LOGIC;
-       trig_in   : in  STD_LOGIC;
-       init_in   : in  STD_LOGIC; 
-       state_out : out STD_LOGIC_VECTOR (0 to 5);
-       index_out :  out STD_LOGIC_VECTOR (31 downto 0);
-       delay : in  STD_LOGIC_VECTOR (63 downto 0);
-       width : in  STD_LOGIC_VECTOR (31 downto 0);
-       period: in  STD_LOGIC_VECTOR (31 downto 0);
-       cycle : in  STD_LOGIC_VECTOR (63 downto 0);
-       repeat: in  STD_LOGIC_VECTOR (31 downto 0);
-       count : in  STD_LOGIC_VECTOR (31 downto 0);
-       sample: in  STD_LOGIC_VECTOR (63 downto 0)
+        clk_in    : in  STD_LOGIC;
+        trig_in   : in  STD_LOGIC;
+        init_in   : in  STD_LOGIC;
+        reinit_in : in  STD_LOGIC;
+        clear_in  : in  STD_LOGIC;
+        state_out : out STD_LOGIC_VECTOR(7 downto 0);
+        error_out : out STD_LOGIC_VECTOR(ERROR_COUNT*8-1 downto 0);
+        index_out : out STD_LOGIC_VECTOR(31 downto 0);
+        delay_in  : in  STD_LOGIC_VECTOR (TIME_WIDTH-1 downto 0);
+        width_in  : in  STD_LOGIC_VECTOR(31 downto 0);
+        period_in : in  STD_LOGIC_VECTOR(31 downto 0);
+        cycle_in  : in  STD_LOGIC_VECTOR(TIME_WIDTH-1 downto 0);
+        repeat_in : in  STD_LOGIC_VECTOR(31 downto 0);
+        count_in  : in  STD_LOGIC_VECTOR(31 downto 0);
+        sample_in : in  STD_LOGIC_VECTOR(TIME_WIDTH-1 downto 0)
     );
 	end component w7x_timing;
 
+
+
 begin
+
+trigger <= control(8) or trig_in;
+state_out <= state(0 to 5);
+STATE_MAP: for i in 0 to 7 generate begin
+   data_in_buf(7-i) <= state(i);
+end generate;
+
 
 -- Instantiation of Axi Bus Interface S00_AXI
 w7x_timing_v1_0_S00_AXI_inst : w7x_timing_v1_0_S00_AXI
 	generic map (
-	    C_S_AXI_HEAD_COUNT => HEADER_SIZE,
-	    C_S_AXI_DATA_COUNT => MAX_SAMPLES,
+	    READ_COUNT => READ_COUNT,
+	    HEAD_COUNT => HEADER_SIZE,
+	    DATA_COUNT => MAX_SAMPLES,
 		C_S_AXI_DATA_WIDTH => C_S00_AXI_DATA_WIDTH,
 		C_S_AXI_ADDR_WIDTH => C_S00_AXI_ADDR_WIDTH
 	)
 	port map (
-        USR_CLK => clk,
+        USR_CLK => clk_in,
+        DATA_IN => data_in_buf,
         DATA_INDEX => index,
-		HEAD_OUT(0*C_S00_AXI_DATA_WIDTH+C_S00_AXI_DATA_WIDTH-1 downto 0*C_S00_AXI_DATA_WIDTH) => initNtrig,
+		HEAD_OUT(0*C_S00_AXI_DATA_WIDTH+C_S00_AXI_DATA_WIDTH-1 downto 0*C_S00_AXI_DATA_WIDTH) => control,
         HEAD_OUT(1*C_S00_AXI_DATA_WIDTH+C_S00_AXI_DATA_WIDTH-1 downto 1*C_S00_AXI_DATA_WIDTH) => delay,
         HEAD_OUT(2*C_S00_AXI_DATA_WIDTH+C_S00_AXI_DATA_WIDTH-1 downto 2*C_S00_AXI_DATA_WIDTH) => widthNperiod,
         HEAD_OUT(3*C_S00_AXI_DATA_WIDTH+C_S00_AXI_DATA_WIDTH-1 downto 3*C_S00_AXI_DATA_WIDTH) => cycle,
         HEAD_OUT(4*C_S00_AXI_DATA_WIDTH+C_S00_AXI_DATA_WIDTH-1 downto 4*C_S00_AXI_DATA_WIDTH) => repeatNcount,
-        DATA_OUT(C_S00_AXI_DATA_WIDTH-1 downto 0) => sample,
+        DATA_OUT      => sample,
 		S_AXI_ACLK    => s00_axi_aclk,
 		S_AXI_ARESETN => s00_axi_aresetn,
 		S_AXI_AWADDR  => s00_axi_awaddr,
@@ -159,20 +181,24 @@ w7x_timing_v1_0_S00_AXI_inst : w7x_timing_v1_0_S00_AXI
 
 w7x_timing_inst : w7x_timing
 	generic map (
-        TIME_WIDTH => TIME_WIDTH
+        TIME_WIDTH  => TIME_WIDTH,
+        ERROR_COUNT => READ_COUNT*C_S00_AXI_DATA_WIDTH/8-1
     )
     port map (
-           clk_in    => clk,
-           trig_in   => trig,
-           init_in   => initNtrig(0),
+           clk_in    => clk_in,
+           init_in   => control(0*8),
+           trig_in   => trigger,
+           clear_in  => control(2*8),
+           reinit_in => control(3*8),
            state_out => state,
            index_out => index,
-           delay  => delay,
-           width  => widthNperiod(31 downto  0),
-           period => widthNperiod(63 downto 32),
-           cycle  => cycle,
-           repeat => repeatNcount(31 downto  0),
-           count  => repeatNcount(63 downto 32),
-           sample => sample
+           error_out => data_in_buf(READ_COUNT*C_S00_AXI_DATA_WIDTH-1 downto 8),
+           delay_in  => delay(TIME_WIDTH-1 downto 0),
+           width_in  => widthNperiod(31 downto  0),
+           period_in => widthNperiod(63 downto 32),
+           cycle_in  => cycle(TIME_WIDTH-1 downto 0),
+           repeat_in => repeatNcount(31 downto  0),
+           count_in  => repeatNcount(63 downto 32),
+           sample_in => sample(TIME_WIDTH-1 downto 0)
       );
 end arch_imp;

@@ -5,13 +5,14 @@ use ieee.numeric_std.all;
 entity w7x_timing_v1_0_S00_AXI is
 	generic (
 		-- Users to add parameters here
-
+		READ_COUNT  : integer   := 1;
+        HEAD_COUNT  : integer	:= 5;
+        DATA_COUNT  : integer   := 16;
+                
 		-- User parameters ends
 		-- Do not modify the parameters beyond this line
 
 		-- Width of S_AXI data bus
-		C_S_AXI_HEAD_COUNT	  : integer	:= 5;
-        C_S_AXI_DATA_COUNT	  : integer	:= 8;
 		C_S_AXI_DATA_WIDTH	  : integer	:= 64;
 		-- Width of S_AXI address bus
 		C_S_AXI_ADDR_WIDTH	  : integer	:= 25
@@ -19,9 +20,10 @@ entity w7x_timing_v1_0_S00_AXI is
 	port (
 		-- Users to add ports here
         USR_CLK    : in std_logic;
-        HEAD_OUT   : out std_logic_vector(C_S_AXI_HEAD_COUNT*C_S_AXI_DATA_WIDTH-1 downto 0);		
-        DATA_OUT   : out std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
         DATA_INDEX : in std_logic_vector(31 downto 0);
+        DATA_IN    : in std_logic_vector(READ_COUNT*C_S_AXI_DATA_WIDTH-1 downto 0);
+        HEAD_OUT   : out std_logic_vector(HEAD_COUNT*C_S_AXI_DATA_WIDTH-1 downto 0);		
+        DATA_OUT   : out std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
 
 		-- User ports ends
 		-- Do not modify the ports beyond this line
@@ -90,18 +92,48 @@ entity w7x_timing_v1_0_S00_AXI is
 end w7x_timing_v1_0_S00_AXI;
 
 architecture arch_imp of w7x_timing_v1_0_S00_AXI is
+    constant ONE_HEAD  : integer := C_S_AXI_DATA_WIDTH-1;
+    constant ONE_MAX   : integer := C_S_AXI_DATA_WIDTH;
+	constant READ_MIN  : integer := 0;
+    constant READ_MAX  : integer := READ_MIN+READ_COUNT;
+    constant HEAD_MIN  : integer := READ_MAX;
+    constant HEAD_MAX  : integer := HEAD_MIN+HEAD_COUNT;
+    constant DATA_MIN  : integer := HEAD_MAX;
+    constant DATA_MAX  : integer := DATA_MIN+DATA_COUNT;
+    
+	constant READ_BASE : integer := READ_MIN*ONE_MAX;
+    constant READ_HEAD : integer := READ_MAX*ONE_MAX-1;
+    constant HEAD_BASE : integer := (HEAD_MIN-READ_MAX)*ONE_MAX;
+    constant HEAD_HEAD : integer := (HEAD_MAX-READ_MAX)*ONE_MAX-1;
+    constant DATA_BASE : integer := (DATA_MIN-READ_MAX)*ONE_MAX;
+    constant DATA_HEAD : integer := (DATA_MAX-READ_MAX)*ONE_MAX-1;
+            
 
 	-- AXI4LITE signals
 	signal axi_awaddr	: std_logic_vector(C_S_AXI_ADDR_WIDTH-1 downto 0);
+	signal axi_awprot   : std_logic_vector(2 downto 0);
 	signal axi_awready	: std_logic;
 	signal axi_wready	: std_logic;
 	signal axi_bresp	: std_logic_vector(1 downto 0);
 	signal axi_bvalid	: std_logic;
 	signal axi_araddr	: std_logic_vector(C_S_AXI_ADDR_WIDTH-1 downto 0);
 	signal axi_arready	: std_logic;
-	signal axi_rdata	: std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
+	signal axi_rdata	: std_logic_vector(ONE_HEAD downto 0);
 	signal axi_rresp	: std_logic_vector(1 downto 0);
 	signal axi_rvalid	: std_logic;
+
+    
+
+	------------------------------------------------
+	---- Signals for user logic register space example
+	--------------------------------------------------
+	---- Slave Registers
+	signal slv_reg_rw   : std_logic_vector(DATA_HEAD-READ_BASE downto 0) := (others => '0');
+	signal slv_reg_ro   : std_logic_vector(READ_HEAD downto 0) := (others => '0');
+	signal slv_reg_rden	: std_logic;
+	signal slv_reg_wren	: std_logic;
+	signal curr_data_out: std_logic_vector(ONE_HEAD downto 0) := (others => '0');
+	signal reg_data_out	: std_logic_vector(ONE_HEAD downto 0) := (others => '0');
 
 	-- Example-specific design signals
 	-- local parameter for addressing 32 bit / 64 bit C_S_AXI_DATA_WIDTH
@@ -109,19 +141,34 @@ architecture arch_imp of w7x_timing_v1_0_S00_AXI is
 	-- ADDR_LSB = 2 for 32 bits (n downto 2)
 	-- ADDR_LSB = 3 for 64 bits (n downto 3)
 	constant ADDR_LSB  : integer := (C_S_AXI_DATA_WIDTH/32)+ 1;
-	constant OPT_MEM_ADDR_BITS : integer := 5;
-	------------------------------------------------
-	---- Signals for user logic register space example
-	--------------------------------------------------
-	---- Number of Slave Registers 64
-	signal slv_reg	    : std_logic_vector((C_S_AXI_HEAD_COUNT*C_S_AXI_DATA_COUNT)*C_S_AXI_DATA_WIDTH-1 downto 0);
-	signal slv_reg_rden	: std_logic;
-	signal slv_reg_wren	: std_logic;
-	signal curr_data_out: std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0) := (others => '0');
-	signal reg_data_out	: std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
-	signal byte_index	: integer;
+	constant OPT_MEM_ADDR_BITS : integer := 5;--C_S_AXI_ADDR_WIDTH-ADDR_LSB;
+    function aix_addr2idx(addr : std_logic_vector(ONE_HEAD downto 0)) return integer is
+    begin
+      return to_integer(unsigned(addr(ADDR_LSB + OPT_MEM_ADDR_BITS downto ADDR_LSB)));
+    end aix_addr2idx;
+
+    function idx2base_ro(idx : integer) return integer is
+    begin
+      return idx*ONE_MAX;
+    end idx2base_ro;
+    
+    function idx2base_rw(idx : integer) return integer is
+    begin
+      return (idx-READ_MAX)*ONE_MAX;
+    end idx2base_rw;
+
+    function and_v(vec : std_logic_vector) return boolean is
+      variable ans : std_logic := '1';
+    begin
+      for i in vec'range loop
+        ans := ans and vec(i);
+      end loop;
+      return ans = '1';
+    end and_v;
+
 begin
 	-- I/O Connections assignments
+	axi_awprot    <= S_AXI_AWPROT;
 	S_AXI_AWREADY <= axi_awready;
 	S_AXI_WREADY  <= axi_wready;
 	S_AXI_BRESP   <= axi_bresp;
@@ -131,29 +178,21 @@ begin
 	S_AXI_RRESP   <= axi_rresp;
 	S_AXI_RVALID  <= axi_rvalid;
 	
-	HEAD_OUT  <= slv_reg(C_S_AXI_HEAD_COUNT*C_S_AXI_DATA_WIDTH-1 downto 0);
-    DATA_OUT  <= curr_data_out;
-	process (slv_reg, axi_araddr, S_AXI_ARESETN, slv_reg_rden)
-	variable loc_addr : integer; 
+
+	process (slv_reg_ro, slv_reg_rw, axi_araddr, S_AXI_ARESETN, slv_reg_rden)
+	variable idx : integer; 
     begin
-	    -- Address decoding for reading registers
-        loc_addr := to_integer(unsigned(axi_araddr(ADDR_LSB + OPT_MEM_ADDR_BITS downto ADDR_LSB)));
-	    if loc_addr < C_S_AXI_DATA_COUNT then
-	        reg_data_out <= slv_reg(loc_addr*C_S_AXI_DATA_WIDTH+C_S_AXI_DATA_WIDTH-1 downto loc_addr*C_S_AXI_DATA_WIDTH);
-	    else
-	        reg_data_out  <= (others => '0');
-	    end if;
+	  -- Address decoding for reading registers
+      idx := aix_addr2idx(axi_araddr);
+	  if idx < READ_MAX then
+        reg_data_out <= slv_reg_ro(idx2base_ro(idx)+ONE_HEAD downto idx2base_ro(idx));
+	  elsif idx < DATA_MAX then
+          reg_data_out <= slv_reg_rw(idx2base_rw(idx)+ONE_HEAD downto idx2base_rw(idx));
+	  else
+	    reg_data_out  <= (others => '0');
+	  end if;
 	end process; 
-	
-	process (DATA_INDEX, USR_CLK)
-	variable curr_addr : integer; 
-	begin
-	  if falling_edge(USR_CLK) then
-	    curr_addr := (C_S_AXI_HEAD_COUNT+to_integer(unsigned(DATA_INDEX)))*C_S_AXI_DATA_WIDTH;
-        curr_data_out  <= slv_reg(curr_addr+C_S_AXI_DATA_WIDTH-1 downto curr_addr);
-      end if;
-    end process;
-	
+
 	-- Implement axi_awready generation
 	-- axi_awready is asserted for one S_AXI_ACLK clock cycle when both
 	-- S_AXI_AWVALID and S_AXI_WVALID are asserted. axi_awready is
@@ -208,11 +247,11 @@ begin
 	      axi_wready <= '0';
 	    else
 	      if (axi_wready = '0' and S_AXI_WVALID = '1' and S_AXI_AWVALID = '1') then
-	          -- slave is ready to accept write data when 
-	          -- there is a valid write address and write data
-	          -- on the write address and data bus. This design 
-	          -- expects no outstanding transactions.           
-	          axi_wready <= '1';
+            -- slave is ready to accept write data when 
+            -- there is a valid write address and write data
+            -- on the write address and data bus. This design 
+            -- expects no outstanding transactions.           
+	        axi_wready <= '1';
 	      else
 	        axi_wready <= '0';
 	      end if;
@@ -230,22 +269,27 @@ begin
 	slv_reg_wren <= axi_wready and S_AXI_WVALID and axi_awready and S_AXI_AWVALID ;
 
 	process (S_AXI_ACLK,S_AXI_ARESETN, axi_awaddr, slv_reg_wren, S_AXI_WSTRB, S_AXI_WDATA)
-	variable loc_addr : integer; 
+	variable idx : integer; 
 	begin
 	  if rising_edge(S_AXI_ACLK) then 
 	    if S_AXI_ARESETN = '0' then
-	      slv_reg <= (others => '0');
+	      -- not write in read area
+	      slv_reg_rw <= (others => '0');
 	    else
-	      loc_addr := to_integer(unsigned(axi_awaddr(ADDR_LSB + OPT_MEM_ADDR_BITS downto ADDR_LSB)));
 	      if (slv_reg_wren = '1') then
-	        if loc_addr<C_S_AXI_DATA_COUNT then
-              for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
-                if ( S_AXI_WSTRB(byte_index) = '1' ) then
+            idx := aix_addr2idx(axi_awaddr);
+	        if (idx>=READ_MAX) and (idx<DATA_MAX) then
+--              -- write only complete blocks
+--	          if and_v(S_AXI_WSTRB) then
+--                slv_reg(idx2base(idx)+ONE_HEAD downto idx2base(idx)) <= S_AXI_WDATA;
+--              end if;
+              for i in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
+                if ( S_AXI_WSTRB(i) = '1' ) then
                   -- Respective byte enables are asserted as per write strobes                   
                   -- slave registor 0
-                  slv_reg(loc_addr*C_S_AXI_DATA_WIDTH+byte_index*8+7 downto loc_addr*C_S_AXI_DATA_WIDTH+byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
+                  slv_reg_rw(idx2base_rw(idx)+i*8+7 downto idx2base_rw(idx)+i*8) <= S_AXI_WDATA(i*8+7 downto i*8);
                 end if;
-              end loop;
+              end loop;             
             end if;
           end if;
 	    end if;
@@ -333,18 +377,6 @@ begin
 	-- and the slave is ready to accept the read address.
 	slv_reg_rden <= axi_arready and S_AXI_ARVALID and (not axi_rvalid) ;
 
-	process (slv_reg, axi_araddr, S_AXI_ARESETN, slv_reg_rden)
-	variable loc_addr : integer; 
-    begin
-	    -- Address decoding for reading registers
-        loc_addr := to_integer(unsigned(axi_araddr(ADDR_LSB + OPT_MEM_ADDR_BITS downto ADDR_LSB)));
-	    if loc_addr < C_S_AXI_DATA_COUNT then
-	        reg_data_out <= slv_reg(loc_addr*C_S_AXI_DATA_WIDTH+C_S_AXI_DATA_WIDTH-1 downto loc_addr*C_S_AXI_DATA_WIDTH);
-	    else
-	        reg_data_out  <= (others => '0');
-	    end if;
-	end process; 
-
 	-- Output register or memory read data
 	process( S_AXI_ACLK, S_AXI_ARESETN, slv_reg_rden, reg_data_out) is
 	begin
@@ -365,6 +397,24 @@ begin
 
 
 	-- Add user logic here
+
+	HEAD_OUT  <= slv_reg_rw(HEAD_HEAD downto HEAD_BASE);
+    DATA_OUT  <= curr_data_out;
+    slv_reg_ro(READ_HEAD downto READ_BASE) <= DATA_IN;
+
+
+    process (slv_reg_rw, DATA_INDEX, USR_CLK)
+    variable idx : integer; 
+    begin
+      idx := to_integer(unsigned(DATA_INDEX))+DATA_MIN;
+      if falling_edge(USR_CLK) then
+        if idx < DATA_MAX then
+          curr_data_out <= slv_reg_rw(idx2base_rw(idx)+ONE_HEAD downto idx2base_rw(idx));
+        else
+          curr_data_out <= (others => '0');
+        end if;
+      end if;
+    end process;
 
 	-- User logic ends
 

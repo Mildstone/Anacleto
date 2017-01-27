@@ -22,17 +22,17 @@ int main(int argc, char *argv[])
         printf("ERROR: unable to get device\n");
 	exit(C_DEV_ERROR);
     }
-    dev->init   = 0;
-    dev->delay  = (uint64_t)atoi(argv[1]);
-    dev->width  = atoi(argv[2]);
-    dev->period = atoi(argv[3]);
-    dev->cycle  = (uint64_t)atoi(argv[4]);
-    dev->repeat = atoi(argv[5]);
+    dev->w_init   = 0;
+    dev->w_delay  = (uint64_t)atoi(argv[1]);
+    dev->w_width  = atoi(argv[2]);
+    dev->w_period = atoi(argv[3]);
+    dev->w_cycle  = (uint64_t)atoi(argv[4]);
+    dev->w_repeat = atoi(argv[5]);
     for(i = 6; i < argc; i++)
-	dev->times[i-6] = (uint64_t)atoi(argv[i]);
-    dev->count  = argc-6;
-    dev->init = 1;
-    dev->trig = 1;
+	dev->w_times[i-6] = (uint64_t)atoi(argv[i]);
+    dev->w_count  = argc-6;
+    dev->w_init   = 1;
+    dev->w_trig   = 1;
     w7x_timing_release_device();
     exit(C_OK);
 }

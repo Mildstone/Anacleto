@@ -32,37 +32,41 @@ use IEEE.NUMERIC_STD.ALL;
 --use UNISIM.VComponents.all;
 entity w7x_timing is
     generic (
-      TIME_WIDTH : integer := 48
+      TIME_WIDTH : integer := 40;
+      ERROR_COUNT : integer := 7
     );
     port (
        clk_in    : in  STD_LOGIC;
        trig_in   : in  STD_LOGIC;
        init_in   : in  STD_LOGIC;
-       state_out : out STD_LOGIC_VECTOR (0 to 5);
-       index_out : out STD_LOGIC_VECTOR (31 downto 0);
-       delay : in  STD_LOGIC_VECTOR (63 downto 0);
-       width : in  STD_LOGIC_VECTOR (31 downto 0);
-       period: in  STD_LOGIC_VECTOR (31 downto 0);
-       cycle : in  STD_LOGIC_VECTOR (63 downto 0);
-       repeat: in  STD_LOGIC_VECTOR (31 downto 0);
-       count : in  STD_LOGIC_VECTOR (31 downto 0);
-       sample: in  STD_LOGIC_VECTOR (63 downto 0)
+       reinit_in : in  STD_LOGIC;
+       clear_in  : in  STD_LOGIC;
+       state_out : out STD_LOGIC_VECTOR(7 downto 0);
+       error_out : out STD_LOGIC_VECTOR(ERROR_COUNT*8-1 downto 0);
+       index_out : out STD_LOGIC_VECTOR(31 downto 0);
+       delay_in  : in  STD_LOGIC_VECTOR (TIME_WIDTH-1 downto 0);
+       width_in  : in  STD_LOGIC_VECTOR(31 downto 0);
+       period_in : in  STD_LOGIC_VECTOR(31 downto 0);
+       cycle_in  : in  STD_LOGIC_VECTOR(TIME_WIDTH-1 downto 0);
+       repeat_in : in  STD_LOGIC_VECTOR(31 downto 0);
+       count_in  : in  STD_LOGIC_VECTOR(31 downto 0);
+       sample_in : in  STD_LOGIC_VECTOR(TIME_WIDTH-1 downto 0)
     );
 end  w7x_timing;
 
 
 architecture Behavioral of w7x_timing is
-    -- summary of valid states                             SG0PWA
-    constant IDLE           : std_logic_vector(0 to 5) := "000000";
-    constant ARMED          : std_logic_vector(0 to 5) := "000001";
-    constant WAITING_DELAY  : std_logic_vector(0 to 5) := "000010";
-    constant WAITING_SAMPLE : std_logic_vector(0 to 5) := "010110";
-    constant WAITING_LOW    : std_logic_vector(0 to 5) := "010010";
-    constant WAITING_HIGH   : std_logic_vector(0 to 5) := "110010";
-    constant WAITING_REPEAT : std_logic_vector(0 to 5) := "000110";
-    constant ERROR          : std_logic_vector(0 to 5) := "000111";
+    -- summary of valid states                                 SGPWActE
+    constant IDLE           : std_logic_vector(7 downto 0) := "00000110";--  6
+    constant ARMED          : std_logic_vector(7 downto 0) := "00001110";-- 14
+    constant WAITING_DELAY  : std_logic_vector(7 downto 0) := "00010110";-- 22
+    constant WAITING_SAMPLE : std_logic_vector(7 downto 0) := "01110010";--114
+    constant WAITING_LOW    : std_logic_vector(7 downto 0) := "01010010";-- 82
+    constant WAITING_HIGH   : std_logic_vector(7 downto 0) := "11010010";--210
+    constant WAITING_REPEAT : std_logic_vector(7 downto 0) := "00110010";-- 50
 		-- -- signals
-    signal   state          : std_logic_vector(0 to 5) := IDLE;
+    signal state        : std_logic_vector(7 downto 0) := IDLE;
+    signal error        : std_logic_vector(ERROR_COUNT*8-1 downto 0) := (others => '0');
     -- measure number of samples in sequence, i.e. len(times)
     signal reset        : std_logic := '1'; -- start_cycle   =0, do_waiting_sample ++
     signal sample_count : integer := 0; -- start_cycle   =0, do_waiting_sample ++
@@ -82,14 +86,16 @@ architecture Behavioral of w7x_timing is
     signal curr_sample  : unsigned(TIME_WIDTH-1 downto 0) := (others => '0');
 begin
     -- set input
-    delay_total  <= unsigned(delay (TIME_WIDTH-1 downto 0));
-    high_total   <= unsigned(width);
-    period_total <= unsigned(period);
-    cycle_total  <= unsigned(cycle (TIME_WIDTH-1 downto 0));
-    repeat_total <= to_integer(unsigned(repeat));
-    sample_total <= to_integer(unsigned(count));
-    curr_sample  <= unsigned(sample(TIME_WIDTH-1 downto 0));
-    state_out    <= state;
+    delay_total  <= unsigned(delay_in);
+    high_total   <= unsigned(width_in);
+    period_total <= unsigned(period_in);
+    cycle_total  <= unsigned(cycle_in);
+    repeat_total <= to_integer(unsigned(repeat_in));
+    sample_total <= to_integer(unsigned(count_in));
+    curr_sample  <= unsigned(sample_in);
+    state_out(7 downto 1)    <= state(7 downto 1);
+    state_out(0) <= error(1);
+    error_out    <= error;
 
   clock_gen:  process(clk_in, init_in, trig_in,
                       delay_total,
@@ -98,6 +104,13 @@ begin
                       repeat_total,
                       sample_total, sample_count, curr_sample) is
   
+    procedure do_error is
+    begin
+      error(ERROR_COUNT*8-1 downto 8) <= error(ERROR_COUNT*8-9 downto 0);
+      error(7 downto 0) <= state;
+      state <= ARMED;
+    end do_error;
+
     procedure inc_cycle is
     begin
       cycle_ticks <= cycle_ticks  + 1;
@@ -124,7 +137,7 @@ begin
         start_sample;
         inc_cycle;
       elsif cycle_ticks > curr_sample then
-        state <= ERROR;
+        do_error;
       else
         state <= WAITING_SAMPLE;
         inc_cycle;
@@ -151,7 +164,7 @@ begin
       if cycle_ticks = cycle_total then -- short cut if cycle_total just fits sequence
         start_cycle;
       elsif cycle_ticks > cycle_total then
-        state <= ERROR;
+        do_error;
       else
         state <= WAITING_REPEAT;
         inc_cycle;
@@ -193,7 +206,7 @@ begin
       if period_ticks = period_total then
         start_waiting_sample;
       elsif period_ticks > period_total then
-        state <= ERROR;
+        do_error;
       else
         state <= WAITING_LOW;
         inc_period;
@@ -206,7 +219,7 @@ begin
         state <= WAITING_LOW;
         inc_period;
       elsif period_ticks > high_total then
-        state <= ERROR;
+        do_error;
       else
         state <= WAITING_HIGH;
         inc_period;
@@ -222,7 +235,7 @@ begin
           start_armed;
         end if;
       elsif cycle_ticks > delay_total then
-        state <= ERROR;
+        do_error;
       else
         state <= WAITING_DELAY;
         inc_cycle;
@@ -265,7 +278,7 @@ begin
         when IDLE =>
           start_armed;
         when others =>
-          state <= ERROR;
+          do_error;
       end case;
     end if; -- rising_edge(clk)
     if sample_count<sample_total then
@@ -273,6 +286,8 @@ begin
     else
       index_out <= (others => '0');
     end if;
-
+    if clear_in = '1' then
+      error <= (others => '0');
+    end if;
   end process clock_gen;
 end Behavioral;
