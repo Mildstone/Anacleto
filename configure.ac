@@ -27,10 +27,11 @@ AX_KCONFIG([conf/kconfig])
 dnl AX_TARGET_SELFHELP /////////////////////////////////////////////////////////
 AX_TARGET_SELFHELP
 
-dnl AX_DOCKER_BUILD ////////////////////////////////////////////////////////////
-dnl see: m4_ax_docker_build.m4
-dnl /// Kconfig docker variables import example ...
-AS_VAR_IF([CONFIG_ENABLE_DOCKER],[y],[
+# //////////////////////////////////////////////////////////////////////////// #
+# //  DOCKER BUILD /////////////////////////////////////////////////////////// #
+# //////////////////////////////////////////////////////////////////////////// #
+
+AS_VAR_IF([CONFIG_ENABLE_DOCKER_BUILD],[y],[
            AS_VAR_SET_IF([CONFIG_DOCKER_CONTAINER], 
               [AS_VAR_SET([DOCKER_CONTAINER],[${CONFIG_DOCKER_CONTAINER}])] )
            AS_VAR_SET_IF([CONFIG_DOCKER_IMAGE], 
@@ -43,12 +44,13 @@ AX_KCONFIG_VAR([DOCKER_SHARES])
 AC_SUBST([DOCKER_SHARES])
 AX_DOCKER_BUILD
 
+# //////////////////////////////////////////////////////////////////////////// #
+
 AC_CONFIG_HEADERS([config.h])
 
 dnl RELEASE
 AX_IS_RELEASE([always])
 AX_CHECK_ENABLE_DEBUG([no],,,,[-g -O2])
-
 
 # Checks for programs.
 AC_PROG_AWK
@@ -69,29 +71,12 @@ AC_CHECK_PROGS([WC],[wc])
 
 
 AX_KCONFIG_VAR_ENABLE([ENABLE_TOOLCHAIN],["Enable external toolchain"])
-AX_KCONFIG_CHOICE([TOOLCHAIN_VENDOR],
-		  [TOOLCHAIN_LINARO_BIN],["linaro_web"],
-		  [TOOLCHAIN_DIR],["dir"])
+AX_KCONFIG_VAR_WITH([TOOLCHAIN_DIR],["Set toolchain base dir"])
+AC_SUBST([TOOLCHAIN_DIR])
+AX_GITIGNORE_ADD([${WITH_TOOLCHAIN_DIR}])
 
-AS_ECHO(["linaro bin: ${TOOLCHAIN_LINARO_BIN}"])
-
-AX_KCONFIG_VAR_WITH([LINARO_BIN_TAR],["url path for Linaro toolchain binaries"])
-AC_SUBST([LINARO_BIN_TAR])
-
-AX_KCONFIG_VAR_WITH([WITH_TOOLCHAIN_DIR],["Set toolchain base dir"])
-AC_SUBST([WITH_TOOLCHAIN_DIR])
-
-AX_KCONFIG_VAR_WITH([CROSS_COMPILE],["Toolchain prefix of build executables"])
+AX_KCONFIG_VAR_WITH([CROSS_COMPILE],["Set crosscompile command"])
 AC_SUBST([CROSS_COMPILE])
-
-# COMPILER OPTIONS
-AX_KCONFIG_VAR([LINUX_CFLAGS])
-AX_KCONFIG_VAR([LINUX_PACKAGE])
-AX_KCONFIG_VAR([LINUX_DIR])
-AC_SUBST([LINUX_CFLAGS])
-AC_SUBST([LINUX_PACKAGE])
-AC_SUBST([LINUX_DIR])
-
 
 
 

@@ -1,9 +1,9 @@
 
 
-TOOLCHAIN     = $(top_builddir)/toolchain
-MAKE_PROCESS ?= $(shell grep -c ^processor /proc/cpuinfo)
-TMP          ?= $(abs_top_builddir)
-DL           ?= $(abs_top_builddir)/download
+TOOLCHAIN_DIR ?= $(top_builddir)/toolchain
+MAKE_PROCESS  ?= $(shell grep -c ^processor /proc/cpuinfo)
+TMP           ?= $(abs_top_builddir)
+DL            ?= $(abs_top_builddir)/download
 
 ## ////////////////////////////////////////////////////////////////////////// ##
 ## /// ACTIVATE HELP TARGET ///////////////////////////////////////////////// ##

@@ -1,3 +1,4 @@
+.gitignore.in
 Common.am
 Kconfig
 Makefile.am
@@ -22,6 +23,7 @@ m4/ax_compare_version.m4
 m4/ax_compiler_vendor.m4
 m4/ax_compiler_version.m4
 m4/ax_download_repository.m4
+m4/ax_enable_kconfig.m4
 m4/ax_gitignore_list.m4
 m4/ax_target_selfhelp.m4
 m4/m4_ac_search_readline.m4
