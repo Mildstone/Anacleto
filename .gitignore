@@ -5,5 +5,3 @@ Makefile.in
 /config.h.in
 /config.h.in~
 /configure
-
-@CONFIG_GIT_IGNORE@
