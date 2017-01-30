@@ -159,8 +159,8 @@ proc create_root_design { parentCell } {
   # Create ports
   set clk [ create_bd_port -dir I clk ]
   set clk_led [ create_bd_port -dir O -type clk clk_led ]
-  set state [ create_bd_port -dir O -from 0 -to 5 state ]
-  set state_leds [ create_bd_port -dir O -from 0 -to 5 state_leds ]
+  set state [ create_bd_port -dir O -from 5 -to 0 state ]
+  set state_leds [ create_bd_port -dir O -from 5 -to 0 state_leds ]
   set trig [ create_bd_port -dir I trig ]
   set trig_led [ create_bd_port -dir O -from 0 -to 0 -type clk trig_led ]
 
@@ -1207,9 +1207,7 @@ CONFIG.LOGO_FILE {data/sym_notgate.png} \
   # Create instance: w7x_timing_0, and set properties
   set w7x_timing_0 [ create_bd_cell -type ip -vlnv user.org:user:w7x_timing:1.0 w7x_timing_0 ]
   set_property -dict [ list \
-CONFIG.C_S00_AXI_ADDR_WIDTH {8} \
-CONFIG.C_S00_AXI_DATA_WIDTH {64} \
-CONFIG.MAX_SAMPLES {58} \
+CONFIG.MAX_SAMPLES {16} \
  ] $w7x_timing_0
 
   # Create interface connections

@@ -1,7 +1,7 @@
-//Copyright 1986-2016 Xilinx, Inc. All Rights Reserved.
+//Copyright 1986-2015 Xilinx, Inc. All Rights Reserved.
 //--------------------------------------------------------------------------------
-//Tool Version: Vivado v.2016.4 (lin64) Build 1733598 Wed Dec 14 22:35:42 MST 2016
-//Date        : Fri Jan 27 12:02:46 2017
+//Tool Version: Vivado v.2015.4 (lin64) Build 1412921 Wed Nov 18 09:44:32 MST 2015
+//Date        : Mon Jan 30 21:52:56 2017
 //Host        : mds-comp-1 running 64-bit Debian GNU/Linux 8.6 (jessie)
 //Command     : generate_target system_wrapper.bd
 //Design      : system_wrapper
@@ -60,8 +60,8 @@ module system_wrapper
   inout FIXED_IO_ps_srstb;
   input clk;
   output clk_led;
-  output [0:5]state;
-  output [0:5]state_leds;
+  output [5:0]state;
+  output [5:0]state_leds;
   input trig;
   output [0:0]trig_led;
 
@@ -88,8 +88,8 @@ module system_wrapper
   wire FIXED_IO_ps_srstb;
   wire clk;
   wire clk_led;
-  wire [0:5]state;
-  wire [0:5]state_leds;
+  wire [5:0]state;
+  wire [5:0]state_leds;
   wire trig;
   wire [0:0]trig_led;
 

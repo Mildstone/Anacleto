@@ -37,9 +37,9 @@ entity w7x_timing is
     );
     port (
        clk_in    : in  STD_LOGIC;
-       trig_in   : in  STD_LOGIC;
        init_in   : in  STD_LOGIC;
        reinit_in : in  STD_LOGIC;
+       trig_in   : in  STD_LOGIC;
        clear_in  : in  STD_LOGIC;
        state_out : out STD_LOGIC_VECTOR(7 downto 0);
        error_out : out STD_LOGIC_VECTOR(ERROR_COUNT*8-1 downto 0);
@@ -94,7 +94,7 @@ begin
     sample_total <= to_integer(unsigned(count_in));
     curr_sample  <= unsigned(sample_in);
     state_out(7 downto 1)    <= state(7 downto 1);
-    state_out(0) <= error(1);
+    state_out(0) <= not error(1);
     error_out    <= error;
 
   clock_gen:  process(clk_in, init_in, trig_in,
@@ -280,12 +280,12 @@ begin
         when others =>
           do_error;
       end case;
+      if sample_count<sample_total then
+        index_out <= std_logic_vector(to_unsigned(sample_count,32));
+      else
+        index_out <= (others => '0');
+      end if;
     end if; -- rising_edge(clk)
-    if sample_count<sample_total then
-      index_out <= std_logic_vector(to_unsigned(sample_count,32));
-    else
-      index_out <= (others => '0');
-    end if;
     if clear_in = '1' then
       error <= (others => '0');
     end if;

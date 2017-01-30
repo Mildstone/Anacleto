@@ -76,6 +76,7 @@ set_property DRIVE 4             [get_ports trig_led]
 
 
 create_clock -period 100.000 -name clk -waveform {0.0 50.0} [get_ports clk]
+set_clock_groups -name async -asynchronous -group {clk,clk_in} -group {clk_fpga_0,s00_axi_aclk, clk_fpga_1}
 #
 set_input_delay  -clock [get_clocks clk] -min  0.0 [get_ports trig]
 set_input_delay  -clock [get_clocks clk] -max 10.0 [get_ports trig]
