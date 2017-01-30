@@ -1,0 +1,38 @@
+# //////////////////////////////////////////////////////////////////////////// #
+# //  LINUX  ///////////////////////////////////////////////////////////////// #
+# //////////////////////////////////////////////////////////////////////////// #
+
+
+menu LINUX_BUILD
+  config LINUX_DIR
+	string  "Linux sources directory name"
+	default "linux"
+
+  choice LINUX_DLMETHOD
+	prompt "Linux sources download method"
+	config WITH_LINUX_GIT
+	 bool "git repository"
+	config WITH_LINUX_TAR
+	 bool "tar archive (not working yet)"
+  endchoice
+
+  config LINUX_GIT
+	string  "Linux git repository"
+	depends on WITH_LINUX_GIT
+	default "https://github.com/Xilinx/linux-xlnx.git"
+
+  config LINUX_TAR
+	string  "Linux tar repository"
+	depends on WITH_LINUX_TAR
+	default ""
+
+  choice LINUX_PACKAGE
+	prompt  "Linux image type"
+	config LINUX_UIMAGE
+	 bool "uImage"
+	config LINUX_ZIMAGE
+	 bool "zImage"
+  endchoice
+
+
+endmenu # LINUX_BUILD

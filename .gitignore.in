@@ -1,0 +1,5 @@
+vivado_project/
+.cache/
+.hw/
+.xpr
+@CONFIG_GIT_IGNORE@
