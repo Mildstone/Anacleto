@@ -11,5 +11,5 @@ FUN PUBLIC RPParams(OPTIONAL OUT _times){
     if (SIZE(_times)>0)
       w7x_timing_lib->getTimes(val(0LU),val(SIZE(_times)),ref(_times));
   }
-  return([_delay,_period,_width,_count,_cycle,_repeat]);
+  return([_delay,_width,_period,_count,_cycle,_repeat]);
 }

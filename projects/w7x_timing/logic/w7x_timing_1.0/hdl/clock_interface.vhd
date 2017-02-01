@@ -15,10 +15,11 @@ generic (
   STAT_COUNT : integer := 1;
   CTRL_COUNT : integer := 1;
   HEAD_COUNT : integer := 4;
-  DATA_COUNT : integer := 10;
+  DATA_COUNT : integer := 16;
   DATA_WIDTH : integer := 64
 );
 port (
+  DATA_BUF   : inout STD_LOGIC_VECTOR(DATA_COUNT*DATA_WIDTH-1 downto 0);
   M_CLK_I    : in  STD_LOGIC;
   S_CLK_I    : in  STD_LOGIC;
   M_RST_I    : in  STD_LOGIC;
@@ -34,8 +35,7 @@ port (
   S_IDX_RI   : in  INTEGER;
   S_DATA_RO  : out STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
   S_HEAD_RO  : out STD_LOGIC_VECTOR(HEAD_COUNT*DATA_WIDTH-1 downto 0);  
-  S_CTRL_RO  : out STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
-  DATA_BUF   : inout STD_LOGIC_VECTOR(DATA_COUNT*DATA_WIDTH-1 downto 0)
+  S_CTRL_RO  : out STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0)
 );
 end clock_interface;
 
@@ -45,7 +45,7 @@ constant STAT_MIN  : integer := 0;
 constant STAT_MAX  : integer := STAT_COUNT;
 constant CTRL_MIN  : integer := STAT_MAX;
 constant CTRL_MAX  : integer := CTRL_MIN+CTRL_COUNT;
-constant HEAD_MIN  : integer := STAT_MAX;
+constant HEAD_MIN  : integer := CTRL_MAX;
 constant HEAD_MAX  : integer := HEAD_MIN+HEAD_COUNT;
 constant TIME_MIN  : integer := HEAD_MAX;
 constant TIME_MAX  : integer := DATA_COUNT;
@@ -64,6 +64,7 @@ type logic_array is array(0 to 1) of std_logic;
 type strb_array  is array(0 to 1) of std_logic_vector(DATA_WIDTH/8-1 downto 0);
 type data_array  is array(0 to 1) of std_logic_vector(DATA_WIDTH-1 downto 0);
 type stat_array  is array(0 to 1) of std_logic_vector(STAT_COUNT*DATA_WIDTH-1 downto 0);
+type ctrl_array  is array(0 to 1) of std_logic_vector(CTRL_COUNT*DATA_WIDTH-1 downto 0);
 type head_array  is array(0 to 1) of std_logic_vector(HEAD_COUNT*DATA_WIDTH-1 downto 0);
 signal s_stat_wi_buf : stat_array  := (others => (others => '0'));
 signal s_hwrt_wi_buf : logic_array := (others => '0');
@@ -72,11 +73,9 @@ signal s_idx_wi_buf  : index_array := (others => 0);
 signal s_strb_wi_buf : strb_array  := (others => (others => '0'));
 signal s_data_wi_buf : data_array  := (others => (others => '0'));
 signal s_idx_ri_buf  : integer     := DATA_COUNT;
-signal s_ctrl_ro_buf : data_array  := (others => (others => '0'));
+signal s_ctrl_ro_buf : ctrl_array  := (others => (others => '0'));
 signal s_head_ro_buf : head_array  := (others => (others => '0'));
 signal s_data_ro_buf : data_array  := (others => (others => '0'));
-
-signal default_head : std_logic_vector(HEAD_COUNT*DATA_WIDTH-1 downto 0);
 
 function idx2base(idx : integer) return integer is
 begin

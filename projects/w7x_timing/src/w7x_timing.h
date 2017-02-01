@@ -23,7 +23,7 @@ extern "C" {
 
 #define DEVICE_NAME "w7x_timing"  /* Dev name as it appears in /proc/devices */
 #define MODULE_NAME "w7x_timing"
-#define MAX_SAMPLES 58
+#define MAX_SAMPLES 10
 #define MAX_STATUS   8
 #define W7X_TIMING_IOCTL_BASE	'W'
 #define W7X_TIMING_RESOFFSET _IO(W7X_TIMING_IOCTL_BASE, 0)
@@ -34,13 +34,16 @@ typedef unsigned int         uint32_t;
 typedef unsigned long long   uint64_t;
 
 # pragma pack(1)
-struct w7x_timing {//packing 64 bit
+struct w7x_timing {//manual packing 64 bit
   uint8_t  r_status[MAX_STATUS];//0x00 ++0x01
   uint8_t  w_init;              //0x08
   uint8_t  w_trig;              //0x09
   uint8_t  w_clear;             //0x0A
   uint8_t  w_reinit;            //0x0B
-  uint32_t w_buf32;             //0x0C
+  uint8_t  w_save;              //0x0C
+  uint8_t  w_flag5;             //0x0D
+  uint8_t  w_flag6;             //0x0E
+  uint8_t  w_flag7;             //0x0F
   uint64_t w_delay;             //0x10
   uint32_t w_width;             //0x18
   uint32_t w_period;            //0x1C

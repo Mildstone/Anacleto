@@ -49,6 +49,7 @@ int getDev(int *pos) {
 
 int getStatus(int idx, int *pos) {
   int pos_in = *pos;
+  uint8_t buf[8];
   if (idx >= MAX_STATUS || idx < 0) {
     *pos += sprintf(error+*pos,"ERROR: IDX < 0 or IDX > %lu",MAX_STATUS-1);
     return -1;
@@ -56,6 +57,7 @@ int getStatus(int idx, int *pos) {
   uint8_t status, i;
   if (getDev(pos)) return -1;
   status = dev->r_status[idx];
+  if (idx<3) { //it is a status byte
   switch (status & STATUS_MASK) {
     case 0:
       break;
@@ -89,9 +91,13 @@ int getStatus(int idx, int *pos) {
     *pos += sprintf(error+*pos," - ok\n");
   else {
     *pos += sprintf(error+*pos," - errors:\n");
-    for (i = 1 ; i < 8 ; i++)
-      if (!getStatus(i,pos))
-        break;
+    for (i = 1 ; i < 3 ; i++)
+      getStatus(i,pos);
+    buf[7]=buf[6]=buf[5]=0;
+    for (i = 3 ; i < 8 ; i++)
+      buf[i-3] = dev->r_status[i];
+    *pos += sprintf(error+*pos,"ticks: %llu\n",*(uint64_t*)buf);
+   }
   }
   if (pos_in==0)
     printf(error);
@@ -224,13 +230,7 @@ int trig() {
 int arm() {
     int i;
     INIT_DEVICE
-    dev->w_init  = 0;
     dev->w_clear = 1;
-    for ( i = 0 ; i < 10 ; i++)
-       if (!dev->r_status[1])
-         break;
-       nanosleep(&t,0);
-    dev->w_clear = 0;
     dev->w_init  = 1;
     return C_OK;
 }

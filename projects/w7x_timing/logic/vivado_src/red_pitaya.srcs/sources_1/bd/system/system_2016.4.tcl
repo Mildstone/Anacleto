@@ -1201,7 +1201,6 @@ CONFIG.S00_HAS_REGSLICE {3} \
   set_property -dict [ list \
 CONFIG.C_OPERATION {not} \
 CONFIG.C_SIZE {1} \
-CONFIG.LOGO_FILE {data/sym_notgate.png} \
  ] $util_vector_logic_0
 
   # Create instance: w7x_timing_0, and set properties

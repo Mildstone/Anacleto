@@ -8,7 +8,6 @@ entity w7x_timing_v1_0 is
 		CTRL_COUNT           : integer := 1;
 		HEAD_COUNT           : integer := 4;
         MAX_SAMPLES          : integer := 10;
-        TIME_WIDTH           : integer := 40;  -- ca 30h @ 10MHz
 
 		DATA_WIDTH : integer := 64;
 		ADDR_WIDTH : integer := 8 --min:8, 512->16
@@ -47,14 +46,16 @@ entity w7x_timing_v1_0 is
 end w7x_timing_v1_0;
 
 architecture arch_imp of w7x_timing_v1_0 is
-    constant DATA_COUNT : integer := STAT_COUNT+CTRL_COUNT+HEAD_COUNT+MAX_SAMPLES;
+    constant SAMPLE_OFF : integer := STAT_COUNT+CTRL_COUNT+HEAD_COUNT;
+    constant DATA_COUNT : integer := SAMPLE_OFF+MAX_SAMPLES;
     signal data_buf     : STD_LOGIC_VECTOR(DATA_COUNT*DATA_WIDTH-1 downto 0);
     signal m_idx        : INTEGER;
     signal m_strb       : STD_LOGIC_VECTOR((DATA_WIDTH/8)-1 downto 0);
     signal m_data       : STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
     signal m_rst        : STD_LOGIC;
     signal load_head    : STD_LOGIC;
-    signal index        : integer;
+    signal index_raw    : integer;
+    signal index_sample : integer;
     signal sample       : std_logic_vector(DATA_WIDTH-1 downto 0);
     signal time_in      : std_logic_vector(DATA_WIDTH-1 downto 0);
     signal stat         : std_logic_vector(STAT_COUNT*DATA_WIDTH-1 downto 0);
@@ -138,7 +139,6 @@ architecture arch_imp of w7x_timing_v1_0 is
 
     component w7x_timing is
     generic (
-      TIME_WIDTH : integer;
       ERROR_COUNT : integer
     );
     port (
@@ -152,11 +152,12 @@ architecture arch_imp of w7x_timing_v1_0 is
     index_out     : out integer;
     state_out     : out STD_LOGIC_VECTOR(7 downto 0);
     error_out     : out STD_LOGIC_VECTOR(ERROR_COUNT*8-1 downto 0);
-    sample_in     : in  UNSIGNED(TIME_WIDTH-1 downto 0)
+    sample_in     : in  STD_LOGIC_VECTOR(63 downto 0)
     );
 	end component w7x_timing;
 
 begin
+index_raw <= index_sample + SAMPLE_OFF;
 ctrl_out <= (0 => bctrl_out(0),
              8 => bctrl_out(1),
             16 => bctrl_out(2),
@@ -233,6 +234,7 @@ w7x_timing_clock_interface_inst : clock_interface
         DATA_WIDTH => DATA_WIDTH
     )
     port map (
+        DATA_BUF   => data_buf,       
         M_CLK_I    => s00_axi_aclk,
         S_CLK_I    => clk_in,
         M_RST_I    => m_rst,
@@ -245,14 +247,13 @@ w7x_timing_clock_interface_inst : clock_interface
         S_STRB_WI  => ctrl_strb,
         S_HEAD_WI  => head_out,
         S_HWRT_WI  => load_head,
-        S_IDX_RI   => index,
+        S_IDX_RI   => index_raw,
         S_DATA_RO  => sample,
         S_HEAD_RO  => head_in,
         S_CTRL_RO  => ctrl_in
       );
 w7x_timing_inst : w7x_timing
 	generic map (
-        TIME_WIDTH  => TIME_WIDTH,
         ERROR_COUNT => STAT_COUNT*DATA_WIDTH/8-1
     )
     port map (
@@ -261,11 +262,11 @@ w7x_timing_inst : w7x_timing
            ctrl_out      => bctrl_out,
            ctrl_strb     => ctrl_strb,
            load_head_out => load_head,
-           index_out     => index,
+           index_out     => index_sample,
            state_out     => stat(7 downto 0),
            error_out     => stat(STAT_COUNT*DATA_WIDTH-1 downto 8),
            head_in       => head_in,
            head_out      => head_out,
-           sample_in     => unsigned(sample(TIME_WIDTH-1 downto 0))
+           sample_in     => sample
       );
 end arch_imp;
