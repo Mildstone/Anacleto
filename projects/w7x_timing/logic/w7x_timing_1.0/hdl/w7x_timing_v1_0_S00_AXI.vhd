@@ -56,8 +56,8 @@ architecture arch_imp of w7x_timing_v1_0_S00_AXI is
     signal axi_rresp   : std_logic_vector(1 downto 0);
     signal axi_rvalid  : std_logic;
     
-    signal slv_buf_rden : std_logic;
-    signal slv_buf_wren : std_logic;
+    signal buf_read_ready  : std_logic;
+    signal buf_write_ready : std_logic;
     signal rdata_buf    : std_logic_vector(DATA_WIDTH-1 downto 0) := (others => '0');
 
     function axi_addr2idx(addr : std_logic_vector(DATA_WIDTH-1 downto 0)) return integer is
@@ -133,9 +133,8 @@ begin
 	  end if;
 	end process;
 
-	slv_buf_wren <= axi_wready and S_AXI_WVALID and axi_awready and S_AXI_AWVALID ;
-
-	process (S_AXI_ACLK,S_AXI_ARESETN, axi_awaddr, slv_buf_wren, S_AXI_WSTRB, S_AXI_WDATA)
+	buf_write_ready <= axi_wready and S_AXI_WVALID and axi_awready and S_AXI_AWVALID ;
+	process (S_AXI_ACLK,S_AXI_ARESETN, axi_awaddr, buf_write_ready, S_AXI_WSTRB, S_AXI_WDATA)
 	variable idx : integer;
 	begin
 	  if rising_edge(S_AXI_ACLK) then 
@@ -143,7 +142,7 @@ begin
 	      RST_OUT <= '1';
 	    else
 	      RST_OUT <= '0';
-	      if (slv_buf_wren = '1') then
+	      if (buf_write_ready = '1') then
             IDX_OUT <= axi_addr2idx(axi_awaddr);
             STRB_OUT <= S_AXI_WSTRB;
           else
@@ -205,14 +204,13 @@ begin
 	  end if;
 	end process;
 
-	slv_buf_rden <= axi_arready and S_AXI_ARVALID and (not axi_rvalid) ;
-
-	process( S_AXI_ACLK, S_AXI_ARESETN, slv_buf_rden, rdata_buf) is
+	buf_read_ready <= axi_arready and S_AXI_ARVALID and (not axi_rvalid) ;
+	process( S_AXI_ACLK, S_AXI_ARESETN, buf_read_ready, rdata_buf) is
 	begin
 	  if (rising_edge (S_AXI_ACLK)) then
 	    if ( S_AXI_ARESETN = '0' ) then
 	      axi_rdata  <= (others => '0');
-	    elsif (slv_buf_rden = '1') then
+	    elsif (buf_read_ready = '1') then
 	      axi_rdata <= rdata_buf;
 	    end if;
 	  end if;
