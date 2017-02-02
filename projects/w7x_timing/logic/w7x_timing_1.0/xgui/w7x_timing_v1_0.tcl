@@ -3,7 +3,8 @@ proc init_gui { IPINST } {
   ipgui::add_param $IPINST -name "Component_Name"
   #Adding Page
   set Page_0 [ipgui::add_page $IPINST -name "Page 0"]
-  ipgui::add_param $IPINST -name "MAX_SAMPLES" -parent ${Page_0}
+  set BRAM_SIZE [ipgui::add_param $IPINST -name "BRAM_SIZE" -parent ${Page_0}]
+  set_property tooltip {Depth of BRAM} ${BRAM_SIZE}
   ipgui::add_param $IPINST -name "C_S00_AXI_BASEADDR" -parent ${Page_0}
   ipgui::add_param $IPINST -name "C_S00_AXI_HIGHADDR" -parent ${Page_0}
 
@@ -16,6 +17,15 @@ proc update_PARAM_VALUE.ADDR_WIDTH { PARAM_VALUE.ADDR_WIDTH } {
 
 proc validate_PARAM_VALUE.ADDR_WIDTH { PARAM_VALUE.ADDR_WIDTH } {
 	# Procedure called to validate ADDR_WIDTH
+	return true
+}
+
+proc update_PARAM_VALUE.BRAM_SIZE { PARAM_VALUE.BRAM_SIZE } {
+	# Procedure called to update BRAM_SIZE when any of the dependent parameters in the arguments change
+}
+
+proc validate_PARAM_VALUE.BRAM_SIZE { PARAM_VALUE.BRAM_SIZE } {
+	# Procedure called to validate BRAM_SIZE
 	return true
 }
 
@@ -43,15 +53,6 @@ proc update_PARAM_VALUE.HEAD_COUNT { PARAM_VALUE.HEAD_COUNT } {
 
 proc validate_PARAM_VALUE.HEAD_COUNT { PARAM_VALUE.HEAD_COUNT } {
 	# Procedure called to validate HEAD_COUNT
-	return true
-}
-
-proc update_PARAM_VALUE.MAX_SAMPLES { PARAM_VALUE.MAX_SAMPLES } {
-	# Procedure called to update MAX_SAMPLES when any of the dependent parameters in the arguments change
-}
-
-proc validate_PARAM_VALUE.MAX_SAMPLES { PARAM_VALUE.MAX_SAMPLES } {
-	# Procedure called to validate MAX_SAMPLES
 	return true
 }
 
@@ -83,11 +84,6 @@ proc validate_PARAM_VALUE.C_S00_AXI_HIGHADDR { PARAM_VALUE.C_S00_AXI_HIGHADDR } 
 }
 
 
-proc update_MODELPARAM_VALUE.MAX_SAMPLES { MODELPARAM_VALUE.MAX_SAMPLES PARAM_VALUE.MAX_SAMPLES } {
-	# Procedure called to set VHDL generic/Verilog parameter value(s) based on TCL parameter value
-	set_property value [get_property value ${PARAM_VALUE.MAX_SAMPLES}] ${MODELPARAM_VALUE.MAX_SAMPLES}
-}
-
 proc update_MODELPARAM_VALUE.DATA_WIDTH { MODELPARAM_VALUE.DATA_WIDTH PARAM_VALUE.DATA_WIDTH } {
 	# Procedure called to set VHDL generic/Verilog parameter value(s) based on TCL parameter value
 	set_property value [get_property value ${PARAM_VALUE.DATA_WIDTH}] ${MODELPARAM_VALUE.DATA_WIDTH}
@@ -111,5 +107,10 @@ proc update_MODELPARAM_VALUE.CTRL_COUNT { MODELPARAM_VALUE.CTRL_COUNT PARAM_VALU
 proc update_MODELPARAM_VALUE.HEAD_COUNT { MODELPARAM_VALUE.HEAD_COUNT PARAM_VALUE.HEAD_COUNT } {
 	# Procedure called to set VHDL generic/Verilog parameter value(s) based on TCL parameter value
 	set_property value [get_property value ${PARAM_VALUE.HEAD_COUNT}] ${MODELPARAM_VALUE.HEAD_COUNT}
+}
+
+proc update_MODELPARAM_VALUE.BRAM_SIZE { MODELPARAM_VALUE.BRAM_SIZE PARAM_VALUE.BRAM_SIZE } {
+	# Procedure called to set VHDL generic/Verilog parameter value(s) based on TCL parameter value
+	set_property value [get_property value ${PARAM_VALUE.BRAM_SIZE}] ${MODELPARAM_VALUE.BRAM_SIZE}
 }
 
