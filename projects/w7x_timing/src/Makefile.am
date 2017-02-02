@@ -38,12 +38,12 @@ test_examples: $(TEST_EXAMPLES)
 $(TEST_EXAMPLES):
 	echo " --- building $@ ---"; \
 	$(_set_export); \
-	${CROSS_COMPILE}${CC} $(LINUX_CFLAGS) $(srcdir)/$@.c -o $@ -lpthread -O0
+	${CROSS_COMPILE}${CC} $(LINUX_CFLAGS) $(srcdir)/$@.c -o $@ -lpthread -O2
 
 $(RUN_LIBRARY):
 	echo " --- building $@ ---"; \
 	$(_set_export); \
-	${CROSS_COMPILE}${CC} $(LINUX_CFLAGS) $(srcdir)/$@.c -fPIC -o lib$@.so -O0 -shared 
+	${CROSS_COMPILE}${CC} $(LINUX_CFLAGS) $(srcdir)/$@.c -fPIC -o lib$@.so -O2 -shared 
 
 
 .PHONY: deploy
@@ -62,8 +62,3 @@ endif
 
 
 all: modules test_examples $(RUN_LIBRARY)
-
-
-
-	
-
