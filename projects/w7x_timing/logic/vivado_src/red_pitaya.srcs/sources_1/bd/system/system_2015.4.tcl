@@ -154,6 +154,29 @@ proc create_root_design { parentCell } {
   set trig [ create_bd_port -dir I trig ]
   set trig_led [ create_bd_port -dir O -from 0 -to 0 -type clk trig_led ]
 
+  # Create instance: blk_mem_gen_0, and set properties
+  set blk_mem_gen_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:blk_mem_gen:8.3 blk_mem_gen_0 ]
+  set_property -dict [ list \
+CONFIG.Byte_Size {9} \
+CONFIG.Enable_32bit_Address {false} \
+CONFIG.Enable_A {Always_Enabled} \
+CONFIG.Enable_B {Always_Enabled} \
+CONFIG.Memory_Type {Simple_Dual_Port_RAM} \
+CONFIG.Operating_Mode_A {WRITE_FIRST} \
+CONFIG.Port_B_Clock {100} \
+CONFIG.Port_B_Enable_Rate {100} \
+CONFIG.Read_Width_A {64} \
+CONFIG.Read_Width_B {64} \
+CONFIG.Register_PortA_Output_of_Memory_Primitives {false} \
+CONFIG.Register_PortB_Output_of_Memory_Primitives {false} \
+CONFIG.Use_Byte_Write_Enable {false} \
+CONFIG.Use_RSTA_Pin {false} \
+CONFIG.Write_Depth_A {32000} \
+CONFIG.Write_Width_A {64} \
+CONFIG.Write_Width_B {64} \
+CONFIG.use_bram_block {Stand_Alone} \
+ ] $blk_mem_gen_0
+
   # Create instance: processing_system7_0, and set properties
   set processing_system7_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:processing_system7:5.5 processing_system7_0 ]
   set_property -dict [ list \
@@ -729,15 +752,14 @@ CONFIG.C_SIZE {1} \
 
   # Create instance: w7x_timing_0, and set properties
   set w7x_timing_0 [ create_bd_cell -type ip -vlnv user.org:user:w7x_timing:1.0 w7x_timing_0 ]
-  set_property -dict [ list \
-CONFIG.MAX_SAMPLES {16} \
- ] $w7x_timing_0
 
   # Create interface connections
   connect_bd_intf_net -intf_net processing_system7_0_DDR [get_bd_intf_ports DDR] [get_bd_intf_pins processing_system7_0/DDR]
   connect_bd_intf_net -intf_net processing_system7_0_FIXED_IO [get_bd_intf_ports FIXED_IO] [get_bd_intf_pins processing_system7_0/FIXED_IO]
   connect_bd_intf_net -intf_net processing_system7_0_M_AXI_GP0 [get_bd_intf_pins processing_system7_0/M_AXI_GP0] [get_bd_intf_pins processing_system7_0_axi_periph/S00_AXI]
   connect_bd_intf_net -intf_net processing_system7_0_axi_periph_M00_AXI [get_bd_intf_pins processing_system7_0_axi_periph/M00_AXI] [get_bd_intf_pins w7x_timing_0/S00_AXI]
+  connect_bd_intf_net -intf_net w7x_timing_0_BRAM_PORTA [get_bd_intf_pins blk_mem_gen_0/BRAM_PORTA] [get_bd_intf_pins w7x_timing_0/BRAM_PORTA]
+  connect_bd_intf_net -intf_net w7x_timing_0_BRAM_PORTB [get_bd_intf_pins blk_mem_gen_0/BRAM_PORTB] [get_bd_intf_pins w7x_timing_0/BRAM_PORTB]
 
   # Create port connections
   connect_bd_net -net clk_1 [get_bd_ports clk] [get_bd_ports clk_led] [get_bd_pins w7x_timing_0/clk_in]
@@ -750,7 +772,7 @@ CONFIG.MAX_SAMPLES {16} \
   connect_bd_net -net w7x_timing_0_state [get_bd_ports state] [get_bd_ports state_leds] [get_bd_pins w7x_timing_0/state_out]
 
   # Create address segments
-  create_bd_addr_seg -range 0x10000 -offset 0x43C00000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs w7x_timing_0/S00_AXI/S00_AXI_reg] SEG_w7x_timing_0_S00_AXI_reg
+  create_bd_addr_seg -range 0x40000 -offset 0x43C00000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs w7x_timing_0/S00_AXI/S00_AXI_reg] SEG_w7x_timing_0_S00_AXI_reg
 
   # Perform GUI Layout
   regenerate_bd_layout -layout_string {
