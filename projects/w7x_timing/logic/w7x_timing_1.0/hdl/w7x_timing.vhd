@@ -308,7 +308,6 @@ begin
       case state is
         when ARMED => 
           if trig = '1' then
-            unset(i_trig);
             start_program;
           end if;
         when WAITING_DELAY =>
@@ -326,6 +325,10 @@ begin
         when others =>
           do_error(IDLE);
       end case;
+      -- reset flags
+      if trig = '1' then
+        unset(i_trig);
+      end if;
       if clear = '1' then    
         unset(i_clear);
         error <= (others => '0');

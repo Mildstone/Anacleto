@@ -120,14 +120,6 @@ int getParams(uint64_t *delay_p, uint32_t *width_p, uint32_t *period_p, uint64_t
   return C_OK;
 }
 
-int getTimes(uint32_t offset, uint32_t count, uint64_t *times_p) {
-  int i, max = MAX_SAMPLES - offset;
-  INIT_DEVICE
-  for (i = 0 ; i < count ; i++)
-    times_p[i] = i<max ? dev->w_times[i+offset] : 0;
-  return C_OK;
-}
-
 int setParams(uint64_t delay, uint32_t width, uint32_t period, uint64_t cycle, uint32_t repeat, uint32_t count, int *pos) {
   *pos += sprintf(error+*pos,"DELAY: %llu, WIDTH: %u, PERIOD: %u, COUNT: %u, CYCLE: %llu, REPEAT: %u\n", delay, width, period, count, cycle, repeat);
   if (period < 2){
@@ -241,3 +233,8 @@ int disarm() {
     return C_OK;
 }
 
+int reinit(char state) {
+    INIT_DEVICE
+    dev->w_reinit = state;
+    return C_OK;
+}

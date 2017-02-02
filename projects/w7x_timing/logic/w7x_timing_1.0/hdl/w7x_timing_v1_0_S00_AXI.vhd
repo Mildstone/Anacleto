@@ -143,10 +143,10 @@ begin
 	    else
 	      RST_OUT <= '0';
 	      if (buf_write_ready = '1') then
-            IDX_OUT <= axi_addr2idx(axi_awaddr);
+            IDX_OUT  <= axi_addr2idx(axi_awaddr);
             STRB_OUT <= S_AXI_WSTRB;
           else
-            IDX_OUT  <= DATA_COUNT;
+            IDX_OUT  <= -1;
             STRB_OUT <= (others => '0');
           end if;
 	    end if;
