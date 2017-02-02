@@ -2,7 +2,7 @@ FUN PUBLIC RPProg(optional in _delay, optional in _width, optional in _period, o
   _delay  = IF_ERROR(KIND(_delay)>0, 0BU) ? QUADWORD_UNSIGNED(_delay) : *;
   _period = IF_ERROR(KIND(_period)>0,0BU) ?     LONG_UNSIGNED(_period): *;
   _width  = IF_ERROR(KIND(_width)>0, 0BU) ?     LONG_UNSIGNED(_width) : *;
-  _cycle  = IF_ERROR(KIND(_circle)>0,0BU) ? QUADWORD_UNSIGNED(_cycle) : *;
+  _cycle  = IF_ERROR(KIND(_cycle)>0,0BU)  ? QUADWORD_UNSIGNED(_cycle) : *;
   _repeat = IF_ERROR(KIND(_repeat)>0,0BU) ?     LONG_UNSIGNED(_repeat): *;
   IF(IF_ERROR(NDIMS(_times)>0,0BU)) {
 /* make sequence */
