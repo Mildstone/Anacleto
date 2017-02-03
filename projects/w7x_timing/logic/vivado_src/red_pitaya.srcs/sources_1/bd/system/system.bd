@@ -225,6 +225,26 @@
           </spirit:wire>
         </spirit:port>
         <spirit:port>
+          <spirit:name>state</spirit:name>
+          <spirit:wire>
+            <spirit:direction>out</spirit:direction>
+            <spirit:vector>
+              <spirit:left>5</spirit:left>
+              <spirit:right>0</spirit:right>
+            </spirit:vector>
+          </spirit:wire>
+        </spirit:port>
+        <spirit:port>
+          <spirit:name>state_leds</spirit:name>
+          <spirit:wire>
+            <spirit:direction>out</spirit:direction>
+            <spirit:vector>
+              <spirit:left>5</spirit:left>
+              <spirit:right>0</spirit:right>
+            </spirit:vector>
+          </spirit:wire>
+        </spirit:port>
+        <spirit:port>
           <spirit:name>trig</spirit:name>
           <spirit:wire>
             <spirit:direction>in</spirit:direction>
@@ -234,25 +254,9 @@
           <spirit:name>trig_led</spirit:name>
           <spirit:wire>
             <spirit:direction>out</spirit:direction>
-          </spirit:wire>
-        </spirit:port>
-        <spirit:port>
-          <spirit:name>state</spirit:name>
-          <spirit:wire>
-            <spirit:direction>out</spirit:direction>
             <spirit:vector>
               <spirit:left>0</spirit:left>
-              <spirit:right>5</spirit:right>
-            </spirit:vector>
-          </spirit:wire>
-        </spirit:port>
-        <spirit:port>
-          <spirit:name>state_leds</spirit:name>
-          <spirit:wire>
-            <spirit:direction>out</spirit:direction>
-            <spirit:vector>
-              <spirit:left>0</spirit:left>
-              <spirit:right>5</spirit:right>
+              <spirit:right>0</spirit:right>
             </spirit:vector>
           </spirit:wire>
         </spirit:port>
@@ -842,13 +846,40 @@
         </spirit:configurableElementValues>
       </spirit:componentInstance>
       <spirit:componentInstance>
+        <spirit:instanceName>util_vector_logic_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="ip" spirit:name="util_vector_logic" spirit:vendor="xilinx.com" spirit:version="2.0"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">system_util_vector_logic_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_SIZE">1</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_OPERATION">not</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
         <spirit:instanceName>w7x_timing_0</spirit:instanceName>
         <spirit:componentRef spirit:library="user" spirit:name="w7x_timing" spirit:vendor="user.org" spirit:version="1.0"/>
         <spirit:configurableElementValues>
           <spirit:configurableElementValue spirit:referenceId="bd:xciName">system_w7x_timing_0_0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="C_S00_AXI_DATA_WIDTH">64</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="C_S00_AXI_ADDR_WIDTH">20</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="MAX_SAMPLES">16</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>blk_mem_gen_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="ip" spirit:name="blk_mem_gen" spirit:vendor="xilinx.com" spirit:version="8.3"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">system_blk_mem_gen_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="Memory_Type">Simple_Dual_Port_RAM</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="Enable_32bit_Address">false</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="Use_Byte_Write_Enable">false</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="Write_Width_A">64</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="Write_Depth_A">32000</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="Operating_Mode_A">WRITE_FIRST</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="Enable_A">Always_Enabled</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="Write_Width_B">64</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="Read_Width_B">64</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="Enable_B">Always_Enabled</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="Register_PortB_Output_of_Memory_Primitives">false</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="Port_B_Clock">100</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="Port_B_Enable_Rate">100</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="use_bram_block">Stand_Alone</spirit:configurableElementValue>
         </spirit:configurableElementValues>
       </spirit:componentInstance>
     </spirit:componentInstances>
@@ -863,13 +894,23 @@
         <spirit:activeInterface spirit:busRef="M_AXI_GP0" spirit:componentRef="processing_system7_0"/>
         <spirit:activeInterface spirit:busRef="S00_AXI" spirit:componentRef="processing_system7_0_axi_periph"/>
       </spirit:interconnection>
+      <spirit:interconnection>
+        <spirit:name>w7x_timing_0_BRAM_PORTA</spirit:name>
+        <spirit:activeInterface spirit:busRef="BRAM_PORTA" spirit:componentRef="blk_mem_gen_0"/>
+        <spirit:activeInterface spirit:busRef="BRAM_PORTA" spirit:componentRef="w7x_timing_0"/>
+      </spirit:interconnection>
+      <spirit:interconnection>
+        <spirit:name>w7x_timing_0_BRAM_PORTB</spirit:name>
+        <spirit:activeInterface spirit:busRef="BRAM_PORTB" spirit:componentRef="blk_mem_gen_0"/>
+        <spirit:activeInterface spirit:busRef="BRAM_PORTB" spirit:componentRef="w7x_timing_0"/>
+      </spirit:interconnection>
     </spirit:interconnections>
     <spirit:adHocConnections>
       <spirit:adHocConnection>
         <spirit:name>clk_1</spirit:name>
         <spirit:externalPortReference spirit:portRef="clk"/>
         <spirit:externalPortReference spirit:portRef="clk_led"/>
-        <spirit:internalPortReference spirit:componentRef="w7x_timing_0" spirit:portRef="clk"/>
+        <spirit:internalPortReference spirit:componentRef="w7x_timing_0" spirit:portRef="clk_in"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>processing_system7_0_FCLK_CLK0</spirit:name>
@@ -894,14 +935,8 @@
         <spirit:internalPortReference spirit:componentRef="processing_system7_0_axi_periph" spirit:portRef="S00_ARESETN"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
-        <spirit:name>trig_1</spirit:name>
-        <spirit:externalPortReference spirit:portRef="trig"/>
-        <spirit:externalPortReference spirit:portRef="trig_led"/>
-        <spirit:internalPortReference spirit:componentRef="w7x_timing_0" spirit:portRef="trig"/>
-      </spirit:adHocConnection>
-      <spirit:adHocConnection>
         <spirit:name>w7x_timing_0_state</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="w7x_timing_0" spirit:portRef="state"/>
+        <spirit:internalPortReference spirit:componentRef="w7x_timing_0" spirit:portRef="state_out"/>
         <spirit:externalPortReference spirit:portRef="state_leds"/>
         <spirit:externalPortReference spirit:portRef="state"/>
       </spirit:adHocConnection>
@@ -909,6 +944,17 @@
         <spirit:name>processing_system7_0_FCLK_RESET0_N</spirit:name>
         <spirit:internalPortReference spirit:componentRef="processing_system7_0" spirit:portRef="FCLK_RESET0_N"/>
         <spirit:internalPortReference spirit:componentRef="rst_processing_system7_0_125M" spirit:portRef="ext_reset_in"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>trig_1</spirit:name>
+        <spirit:externalPortReference spirit:portRef="trig"/>
+        <spirit:internalPortReference spirit:componentRef="util_vector_logic_0" spirit:portRef="Op1"/>
+        <spirit:internalPortReference spirit:componentRef="w7x_timing_0" spirit:portRef="trig_in"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>util_vector_logic_0_Res</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="util_vector_logic_0" spirit:portRef="Res"/>
+        <spirit:externalPortReference spirit:portRef="trig_led"/>
       </spirit:adHocConnection>
     </spirit:adHocConnections>
     <spirit:hierConnections>
@@ -1476,7 +1522,7 @@
             <spirit:name>SEG_w7x_timing_0_S00_AXI_reg</spirit:name>
             <spirit:displayName>/w7x_timing_0/S00_AXI/S00_AXI_reg</spirit:displayName>
             <spirit:addressOffset>0x43C00000</spirit:addressOffset>
-            <spirit:range>64K</spirit:range>
+            <spirit:range>256K</spirit:range>
           </spirit:segment>
         </spirit:segments>
       </spirit:addressSpace>
