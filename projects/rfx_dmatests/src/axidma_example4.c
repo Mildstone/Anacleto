@@ -90,7 +90,7 @@ static struct file_operations fops = {
 
 // DEVICE ID //
 static const struct of_device_id rfx_axidmatest_of_ids[] = {
-	{ .compatible = "xlnx,axi-dma-test-1.00.a",},
+    { .compatible = "xlnx,axi-dma-1.00.a",},
 	{}
 };
 

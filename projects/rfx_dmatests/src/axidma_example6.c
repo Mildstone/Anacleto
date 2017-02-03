@@ -853,7 +853,7 @@ static int example6_remove(struct platform_device *pdev)
 }
 
 static const struct of_device_id example6_of_ids[] = {
-{ .compatible = "xlnx,axi-dma-test-1.00.a",}, {} };
+{ .compatible = "xlnx,axi-dma-1.00.a",}, {} };
 
 static struct platform_driver example6_driver = {
     .driver = {
