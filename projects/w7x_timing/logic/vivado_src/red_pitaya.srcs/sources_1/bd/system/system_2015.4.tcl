@@ -161,17 +161,20 @@ CONFIG.Byte_Size {9} \
 CONFIG.Enable_32bit_Address {false} \
 CONFIG.Enable_A {Always_Enabled} \
 CONFIG.Enable_B {Always_Enabled} \
-CONFIG.Memory_Type {Simple_Dual_Port_RAM} \
-CONFIG.Operating_Mode_A {WRITE_FIRST} \
+CONFIG.Fill_Remaining_Memory_Locations {true} \
+CONFIG.Memory_Type {True_Dual_Port_RAM} \
+CONFIG.Operating_Mode_A {READ_FIRST} \
+CONFIG.Operating_Mode_B {READ_FIRST} \
 CONFIG.Port_B_Clock {100} \
 CONFIG.Port_B_Enable_Rate {100} \
-CONFIG.Read_Width_A {64} \
+CONFIG.Port_B_Write_Rate {50} \
 CONFIG.Read_Width_B {64} \
-CONFIG.Register_PortA_Output_of_Memory_Primitives {false} \
-CONFIG.Register_PortB_Output_of_Memory_Primitives {false} \
+CONFIG.Register_PortA_Output_of_Memory_Primitives {true} \
+CONFIG.Register_PortB_Output_of_Memory_Primitives {true} \
 CONFIG.Use_Byte_Write_Enable {false} \
 CONFIG.Use_RSTA_Pin {false} \
-CONFIG.Write_Depth_A {32000} \
+CONFIG.Use_RSTB_Pin {false} \
+CONFIG.Write_Depth_A {32768} \
 CONFIG.Write_Width_A {64} \
 CONFIG.Write_Width_B {64} \
 CONFIG.use_bram_block {Stand_Alone} \
@@ -752,6 +755,9 @@ CONFIG.C_SIZE {1} \
 
   # Create instance: w7x_timing_0, and set properties
   set w7x_timing_0 [ create_bd_cell -type ip -vlnv user.org:user:w7x_timing:1.0 w7x_timing_0 ]
+  set_property -dict [ list \
+CONFIG.BRAM_SIZE {32768} \
+ ] $w7x_timing_0
 
   # Create interface connections
   connect_bd_intf_net -intf_net processing_system7_0_DDR [get_bd_intf_ports DDR] [get_bd_intf_pins processing_system7_0/DDR]
@@ -763,10 +769,10 @@ CONFIG.C_SIZE {1} \
 
   # Create port connections
   connect_bd_net -net clk_1 [get_bd_ports clk] [get_bd_ports clk_led] [get_bd_pins w7x_timing_0/clk_in]
-  connect_bd_net -net processing_system7_0_FCLK_CLK0 [get_bd_pins processing_system7_0/FCLK_CLK0] [get_bd_pins processing_system7_0/M_AXI_GP0_ACLK] [get_bd_pins processing_system7_0_axi_periph/ACLK] [get_bd_pins processing_system7_0_axi_periph/M00_ACLK] [get_bd_pins processing_system7_0_axi_periph/S00_ACLK] [get_bd_pins rst_processing_system7_0_125M/slowest_sync_clk] [get_bd_pins w7x_timing_0/s00_axi_aclk]
+  connect_bd_net -net processing_system7_0_FCLK_CLK0 [get_bd_pins processing_system7_0/FCLK_CLK0] [get_bd_pins processing_system7_0/M_AXI_GP0_ACLK] [get_bd_pins processing_system7_0_axi_periph/ACLK] [get_bd_pins processing_system7_0_axi_periph/M00_ACLK] [get_bd_pins processing_system7_0_axi_periph/S00_ACLK] [get_bd_pins rst_processing_system7_0_125M/slowest_sync_clk] [get_bd_pins w7x_timing_0/s00_axi_clk]
   connect_bd_net -net processing_system7_0_FCLK_RESET0_N [get_bd_pins processing_system7_0/FCLK_RESET0_N] [get_bd_pins rst_processing_system7_0_125M/ext_reset_in]
   connect_bd_net -net rst_processing_system7_0_125M_interconnect_aresetn [get_bd_pins processing_system7_0_axi_periph/ARESETN] [get_bd_pins rst_processing_system7_0_125M/interconnect_aresetn]
-  connect_bd_net -net rst_processing_system7_0_125M_peripheral_aresetn [get_bd_pins processing_system7_0_axi_periph/M00_ARESETN] [get_bd_pins processing_system7_0_axi_periph/S00_ARESETN] [get_bd_pins rst_processing_system7_0_125M/peripheral_aresetn] [get_bd_pins w7x_timing_0/s00_axi_aresetn]
+  connect_bd_net -net rst_processing_system7_0_125M_peripheral_aresetn [get_bd_pins processing_system7_0_axi_periph/M00_ARESETN] [get_bd_pins processing_system7_0_axi_periph/S00_ARESETN] [get_bd_pins rst_processing_system7_0_125M/peripheral_aresetn] [get_bd_pins w7x_timing_0/s00_axi_resetn]
   connect_bd_net -net trig_1 [get_bd_ports trig] [get_bd_pins util_vector_logic_0/Op1] [get_bd_pins w7x_timing_0/trig_in]
   connect_bd_net -net util_vector_logic_0_Res [get_bd_ports trig_led] [get_bd_pins util_vector_logic_0/Res]
   connect_bd_net -net w7x_timing_0_state [get_bd_ports state] [get_bd_ports state_leds] [get_bd_pins w7x_timing_0/state_out]

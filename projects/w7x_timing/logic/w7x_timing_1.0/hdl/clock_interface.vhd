@@ -15,7 +15,8 @@ generic (
   STAT_COUNT : integer := 1;
   CTRL_COUNT : integer := 1;
   HEAD_COUNT : integer := 4;
-  BRAM_SIZE  : integer := 32000;
+  BRAM_SIZE  : integer := 32768;
+  ADDR_WIDTH : integer := 15;
   DATA_WIDTH : integer := 64
 );
 port (
@@ -30,7 +31,7 @@ port (
   -- master clock domain
   M_CLK_I    : in  STD_LOGIC;
   M_RST_I    : in  STD_LOGIC;
-  M_IDX_WI   : in  INTEGER;
+  M_ADDR_I   : in  UNSIGNED(ADDR_WIDTH-1 downto 0);
   M_DATA_WI  : in  STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
   M_STRB_WI  : in  STD_LOGIC_VECTOR(DATA_WIDTH/8-1 downto 0);
   -- slave clock domain
@@ -70,8 +71,9 @@ constant HEAD_BASE : integer := HEAD_MIN*DATA_WIDTH;
 constant HEAD_HEAD : integer := HEAD_MAX*DATA_WIDTH-1;
 constant TIME_BASE : integer := TIME_MIN*DATA_WIDTH;
 constant TIME_HEAD : integer := TIME_MAX*DATA_WIDTH-1;
+constant offset    : unsigned(ADDR_WIDTH-1 downto 0) := to_unsigned(HEAD_MAX,ADDR_WIDTH);
 
-type index_array is array(0 to 1) of integer;
+type index_array is array(0 to 1) of unsigned(ADDR_WIDTH-1 downto 0);
 type logic_array is array(0 to 1) of std_logic;
 type strb_array  is array(0 to 1) of std_logic_vector(DATA_WIDTH/8-1 downto 0);
 type data_array  is array(0 to 1) of std_logic_vector(DATA_WIDTH-1 downto 0);
@@ -81,7 +83,7 @@ type head_array  is array(0 to 1) of std_logic_vector(HEAD_COUNT*DATA_WIDTH-1 do
 signal s_stat_wi_buf : stat_array  := (others => (others => '0'));
 signal s_hwrt_wi_buf : logic_array := (others => '0');
 signal s_head_wi_buf : head_array  := (others => (others => '0'));
-signal s_idx_wi_buf  : index_array := (others => 0);
+signal s_idx_wi_buf  : index_array := (others => (others => '0'));
 signal s_strb_wi_buf : strb_array  := (others => (others => '0'));
 signal s_data_wi_buf : data_array  := (others => (others => '0'));
 --signal s_idx_ri_buf  : integer     := DATA_COUNT;
@@ -89,18 +91,18 @@ signal s_ctrl_ro_buf : ctrl_array  := (others => (others => '0'));
 signal s_head_ro_buf : head_array  := (others => (others => '0'));
 --signal s_data_ro_buf : data_array  := (others => (others => '0'));
 
-function idx2base(idx : integer) return integer is
+function idx2base(idx : unsigned(ADDR_WIDTH-1 downto 0)) return integer is
 begin
-  return idx*DATA_WIDTH;
+  return to_integer(idx)*DATA_WIDTH;
 end idx2base;
 
 begin
-BRAM_WADDR <= std_logic_vector(to_unsigned(idx2base(M_IDX_WI-HEAD_MAX),15));
+BRAM_WADDR <= std_logic_vector(M_ADDR_I-offset);
 --BRAM_RADDR <= std_logic_vector(to_unsigned(idx2base(s_idx_ri_buf),15)); -- -HEAD_MAX
 BRAM_WDATA <= M_DATA_WI;
 --BRAM_RCLK  <= S_CLK_I;
 BRAM_WCLK  <= M_CLK_I;
-update_buffer: process(M_CLK_I,M_RST_I,M_IDX_WI,M_STRB_WI,M_DATA_WI)
+update_buffer: process(M_CLK_I,M_RST_I,M_ADDR_I,M_STRB_WI,M_DATA_WI)
 begin
   if (rising_edge(M_CLK_I)) then
     BRAM_WE <= "0";
@@ -108,13 +110,13 @@ begin
       DATA_BUF <= (others => '0');
     else
       -- handle driver write operations
-      if M_IDX_WI < HEAD_MAX then
+      if M_ADDR_I < offset then
         for i in 0 to DATA_WIDTH/8-1 loop
           if M_STRB_WI(i) = '1' then
-            DATA_BUF(idx2base(M_IDX_WI)+i*8+7 downto idx2base(M_IDX_WI)+i*8) <= M_DATA_WI(i*8+7 downto i*8);
+            DATA_BUF(idx2base(M_ADDR_I)+i*8+7 downto idx2base(M_ADDR_I)+i*8) <= M_DATA_WI(i*8+7 downto i*8);
           end if;
         end loop;
-      elsif M_IDX_WI<HEAD_MAX+TIME_MAX then--write to BRAM
+      else --write to BRAM
         BRAM_WE <= "1";
       end if;
       -- handle fpga write operations
@@ -171,7 +173,7 @@ begin
     -- write
     s_stat_wi_buf(1) <= S_STAT_WI;
     
-    s_idx_wi_buf(1)  <= S_IDX_WI;
+    s_idx_wi_buf(1)  <= to_unsigned(S_IDX_WI,ADDR_WIDTH);
     s_strb_wi_buf(1) <= S_STRB_WI;
     s_data_wi_buf(1) <= S_DATA_WI;
     
