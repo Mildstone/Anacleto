@@ -157,7 +157,6 @@ proc create_root_design { parentCell } {
   # Create instance: blk_mem_gen_0, and set properties
   set blk_mem_gen_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:blk_mem_gen:8.3 blk_mem_gen_0 ]
   set_property -dict [ list \
-CONFIG.Byte_Size {9} \
 CONFIG.Enable_32bit_Address {false} \
 CONFIG.Enable_A {Always_Enabled} \
 CONFIG.Enable_B {Always_Enabled} \
@@ -171,6 +170,7 @@ CONFIG.Port_B_Write_Rate {50} \
 CONFIG.Read_Width_B {64} \
 CONFIG.Register_PortA_Output_of_Memory_Primitives {true} \
 CONFIG.Register_PortB_Output_of_Memory_Primitives {true} \
+CONFIG.Remaining_Memory_Locations {7} \
 CONFIG.Use_Byte_Write_Enable {false} \
 CONFIG.Use_RSTA_Pin {false} \
 CONFIG.Use_RSTB_Pin {false} \
@@ -604,8 +604,6 @@ CONFIG.PCW_SPI1_SPI1_IO {MIO 10 .. 15} \
 CONFIG.PCW_SPI_PERIPHERAL_CLKSRC {IO PLL} \
 CONFIG.PCW_SPI_PERIPHERAL_FREQMHZ {166.666666} \
 CONFIG.PCW_SPI_PERIPHERAL_VALID {1} \
-CONFIG.PCW_S_AXI_HP0_DATA_WIDTH {64} \
-CONFIG.PCW_S_AXI_HP1_DATA_WIDTH {64} \
 CONFIG.PCW_TPIU_PERIPHERAL_CLKSRC {External} \
 CONFIG.PCW_TRACE_INTERNAL_WIDTH {2} \
 CONFIG.PCW_TRACE_PERIPHERAL_ENABLE {0} \
