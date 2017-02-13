@@ -2,7 +2,7 @@
 #include <time.h>
 #include "w7x_timing.h"
 
-static struct timespec t = { 0, 100 };
+//static struct timespec t = { 0, 100 };
 static char error[1024];
 #define CHECK_INPUTS \
   uint64_t delay, cycle; \
@@ -120,6 +120,14 @@ int getParams(uint64_t *delay_p, uint32_t *width_p, uint32_t *period_p, uint64_t
   return C_OK;
 }
 
+int getTimes(uint32_t offset, uint32_t count, uint64_t *times_p) {
+  int i, max = MAX_SAMPLES - offset;
+  INIT_DEVICE
+  memcpy(times_p, &(dev->w_times[offset]), (count<max ? count : max)*sizeof(uint64_t));
+  for (i = max ; i < count ; i++) times_p[i] = 0;
+  return C_OK;
+}
+
 int setParams(uint64_t delay, uint32_t width, uint32_t period, uint64_t cycle, uint32_t repeat, uint32_t count, int *pos) {
   *pos += sprintf(error+*pos,"DELAY: %llu, WIDTH: %u, PERIOD: %u, COUNT: %u, CYCLE: %llu, REPEAT: %u\n", delay, width, period, count, cycle, repeat);
   if (period < 2){
@@ -147,7 +155,7 @@ char* getError() {
 
 int makeClock(const uint64_t *delay_p, const uint32_t *width_p, const uint32_t *period_p, const uint64_t *cycle_p, const uint32_t *repeat_p, const uint32_t *count_p){
     int pos = sprintf(error,"MAKE CLOCK: ");
-    uint64_t time;
+    uint64_t time = 0;
     CHECK_INPUTS
     if (cycle_p) {
       cycle = *cycle_p;
@@ -161,10 +169,9 @@ int makeClock(const uint64_t *delay_p, const uint32_t *width_p, const uint32_t *
     int i,c_status = setParams(delay, width, period, cycle, repeat, count, &pos);
     printf(error);
     if(c_status) return c_status;
-    time = 0;
     for(i = 0; i < count; i++) {
 	dev->w_times[i] = time;
-        time = time + period;
+        time += period;
     }
     dev->w_count = count;
     return C_OK;
@@ -233,8 +240,3 @@ int disarm() {
     return C_OK;
 }
 
-int reinit(char state) {
-    INIT_DEVICE
-    dev->w_reinit = state;
-    return C_OK;
-}
