@@ -12,7 +12,7 @@
 
 // dma //
 #include <linux/dmaengine.h>         // dma api
-#include <linux/amba/xilinx_dma.h>   // axi dma driver
+#include <linux/dma/xilinx_dma.h>   // axi dma driver
 #include <linux/dma-mapping.h>
 #include <linux/delay.h>
 #include <linux/kthread.h>
@@ -853,7 +853,7 @@ static int example6_remove(struct platform_device *pdev)
 }
 
 static const struct of_device_id example6_of_ids[] = {
-{ .compatible = "xlnx,axi-dma-test-1.00.a",}, {} };
+{ .compatible = "xlnx,axi-dma-1.00.a",}, {} };
 
 static struct platform_driver example6_driver = {
     .driver = {

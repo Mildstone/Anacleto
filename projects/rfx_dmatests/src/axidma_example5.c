@@ -23,7 +23,7 @@
 #include <asm/pgtable.h>
 
 #include <linux/dmaengine.h>         // dma api
-#include <linux/amba/xilinx_dma.h>   // axi dma driver
+#include <linux/dma/xilinx_dma.h>   // axi dma driver
 
 // First of all, you should make sure #include <linux/dma-mapping.h> is in your
 // driver, which provides the definition of dma_addr_t. This type can hold any
@@ -528,7 +528,7 @@ static int example5_remove(struct platform_device *pdev)
 }
 
 static const struct of_device_id example5_of_ids[] = {
-{ .compatible = "xlnx,axi-dma-test-1.00.a",}, {} };
+{ .compatible = "xlnx,axi-dma-1.00.a",}, {} };
 
 static struct platform_driver example5_driver = {
     .driver = {

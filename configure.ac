@@ -189,6 +189,7 @@ AC_SUBST([DEVICETREE_BASEFILES_TAR])
 
 AX_KCONFIG_VAR([LINUX_DIR])
 AC_SUBST([LINUX_DIR])
+AX_GITIGNORE_ADD([/${LINUX_DIR}])
 
 AS_IF([test x"${srcdir}" = x$(pwd) ],
       AS_VAR_SET([CONFIG_LINUX_DIR_IN_SRCTREE],[y]))
@@ -227,6 +228,9 @@ AX_KCONFIG_CONDITIONAL([WITH_YOCTO_TAR])
 
 AX_KCONFIG_VAR([YOCTO_DIR])
 AC_SUBST([YOCTO_DIR])
+AS_VAR_IF([ENABLE_YOCTO],[yes],[AX_GITIGNORE_ADD([/${YOCTO_DIR}])])
+
+
 AX_KCONFIG_VAR([YOCTO_VERSION])
 AC_SUBST([YOCTO_VERSION])
 
@@ -247,9 +251,18 @@ AX_KCONFIG_VAR([YOCTO_XILINX_TAR])
 AC_SUBST([YOCTO_XILINX_TAR])
 
 
+
+
+# // GIT IGNORE // #
+AX_GITIGNORE_SUBST
+
 AC_CONFIG_FILES( 
                  Makefile
 		 fpga/Makefile
+		 projects/rfx_dmatests/Makefile
+		 projects/rfx_dmatests/logic/Makefile
+		 projects/rfx_dmatests/src/Kbuild
+		 projects/rfx_dmatests/src/Makefile
 		 projects/rfx_pwmgen/Makefile
 		 projects/rfx_pwmgen/logic/Makefile
 		 projects/rfx_pwmgen/src/Kbuild
@@ -266,5 +279,6 @@ AC_CONFIG_FILES(
 		 projects/w7x_timing/logic/Makefile
 		 projects/w7x_timing/src/Kbuild
 		 projects/w7x_timing/src/Makefile
+		 .gitignore
                )
 AC_OUTPUT

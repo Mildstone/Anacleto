@@ -13,7 +13,7 @@
 #include <linux/kernel.h>
 #include <linux/dma-mapping.h>
 #include <linux/slab.h>
-#include <linux/amba/xilinx_dma.h>
+#include <linux/dma/xilinx_dma.h>
 
 #include <linux/platform_device.h>
 
@@ -275,7 +275,7 @@ static int xilinx_axidmatest_remove(struct platform_device *pdev)
 }
 
 static const struct of_device_id rfx_axidmatest_of_ids[] = {
-	{ .compatible = "xlnx,axi-dma-test-1.00.a",},
+    { .compatible = "xlnx,axi-dma-1.00.a",},
 	{}
 };
 
