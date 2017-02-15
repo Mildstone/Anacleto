@@ -3,4 +3,4 @@
 	url = https://github.com/Xilinx/linux-xlnx.git
 [submodule "conf/kconfig"]
 	path = conf/kconfig
-	url = https://github.com/andrearigoni/kconfig-autoconf.git
+	url = https://github.com/andrearigoni/autoconf-kconfig.git
