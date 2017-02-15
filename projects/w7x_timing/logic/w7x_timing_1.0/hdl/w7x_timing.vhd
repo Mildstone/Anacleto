@@ -64,15 +64,15 @@ architecture Behavioral of w7x_timing is
     constant WAITING_LOW    : std_logic_vector(7 downto 0) := "01010010";-- 82
     constant WAITING_HIGH   : std_logic_vector(7 downto 0) := "11010010";--210
     constant WAITING_REPEAT : std_logic_vector(7 downto 0) := "00110010";-- 50
-	-- signals
-	signal init         : std_logic;
-	signal trig         : std_logic;
-	signal clear        : std_logic;
-	signal reinit       : std_logic;
-	signal save         : std_logic;
+    -- signals
+    signal init         : std_logic;
+    signal trig         : std_logic;
+    signal clear        : std_logic;
+    signal reinit       : std_logic;
+    signal save         : std_logic;
     signal state        : std_logic_vector(7 downto 0) := IDLE;
     signal error        : std_logic_vector(ERROR_COUNT*8-1 downto 0) := (others => '0');
-	signal load_head    : std_logic := '0';
+    signal load_head    : std_logic := '0';
     signal saved_head   : std_logic_vector(4*64-1 downto 0);
     signal sample       : unsigned(63 downto 0);
     -- measure number of samples in sequence, i.e. len(times)
@@ -94,7 +94,7 @@ architecture Behavioral of w7x_timing is
     
 begin
     -- set input
-	init   <= ctrl_in(i_init);
+    init   <= ctrl_in(i_init);
     trig   <= ctrl_in(i_trig);
     clear  <= ctrl_in(i_clear);
     reinit <= ctrl_in(i_reinit);
@@ -174,7 +174,7 @@ begin
         load_head <= '1';
       end if;
       start_armed;
-    end do_rearm;		
+    end do_rearm;        
     
     procedure do_error(cstat : std_logic_vector(7 downto 0)) is
     begin
