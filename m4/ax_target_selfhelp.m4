@@ -2,13 +2,13 @@
 
 
 AC_DEFUN([AX_TARGET_SELFHELP],[
-  AC_PUSH_LOCAL([ax_target_selfhelp])
+  AX_PUSH_LOCAL([ax_target_selfhelp])
   SET_SELFHELP([uno],[due])
-  AC_POP_LOCAL([ax_target_selfhelp])
+  AX_POP_LOCAL([ax_target_selfhelp])
 ])
 
 
-AC_DEFUN_LOCAL([ax_target_selfhelp],[SET_SELFHELP],[
+AX_DEFUN_LOCAL([ax_target_selfhelp],[SET_SELFHELP],[
 AS_VAR_READ([TARGET_SELFHELP],[
 
 SH_GREEN  ?= \$(shell tput -Txterm setaf 2)
@@ -48,7 +48,7 @@ endif
 ])
 
 
-AC_DEFUN_LOCAL([ax_target_selfhelp],[AS_VAR_READ],[
+AX_DEFUN_LOCAL([ax_target_selfhelp],[AS_VAR_READ],[
 read -d '' $1 << _as_read_EOF
 $2
 _as_read_EOF

@@ -4,3 +4,6 @@
 [submodule "conf/kconfig"]
 	path = conf/kconfig
 	url = https://github.com/andrearigoni/autoconf-kconfig.git
+[submodule "conf/autoconf-archive"]
+	path = conf/autoconf-archive
+	url = https://github.com/andrearigoni/autoconf-archive
