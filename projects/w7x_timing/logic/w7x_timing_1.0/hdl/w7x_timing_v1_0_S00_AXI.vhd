@@ -47,8 +47,6 @@ end w7x_timing_v1_0_S00_AXI;
 architecture arch_imp of w7x_timing_v1_0_S00_AXI is
     constant DATA_LIMIT : unsigned(ADDR_WIDTH-1 downto 0) := to_unsigned(DATA_COUNT,ADDR_WIDTH);
     -- AXI4LITE signals
-    --signal axi_awprot  : std_logic_vector(2 downto 0);
-   -- signal axi_awready : std_logic;
     signal axi_aaddr   : unsigned(ADDR_WIDTH-1 downto 0);
     signal axi_wready  : std_logic := '0';
     signal axi_wdata   : std_logic_vector(DATA_WIDTH-1 downto 0);
@@ -116,7 +114,7 @@ begin
 	      else
 	        if (S_AXI_RESETN and axi_arready) = '1' then
 	          axi_rvalid <= '1';
-              axi_rdata <= DATA_IN;
+              axi_rdata  <= DATA_IN;
             elsif (S_AXI_RREADY or not S_AXI_RESETN) = '1' then
               axi_rvalid <= '0';
               axi_rdata  <= (1 => '1', 2 => '1', others => '0');

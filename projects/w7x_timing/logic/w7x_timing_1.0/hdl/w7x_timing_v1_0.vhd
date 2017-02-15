@@ -64,9 +64,7 @@ architecture arch_imp of w7x_timing_v1_0 is
     signal m_strb       : STD_LOGIC_VECTOR((DATA_WIDTH/8)-1 downto 0);
     signal m_rst, m_we  : STD_LOGIC;
     signal load_head    : STD_LOGIC;
-    --signal index_raw    : integer;
     signal index_sample : integer;
-    --signal sample       : std_logic_vector(DATA_WIDTH-1 downto 0);
     signal stat         : std_logic_vector(STAT_COUNT*DATA_WIDTH-1 downto 0);
     signal head_in      : std_logic_vector(HEAD_COUNT*DATA_WIDTH-1 downto 0);
     signal head_out     : std_logic_vector(HEAD_COUNT*DATA_WIDTH-1 downto 0);
@@ -128,14 +126,8 @@ architecture arch_imp of w7x_timing_v1_0 is
     );
     port (
     -- BRAM interface
-    --BRAM_CLK   : out  STD_LOGIC;
-    --BRAM_ADDR  : out  STD_LOGIC_VECTOR(14 downto 0);
     BRAM_WDATA : out  STD_LOGIC_VECTOR(63 downto 0);
     BRAM_RDATA : in   STD_LOGIC_VECTOR(63 downto 0);
-    --BRAM_WE    : out  STD_LOGIC;
-    --BRAM_RADDR : out  STD_LOGIC_VECTOR(14 downto 0);
-    --BRAM_RCLK  : out  STD_LOGIC;
-    --BRAM_RDATA : in   STD_LOGIC_VECTOR(63 downto 0);
     -- master clock domain
     M_CLK_I    : in  STD_LOGIC;
     M_RST_I    : in  STD_LOGIC;
@@ -152,8 +144,6 @@ architecture arch_imp of w7x_timing_v1_0 is
     S_STRB_WI  : in  STD_LOGIC_VECTOR(DATA_WIDTH/8-1 downto 0);
     S_HEAD_WI  : in  STD_LOGIC_VECTOR(HEAD_COUNT*DATA_WIDTH-1 downto 0);
     S_HWRT_WI  : in  STD_LOGIC;
-    --S_IDX_RI   : in  INTEGER;
-    --S_DATA_RO  : out STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
     S_HEAD_RO  : out STD_LOGIC_VECTOR(HEAD_COUNT*DATA_WIDTH-1 downto 0);  
     S_CTRL_RO  : out STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
     -- shared flip-flop memory
@@ -185,8 +175,8 @@ begin
 -- wire the read access to bram
 bram_clkb  <= clk_in;
 bram_addrb <= std_logic_vector(to_unsigned(index_sample+HEAD_MAX,ADDR_WIDTH));
-bram_rsta <= '0';
-bram_rstb <= '0';
+bram_rsta  <= '0';
+bram_rstb  <= '0';
 ---- translate control bits to bytes
 ctrl_out <= (0 => bctrl_out(0),
              8 => bctrl_out(1),
@@ -270,14 +260,8 @@ w7x_timing_clock_interface_inst : clock_interface
         DATA_WIDTH => DATA_WIDTH
     )
     port map (
-        --BRAM_CLK   => bram_clka,
-        --BRAM_ADDR  => bram_addra,
         BRAM_RDATA => bram_douta,
         BRAM_WDATA => bram_dina,
-        --BRAM_WE    => bram_wea,
-        --BRAM_RADDR => bram_addrb,
-        --BRAM_RCLK  => bram_clkb,
-        --BRAM_RDATA => bram_doutb,
         M_CLK_I    => s00_axi_clk,
         S_CLK_I    => clk_in,
         M_RST_I    => m_rst,

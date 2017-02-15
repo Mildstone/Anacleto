@@ -1,0 +1,7 @@
+mdsconnect('192.168.44.51')
+write(*,mdsvalue('rpstate();rperror()'))
+write(*,mdsvalue('rpprog(10e6,5,10,[7,42,77],100,2);rpparams()'))
+write(*,mdsvalue('rparm();rptrig()'))
+write(*,mdsvalue('rpstate();rperror()'))
+
+

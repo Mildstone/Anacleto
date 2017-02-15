@@ -21,14 +21,8 @@ generic (
 );
 port (
   -- BRAM interface
-  --BRAM_CLK   : out  STD_LOGIC;
-  --BRAM_ADDR  : out  STD_LOGIC_VECTOR(14 downto 0);
   BRAM_WDATA : out  STD_LOGIC_VECTOR(63 downto 0);
   BRAM_RDATA : in   STD_LOGIC_VECTOR(63 downto 0);
-  --BRAM_WE    : out  STD_LOGIC;
-  --BRAM_RADDR : out  STD_LOGIC_VECTOR(14 downto 0);
-  --BRAM_RCLK  : out  STD_LOGIC;
-  --BRAM_RDATA : in   STD_LOGIC_VECTOR(63 downto 0);
   -- master clock domain
   M_CLK_I    : in  STD_LOGIC;
   M_RST_I    : in  STD_LOGIC;
@@ -98,10 +92,8 @@ begin
 end addr2base;
 
 begin
---BRAM_CLK   <= M_CLK_I;
---BRAM_WE    <= M_WE_WI;
---BRAM_ADDR  <= std_logic_vector(M_ADDR_I);
 process(M_ADDR_I,DATA_BUF,BRAM_RDATA)begin
+  -- the first offset uint64 of the bram are unused, i.e. overshadowed by DATA_BUF
   if (M_ADDR_I < offset)
   then M_DATA_RO <= DATA_BUF(addr2base(M_ADDR_I)+DATA_WIDTH-1 downto addr2base(M_ADDR_I));
   else M_DATA_RO <= BRAM_RDATA;
