@@ -3,7 +3,7 @@ AM_MAKEFLAGS = -j$(MAKE_PROCESS)
 
 
 # TOOLCHAIN #
-include conf/scripts/toolchain.am
+include conf/kscripts/toolchain.am
 
 
 all: ##@all download and build the selected toolchain and the linux image
