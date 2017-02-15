@@ -158,7 +158,7 @@ proc create_root_design { parentCell } {
   set blk_mem_gen_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:blk_mem_gen:8.3 blk_mem_gen_0 ]
   set_property -dict [ list \
 CONFIG.Enable_32bit_Address {false} \
-CONFIG.Enable_A {Always_Enabled} \
+CONFIG.Enable_A {Use_ENA_Pin} \
 CONFIG.Enable_B {Always_Enabled} \
 CONFIG.Fill_Remaining_Memory_Locations {true} \
 CONFIG.Memory_Type {True_Dual_Port_RAM} \
@@ -168,8 +168,8 @@ CONFIG.Port_B_Clock {100} \
 CONFIG.Port_B_Enable_Rate {100} \
 CONFIG.Port_B_Write_Rate {50} \
 CONFIG.Read_Width_B {64} \
-CONFIG.Register_PortA_Output_of_Memory_Primitives {true} \
-CONFIG.Register_PortB_Output_of_Memory_Primitives {true} \
+CONFIG.Register_PortA_Output_of_Memory_Primitives {false} \
+CONFIG.Register_PortB_Output_of_Memory_Primitives {false} \
 CONFIG.Remaining_Memory_Locations {7} \
 CONFIG.Use_Byte_Write_Enable {false} \
 CONFIG.Use_RSTA_Pin {false} \
