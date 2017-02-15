@@ -3,19 +3,19 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity w7x_timing_v1_0 is
-	generic (
-		STAT_COUNT           : integer := 1;
-		CTRL_COUNT           : integer := 1;
-		HEAD_COUNT           : integer := 4;
-		
+    generic (
+        STAT_COUNT           : integer := 1;
+        CTRL_COUNT           : integer := 1;
+        HEAD_COUNT           : integer := 4;
+        
         BRAM_SIZE            : integer := 32768;
-		DATA_WIDTH : integer := 64;
-		ADDR_WIDTH : integer := 15
-	);
-	port (
+        DATA_WIDTH : integer := 64;
+        ADDR_WIDTH : integer := 15
+    );
+    port (
         clk_in   : in  STD_LOGIC;
-		trig_in  : in  STD_LOGIC;
-		state_out: out STD_LOGIC_VECTOR (5 downto 0);
+        trig_in  : in  STD_LOGIC;
+        state_out: out STD_LOGIC_VECTOR (5 downto 0);
         -- PortA of blk_mem_gen
         bram_clka  : out  STD_LOGIC;
         bram_douta : in   STD_LOGIC_VECTOR(63 downto 0);
@@ -29,29 +29,29 @@ entity w7x_timing_v1_0 is
         bram_clkb  : out  STD_LOGIC;
         bram_doutb : in   STD_LOGIC_VECTOR(63 downto 0);
         bram_rstb  : out  STD_LOGIC;
-		-- Ports of Axi Slave Bus Interface S00_AXI
-		s00_axi_clk	    : in  std_logic;
-		s00_axi_resetn	: in  std_logic;
-		s00_axi_awaddr  : in  std_logic_vector(ADDR_WIDTH+DATA_WIDTH/32 downto 0);
-		s00_axi_awprot	: in  std_logic_vector(2 downto 0);
-		s00_axi_awvalid	: in  std_logic;
-		s00_axi_awready	: out std_logic;
-		s00_axi_wdata	: in  std_logic_vector(DATA_WIDTH-1 downto 0);
-		s00_axi_wstrb	: in  std_logic_vector((DATA_WIDTH/8)-1 downto 0);
-		s00_axi_wvalid	: in  std_logic;
-		s00_axi_wready	: out std_logic;
-		s00_axi_bresp	: out std_logic_vector(1 downto 0);
-		s00_axi_bvalid	: out std_logic;
-		s00_axi_bready	: in  std_logic;
-		s00_axi_araddr	: in  std_logic_vector(ADDR_WIDTH+DATA_WIDTH/32 downto 0);
-		s00_axi_arprot	: in  std_logic_vector(2 downto 0);
-		s00_axi_arvalid	: in  std_logic;
-		s00_axi_arready	: out std_logic;
-		s00_axi_rdata	: out std_logic_vector(DATA_WIDTH-1 downto 0);
-		s00_axi_rresp	: out std_logic_vector(1 downto 0);
-		s00_axi_rvalid	: out std_logic;
-		s00_axi_rready	: in  std_logic
-	);
+        -- Ports of Axi Slave Bus Interface S00_AXI
+        s00_axi_clk        : in  std_logic;
+        s00_axi_resetn    : in  std_logic;
+        s00_axi_awaddr  : in  std_logic_vector(ADDR_WIDTH+DATA_WIDTH/32 downto 0);
+        s00_axi_awprot    : in  std_logic_vector(2 downto 0);
+        s00_axi_awvalid    : in  std_logic;
+        s00_axi_awready    : out std_logic;
+        s00_axi_wdata    : in  std_logic_vector(DATA_WIDTH-1 downto 0);
+        s00_axi_wstrb    : in  std_logic_vector((DATA_WIDTH/8)-1 downto 0);
+        s00_axi_wvalid    : in  std_logic;
+        s00_axi_wready    : out std_logic;
+        s00_axi_bresp    : out std_logic_vector(1 downto 0);
+        s00_axi_bvalid    : out std_logic;
+        s00_axi_bready    : in  std_logic;
+        s00_axi_araddr    : in  std_logic_vector(ADDR_WIDTH+DATA_WIDTH/32 downto 0);
+        s00_axi_arprot    : in  std_logic_vector(2 downto 0);
+        s00_axi_arvalid    : in  std_logic;
+        s00_axi_arready    : out std_logic;
+        s00_axi_rdata    : out std_logic_vector(DATA_WIDTH-1 downto 0);
+        s00_axi_rresp    : out std_logic_vector(1 downto 0);
+        s00_axi_rvalid    : out std_logic;
+        s00_axi_rready    : in  std_logic
+    );
 end w7x_timing_v1_0;
 
 architecture arch_imp of w7x_timing_v1_0 is
@@ -76,8 +76,8 @@ architecture arch_imp of w7x_timing_v1_0 is
 
     signal trigger      : std_logic;
  -- component declaration
-	component w7x_timing_v1_0_S00_AXI is
-	generic (
+    component w7x_timing_v1_0_S00_AXI is
+    generic (
       DATA_WIDTH : integer;
       ADDR_WIDTH : integer;
       AXI_ADDR_WIDTH : integer 
@@ -113,7 +113,7 @@ architecture arch_imp of w7x_timing_v1_0 is
      S_AXI_RVALID  : out std_logic;
      S_AXI_RREADY  : in  std_logic
     );
-	end component w7x_timing_v1_0_S00_AXI;
+    end component w7x_timing_v1_0_S00_AXI;
 
     component clock_interface is
     generic (
@@ -144,7 +144,7 @@ architecture arch_imp of w7x_timing_v1_0 is
     S_STRB_WI  : in  STD_LOGIC_VECTOR(DATA_WIDTH/8-1 downto 0);
     S_HEAD_WI  : in  STD_LOGIC_VECTOR(HEAD_COUNT*DATA_WIDTH-1 downto 0);
     S_HWRT_WI  : in  STD_LOGIC;
-    S_HEAD_RO  : out STD_LOGIC_VECTOR(HEAD_COUNT*DATA_WIDTH-1 downto 0);  
+    S_HEAD_RO  : out STD_LOGIC_VECTOR(HEAD_COUNT*DATA_WIDTH-1 downto 0);
     S_CTRL_RO  : out STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
     -- shared flip-flop memory
     DATA_BUF   : inout STD_LOGIC_VECTOR((STAT_COUNT+CTRL_COUNT+HEAD_COUNT)*DATA_WIDTH-1 downto 0)
@@ -168,7 +168,7 @@ architecture arch_imp of w7x_timing_v1_0 is
     error_out     : out STD_LOGIC_VECTOR(ERROR_COUNT*8-1 downto 0);
     sample_in     : in  STD_LOGIC_VECTOR(63 downto 0)
     );
-	end component w7x_timing;
+    end component w7x_timing;
 
 begin
 ---- BRAM
@@ -213,50 +213,50 @@ bram_addra  <= std_logic_vector(m_addr);
 
 ---- Instantiation of Axi Bus Interface S00_AXI
 w7x_timing_v1_0_S00_AXI_inst : w7x_timing_v1_0_S00_AXI
-	generic map (
-		DATA_WIDTH => DATA_WIDTH,
-		ADDR_WIDTH => ADDR_WIDTH,
-		AXI_ADDR_WIDTH => ADDR_WIDTH+DATA_WIDTH/32+1
-	)
-	port map (
-	    ADDR_OUT      => m_addr,
-	    DATA_IN       => m_rdata,
+    generic map (
+        DATA_WIDTH => DATA_WIDTH,
+        ADDR_WIDTH => ADDR_WIDTH,
+        AXI_ADDR_WIDTH => ADDR_WIDTH+DATA_WIDTH/32+1
+    )
+    port map (
+        ADDR_OUT      => m_addr,
+        DATA_IN       => m_rdata,
         DATA_OUT      => m_wdata,
         STRB_OUT      => m_strb,
-	    RST_OUT       => m_rst,
-        WE_OUT        => m_we,        
+        RST_OUT       => m_rst,
+        WE_OUT        => m_we,
         EN_OUT        => bram_ena,
-		S_AXI_CLK     => s00_axi_clk,
-		S_AXI_RESETN  => s00_axi_resetn,
-		S_AXI_AWADDR  => s00_axi_awaddr,
-		S_AXI_AWPROT  => s00_axi_awprot,
-		S_AXI_AWVALID => s00_axi_awvalid,
-		S_AXI_AWREADY => s00_axi_awready,
-		S_AXI_WDATA   => s00_axi_wdata,
-		S_AXI_WSTRB   => s00_axi_wstrb,
-		S_AXI_WVALID  => s00_axi_wvalid,
-		S_AXI_WREADY  => s00_axi_wready,
-		S_AXI_BRESP   => s00_axi_bresp,
-		S_AXI_BVALID  => s00_axi_bvalid,
-		S_AXI_BREADY  => s00_axi_bready,
-		S_AXI_ARADDR  => s00_axi_araddr,
-		S_AXI_ARPROT  => s00_axi_arprot,
-		S_AXI_ARVALID => s00_axi_arvalid,
-		S_AXI_ARREADY => s00_axi_arready,
-		S_AXI_RDATA   => s00_axi_rdata,
-		S_AXI_RRESP	  => s00_axi_rresp,
-		S_AXI_RVALID  => s00_axi_rvalid,
-		S_AXI_RREADY  => s00_axi_rready	
-	);
+        S_AXI_CLK     => s00_axi_clk,
+        S_AXI_RESETN  => s00_axi_resetn,
+        S_AXI_AWADDR  => s00_axi_awaddr,
+        S_AXI_AWPROT  => s00_axi_awprot,
+        S_AXI_AWVALID => s00_axi_awvalid,
+        S_AXI_AWREADY => s00_axi_awready,
+        S_AXI_WDATA   => s00_axi_wdata,
+        S_AXI_WSTRB   => s00_axi_wstrb,
+        S_AXI_WVALID  => s00_axi_wvalid,
+        S_AXI_WREADY  => s00_axi_wready,
+        S_AXI_BRESP   => s00_axi_bresp,
+        S_AXI_BVALID  => s00_axi_bvalid,
+        S_AXI_BREADY  => s00_axi_bready,
+        S_AXI_ARADDR  => s00_axi_araddr,
+        S_AXI_ARPROT  => s00_axi_arprot,
+        S_AXI_ARVALID => s00_axi_arvalid,
+        S_AXI_ARREADY => s00_axi_arready,
+        S_AXI_RDATA   => s00_axi_rdata,
+        S_AXI_RRESP      => s00_axi_rresp,
+        S_AXI_RVALID  => s00_axi_rvalid,
+        S_AXI_RREADY  => s00_axi_rready    
+    );
 
 ---- Instantiation of clock_interface
 w7x_timing_clock_interface_inst : clock_interface
-	generic map (
-	    STAT_COUNT => STAT_COUNT,
-	    CTRL_COUNT => CTRL_COUNT,
-	    HEAD_COUNT => HEAD_COUNT,	    
-	    BRAM_SIZE  => BRAM_SIZE,
-	    ADDR_WIDTH => ADDR_WIDTH,
+    generic map (
+        STAT_COUNT => STAT_COUNT,
+        CTRL_COUNT => CTRL_COUNT,
+        HEAD_COUNT => HEAD_COUNT,        
+        BRAM_SIZE  => BRAM_SIZE,
+        ADDR_WIDTH => ADDR_WIDTH,
         DATA_WIDTH => DATA_WIDTH
     )
     port map (
@@ -283,7 +283,7 @@ w7x_timing_clock_interface_inst : clock_interface
 
 ---- Instantiation of main program
 w7x_timing_inst : w7x_timing
-	generic map (
+    generic map (
         ERROR_COUNT => STAT_COUNT*DATA_WIDTH/8-1
     )
     port map (
