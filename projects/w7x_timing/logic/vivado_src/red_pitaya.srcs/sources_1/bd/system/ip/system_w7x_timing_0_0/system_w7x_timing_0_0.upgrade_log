@@ -1,7 +1,7 @@
 Copyright 1986-2015 Xilinx, Inc. All Rights Reserved.
 ------------------------------------------------------------------------------------
 | Tool Version : Vivado v.2015.4 (lin64) Build 1412921 Wed Nov 18 09:44:32 MST 2015
-| Date         : Thu Feb  2 18:21:28 2017
+| Date         : Mon Feb 13 13:06:11 2017
 | Host         : mds-comp-1 running 64-bit Debian GNU/Linux 8.6 (jessie)
 | Command      : upgrade_ip
 | Device       : xc7z010clg400-1
@@ -12,59 +12,5 @@ Upgrade Log for IP 'system_w7x_timing_0_0'
 1. Summary
 ----------
 
-CAUTION (success, with warnings) in the upgrade of system_w7x_timing_0_0 (user.org:user:w7x_timing:1.0) from (Rev. 74) to (Rev. 78)
-
-After upgrade, an IP may have parameter and port differences compared to the original customization. Please review the parameters within the IP customization GUI to ensure proper functionality. Also, please review the updated IP instantiation template to ensure proper connectivity, and update your design if required.
-
-2. Interface Information
-------------------------
-
-Detected external interface differences while upgrading IP 'system_w7x_timing_0_0'.
-
-
--upgrade has added interface 'BRAM_PORTA'
--upgrade has added interface 'BRAM_PORTB'
-
-3. Connection Warnings
-----------------------
-
-Detected external port differences while upgrading IP 'system_w7x_timing_0_0'. These changes may impact your design.
-
-
--upgrade has added port 'bram_addra'
--upgrade has added port 'bram_addrb'
--upgrade has added port 'bram_clka'
--upgrade has added port 'bram_clkb'
--upgrade has added port 'bram_dina'
--upgrade has added port 'bram_doutb'
--upgrade has added port 'bram_rsta'
--upgrade has added port 'bram_rstb'
--upgrade has added port 'bram_wea'
-
-4. Customization warnings
--------------------------
-
-WARNING: Parameter 'MAX_SAMPLES' is no longer present on the upgraded IP 'system_w7x_timing_0_0', and cannot be set to '16'
-
-
-5. Debug Commands
------------------
-
-  The following debug information can be passed to Vivado as Tcl commands,
-in order to validate or debug the output of the upgrade flow.
-  Please consult the warnings from the previous sections, and alter or remove
-the configuration parameter(s) which caused the warning; then execute the Tcl
-commands, and use the IP Customization GUI to verify the IP configuration.
-
-create_ip -vlnv user.org:user:w7x_timing:1.0 -user_name system_w7x_timing_0_0
-set_property -dict "\
-  CONFIG.ADDR_WIDTH 8 \
-  CONFIG.CTRL_COUNT 1 \
-  CONFIG.C_S00_AXI_BASEADDR 0xFFFFFFFF \
-  CONFIG.C_S00_AXI_HIGHADDR 0x00000000 \
-  CONFIG.Component_Name system_w7x_timing_0_0 \
-  CONFIG.DATA_WIDTH 64 \
-  CONFIG.HEAD_COUNT 4 \
-  CONFIG.STAT_COUNT 1 " [get_ips system_w7x_timing_0_0]
-
+SUCCESS in the upgrade of system_w7x_timing_0_0 (user.org:user:w7x_timing:1.0) from (Rev. 125) to (Rev. 126)
 

@@ -24,7 +24,7 @@ extern "C" {
 #define DEVICE_NAME "w7x_timing"  /* Dev name as it appears in /proc/devices */
 #define MODULE_NAME "w7x_timing"
 #define MAX_SAMPLES 32000
-#define MAX_STATUS   8
+#define MAX_STATUS  8
 #define W7X_TIMING_IOCTL_BASE	'W'
 #define W7X_TIMING_RESOFFSET _IO(W7X_TIMING_IOCTL_BASE, 0)
 
