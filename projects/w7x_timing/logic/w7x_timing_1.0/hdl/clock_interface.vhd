@@ -21,7 +21,6 @@ generic (
 );
 port (
   -- BRAM interface
-  BRAM_WDATA : out  STD_LOGIC_VECTOR(63 downto 0);
   BRAM_RDATA : in   STD_LOGIC_VECTOR(63 downto 0);
   -- master clock domain
   M_CLK_I    : in  STD_LOGIC;
@@ -92,21 +91,9 @@ begin
 end addr2base;
 
 begin
-process(M_ADDR_I,DATA_BUF,BRAM_RDATA)begin
-  -- the first offset uint64 of the bram are unused, i.e. overshadowed by DATA_BUF
-  if (M_ADDR_I < offset)
-  then M_DATA_RO <= DATA_BUF(addr2base(M_ADDR_I)+DATA_WIDTH-1 downto addr2base(M_ADDR_I));
-  else M_DATA_RO <= BRAM_RDATA;
-  end if;
-end process;
-process(M_STRB_WI,M_DATA_WI,BRAM_RDATA)begin
-  for i in 0 to DATA_WIDTH/8-1 loop
-    if M_STRB_WI(i) = '1'
-    then BRAM_WDATA(i*8+7 downto i*8) <= M_DATA_WI(i*8+7 downto i*8);
-    else BRAM_WDATA(i*8+7 downto i*8) <= BRAM_RDATA(i*8+7 downto i*8);
-    end if;
-  end loop;
-end process;
+
+M_DATA_RO <= DATA_BUF(addr2base(M_ADDR_I)+DATA_WIDTH-1 downto addr2base(M_ADDR_I))
+   when M_ADDR_I < offset else BRAM_RDATA;
 
 update_buffer: process(M_CLK_I,M_RST_I,M_ADDR_I,M_STRB_WI,M_DATA_WI)
 begin
