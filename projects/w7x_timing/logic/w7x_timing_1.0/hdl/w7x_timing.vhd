@@ -51,6 +51,7 @@ end  w7x_timing;
 
 
 architecture Behavioral of w7x_timing is
+    type state_t is array(7 downto 0) of std_logic;     
     constant i_init         : integer := 0;
     constant i_trig         : integer := 1;
     constant i_clear        : integer := 2;
@@ -111,21 +112,12 @@ begin
     error_out    <= error;  
     head_out      <= saved_head;
     load_head_out <= load_head;
-  sample_check:process(sample_count,sample_total) is
-  begin
-    if sample_count<sample_total then
-      index_out <= sample_count;
-    else
-      index_out <= 0;
-    end if;
-  end process;
+    index_out     <= sample_count when sample_count<sample_total else 0;
 
   clock_gen:  process(clk_in, init, trig, clear, reinit,
-                      delay_total,
-                      period_ticks, high_total, period_total,
-                      cycle_ticks, cycle_total,
-                      repeat_total,
-                      sample_total, sample_count, sample) is
+                      delay_total, high_total, period_total,
+                      cycle_total, repeat_total,
+                      sample_total, sample) is
 
     procedure unset(i : integer) is
     begin
@@ -299,32 +291,34 @@ begin
     end start_program;
 
   begin  -- main program
-    load_head <= '0';
-    ctrl_out  <= (others => '0');
-    ctrl_strb <= (others => '0');
-    if init = '0' then
-      state <= IDLE;
-    elsif rising_edge(clk_in) then
-      case state is
-        when ARMED => 
-          if trig = '1' then
-            start_program;
-          end if;
-        when WAITING_DELAY =>
-          do_waiting_delay;
-        when WAITING_SAMPLE =>
-          do_waiting_sample;
-        when WAITING_HIGH =>
-          do_waiting_high;
-        when WAITING_LOW =>
-          do_waiting_low;
-        when WAITING_REPEAT =>
-          do_waiting_repeat;
-        when IDLE =>
-          do_rearm;
-        when others =>
-          do_error(IDLE);
-      end case;
+    if rising_edge(clk_in) then
+      load_head <= '0';
+      ctrl_out  <= (others => '0');
+      ctrl_strb <= (others => '0');
+      if init = '0' then
+        state <= IDLE;
+      else
+        case state is
+          when ARMED => 
+            if trig = '1' then
+              start_program;
+            end if;
+          when WAITING_DELAY =>
+            do_waiting_delay;
+          when WAITING_SAMPLE =>
+            do_waiting_sample;
+          when WAITING_HIGH =>
+            do_waiting_high;
+          when WAITING_LOW =>
+            do_waiting_low;
+          when WAITING_REPEAT =>
+            do_waiting_repeat;
+          when IDLE =>
+            do_rearm;
+          when others =>
+            do_error(IDLE);
+        end case;
+      end if;
       -- reset flags
       if trig = '1' then
         unset(i_trig);
