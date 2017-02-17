@@ -181,14 +181,14 @@ bram_rstb  <= '0';
 bram_clkb  <= clk_in;
 bram_addrb <= std_logic_vector(to_unsigned(index_sample+HEAD_MAX,ADDR_WIDTH));
 ---- translate software state to LED/DOUT state
---state: for i in 0 to 4 generate
---  state_out(i) <= stat(7-i);
---end generate state;
-state_out(0) <= S00_AXI_AWVALID;
-state_out(1) <= S00_AXI_WVALID;
-state_out(2) <= S00_AXI_BREADY;
-state_out(3) <= S00_AXI_ARVALID;
-state_out(4) <= S00_AXI_RREADY;
+state: for i in 0 to 4 generate
+  state_out(i) <= stat(7-i);
+end generate state;
+--state_out(0) <= S00_AXI_AWVALID;
+--state_out(1) <= S00_AXI_WVALID;
+--state_out(2) <= S00_AXI_BREADY;
+--state_out(3) <= S00_AXI_ARVALID;
+--state_out(4) <= S00_AXI_RREADY;
 state_out(5) <= not stat(0);
 ---- translate control bits to bytes
 ctrl_out <= (0 => bctrl_out(0),
