@@ -15,7 +15,6 @@ entity w7x_timing_v1_0_S00_AXI is
      DATA_IN       : in    STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
      DATA_OUT      : out   STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
      STRB_OUT      : out   STD_LOGIC_VECTOR((DATA_WIDTH/8)-1 downto 0);
-     RST_OUT       : out   STD_LOGIC;
      EN_OUT        : out   STD_LOGIC;
      WE_OUT        : out   STD_LOGIC;
       
@@ -58,7 +57,7 @@ architecture arch_imp of w7x_timing_v1_0_S00_AXI is
     signal axi_rvalid  : std_logic := '0';
     signal bram_en     : std_logic := '0';
 
-    function axi_addr2addr(addr : std_logic_vector(AXI_ADDR_WIDTH-1 downto 0)) return unsigned(ADDR_WIDTH-1 downto 0) is
+    function axi_addr2addr(addr : std_logic_vector(AXI_ADDR_WIDTH-1 downto 0)) return unsigned is
     -- local parameter for addressing 32 bit / 64 bit C_S_AXI_DATA_WIDTH
     -- ADDR_LSB is used for addressing 32/64 bit registers/memories
     -- ADDR_LSB = 2 for 32 bits (n downto 2)
@@ -74,7 +73,6 @@ begin
     DATA_OUT <= axi_wdata;
     STRB_OUT <= axi_wstrb;
     EN_OUT   <= S_AXI_AWVALID or S_AXI_ARVALID or bram_en;
-    RST_OUT  <= not S_AXI_RESETN;
     WE_OUT   <= not axi_wready;
 ---- AXI interface
     -- I/O Connections assignments
