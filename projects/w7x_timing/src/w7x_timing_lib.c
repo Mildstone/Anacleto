@@ -2,13 +2,14 @@
 #include <time.h>
 #include "w7x_timing.h"
 
-//static struct timespec t = { 0, 100 };
+#define DEFAULT_DELAY 600000000 //60s
+
 static char error[1024];
 #define CHECK_INPUTS \
   uint64_t delay, cycle; \
   uint32_t width, period, repeat, count; \
   if (!width_p && !period_p && !cycle_p && !repeat_p && !count_p) { \
-    delay  = delay_p ? *delay_p : 60000000; \
+    delay  = delay_p ? *delay_p : DEFAULT_DELAY; \
     cycle  = 0; \
     width  = 5; \
     period = 10; \
@@ -222,15 +223,36 @@ int makeSequence(const uint64_t *delay_p, const uint32_t *width_p, const uint32_
 
 int trig() {
     INIT_DEVICE
-    dev->w_trig = 1;
+    dev->w_trig = -1;
+    return C_OK;
+}
+
+int reinit(uint64_t *delay_p) {
+    INIT_DEVICE
+    if (delay_p) {
+      makeClock(delay_p,NULL,NULL,NULL,NULL,NULL);
+      dev->w_save   = -1;
+      dev->w_clear  = -1;
+      dev->w_init   = -1;
+      dev->w_reinit = -1;
+    } else {
+      dev->w_reinit =  0;
+      dev->w_init   =  0;
+    }
+    return C_OK;
+}
+
+int extclk(int val) {
+    INIT_DEVICE
+    dev->w_ext_clk = val ? -1 : 0;
     return C_OK;
 }
 
 int arm() {
     int i;
     INIT_DEVICE
-    dev->w_clear = 1;
-    dev->w_init  = 1;
+    dev->w_clear = -1;
+    dev->w_init  = -1;
     return C_OK;
 }
 

@@ -20,26 +20,25 @@ generic (
   DATA_WIDTH : integer := 64
 );
 port (
+  CS         : out STD_LOGIC;
+  CLK_EXT    : in  STD_LOGIC;
+  CLK_20M    : in  STD_LOGIC;
   -- BRAM interface
   BRAM_RDATA : in   STD_LOGIC_VECTOR(63 downto 0);
   -- master clock domain
   M_CLK_I    : in  STD_LOGIC;
-  M_RST_I    : in  STD_LOGIC;
   M_ADDR_I   : in  UNSIGNED(ADDR_WIDTH-1 downto 0);
   M_DATA_RO  : out STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
   M_DATA_WI  : in  STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
   M_STRB_WI  : in  STD_LOGIC_VECTOR(DATA_WIDTH/8-1 downto 0);
-  M_WE_WI    : in  STD_LOGIC;
   -- slave clock domain
-  S_CLK_I    : in  STD_LOGIC;
+  S_CLK_O    : out STD_LOGIC;
   S_STAT_WI  : in  STD_LOGIC_VECTOR(STAT_COUNT*DATA_WIDTH-1 downto 0);
   S_IDX_WI   : in  INTEGER;
   S_DATA_WI  : in  STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
   S_STRB_WI  : in  STD_LOGIC_VECTOR(DATA_WIDTH/8-1 downto 0);
   S_HEAD_WI  : in  STD_LOGIC_VECTOR(HEAD_COUNT*DATA_WIDTH-1 downto 0);
   S_HWRT_WI  : in  STD_LOGIC;
-  --S_IDX_RI   : in  INTEGER;
-  --S_DATA_RO  : out STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
   S_HEAD_RO  : out STD_LOGIC_VECTOR(HEAD_COUNT*DATA_WIDTH-1 downto 0);  
   S_CTRL_RO  : out STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
   -- shared flip-flop memory
@@ -49,7 +48,6 @@ end clock_interface;
 
 architecture arch_imp of clock_interface is
 constant DATA_COUNT: integer := STAT_COUNT+CTRL_COUNT+HEAD_COUNT;
-
 constant STAT_MIN  : integer := 0;
 constant STAT_MAX  : integer := STAT_COUNT;
 constant CTRL_MIN  : integer := STAT_MAX;
@@ -84,44 +82,55 @@ signal s_strb_wi_buf : strb_array  := (others => (others => '0'));
 signal s_data_wi_buf : data_array  := (others => (others => '0'));
 signal s_ctrl_ro_buf : ctrl_array  := (others => (others => '0'));
 signal s_head_ro_buf : head_array  := (others => (others => '0'));
-
 function addr2base(addr : unsigned) return integer is
 begin
   return to_integer(addr)*DATA_WIDTH;
 end addr2base;
-
+signal clock_switch  : std_logic := '0';
+signal s_clk,clk_int : std_logic := '0';
 begin
+---- 10MHz clock switch
+clock10MHz: process(CLK_20M) begin
+  if rising_edge(CLK_20M) then
+    if clock_switch = '0' then
+      clk_int <= not clk_int;
+    end if;
+  end if;
+end process clock10MHz;
+-- clk mux
+s_clk <= CLK_EXT when clock_switch = '1' else clk_int;
+S_CLK_O <= s_clk;
+CS <= clock_switch;
 
 M_DATA_RO <= DATA_BUF(addr2base(M_ADDR_I)+DATA_WIDTH-1 downto addr2base(M_ADDR_I))
    when M_ADDR_I < offset else BRAM_RDATA;
 
-update_buffer: process(M_CLK_I,M_RST_I,M_ADDR_I,M_STRB_WI,M_DATA_WI)
+update_buffer: process(M_CLK_I,M_ADDR_I,M_STRB_WI,M_DATA_WI)
 begin
   if (rising_edge(M_CLK_I)) then
-    if M_RST_I = '1' then
-      DATA_BUF <= (others => '0');
-    else
-      -- handle driver write operations
-      if M_ADDR_I < offset then
-        for i in 0 to DATA_WIDTH/8-1 loop
-          if M_STRB_WI(i) = '1' then
-            DATA_BUF(addr2base(M_ADDR_I)+i*8+7 downto addr2base(M_ADDR_I)+i*8) <= M_DATA_WI(i*8+7 downto i*8);
-          end if;
-        end loop;
-      end if;
-      -- handle fpga write operations
-      DATA_BUF(STAT_HEAD downto STAT_BASE) <= s_stat_wi_buf(0);
-      if s_hwrt_wi_buf(0) = '1' then
-        DATA_BUF(HEAD_HEAD downto HEAD_BASE) <= s_head_wi_buf(0);
-      end if;
-      if s_idx_wi_buf(0) < HEAD_MAX then
-        for i in 0 to DATA_WIDTH/8-1 loop
-          if s_strb_wi_buf(0)(i) = '1' then
-            DATA_BUF(addr2base(s_idx_wi_buf(0))+i*8+7 downto addr2base(s_idx_wi_buf(0))+i*8) <=  s_data_wi_buf(0)(i*8+7 downto i*8);
-          end if;
-        end loop;
-      end if;    
+    -- handle driver write operations
+    if M_ADDR_I < offset then
+      for i in 0 to DATA_WIDTH/8-1 loop
+        if M_STRB_WI(i) = '1' then
+          DATA_BUF(addr2base(M_ADDR_I)+i*8+7 downto addr2base(M_ADDR_I)+i*8) <= M_DATA_WI(i*8+7 downto i*8);
+        end if;
+      end loop;
     end if;
+    if M_ADDR_I=CTRL_MIN and M_STRB_WI(5) = '1' then
+      clock_switch <= M_DATA_WI(5*8);
+    end if;
+    -- handle fpga write operations
+    DATA_BUF(STAT_HEAD downto STAT_BASE) <= s_stat_wi_buf(0);
+    if s_hwrt_wi_buf(0) = '1' then
+      DATA_BUF(HEAD_HEAD downto HEAD_BASE) <= s_head_wi_buf(0);
+    end if;
+    if s_idx_wi_buf(0) < HEAD_MAX then
+      for i in 0 to DATA_WIDTH/8-1 loop
+        if s_strb_wi_buf(0)(i) = '1' then
+          DATA_BUF(addr2base(s_idx_wi_buf(0))+i*8+7 downto addr2base(s_idx_wi_buf(0))+i*8) <=  s_data_wi_buf(0)(i*8+7 downto i*8);
+        end if;
+      end loop;
+    end if;    
   end if;
 end process update_buffer;
 
@@ -141,25 +150,19 @@ begin
 end process update_in;
 
 -- two stage buf out
-update_out1: process(S_CLK_I,DATA_BUF)--, s_idx_ri_buf)
+update_out1: process(s_clk,DATA_BUF)
 variable idx, address  : integer;
 begin
-  if falling_edge(S_CLK_I) then
---     if s_idx_ri_buf < HEAD_MAX
---     then  s_data_ro_buf(1) <=  DATA_BUF(idx2base(s_idx_ri_buf)+DATA_WIDTH-1 downto idx2base(s_idx_ri_buf));
---     elsif s_idx_ri_buf < HEAD_MAX+DATA_COUNT
---     then  s_data_ro_buf(1) <= BRAM_RDATA;
---     else  s_data_ro_buf(1) <= (others => '0');
---     end if;
+  if falling_edge(s_clk) then
      s_ctrl_ro_buf(1) <= DATA_BUF(CTRL_HEAD downto CTRL_BASE);
      s_head_ro_buf(1) <= DATA_BUF(HEAD_HEAD downto HEAD_BASE);     
   end if;  
 end process update_out1;
 
-update_out2: process(S_CLK_I,S_STAT_WI,S_IDX_WI,S_STRB_WI,S_DATA_WI,S_HEAD_WI,S_HWRT_WI)--,S_IDX_RI)
+update_out2: process(s_clk,S_STAT_WI,S_IDX_WI,S_STRB_WI,S_DATA_WI,S_HEAD_WI,S_HWRT_WI)
 variable address  : integer;
 begin
-  if rising_edge(S_CLK_I) then
+  if rising_edge(s_clk) then
     -- write
     s_stat_wi_buf(1) <= S_STAT_WI;
     
@@ -172,11 +175,8 @@ begin
     -- read
     s_ctrl_ro_buf(0) <= s_ctrl_ro_buf(1);
     s_head_ro_buf(0) <= s_head_ro_buf(1);
-    --s_idx_ri_buf     <= S_IDX_RI;
-    --s_data_ro_buf(0) <= s_data_ro_buf(1);
-  end if;  
+  end if;
 end process update_out2;
 S_CTRL_RO <= s_ctrl_ro_buf(0);
 S_HEAD_RO <= s_head_ro_buf(0);
---S_DATA_RO <= s_data_ro_buf(0);
 end arch_imp;
