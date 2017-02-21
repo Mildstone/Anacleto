@@ -16,8 +16,6 @@ entity w7x_timing_v1_0 is
         clk_in     : in  STD_LOGIC;
         clk20_in   : in  STD_LOGIC;
         trig_in    : in  STD_LOGIC;
-        clk_out    : out STD_LOGIC;
-        trig_out   : out STD_LOGIC;
         state_do   : out STD_LOGIC_VECTOR (7 downto 2);
         state_led  : out STD_LOGIC_VECTOR (7 downto 0);
         power_down : out STD_LOGIC;
@@ -158,6 +156,10 @@ architecture arch_imp of w7x_timing_v1_0 is
     constant i_init     : integer := 0;
     constant i_trig     : integer := 1;
     constant i_reinit   : integer := 3;
+    constant i_save     : integer := 4;
+    constant i_ext_clk  : integer := 5;
+    constant i_invert   : integer := 6;
+    constant i_gate     : integer := 7;
     constant HEAD_MAX   : integer := STAT_COUNT+CTRL_COUNT+HEAD_COUNT;
     constant uHEAD_MAX  : unsigned(ADDR_WIDTH-1 downto 0) := to_unsigned(HEAD_MAX,ADDR_WIDTH);
     --constant oneaddr    : unsigned(ADDR_WIDTH-1 downto 0) := to_unsigned(1,ADDR_WIDTH);
@@ -179,10 +181,13 @@ architecture arch_imp of w7x_timing_v1_0 is
 
     signal trigger      : STD_LOGIC;
     signal clk,clk_cs   : STD_LOGIC;
+
+    alias s_gate   is ctrl_in(i_gate*8+7   downto i_gate*8);
+    alias s_invert is ctrl_in(i_invert*8+7 downto i_invert*8);
+    alias sig      is staterr(7);
+    alias gate     is staterr(6);
 begin
-clk_out    <= clk;
 trigger    <= ctrl_in(8) or trig_in;
-trig_out   <= trigger;
 power_down <= clk_cs;
 ---- BRAM
 bram_clka   <= s00_axi_clk;
@@ -203,12 +208,13 @@ bctrl: for i in 0 to 7 generate
   bctrl_in(i) <= trigger when i=i_trig else ctrl_in(i*8);
 end generate bctrl;
 ---- translate DOUT states
-state_do(2)  <= staterr(7); --sig
-state_do(3)  <= staterr(6); --gate
-state_do(4)  <= '0';
-state_do(5)  <= staterr(7); --sig
-state_do(6)  <= staterr(7); --sig
-state_do(7)  <= staterr(7); --sig
+state: for i in 2 to 7 generate
+  state_do(i) <= not gate when (s_invert(i) and     s_gate(i)) = '1'
+            else not sig  when (s_invert(i) and not s_gate(i)) = '1'
+            else sig      when (s_invert(i) or      s_gate(i)) = '0'
+            else gate;
+end generate state;
+
 ---- translate LED states
 state_led(0) <= not trigger;
 state_led(1) <= clk;
