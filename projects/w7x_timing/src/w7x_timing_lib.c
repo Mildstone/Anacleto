@@ -3,7 +3,7 @@
 #include "w7x_timing.h"
 
 #define DEFAULT_DELAY 600000000 //60s
-
+static struct timespec t = {0,100};
 static char error[1024];
 #define CHECK_INPUTS \
   uint64_t delay, cycle; \
@@ -249,11 +249,14 @@ int trig() {
 int reinit(uint64_t *delay_p) {
     INIT_DEVICE
     if (delay_p) {
+      dev->w_init   =  0;
       makeClock(delay_p,NULL,NULL,NULL,NULL,NULL);
+      nanosleep(&t,0);
       dev->w_save   = -1;
+      nanosleep(&t,0);
       dev->w_clear  = -1;
-      dev->w_init   = -1;
       dev->w_reinit = -1;
+      dev->w_init   = -1;
     } else {
       dev->w_reinit =  0;
       dev->w_init   =  0;
@@ -261,9 +264,21 @@ int reinit(uint64_t *delay_p) {
     return C_OK;
 }
 
+int invert(uint8_t val) {
+    INIT_DEVICE
+    dev->w_invert = val;
+    return C_OK;
+}
+
+int gate(uint8_t val) {
+    INIT_DEVICE
+    dev->w_gate = val;
+    return C_OK;
+}
+
 int extclk(int val) {
     INIT_DEVICE
-    dev->w_ext_clk = val ? -1 : 0;
+    dev->w_extclk = val ? -1 : 0;
     return C_OK;
 }
 
