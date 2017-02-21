@@ -48,9 +48,23 @@ int getDev(int *pos) {
     return C_DEV_ERROR;
 }
 
+uint64_t _getClock() {
+  uint8_t buf[8];
+  int i;
+  buf[7]=buf[6]=buf[5]=0;
+  for (i = 3 ; i < 8 ; i++)
+    buf[i-3] = dev->r_status[i];
+  return *(uint64_t*)buf;
+}
+
+int getClock(uint64_t * clock) {
+  INIT_DEVICE
+  *clock = _getClock();
+  return C_OK;
+}
+
 int getStatus(int idx, int *pos) {
   int pos_in = *pos;
-  uint8_t buf[8];
   if (idx >= MAX_STATUS || idx < 0) {
     *pos += sprintf(error+*pos,"ERROR: IDX < 0 or IDX > %lu",MAX_STATUS-1);
     return -1;
@@ -88,20 +102,17 @@ int getStatus(int idx, int *pos) {
   }
   if (idx>0)
     *pos += sprintf(error+*pos,"\n");
-  else if (status&1)
-    *pos += sprintf(error+*pos," - ok\n");
-  else {
+  else if (status&1) {
+    *pos += sprintf(error+*pos," - ok @ ticks: %llu\n",_getClock());
+  } else {
     *pos += sprintf(error+*pos," - errors:\n");
     for (i = 1 ; i < 3 ; i++)
       getStatus(i,pos);
-    buf[7]=buf[6]=buf[5]=0;
-    for (i = 3 ; i < 8 ; i++)
-      buf[i-3] = dev->r_status[i];
-    *pos += sprintf(error+*pos,"ticks: %llu\n",*(uint64_t*)buf);
-   }
+    *pos += sprintf(error+*pos," @ ticks: %llu\n",_getClock());
   }
   if (pos_in==0)
     printf(error);
+  }
   return status;
 }
 
@@ -137,6 +148,14 @@ int setParams(uint64_t delay, uint32_t width, uint32_t period, uint64_t cycle, u
   }
   if(width >= period) {
     *pos += sprintf(error+*pos,"ERROR: WIDTH >= PERIOD\n");
+    return C_PARAM_ERROR;
+  }
+  if (delay>MAX_TIME) {
+    *pos += sprintf(error+*pos,"ERROR: DELAY > MAX_TIME = %llu\n",MAX_TIME);
+    return C_PARAM_ERROR;
+  }
+  if (cycle>MAX_TIME) {
+    *pos += sprintf(error+*pos,"ERROR: CYCLE > MAX_TIME = %llu\n",MAX_TIME);
     return C_PARAM_ERROR;
   }
   if (getDev(pos))

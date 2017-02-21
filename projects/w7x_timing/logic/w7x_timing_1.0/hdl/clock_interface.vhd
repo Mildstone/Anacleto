@@ -24,7 +24,7 @@ port (
   CLK_EXT    : in  STD_LOGIC;
   CLK_20M    : in  STD_LOGIC;
   -- BRAM interface
-  BRAM_RDATA : in   STD_LOGIC_VECTOR(63 downto 0);
+  BRAM_RDATA : in   STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
   -- master clock domain
   M_CLK_I    : in  STD_LOGIC;
   M_ADDR_I   : in  UNSIGNED(ADDR_WIDTH-1 downto 0);
@@ -34,7 +34,7 @@ port (
   -- slave clock domain
   S_CLK_O    : out STD_LOGIC;
   S_STAT_WI  : in  STD_LOGIC_VECTOR(STAT_COUNT*DATA_WIDTH-1 downto 0);
-  S_IDX_WI   : in  INTEGER;
+  --S_ADDR_WI  : in  UNSIGNED(ADDR_WIDTH-1 downto 0);
   S_DATA_WI  : in  STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
   S_STRB_WI  : in  STD_LOGIC_VECTOR(DATA_WIDTH/8-1 downto 0);
   S_HEAD_WI  : in  STD_LOGIC_VECTOR(HEAD_COUNT*DATA_WIDTH-1 downto 0);
@@ -82,25 +82,29 @@ signal s_strb_wi_buf : strb_array  := (others => (others => '0'));
 signal s_data_wi_buf : data_array  := (others => (others => '0'));
 signal s_ctrl_ro_buf : ctrl_array  := (others => (others => '0'));
 signal s_head_ro_buf : head_array  := (others => (others => '0'));
+
 function addr2base(addr : unsigned) return integer is
 begin
   return to_integer(addr)*DATA_WIDTH;
 end addr2base;
-signal clock_switch  : std_logic := '0';
+
+signal clock_switch  : std_logic_vector(0 to 1) := (others =>'0');
 signal s_clk,clk_int : std_logic := '0';
 begin
 ---- 10MHz clock switch
 clock10MHz: process(CLK_20M) begin
   if rising_edge(CLK_20M) then
-    if clock_switch = '0' then
+    clock_switch(1) <= DATA_BUF(13*8);
+    clock_switch(0) <= clock_switch(1);
+    if clock_switch(0) = '0' then
       clk_int <= not clk_int;
     end if;
   end if;
 end process clock10MHz;
 -- clk mux
-s_clk <= CLK_EXT when clock_switch = '1' else clk_int;
+s_clk <= CLK_EXT when clock_switch(0) = '1' else clk_int;
 S_CLK_O <= s_clk;
-CS <= clock_switch;
+CS <= DATA_BUF(13*8);
 
 M_DATA_RO <= DATA_BUF(addr2base(M_ADDR_I)+DATA_WIDTH-1 downto addr2base(M_ADDR_I))
    when M_ADDR_I < offset else BRAM_RDATA;
@@ -116,21 +120,19 @@ begin
         end if;
       end loop;
     end if;
-    if M_ADDR_I=CTRL_MIN and M_STRB_WI(5) = '1' then
-      clock_switch <= M_DATA_WI(5*8);
-    end if;
     -- handle fpga write operations
     DATA_BUF(STAT_HEAD downto STAT_BASE) <= s_stat_wi_buf(0);
     if s_hwrt_wi_buf(0) = '1' then
       DATA_BUF(HEAD_HEAD downto HEAD_BASE) <= s_head_wi_buf(0);
     end if;
-    if s_idx_wi_buf(0) < HEAD_MAX then
+    --if s_addr_wi_buf(0) < offset then
       for i in 0 to DATA_WIDTH/8-1 loop
         if s_strb_wi_buf(0)(i) = '1' then
-          DATA_BUF(addr2base(s_idx_wi_buf(0))+i*8+7 downto addr2base(s_idx_wi_buf(0))+i*8) <=  s_data_wi_buf(0)(i*8+7 downto i*8);
+          --DATA_BUF(addr2base(s_addr_wi_buf(0))+i*8+7 downto addr2base(s_addr_wi_buf(0))+i*8) <=  s_data_wi_buf(0)(i*8+7 downto i*8);
+          DATA_BUF(DATA_WIDTH+i*8+7 downto DATA_WIDTH+i*8) <=  s_data_wi_buf(0)(i*8+7 downto i*8);
         end if;
       end loop;
-    end if;    
+    --end if;    
   end if;
 end process update_buffer;
 
@@ -140,7 +142,7 @@ begin
   if (rising_edge(M_CLK_I)) then
     s_stat_wi_buf(0) <= s_stat_wi_buf(1);
     
-    s_idx_wi_buf(0)  <= s_idx_wi_buf(1);
+    --s_addr_wi_buf(0) <= s_addr_wi_buf(1);
     s_strb_wi_buf(0) <= s_strb_wi_buf(1);
     s_data_wi_buf(0) <= s_data_wi_buf(1);
     
@@ -151,7 +153,6 @@ end process update_in;
 
 -- two stage buf out
 update_out1: process(s_clk,DATA_BUF)
-variable idx, address  : integer;
 begin
   if falling_edge(s_clk) then
      s_ctrl_ro_buf(1) <= DATA_BUF(CTRL_HEAD downto CTRL_BASE);
@@ -159,14 +160,13 @@ begin
   end if;  
 end process update_out1;
 
-update_out2: process(s_clk,S_STAT_WI,S_IDX_WI,S_STRB_WI,S_DATA_WI,S_HEAD_WI,S_HWRT_WI)
-variable address  : integer;
+update_out2: process(s_clk,S_STAT_WI,S_STRB_WI,S_DATA_WI,S_HEAD_WI,S_HWRT_WI)--S_ADDR_WI
 begin
   if rising_edge(s_clk) then
     -- write
     s_stat_wi_buf(1) <= S_STAT_WI;
     
-    s_idx_wi_buf(1)  <= to_unsigned(S_IDX_WI,ADDR_WIDTH);
+    --s_addr_wi_buf(1) <= S_ADDR_WI;
     s_strb_wi_buf(1) <= S_STRB_WI;
     s_data_wi_buf(1) <= S_DATA_WI;
     

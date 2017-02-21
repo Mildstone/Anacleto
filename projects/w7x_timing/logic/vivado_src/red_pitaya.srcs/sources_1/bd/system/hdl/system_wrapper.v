@@ -1,7 +1,7 @@
 //Copyright 1986-2015 Xilinx, Inc. All Rights Reserved.
 //--------------------------------------------------------------------------------
 //Tool Version: Vivado v.2015.4 (lin64) Build 1412921 Wed Nov 18 09:44:32 MST 2015
-//Date        : Sat Feb 18 06:49:55 2017
+//Date        : Tue Feb 21 15:16:17 2017
 //Host        : mds-comp-1 running 64-bit Debian GNU/Linux 8.6 (jessie)
 //Command     : generate_target system_wrapper.bd
 //Design      : system_wrapper
@@ -31,12 +31,13 @@ module system_wrapper
     FIXED_IO_ps_clk,
     FIXED_IO_ps_porb,
     FIXED_IO_ps_srstb,
-    clk,
-    clk_led,
+    clk_in,
+    clk_out,
     state,
+    state_inv,
     state_leds,
-    trig,
-    trig_led);
+    trig_in,
+    trig_out);
   inout [14:0]DDR_addr;
   inout [2:0]DDR_ba;
   inout DDR_cas_n;
@@ -58,12 +59,13 @@ module system_wrapper
   inout FIXED_IO_ps_clk;
   inout FIXED_IO_ps_porb;
   inout FIXED_IO_ps_srstb;
-  input clk;
-  output clk_led;
-  output [5:0]state;
-  output [5:0]state_leds;
-  input trig;
-  output [0:0]trig_led;
+  input clk_in;
+  output clk_out;
+  output [7:2]state;
+  output [5:0]state_inv;
+  output [7:0]state_leds;
+  input trig_in;
+  output trig_out;
 
   wire [14:0]DDR_addr;
   wire [2:0]DDR_ba;
@@ -86,12 +88,13 @@ module system_wrapper
   wire FIXED_IO_ps_clk;
   wire FIXED_IO_ps_porb;
   wire FIXED_IO_ps_srstb;
-  wire clk;
-  wire clk_led;
-  wire [5:0]state;
-  wire [5:0]state_leds;
-  wire trig;
-  wire [0:0]trig_led;
+  wire clk_in;
+  wire clk_out;
+  wire [7:2]state;
+  wire [5:0]state_inv;
+  wire [7:0]state_leds;
+  wire trig_in;
+  wire trig_out;
 
   system system_i
        (.DDR_addr(DDR_addr),
@@ -115,10 +118,11 @@ module system_wrapper
         .FIXED_IO_ps_clk(FIXED_IO_ps_clk),
         .FIXED_IO_ps_porb(FIXED_IO_ps_porb),
         .FIXED_IO_ps_srstb(FIXED_IO_ps_srstb),
-        .clk(clk),
-        .clk_led(clk_led),
+        .clk_in(clk_in),
+        .clk_out(clk_out),
         .state(state),
+        .state_inv(state_inv),
         .state_leds(state_leds),
-        .trig(trig),
-        .trig_led(trig_led));
+        .trig_in(trig_in),
+        .trig_out(trig_out));
 endmodule
