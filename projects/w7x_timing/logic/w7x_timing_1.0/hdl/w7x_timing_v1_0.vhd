@@ -4,33 +4,35 @@ use ieee.numeric_std.all;
 
 entity w7x_timing_v1_0 is
     generic (
-        STAT_COUNT           : integer := 1;
-        CTRL_COUNT           : integer := 1;
-        HEAD_COUNT           : integer := 4;
+        STAT_COUNT : integer := 1;
+        CTRL_COUNT : integer := 1;
+        HEAD_COUNT : integer := 4;
         
-        BRAM_SIZE            : integer := 32768;
+        BRAM_SIZE  : integer := 32768;
         DATA_WIDTH : integer := 64;
         ADDR_WIDTH : integer := 15
     );
     port (
         clk_in     : in  STD_LOGIC;
-        power_down : out STD_LOGIC;
         clk20_in   : in  STD_LOGIC;
-        clk_out    : out STD_LOGIC;
         trig_in    : in  STD_LOGIC;
-        state_out  : out STD_LOGIC_VECTOR (5 downto 0);
+        clk_out    : out STD_LOGIC;
+        trig_out   : out STD_LOGIC;
+        state_do   : out STD_LOGIC_VECTOR (7 downto 2);
+        state_led  : out STD_LOGIC_VECTOR (7 downto 0);
+        power_down : out STD_LOGIC;
         -- PortA of blk_mem_gen
         bram_clka  : out  STD_LOGIC;
-        bram_douta : in   STD_LOGIC_VECTOR(63 downto 0);
-        bram_dina  : out  STD_LOGIC_VECTOR(63 downto 0);
-        bram_addra : out  STD_LOGIC_VECTOR(14 downto 0);
+        bram_douta : in   STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
+        bram_dina  : out  STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
+        bram_addra : out  STD_LOGIC_VECTOR(ADDR_WIDTH-1 downto 0);
         bram_ena   : out  STD_LOGIC;
         bram_wea   : out  STD_LOGIC;
         bram_rsta  : out  STD_LOGIC;
         -- PortB of blk_mem_gen
-        bram_addrb : out  STD_LOGIC_VECTOR(14 downto 0);
+        bram_addrb : out  STD_LOGIC_VECTOR(ADDR_WIDTH-1 downto 0);
         bram_clkb  : out  STD_LOGIC;
-        bram_doutb : in   STD_LOGIC_VECTOR(63 downto 0);
+        bram_doutb : in   STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
         bram_rstb  : out  STD_LOGIC;
         -- Ports of Axi Slave Bus Interface S00_AXI
         s00_axi_clk     : in  std_logic;
@@ -73,8 +75,8 @@ architecture arch_imp of w7x_timing_v1_0 is
      EN_OUT        : out   STD_LOGIC;
      WE_OUT        : out   STD_LOGIC;
      -- AXI ports
-     S_AXI_CLK    : in  std_logic;
-     S_AXI_RESETN : in  std_logic;
+     S_AXI_CLK     : in  std_logic;
+     S_AXI_RESETN  : in  std_logic;
      S_AXI_AWADDR  : in  std_logic_vector(AXI_ADDR_WIDTH-1 downto 0);
      S_AXI_AWPROT  : in  std_logic_vector(2 downto 0);
      S_AXI_AWVALID : in  std_logic;
@@ -111,7 +113,7 @@ architecture arch_imp of w7x_timing_v1_0 is
     CLK_EXT    : in  STD_LOGIC;
     CLK_20M    : in  STD_LOGIC;
     -- BRAM interface
-    BRAM_RDATA : in   STD_LOGIC_VECTOR(63 downto 0);
+    BRAM_RDATA : in   STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
     -- master clock domain
     M_CLK_I    : in  STD_LOGIC;
     M_ADDR_I   : in  UNSIGNED(ADDR_WIDTH-1 downto 0);
@@ -121,7 +123,7 @@ architecture arch_imp of w7x_timing_v1_0 is
     -- slave clock domain
     S_CLK_O    : out STD_LOGIC;
     S_STAT_WI  : in  STD_LOGIC_VECTOR(STAT_COUNT*DATA_WIDTH-1 downto 0);
-    S_IDX_WI   : in  INTEGER;
+    --S_ADDR_WI  : in  UNSIGNED(ADDR_WIDTH-1 downto 0);
     S_DATA_WI  : in  STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
     S_STRB_WI  : in  STD_LOGIC_VECTOR(DATA_WIDTH/8-1 downto 0);
     S_HEAD_WI  : in  STD_LOGIC_VECTOR(HEAD_COUNT*DATA_WIDTH-1 downto 0);
@@ -135,44 +137,52 @@ architecture arch_imp of w7x_timing_v1_0 is
 
     component w7x_timing is
     generic (
-      ERROR_COUNT : integer
+      HEAD_COUNT  : integer;
+      ADDR_WIDTH  : integer;
+      DATA_WIDTH  : integer
     );
     port (
     clk_in        : in  STD_LOGIC;
     ctrl_in       : in  STD_LOGIC_VECTOR(7 downto 0);
-    head_in       : in  STD_LOGIC_VECTOR(4*64-1 downto 0);
-    head_out      : out STD_LOGIC_VECTOR(4*64-1 downto 0);
+    head_in       : in  STD_LOGIC_VECTOR(HEAD_COUNT*DATA_WIDTH-1 downto 0);
+    head_out      : out STD_LOGIC_VECTOR(HEAD_COUNT*DATA_WIDTH-1 downto 0);
     ctrl_strb     : out STD_LOGIC_VECTOR(7 downto 0);
     ctrl_out      : out STD_LOGIC_VECTOR(7 downto 0);
     load_head_out : out STD_LOGIC;
-    index_out     : out integer;
-    state_out     : out STD_LOGIC_VECTOR(7 downto 0);
-    error_out     : out STD_LOGIC_VECTOR(ERROR_COUNT*8-1 downto 0);
-    sample_in     : in  STD_LOGIC_VECTOR(63 downto 0)
+    index_out     : out UNSIGNED(ADDR_WIDTH-1 downto 0);
+    state_out     : out STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
+    sample_in     : in  STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0)
     );
     end component w7x_timing;
 
+    constant i_init     : integer := 0;
+    constant i_trig     : integer := 1;
+    constant i_reinit   : integer := 3;
     constant HEAD_MAX   : integer := STAT_COUNT+CTRL_COUNT+HEAD_COUNT;
-    constant TOTAL_MEM  : integer := HEAD_MAX + BRAM_SIZE;
-    signal data_buf     : STD_LOGIC_VECTOR(HEAD_MAX*DATA_WIDTH-1 downto 0);
-    signal m_addr       : UNSIGNED(ADDR_WIDTH-1 downto 0);
-    signal m_rdata      : STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
-    signal m_wdata      : STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
-    signal m_strb       : STD_LOGIC_VECTOR((DATA_WIDTH/8)-1 downto 0);
+    constant uHEAD_MAX  : unsigned(ADDR_WIDTH-1 downto 0) := to_unsigned(HEAD_MAX,ADDR_WIDTH);
+    --constant oneaddr    : unsigned(ADDR_WIDTH-1 downto 0) := to_unsigned(1,ADDR_WIDTH);
+    signal data_buf     : std_logic_vector(HEAD_MAX*DATA_WIDTH-1 downto 0);
+    signal m_addr       : unsigned(ADDR_WIDTH-1 downto 0);
+    signal m_rdata      : std_logic_vector(DATA_WIDTH-1 downto 0);
+    signal m_wdata      : std_logic_vector(DATA_WIDTH-1 downto 0);
+    signal m_strb       : std_logic_vector((DATA_WIDTH/8)-1 downto 0);
     signal load_head    : STD_LOGIC;
-    signal index_sample : integer;
-    signal stat         : std_logic_vector(STAT_COUNT*DATA_WIDTH-1 downto 0);
+    signal index_sample : unsigned(ADDR_WIDTH-1 downto 0);
+    signal staterr      : std_logic_vector(STAT_COUNT*DATA_WIDTH-1 downto 0);
     signal head_in      : std_logic_vector(HEAD_COUNT*DATA_WIDTH-1 downto 0);
     signal head_out     : std_logic_vector(HEAD_COUNT*DATA_WIDTH-1 downto 0);
-    signal bctrl_in     : STD_LOGIC_VECTOR((DATA_WIDTH/8)-1 downto 0);
+    signal bctrl_in     : std_logic_vector((DATA_WIDTH/8)-1 downto 0);
     signal ctrl_in      : std_logic_vector(CTRL_COUNT*DATA_WIDTH-1 downto 0);
-    signal bctrl_out    : STD_LOGIC_VECTOR((DATA_WIDTH/8)-1 downto 0);
+    signal bctrl_out    : std_logic_vector((DATA_WIDTH/8)-1 downto 0);
     signal ctrl_out     : std_logic_vector(DATA_WIDTH-1 downto 0);
-    signal ctrl_strb    : STD_LOGIC_VECTOR((DATA_WIDTH/8)-1 downto 0);
+    signal ctrl_strb    : std_logic_vector((DATA_WIDTH/8)-1 downto 0);
 
+    signal trigger      : STD_LOGIC;
     signal clk,clk_cs   : STD_LOGIC;
 begin
-clk_out <= clk;
+clk_out    <= clk;
+trigger    <= ctrl_in(8) or trig_in;
+trig_out   <= trigger;
 power_down <= clk_cs;
 ---- BRAM
 bram_clka   <= s00_axi_clk;
@@ -184,37 +194,30 @@ end generate;
 -- b channel
 bram_rstb  <= '0';
 bram_clkb  <= clk;
-bram_addrb <= std_logic_vector(to_unsigned(index_sample+HEAD_MAX,ADDR_WIDTH));
----- translate software state to LED/DOUT state
-state: for i in 0 to 3 generate
-  state_out(i) <= stat(7-i);
-end generate state;
---state_out(0) <= S00_AXI_AWVALID;
---state_out(1) <= S00_AXI_WVALID;
---state_out(2) <= S00_AXI_BREADY;
---state_out(3) <= S00_AXI_ARVALID;
---state_out(4) <= S00_AXI_RREADY;
-state_out(4) <= clk_cs;
-state_out(5) <= not stat(0);
+bram_addrb <= std_logic_vector(index_sample+uHEAD_MAX);
 ---- translate control bits to bytes
-ctrl_out <= (0 => bctrl_out(0),
-             8 => bctrl_out(1),
-            16 => bctrl_out(2),
-            24 => bctrl_out(3),
-            32 => bctrl_out(4),
-            40 => bctrl_out(2),
-            48 => bctrl_out(3),
-            56 => bctrl_out(4),
-            others =>'0');
-bctrl_in <= (0 => ctrl_in( 0),
-             1 => ctrl_in( 8) or trig_in,
-             2 => ctrl_in(16),
-             3 => ctrl_in(24),
-             4 => ctrl_in(32),
-             5 => ctrl_in(40),
-             6 => ctrl_in(48),
-             7 => ctrl_in(56));
-
+ctrl: for i in 0 to 7 generate
+  ctrl_out(i*8+7 downto i*8) <= (others => bctrl_out(i));
+end generate ctrl;
+bctrl: for i in 0 to 7 generate
+  bctrl_in(i) <= trigger when i=i_trig else ctrl_in(i*8);
+end generate bctrl;
+---- translate DOUT states
+state_do(2)  <= staterr(7); --sig
+state_do(3)  <= staterr(6); --gate
+state_do(4)  <= '0';
+state_do(5)  <= staterr(7); --sig
+state_do(6)  <= staterr(7); --sig
+state_do(7)  <= staterr(7); --sig
+---- translate LED states
+state_led(0) <= not trigger;
+state_led(1) <= clk;
+state_led(2) <= staterr(7);--sig
+state_led(3) <= staterr(6);--gate
+state_led(4) <= bctrl_in(i_init);
+state_led(5) <= bctrl_in(i_reinit);
+state_led(6) <= clk_cs;
+state_led(7) <= not staterr(0);--error/not ok
 
 ---- Instantiation of Axi Bus Interface S00_AXI
 w7x_timing_v1_0_S00_AXI_inst : w7x_timing_v1_0_S00_AXI
@@ -258,7 +261,7 @@ w7x_timing_clock_interface_inst : clock_interface
     generic map (
         STAT_COUNT => STAT_COUNT,
         CTRL_COUNT => CTRL_COUNT,
-        HEAD_COUNT => HEAD_COUNT,        
+        HEAD_COUNT => HEAD_COUNT,
         BRAM_SIZE  => BRAM_SIZE,
         ADDR_WIDTH => ADDR_WIDTH,
         DATA_WIDTH => DATA_WIDTH
@@ -274,8 +277,8 @@ w7x_timing_clock_interface_inst : clock_interface
         M_DATA_WI  => m_wdata,
         M_STRB_WI  => m_strb,
         S_CLK_O    => clk,
-        S_STAT_WI  => stat,
-        S_IDX_WI   => 1,
+        S_STAT_WI  => staterr,
+        --S_ADDR_WI  => oneaddr,
         S_DATA_WI  => ctrl_out,
         S_STRB_WI  => ctrl_strb,
         S_HEAD_WI  => head_out,
@@ -288,19 +291,20 @@ w7x_timing_clock_interface_inst : clock_interface
 ---- Instantiation of main program
 w7x_timing_inst : w7x_timing
     generic map (
-        ERROR_COUNT => STAT_COUNT*DATA_WIDTH/8-1
+        DATA_WIDTH => DATA_WIDTH,
+        ADDR_WIDTH => ADDR_WIDTH,
+        HEAD_COUNT => HEAD_COUNT
     )
     port map (
-           clk_in        => clk,
-           ctrl_in       => bctrl_in,
-           ctrl_out      => bctrl_out,
-           ctrl_strb     => ctrl_strb,
-           load_head_out => load_head,
-           index_out     => index_sample,
-           state_out     => stat(7 downto 0),
-           error_out     => stat(STAT_COUNT*DATA_WIDTH-1 downto 8),
-           head_in       => head_in,
-           head_out      => head_out,
-           sample_in     => bram_doutb
+       clk_in        => clk,
+       ctrl_in       => bctrl_in,
+       ctrl_out      => bctrl_out,
+       ctrl_strb     => ctrl_strb,
+       load_head_out => load_head,
+       index_out     => index_sample,
+       state_out     => staterr,
+       head_in       => head_in,
+       head_out      => head_out,
+       sample_in     => bram_doutb
       );
 end arch_imp;
