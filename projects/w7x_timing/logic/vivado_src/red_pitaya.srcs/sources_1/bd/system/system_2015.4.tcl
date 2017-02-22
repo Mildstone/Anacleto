@@ -147,20 +147,19 @@ proc create_root_design { parentCell } {
   set FIXED_IO [ create_bd_intf_port -mode Master -vlnv xilinx.com:display_processing_system7:fixedio_rtl:1.0 FIXED_IO ]
 
   # Create ports
-  set clk [ create_bd_port -dir I clk ]
-  set clk_led [ create_bd_port -dir O -type clk clk_led ]
-  set state [ create_bd_port -dir O -from 5 -to 0 state ]
-  set state_leds [ create_bd_port -dir O -from 5 -to 0 state_leds ]
-  set trig [ create_bd_port -dir I trig ]
-  set trig_led [ create_bd_port -dir O -from 0 -to 0 -type clk trig_led ]
+  set clk_in [ create_bd_port -dir I clk_in ]
+  set state0 [ create_bd_port -dir O -from 7 -to 0 state0 ]
+  set state1 [ create_bd_port -dir O -from 7 -to 2 state1 ]
+  set state_leds [ create_bd_port -dir O -from 7 -to 0 state_leds ]
+  set trig_in [ create_bd_port -dir I trig_in ]
 
   # Create instance: blk_mem_gen_0, and set properties
   set blk_mem_gen_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:blk_mem_gen:8.3 blk_mem_gen_0 ]
   set_property -dict [ list \
 CONFIG.Enable_32bit_Address {false} \
-CONFIG.Enable_A {Always_Enabled} \
+CONFIG.Enable_A {Use_ENA_Pin} \
 CONFIG.Enable_B {Always_Enabled} \
-CONFIG.Fill_Remaining_Memory_Locations {true} \
+CONFIG.Fill_Remaining_Memory_Locations {false} \
 CONFIG.Memory_Type {True_Dual_Port_RAM} \
 CONFIG.Operating_Mode_A {READ_FIRST} \
 CONFIG.Operating_Mode_B {READ_FIRST} \
@@ -168,9 +167,9 @@ CONFIG.Port_B_Clock {100} \
 CONFIG.Port_B_Enable_Rate {100} \
 CONFIG.Port_B_Write_Rate {50} \
 CONFIG.Read_Width_B {64} \
-CONFIG.Register_PortA_Output_of_Memory_Primitives {true} \
-CONFIG.Register_PortB_Output_of_Memory_Primitives {true} \
-CONFIG.Remaining_Memory_Locations {7} \
+CONFIG.Register_PortA_Output_of_Memory_Primitives {false} \
+CONFIG.Register_PortB_Output_of_Memory_Primitives {false} \
+CONFIG.Remaining_Memory_Locations {0} \
 CONFIG.Use_Byte_Write_Enable {false} \
 CONFIG.Use_RSTA_Pin {false} \
 CONFIG.Use_RSTB_Pin {false} \
@@ -179,6 +178,38 @@ CONFIG.Write_Width_A {64} \
 CONFIG.Write_Width_B {64} \
 CONFIG.use_bram_block {Stand_Alone} \
  ] $blk_mem_gen_0
+
+  # Create instance: clk_wiz_0, and set properties
+  set clk_wiz_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:clk_wiz:5.2 clk_wiz_0 ]
+  set_property -dict [ list \
+CONFIG.CLKIN1_JITTER_PS {80.0} \
+CONFIG.CLKOUT1_DRIVES {BUFGCE} \
+CONFIG.CLKOUT1_JITTER {330.728} \
+CONFIG.CLKOUT1_PHASE_ERROR {249.865} \
+CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {20.000} \
+CONFIG.CLKOUT2_DRIVES {BUFGCE} \
+CONFIG.CLKOUT3_DRIVES {BUFGCE} \
+CONFIG.CLKOUT4_DRIVES {BUFGCE} \
+CONFIG.CLKOUT5_DRIVES {BUFGCE} \
+CONFIG.CLKOUT6_DRIVES {BUFGCE} \
+CONFIG.CLKOUT7_DRIVES {BUFGCE} \
+CONFIG.FEEDBACK_SOURCE {FDBK_AUTO} \
+CONFIG.JITTER_SEL {No_Jitter} \
+CONFIG.MMCM_CLKFBOUT_MULT_F {36} \
+CONFIG.MMCM_CLKIN1_PERIOD {8.0} \
+CONFIG.MMCM_CLKOUT0_DIVIDE_F {45} \
+CONFIG.MMCM_CLKOUT0_DUTY_CYCLE {0.5} \
+CONFIG.MMCM_COMPENSATION {ZHOLD} \
+CONFIG.MMCM_DIVCLK_DIVIDE {5} \
+CONFIG.PRIMITIVE {PLL} \
+CONFIG.PRIM_IN_FREQ {125.000} \
+CONFIG.RESET_PORT {resetn} \
+CONFIG.RESET_TYPE {ACTIVE_LOW} \
+CONFIG.USE_LOCKED {false} \
+CONFIG.USE_MIN_POWER {true} \
+CONFIG.USE_POWER_DOWN {true} \
+CONFIG.USE_SAFE_CLOCK_STARTUP {true} \
+ ] $clk_wiz_0
 
   # Create instance: processing_system7_0, and set properties
   set processing_system7_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:processing_system7:5.5 processing_system7_0 ]
@@ -191,7 +222,7 @@ CONFIG.PCW_ACT_DCI_PERIPHERAL_FREQMHZ {10.158731} \
 CONFIG.PCW_ACT_ENET0_PERIPHERAL_FREQMHZ {125.000000} \
 CONFIG.PCW_ACT_ENET1_PERIPHERAL_FREQMHZ {10.000000} \
 CONFIG.PCW_ACT_FPGA0_PERIPHERAL_FREQMHZ {125.000000} \
-CONFIG.PCW_ACT_FPGA1_PERIPHERAL_FREQMHZ {10.000000} \
+CONFIG.PCW_ACT_FPGA1_PERIPHERAL_FREQMHZ {20.000000} \
 CONFIG.PCW_ACT_FPGA2_PERIPHERAL_FREQMHZ {50.000000} \
 CONFIG.PCW_ACT_FPGA3_PERIPHERAL_FREQMHZ {10.000000} \
 CONFIG.PCW_ACT_I2C_PERIPHERAL_FREQMHZ {50} \
@@ -221,12 +252,12 @@ CONFIG.PCW_CAN1_PERIPHERAL_ENABLE {0} \
 CONFIG.PCW_CAN_PERIPHERAL_CLKSRC {IO PLL} \
 CONFIG.PCW_CAN_PERIPHERAL_VALID {0} \
 CONFIG.PCW_CLK0_FREQ {125000000} \
-CONFIG.PCW_CLK1_FREQ {10000000} \
+CONFIG.PCW_CLK1_FREQ {20000000} \
 CONFIG.PCW_CLK2_FREQ {50000000} \
 CONFIG.PCW_CLK3_FREQ {10000000} \
 CONFIG.PCW_CPU_CPU_6X4X_MAX_RANGE {667} \
 CONFIG.PCW_CPU_PERIPHERAL_CLKSRC {ARM PLL} \
-CONFIG.PCW_CRYSTAL_PERIPHERAL_FREQMHZ {33.333333} \
+CONFIG.PCW_CRYSTAL_PERIPHERAL_FREQMHZ {33.333333333} \
 CONFIG.PCW_DCI_PERIPHERAL_CLKSRC {DDR PLL} \
 CONFIG.PCW_DCI_PERIPHERAL_FREQMHZ {10.159} \
 CONFIG.PCW_DDR_PERIPHERAL_CLKSRC {DDR PLL} \
@@ -253,7 +284,7 @@ CONFIG.PCW_EN_4K_TIMER {0} \
 CONFIG.PCW_EN_CAN0 {0} \
 CONFIG.PCW_EN_CAN1 {0} \
 CONFIG.PCW_EN_CLK0_PORT {1} \
-CONFIG.PCW_EN_CLK1_PORT {1} \
+CONFIG.PCW_EN_CLK1_PORT {0} \
 CONFIG.PCW_EN_CLK2_PORT {0} \
 CONFIG.PCW_EN_CLK3_PORT {0} \
 CONFIG.PCW_EN_CLKTRIG0_PORT {0} \
@@ -319,13 +350,11 @@ CONFIG.PCW_FCLK1_PERIPHERAL_CLKSRC {IO PLL} \
 CONFIG.PCW_FCLK2_PERIPHERAL_CLKSRC {IO PLL} \
 CONFIG.PCW_FCLK3_PERIPHERAL_CLKSRC {IO PLL} \
 CONFIG.PCW_FCLK_CLK0_BUF {true} \
-CONFIG.PCW_FCLK_CLK1_BUF {true} \
 CONFIG.PCW_FPGA0_PERIPHERAL_FREQMHZ {125} \
-CONFIG.PCW_FPGA1_PERIPHERAL_FREQMHZ {10} \
+CONFIG.PCW_FPGA1_PERIPHERAL_FREQMHZ {20} \
 CONFIG.PCW_FPGA2_PERIPHERAL_FREQMHZ {50} \
 CONFIG.PCW_FPGA3_PERIPHERAL_FREQMHZ {10} \
 CONFIG.PCW_FPGA_FCLK0_ENABLE {1} \
-CONFIG.PCW_FPGA_FCLK1_ENABLE {1} \
 CONFIG.PCW_GPIO_BASEADDR {0xE000A000} \
 CONFIG.PCW_GPIO_EMIO_GPIO_ENABLE {0} \
 CONFIG.PCW_GPIO_HIGHADDR {0xE000AFFF} \
@@ -570,7 +599,7 @@ CONFIG.PCW_QSPI_GRP_SS1_ENABLE {0} \
 CONFIG.PCW_QSPI_INTERNAL_HIGHADDRESS {0xFCFFFFFF} \
 CONFIG.PCW_QSPI_PERIPHERAL_CLKSRC {IO PLL} \
 CONFIG.PCW_QSPI_PERIPHERAL_ENABLE {1} \
-CONFIG.PCW_QSPI_PERIPHERAL_FREQMHZ {125} \
+CONFIG.PCW_QSPI_PERIPHERAL_FREQMHZ {120} \
 CONFIG.PCW_QSPI_QSPI_IO {MIO 1 .. 6} \
 CONFIG.PCW_SD0_GRP_CD_ENABLE {1} \
 CONFIG.PCW_SD0_GRP_CD_IO {MIO 46} \
@@ -744,18 +773,15 @@ CONFIG.S00_HAS_REGSLICE {3} \
   # Create instance: rst_processing_system7_0_125M, and set properties
   set rst_processing_system7_0_125M [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset:5.0 rst_processing_system7_0_125M ]
 
-  # Create instance: util_vector_logic_0, and set properties
-  set util_vector_logic_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_vector_logic:2.0 util_vector_logic_0 ]
-  set_property -dict [ list \
-CONFIG.C_OPERATION {not} \
-CONFIG.C_SIZE {1} \
- ] $util_vector_logic_0
-
   # Create instance: w7x_timing_0, and set properties
   set w7x_timing_0 [ create_bd_cell -type ip -vlnv user.org:user:w7x_timing:1.0 w7x_timing_0 ]
+
+  # Create instance: xlconstant_0, and set properties
+  set xlconstant_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 xlconstant_0 ]
   set_property -dict [ list \
-CONFIG.BRAM_SIZE {32768} \
- ] $w7x_timing_0
+CONFIG.CONST_VAL {0} \
+CONFIG.CONST_WIDTH {8} \
+ ] $xlconstant_0
 
   # Create interface connections
   connect_bd_intf_net -intf_net processing_system7_0_DDR [get_bd_intf_ports DDR] [get_bd_intf_pins processing_system7_0/DDR]
@@ -766,14 +792,17 @@ CONFIG.BRAM_SIZE {32768} \
   connect_bd_intf_net -intf_net w7x_timing_0_BRAM_PORTB [get_bd_intf_pins blk_mem_gen_0/BRAM_PORTB] [get_bd_intf_pins w7x_timing_0/BRAM_PORTB]
 
   # Create port connections
-  connect_bd_net -net clk_1 [get_bd_ports clk] [get_bd_ports clk_led] [get_bd_pins w7x_timing_0/clk_in]
-  connect_bd_net -net processing_system7_0_FCLK_CLK0 [get_bd_pins processing_system7_0/FCLK_CLK0] [get_bd_pins processing_system7_0/M_AXI_GP0_ACLK] [get_bd_pins processing_system7_0_axi_periph/ACLK] [get_bd_pins processing_system7_0_axi_periph/M00_ACLK] [get_bd_pins processing_system7_0_axi_periph/S00_ACLK] [get_bd_pins rst_processing_system7_0_125M/slowest_sync_clk] [get_bd_pins w7x_timing_0/s00_axi_clk]
-  connect_bd_net -net processing_system7_0_FCLK_RESET0_N [get_bd_pins processing_system7_0/FCLK_RESET0_N] [get_bd_pins rst_processing_system7_0_125M/ext_reset_in]
+  connect_bd_net -net clk_1 [get_bd_ports clk_in] [get_bd_pins w7x_timing_0/clk_in]
+  connect_bd_net -net clk_wiz_0_clk_out1 [get_bd_pins clk_wiz_0/clk_out1] [get_bd_pins w7x_timing_0/clk20_in]
+  connect_bd_net -net processing_system7_0_FCLK_CLK0 [get_bd_pins clk_wiz_0/clk_in1] [get_bd_pins processing_system7_0/FCLK_CLK0] [get_bd_pins processing_system7_0/M_AXI_GP0_ACLK] [get_bd_pins processing_system7_0_axi_periph/ACLK] [get_bd_pins processing_system7_0_axi_periph/M00_ACLK] [get_bd_pins processing_system7_0_axi_periph/S00_ACLK] [get_bd_pins rst_processing_system7_0_125M/slowest_sync_clk] [get_bd_pins w7x_timing_0/clk_axi_in]
+  connect_bd_net -net processing_system7_0_FCLK_RESET0_N [get_bd_pins clk_wiz_0/resetn] [get_bd_pins processing_system7_0/FCLK_RESET0_N] [get_bd_pins rst_processing_system7_0_125M/ext_reset_in]
   connect_bd_net -net rst_processing_system7_0_125M_interconnect_aresetn [get_bd_pins processing_system7_0_axi_periph/ARESETN] [get_bd_pins rst_processing_system7_0_125M/interconnect_aresetn]
   connect_bd_net -net rst_processing_system7_0_125M_peripheral_aresetn [get_bd_pins processing_system7_0_axi_periph/M00_ARESETN] [get_bd_pins processing_system7_0_axi_periph/S00_ARESETN] [get_bd_pins rst_processing_system7_0_125M/peripheral_aresetn] [get_bd_pins w7x_timing_0/s00_axi_resetn]
-  connect_bd_net -net trig_1 [get_bd_ports trig] [get_bd_pins util_vector_logic_0/Op1] [get_bd_pins w7x_timing_0/trig_in]
-  connect_bd_net -net util_vector_logic_0_Res [get_bd_ports trig_led] [get_bd_pins util_vector_logic_0/Res]
-  connect_bd_net -net w7x_timing_0_state [get_bd_ports state] [get_bd_ports state_leds] [get_bd_pins w7x_timing_0/state_out]
+  connect_bd_net -net trig_in_1 [get_bd_ports trig_in] [get_bd_pins w7x_timing_0/trig_in]
+  connect_bd_net -net w7x_timing_0_power_down [get_bd_pins clk_wiz_0/power_down] [get_bd_pins w7x_timing_0/power_down]
+  connect_bd_net -net w7x_timing_0_state_do [get_bd_ports state1] [get_bd_pins w7x_timing_0/state_do]
+  connect_bd_net -net w7x_timing_0_state_led [get_bd_ports state_leds] [get_bd_pins w7x_timing_0/state_led]
+  connect_bd_net -net xlconstant_0_dout [get_bd_ports state0] [get_bd_pins xlconstant_0/dout]
 
   # Create address segments
   create_bd_addr_seg -range 0x40000 -offset 0x43C00000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs w7x_timing_0/S00_AXI/S00_AXI_reg] SEG_w7x_timing_0_S00_AXI_reg
