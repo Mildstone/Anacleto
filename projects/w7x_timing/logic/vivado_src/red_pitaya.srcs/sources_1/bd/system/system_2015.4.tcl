@@ -159,7 +159,7 @@ proc create_root_design { parentCell } {
 CONFIG.Enable_32bit_Address {false} \
 CONFIG.Enable_A {Use_ENA_Pin} \
 CONFIG.Enable_B {Always_Enabled} \
-CONFIG.Fill_Remaining_Memory_Locations {true} \
+CONFIG.Fill_Remaining_Memory_Locations {false} \
 CONFIG.Memory_Type {True_Dual_Port_RAM} \
 CONFIG.Operating_Mode_A {READ_FIRST} \
 CONFIG.Operating_Mode_B {READ_FIRST} \
@@ -169,7 +169,7 @@ CONFIG.Port_B_Write_Rate {50} \
 CONFIG.Read_Width_B {64} \
 CONFIG.Register_PortA_Output_of_Memory_Primitives {false} \
 CONFIG.Register_PortB_Output_of_Memory_Primitives {false} \
-CONFIG.Remaining_Memory_Locations {7} \
+CONFIG.Remaining_Memory_Locations {0} \
 CONFIG.Use_Byte_Write_Enable {false} \
 CONFIG.Use_RSTA_Pin {false} \
 CONFIG.Use_RSTB_Pin {false} \
@@ -794,7 +794,7 @@ CONFIG.CONST_WIDTH {8} \
   # Create port connections
   connect_bd_net -net clk_1 [get_bd_ports clk_in] [get_bd_pins w7x_timing_0/clk_in]
   connect_bd_net -net clk_wiz_0_clk_out1 [get_bd_pins clk_wiz_0/clk_out1] [get_bd_pins w7x_timing_0/clk20_in]
-  connect_bd_net -net processing_system7_0_FCLK_CLK0 [get_bd_pins clk_wiz_0/clk_in1] [get_bd_pins processing_system7_0/FCLK_CLK0] [get_bd_pins processing_system7_0/M_AXI_GP0_ACLK] [get_bd_pins processing_system7_0_axi_periph/ACLK] [get_bd_pins processing_system7_0_axi_periph/M00_ACLK] [get_bd_pins processing_system7_0_axi_periph/S00_ACLK] [get_bd_pins rst_processing_system7_0_125M/slowest_sync_clk] [get_bd_pins w7x_timing_0/s00_axi_clk]
+  connect_bd_net -net processing_system7_0_FCLK_CLK0 [get_bd_pins clk_wiz_0/clk_in1] [get_bd_pins processing_system7_0/FCLK_CLK0] [get_bd_pins processing_system7_0/M_AXI_GP0_ACLK] [get_bd_pins processing_system7_0_axi_periph/ACLK] [get_bd_pins processing_system7_0_axi_periph/M00_ACLK] [get_bd_pins processing_system7_0_axi_periph/S00_ACLK] [get_bd_pins rst_processing_system7_0_125M/slowest_sync_clk] [get_bd_pins w7x_timing_0/clk_axi_in]
   connect_bd_net -net processing_system7_0_FCLK_RESET0_N [get_bd_pins clk_wiz_0/resetn] [get_bd_pins processing_system7_0/FCLK_RESET0_N] [get_bd_pins rst_processing_system7_0_125M/ext_reset_in]
   connect_bd_net -net rst_processing_system7_0_125M_interconnect_aresetn [get_bd_pins processing_system7_0_axi_periph/ARESETN] [get_bd_pins rst_processing_system7_0_125M/interconnect_aresetn]
   connect_bd_net -net rst_processing_system7_0_125M_peripheral_aresetn [get_bd_pins processing_system7_0_axi_periph/M00_ARESETN] [get_bd_pins processing_system7_0_axi_periph/S00_ARESETN] [get_bd_pins rst_processing_system7_0_125M/peripheral_aresetn] [get_bd_pins w7x_timing_0/s00_axi_resetn]

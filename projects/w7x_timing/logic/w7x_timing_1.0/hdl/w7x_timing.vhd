@@ -1,35 +1,7 @@
-----------------------------------------------------------------------------------
--- Company: 
--- Engineer: 
--- 
--- Create Date: 10/10/2016 12:37:32 PM
--- Design Name: 
--- Module Name: w7x_timing - Behavioral
--- Project Name: 
--- Target Devices: 
--- Tool Versions: 
--- Description: 
--- 
--- Dependencies: 
--- 
--- Revision:
--- Revision 0.01 - File Created
--- Additional Comments:
--- 
-----------------------------------------------------------------------------------
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
-
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.NUMERIC_STD.ALL;
--- Uncomment the following library declaration if using
--- arithmetic functions with Signed or Unsigned values
---use IEEE.NUMERIC_STD.ALL;
-
--- Uncomment the following library declaration if instantiating
--- any Xilinx leaf cells in this code.
---library UNISIM;
---use UNISIM.VComponents.all;
 entity w7x_timing is
     generic (
       ADDR_WIDTH  : integer := 15;
@@ -37,27 +9,20 @@ entity w7x_timing is
       HEAD_COUNT  : integer := 4
     );
     port (
-       clk_in        : in  STD_LOGIC;
-       ctrl_in       : in  STD_LOGIC_VECTOR(7 downto 0);
-       head_in       : in  STD_LOGIC_VECTOR(HEAD_COUNT*DATA_WIDTH-1 downto 0);
-       head_out      : out STD_LOGIC_VECTOR(HEAD_COUNT*DATA_WIDTH-1 downto 0);
-       ctrl_strb     : out STD_LOGIC_VECTOR(7 downto 0);
-       ctrl_out      : out STD_LOGIC_VECTOR(7 downto 0);
-       load_head_out : out STD_LOGIC;
-       index_out     : out UNSIGNED(ADDR_WIDTH-1 downto 0);
-       state_out     : out STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
-       sample_in     : in  STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0)
+       clk_in     : in  STD_LOGIC;
+       trigger_in : in  STD_LOGIC;
+       armed_in   : in  STD_LOGIC;
+       clear_in   : in  STD_LOGIC;
+       head_in    : in  STD_LOGIC_VECTOR(HEAD_COUNT*DATA_WIDTH-1 downto 0);
+       sample_in  : in  STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
+       index_out  : out UNSIGNED(ADDR_WIDTH-1 downto 0);
+       state_out  : out STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0)
     );
 end  w7x_timing;
 
 
 architecture Behavioral of w7x_timing is
     constant TIME_WIDTH : integer := DATA_WIDTH-24;
-    constant i_init     : integer := 0;
-    constant i_trig     : integer := 1;
-    constant i_clear    : integer := 2;
-    constant i_reinit   : integer := 3;
-    constant i_save     : integer := 4;
     constant zero32     : unsigned(        32-1 downto 0) := to_unsigned(0,32);
     constant zeroaddr   : unsigned(ADDR_WIDTH-1 downto 0) := to_unsigned(0,ADDR_WIDTH);
     constant zerotime   : unsigned(TIME_WIDTH-1 downto 0) := to_unsigned(0,TIME_WIDTH);
@@ -73,68 +38,45 @@ architecture Behavioral of w7x_timing is
     constant WAITING_HIGH   : std_logic_vector(7 downto 0) := "11010010";--210
     constant WAITING_REPEAT : std_logic_vector(7 downto 0) := "00110010";-- 50
     -- signals
-    signal init         : std_logic;
-    signal trig         : std_logic;
-    signal clear        : std_logic;
-    signal reinit       : std_logic;
-    signal save         : std_logic;
     signal state        : std_logic_vector(7 downto 0) := IDLE;
-    signal error        : std_logic_vector(DATA_WIDTH-1 downto 8) := (others => '0');
-    signal load_head    : std_logic := '0';
-    signal saved_head   : std_logic_vector(HEAD_COUNT*64-1 downto 0);
-    signal sample       : unsigned(TIME_WIDTH-1 downto 0) := zerotime;
+    signal error        : std_logic_vector(DATA_WIDTH-1 downto 8) := (others => '0');   
+    signal sample       : unsigned(TIME_WIDTH-1 downto 0);
     -- measure number of samples in sequence, i.e. len(times)
     signal sample_count : unsigned(ADDR_WIDTH-1 downto 0) := zeroaddr; -- start_cycle   =0, do_waiting_sample ++
-    signal sample_total : unsigned(ADDR_WIDTH-1 downto 0) := zeroaddr;
+    signal sample_total : unsigned(ADDR_WIDTH-1 downto 0);
     -- measure number of repetitions
-    signal repeat_count : integer := 0; -- start_program =0, start_waiting_repeat ++
-    signal repeat_total : integer := 0;
+    signal repeat_count : unsigned(31 downto 0) := zero32; -- start_program =0, start_waiting_repeat ++
+    signal repeat_total : unsigned(31 downto 0);
     -- measure high and low of signal
     signal period_ticks : unsigned(31 downto 0) := zero32;
-    signal high_total   : unsigned(31 downto 0) := zero32;
-    signal period_total : unsigned(31 downto 0) := zero32;
+    signal high_total   : unsigned(31 downto 0);
+    signal period_total : unsigned(31 downto 0);
     -- sequence counter
     signal cycle_ticks  : unsigned(TIME_WIDTH-1 downto 0) := zerotime;
-    signal delay_total  : unsigned(TIME_WIDTH-1 downto 0) := zerotime;
-    signal cycle_total  : unsigned(TIME_WIDTH-1 downto 0) := zerotime;
-    
+    signal delay_total  : unsigned(TIME_WIDTH-1 downto 0);
+    signal cycle_total  : unsigned(TIME_WIDTH-1 downto 0);
 begin
-    -- set input
-    init   <= ctrl_in(i_init);
-    trig   <= ctrl_in(i_trig);
-    clear  <= ctrl_in(i_clear);
-    reinit <= ctrl_in(i_reinit);
-    save   <= ctrl_in(i_save);
-    sample       <=            unsigned(sample_in(TIME_WIDTH-1 downto 0));
-    delay_total  <=            unsigned(head_in(0*64+TIME_WIDTH-1 downto 0*64));
-    high_total   <=            unsigned(head_in(1*64+31 downto 1*64));
-    period_total <=            unsigned(head_in(1*64+63 downto 1*64+32));
-    cycle_total  <=            unsigned(head_in(2*64+TIME_WIDTH-1 downto 2*64));
-    repeat_total <= to_integer(unsigned(head_in(3*64+31 downto 3*64)));
-    sample_total <=            unsigned(head_in(3*64+32+ADDR_WIDTH-1 downto 3*64+32));
-    state_out(DATA_WIDTH-1 downto 8) <= error;
+    -- set output
+    index_out    <= sample_count when sample_count<sample_total else zeroaddr;
     state_out(7 downto 1) <= state(7 downto 1);
-    state_out(0)  <= not error(8+1);
-    head_out      <= saved_head;
-    load_head_out <= load_head;
-    index_out     <= sample_count when sample_count<sample_total else zeroaddr;
+    state_out(0) <= not error(8+1);
+    state_out(DATA_WIDTH-1 downto 8) <= error;
 
-  clock_gen:  process(clk_in, init, trig, clear, reinit,
+  buffer_input: process(clk_in,sample_in,head_in) begin
+    if falling_edge(clk_in) then
+      sample       <= unsigned(sample_in(TIME_WIDTH-1 downto 0));
+      delay_total  <= unsigned(head_in(0*64+TIME_WIDTH-1 downto 0*64));
+      high_total   <= unsigned(head_in(1*64+31 downto 1*64));
+      period_total <= unsigned(head_in(1*64+63 downto 1*64+32));
+      cycle_total  <= unsigned(head_in(2*64+TIME_WIDTH-1 downto 2*64));
+      repeat_total <= unsigned(head_in(3*64+31 downto 3*64));
+      sample_total <= unsigned(head_in(3*64+32+ADDR_WIDTH-1 downto 3*64+32));
+    end if;
+  end process buffer_input;
+  clock_gen:  process(clk_in, armed_in, trigger_in, clear_in, 
                       delay_total, high_total, period_total,
                       cycle_total, repeat_total,
                       sample_total, sample) is
-
-    procedure unset(i : integer) is
-    begin
-      ctrl_out(i)  <= '0';
-      ctrl_strb(i) <= '1';
-    end unset;
-    procedure set(i : integer) is
-    begin
-      ctrl_out(i)  <= '1';
-      ctrl_strb(i) <= '1';
-    end set;
-    
     procedure inc_cycle is
     begin
       cycle_ticks <= cycle_ticks  + 1;
@@ -161,15 +103,12 @@ begin
       cycle_ticks  <= onetime;
       period_ticks <= one32;
       sample_count <= zeroaddr;
-      repeat_count <= 0;
+      repeat_count <= zero32;
       state <= ARMED;
     end start_armed;
 
     procedure do_rearm is
     begin
-      if reinit = '1' then
-        load_head <= '1';
-      end if;
       start_armed;
     end do_rearm;        
     
@@ -286,7 +225,7 @@ begin
     -- resets repeat_count (1)
     -- resets cycle_ticks (_:1)
     begin
-      repeat_count <= 1;
+      repeat_count <= one32;
       if delay_total = 0 then -- short cut if no delay
         start_cycle;
       else
@@ -298,29 +237,18 @@ begin
   begin  -- main program
     if rising_edge(clk_in) then
       -- reset flags
-      load_head <= '0';
-      ctrl_out  <= (others => '0');
-      ctrl_strb <= (others => '0');
-      if trig = '1' then
-        unset(i_trig);
-      end if;
-      if clear = '1' then
-        unset(i_clear);
+      if clear_in = '1' then
         error <= (others => '0');
-      end if;
-      if save = '1' then
-        unset(i_save);
-        saved_head <= head_in;
       end if;
       if error(8+1) = '0' then
         error(DATA_WIDTH-1 downto 24) <= std_logic_vector(cycle_ticks);
       end if;
-      if init = '0' then
+      if armed_in = '0' then
         state <= IDLE;
       else
         case state is
           when ARMED => 
-            if trig = '1' then
+            if trigger_in = '1' then
               start_program;
             end if;
           when WAITING_DELAY =>
