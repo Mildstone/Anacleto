@@ -4,7 +4,7 @@ use ieee.numeric_std.all;
 
 entity w7x_timing_v1_0_S00_AXI is
     generic (
-      DATA_COUNT   : integer := 16;
+      DATA_COUNT     : integer := 16;
         -- S_AXI data bus parameters
       DATA_WIDTH     : integer := 64;
       ADDR_WIDTH     : integer := 15;

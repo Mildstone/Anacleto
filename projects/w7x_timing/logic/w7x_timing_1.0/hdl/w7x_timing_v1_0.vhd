@@ -13,6 +13,7 @@ entity w7x_timing_v1_0 is
         ADDR_WIDTH : integer := 15
     );
     port (
+        clk_axi_in : in  std_logic;
         clk_in     : in  STD_LOGIC;
         clk20_in   : in  STD_LOGIC;
         trig_in    : in  STD_LOGIC;
@@ -33,7 +34,6 @@ entity w7x_timing_v1_0 is
         bram_doutb : in   STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
         bram_rstb  : out  STD_LOGIC;
         -- Ports of Axi Slave Bus Interface S00_AXI
-        s00_axi_clk     : in  std_logic;
         s00_axi_resetn  : in  std_logic;
         s00_axi_awaddr  : in  std_logic_vector(ADDR_WIDTH+DATA_WIDTH/32 downto 0);
         s00_axi_awprot  : in  std_logic_vector(2 downto 0);
@@ -97,42 +97,6 @@ architecture arch_imp of w7x_timing_v1_0 is
     );
     end component w7x_timing_v1_0_S00_AXI;
 
-    component clock_interface is
-    generic (
-      STAT_COUNT : integer;
-      CTRL_COUNT : integer;
-      HEAD_COUNT : integer;
-      BRAM_SIZE  : integer;      
-      ADDR_WIDTH : integer;
-      DATA_WIDTH : integer
-    );
-    port (
-    CS         : out STD_LOGIC;
-    CLK_EXT    : in  STD_LOGIC;
-    CLK_20M    : in  STD_LOGIC;
-    -- BRAM interface
-    BRAM_RDATA : in   STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
-    -- master clock domain
-    M_CLK_I    : in  STD_LOGIC;
-    M_ADDR_I   : in  UNSIGNED(ADDR_WIDTH-1 downto 0);
-    M_DATA_RO  : out STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
-    M_DATA_WI  : in  STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
-    M_STRB_WI  : in  STD_LOGIC_VECTOR(DATA_WIDTH/8-1 downto 0);
-    -- slave clock domain
-    S_CLK_O    : out STD_LOGIC;
-    S_STAT_WI  : in  STD_LOGIC_VECTOR(STAT_COUNT*DATA_WIDTH-1 downto 0);
-    --S_ADDR_WI  : in  UNSIGNED(ADDR_WIDTH-1 downto 0);
-    S_DATA_WI  : in  STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
-    S_STRB_WI  : in  STD_LOGIC_VECTOR(DATA_WIDTH/8-1 downto 0);
-    S_HEAD_WI  : in  STD_LOGIC_VECTOR(HEAD_COUNT*DATA_WIDTH-1 downto 0);
-    S_HWRT_WI  : in  STD_LOGIC;
-    S_HEAD_RO  : out STD_LOGIC_VECTOR(HEAD_COUNT*DATA_WIDTH-1 downto 0);
-    S_CTRL_RO  : out STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
-    -- shared flip-flop memory
-    DATA_BUF   : inout STD_LOGIC_VECTOR((STAT_COUNT+CTRL_COUNT+HEAD_COUNT)*DATA_WIDTH-1 downto 0)
-    );
-    end component clock_interface;
-
     component w7x_timing is
     generic (
       HEAD_COUNT  : integer;
@@ -140,90 +104,138 @@ architecture arch_imp of w7x_timing_v1_0 is
       DATA_WIDTH  : integer
     );
     port (
-    clk_in        : in  STD_LOGIC;
-    ctrl_in       : in  STD_LOGIC_VECTOR(7 downto 0);
-    head_in       : in  STD_LOGIC_VECTOR(HEAD_COUNT*DATA_WIDTH-1 downto 0);
-    head_out      : out STD_LOGIC_VECTOR(HEAD_COUNT*DATA_WIDTH-1 downto 0);
-    ctrl_strb     : out STD_LOGIC_VECTOR(7 downto 0);
-    ctrl_out      : out STD_LOGIC_VECTOR(7 downto 0);
-    load_head_out : out STD_LOGIC;
-    index_out     : out UNSIGNED(ADDR_WIDTH-1 downto 0);
-    state_out     : out STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
-    sample_in     : in  STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0)
+    clk_in     : in  STD_LOGIC;
+    trigger_in : in  STD_LOGIC;
+    armed_in   : in  STD_LOGIC;
+    clear_in   : in  STD_LOGIC;
+    head_in    : in  STD_LOGIC_VECTOR(HEAD_COUNT*DATA_WIDTH-1 downto 0);
+    sample_in  : in  STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
+    index_out  : out UNSIGNED(ADDR_WIDTH-1 downto 0);
+    state_out  : out STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0)
     );
     end component w7x_timing;
 
-    constant i_init     : integer := 0;
-    constant i_trig     : integer := 1;
-    constant i_reinit   : integer := 3;
-    constant i_save     : integer := 4;
-    constant i_ext_clk  : integer := 5;
-    constant i_invert   : integer := 6;
-    constant i_gate     : integer := 7;
-    constant HEAD_MAX   : integer := STAT_COUNT+CTRL_COUNT+HEAD_COUNT;
-    constant uHEAD_MAX  : unsigned(ADDR_WIDTH-1 downto 0) := to_unsigned(HEAD_MAX,ADDR_WIDTH);
-    --constant oneaddr    : unsigned(ADDR_WIDTH-1 downto 0) := to_unsigned(1,ADDR_WIDTH);
-    signal data_buf     : std_logic_vector(HEAD_MAX*DATA_WIDTH-1 downto 0);
-    signal m_addr       : unsigned(ADDR_WIDTH-1 downto 0);
-    signal m_rdata      : std_logic_vector(DATA_WIDTH-1 downto 0);
-    signal m_wdata      : std_logic_vector(DATA_WIDTH-1 downto 0);
-    signal m_strb       : std_logic_vector((DATA_WIDTH/8)-1 downto 0);
-    signal load_head    : STD_LOGIC;
-    signal index_sample : unsigned(ADDR_WIDTH-1 downto 0);
-    signal staterr      : std_logic_vector(STAT_COUNT*DATA_WIDTH-1 downto 0);
-    signal head_in      : std_logic_vector(HEAD_COUNT*DATA_WIDTH-1 downto 0);
-    signal head_out     : std_logic_vector(HEAD_COUNT*DATA_WIDTH-1 downto 0);
-    signal bctrl_in     : std_logic_vector((DATA_WIDTH/8)-1 downto 0);
-    signal ctrl_in      : std_logic_vector(CTRL_COUNT*DATA_WIDTH-1 downto 0);
-    signal bctrl_out    : std_logic_vector((DATA_WIDTH/8)-1 downto 0);
-    signal ctrl_out     : std_logic_vector(DATA_WIDTH-1 downto 0);
-    signal ctrl_strb    : std_logic_vector((DATA_WIDTH/8)-1 downto 0);
+    constant DATA_COUNT: integer := STAT_COUNT+CTRL_COUNT+HEAD_COUNT;
+    constant STAT_MIN  : integer := 0;
+    constant STAT_MAX  : integer := STAT_COUNT;
+    constant CTRL_MIN  : integer := STAT_MAX;
+    constant CTRL_MAX  : integer := CTRL_MIN+CTRL_COUNT;
+    constant HEAD_MIN  : integer := CTRL_MAX;
+    constant HEAD_MAX  : integer := HEAD_MIN+HEAD_COUNT;
+    
+    constant STAT_BASE : integer := STAT_MIN*DATA_WIDTH;
+    constant STAT_HEAD : integer := STAT_MAX*DATA_WIDTH-1;
+    constant CTRL_BASE : integer := CTRL_MIN*DATA_WIDTH;
+    constant CTRL_HEAD : integer := CTRL_MAX*DATA_WIDTH-1;
+    constant HEAD_BASE : integer := HEAD_MIN*DATA_WIDTH;
+    constant HEAD_HEAD : integer := HEAD_MAX*DATA_WIDTH-1;
+    constant offset    : unsigned(ADDR_WIDTH-1 downto 0) := to_unsigned(HEAD_MAX,ADDR_WIDTH);
 
-    signal trigger      : STD_LOGIC;
-    signal clk,clk_cs   : STD_LOGIC;
+    function addr2base(addr : unsigned) return integer is begin
+      return to_integer(addr)*DATA_WIDTH;
+    end addr2base;
+    signal m_addr    : unsigned(ADDR_WIDTH-1 downto 0);
+    signal m_rdata   : std_logic_vector(DATA_WIDTH-1 downto 0);
+    signal m_wdata   : std_logic_vector(DATA_WIDTH-1 downto 0);
+    signal m_strb    : std_logic_vector((DATA_WIDTH/8)-1 downto 0);
+    signal s_addr    : unsigned(ADDR_WIDTH-1 downto 0);
 
-    alias s_gate   is ctrl_in(i_gate*8+7   downto i_gate*8);
-    alias s_invert is ctrl_in(i_invert*8+7 downto i_invert*8);
-    alias sig      is staterr(7);
-    alias gate     is staterr(6);
+    signal state     : std_logic_vector(STAT_COUNT*DATA_WIDTH-1 downto 0);
+    signal head_save : std_logic_vector(HEAD_COUNT*DATA_WIDTH-1 downto 0) := (others => '0');
+
+    signal data_buf  : std_logic_vector(HEAD_HEAD               downto 0) := (others => '0');
+    alias  state_buf : std_logic_vector(STAT_COUNT*DATA_WIDTH-1 downto 0) is data_buf(STAT_HEAD downto STAT_BASE);
+    alias  ctrl_buf  : std_logic_vector(CTRL_COUNT*DATA_WIDTH-1 downto 0) is data_buf(CTRL_HEAD downto CTRL_BASE);
+    alias  head_buf  : std_logic_vector(HEAD_COUNT*DATA_WIDTH-1 downto 0) is data_buf(HEAD_HEAD downto HEAD_BASE);
+
+    alias c_init     : std_logic_vector(7 downto 0) is ctrl_buf(0*8+7 downto 0*8);
+    alias c_trig     : std_logic_vector(7 downto 0) is ctrl_buf(1*8+7 downto 1*8);
+    alias c_clear    : std_logic_vector(7 downto 0) is ctrl_buf(2*8+7 downto 2*8);
+    alias c_reinit   : std_logic_vector(7 downto 0) is ctrl_buf(3*8+7 downto 3*8);
+    alias c_save     : std_logic_vector(7 downto 0) is ctrl_buf(4*8+7 downto 4*8);
+    alias c_extclk   : std_logic_vector(7 downto 0) is ctrl_buf(5*8+7 downto 5*8);
+    alias c_invert   : std_logic_vector(7 downto 0) is ctrl_buf(6*8+7 downto 6*8);
+    alias c_gate     : std_logic_vector(7 downto 0) is ctrl_buf(7*8+7 downto 7*8);
+
+    signal trigger   : std_logic;
+    alias  sig       : std_logic is state(7);
+    alias  gate      : std_logic is state(6);
+    alias  armed     : std_logic is state(3);
+    alias  ok        : std_logic is state(0);
+
+    signal clk       : std_logic := '0';
+    signal clk_int   : std_logic := '0';
+    
 begin
-trigger    <= ctrl_in(8) or trig_in;
-power_down <= clk_cs;
+---- 10MHz clock switch
+clock10MHz: process(clk20_in) begin
+  if rising_edge(clk20_in) then
+    clk_int <= not clk_int;
+  end if;
+end process clock10MHz;
+clk <= clk_in when c_extclk(0) = '1' else clk_int;
+
+trigger    <= c_trig(0) or trig_in;
+power_down <= c_extclk(0);
 ---- BRAM
-bram_clka   <= s00_axi_clk;
+bram_clka   <= clk_axi_in;
 bram_rsta   <= '0';
 bram_addra  <= std_logic_vector(m_addr);
 strb: for i in 0 to DATA_WIDTH/8-1 generate begin
   bram_dina(i*8+7 downto i*8) <= m_wdata(i*8+7 downto i*8) when m_strb(i) = '1' else bram_douta(i*8+7 downto i*8);
 end generate;
+m_rdata <= data_buf(addr2base(m_addr)+DATA_WIDTH-1 downto addr2base(m_addr))
+   when m_addr < offset else bram_douta;
 -- b channel
 bram_rstb  <= '0';
 bram_clkb  <= clk;
-bram_addrb <= std_logic_vector(index_sample+uHEAD_MAX);
----- translate control bits to bytes
-ctrl: for i in 0 to 7 generate
-  ctrl_out(i*8+7 downto i*8) <= (others => bctrl_out(i));
-end generate ctrl;
-bctrl: for i in 0 to 7 generate
-  bctrl_in(i) <= trigger when i=i_trig else ctrl_in(i*8);
-end generate bctrl;
+bram_addrb <= std_logic_vector(s_addr+offset);
 ---- translate DOUT states
-state: for i in 2 to 7 generate
-  state_do(i) <= not gate when (s_invert(i) and     s_gate(i)) = '1'
-            else not sig  when (s_invert(i) and not s_gate(i)) = '1'
-            else sig      when (s_invert(i) or      s_gate(i)) = '0'
+output: for i in 2 to 7 generate
+  state_do(i) <= not gate when (c_invert(i) and     c_gate(i)) = '1'
+            else not sig  when (c_invert(i) and not c_gate(i)) = '1'
+            else sig      when (c_invert(i) or      c_gate(i)) = '0'
             else gate;
-end generate state;
+end generate output;
 
 ---- translate LED states
 state_led(0) <= not trigger;
 state_led(1) <= clk;
-state_led(2) <= staterr(7);--sig
-state_led(3) <= staterr(6);--gate
-state_led(4) <= bctrl_in(i_init);
-state_led(5) <= bctrl_in(i_reinit);
-state_led(6) <= clk_cs;
-state_led(7) <= not staterr(0);--error/not ok
+state_led(2) <= sig;--sig
+state_led(3) <= gate;--gate
+state_led(4) <= c_init(0);
+state_led(5) <= c_reinit(0);
+state_led(6) <= c_extclk(0);
+state_led(7) <= not state(0);--error/not ok
+
+----DATA_BUF
+update_buffer: process(clk_axi_in,m_addr,m_strb,m_wdata,head_save,data_buf,state)
+begin
+  if rising_edge(clk_axi_in) then
+    -- handle driver write operations
+    if m_addr < offset then
+      for i in 0 to DATA_WIDTH/8-1 loop
+        if m_strb(i) = '1' then
+          data_buf(addr2base(m_addr)+i*8+7 downto addr2base(m_addr)+i*8) <= m_wdata(i*8+7 downto i*8);
+        end if;
+      end loop;
+    end if;
+    -- handle fpga write operations
+    state_buf <= state;
+    if armed = '0' then
+      c_trig <= (others => '0');
+    elsif c_reinit(0) = '1' then
+      head_buf <= head_save;
+    end if;
+    if ok = '1' then
+      c_clear <= (others => '0');
+    end if;
+    if c_save(0) = '1' then
+      head_save <= head_buf;
+      c_save <= (others => '0');
+    end if;
+  end if;
+end process update_buffer;
 
 ---- Instantiation of Axi Bus Interface S00_AXI
 w7x_timing_v1_0_S00_AXI_inst : w7x_timing_v1_0_S00_AXI
@@ -239,7 +251,7 @@ w7x_timing_v1_0_S00_AXI_inst : w7x_timing_v1_0_S00_AXI
         STRB_OUT      => m_strb,
         WE_OUT        => bram_wea,
         EN_OUT        => bram_ena,
-        S_AXI_CLK     => s00_axi_clk,
+        S_AXI_CLK     => clk_axi_in,
         S_AXI_RESETN  => s00_axi_resetn,
         S_AXI_AWADDR  => s00_axi_awaddr,
         S_AXI_AWPROT  => s00_axi_awprot,
@@ -262,38 +274,6 @@ w7x_timing_v1_0_S00_AXI_inst : w7x_timing_v1_0_S00_AXI
         S_AXI_RREADY  => s00_axi_rready    
     );
 
----- Instantiation of clock_interface
-w7x_timing_clock_interface_inst : clock_interface
-    generic map (
-        STAT_COUNT => STAT_COUNT,
-        CTRL_COUNT => CTRL_COUNT,
-        HEAD_COUNT => HEAD_COUNT,
-        BRAM_SIZE  => BRAM_SIZE,
-        ADDR_WIDTH => ADDR_WIDTH,
-        DATA_WIDTH => DATA_WIDTH
-    )
-    port map (
-        CS         => clk_cs,
-        CLK_EXT    => clk_in,
-        CLK_20M    => clk20_in,
-        BRAM_RDATA => bram_douta,
-        M_CLK_I    => s00_axi_clk,
-        M_ADDR_I   => m_addr,
-        M_DATA_RO  => m_rdata,
-        M_DATA_WI  => m_wdata,
-        M_STRB_WI  => m_strb,
-        S_CLK_O    => clk,
-        S_STAT_WI  => staterr,
-        --S_ADDR_WI  => oneaddr,
-        S_DATA_WI  => ctrl_out,
-        S_STRB_WI  => ctrl_strb,
-        S_HEAD_WI  => head_out,
-        S_HWRT_WI  => load_head,
-        S_HEAD_RO  => head_in,
-        S_CTRL_RO  => ctrl_in,
-        DATA_BUF   => data_buf
-      );
-
 ---- Instantiation of main program
 w7x_timing_inst : w7x_timing
     generic map (
@@ -303,14 +283,12 @@ w7x_timing_inst : w7x_timing
     )
     port map (
        clk_in        => clk,
-       ctrl_in       => bctrl_in,
-       ctrl_out      => bctrl_out,
-       ctrl_strb     => ctrl_strb,
-       load_head_out => load_head,
-       index_out     => index_sample,
-       state_out     => staterr,
-       head_in       => head_in,
-       head_out      => head_out,
+       trigger_in    => trigger,
+       armed_in      => c_init(0),
+       clear_in      => c_clear(0),
+       index_out     => s_addr,
+       state_out     => state,
+       head_in       => head_buf,
        sample_in     => bram_doutb
       );
 end arch_imp;
