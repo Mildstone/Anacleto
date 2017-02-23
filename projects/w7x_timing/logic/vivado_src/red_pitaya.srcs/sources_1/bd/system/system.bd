@@ -207,12 +207,13 @@
           <spirit:configurableElementValue spirit:referenceId="Memory_Type">True_Dual_Port_RAM</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Enable_32bit_Address">false</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Use_Byte_Write_Enable">false</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="Write_Width_A">64</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="Write_Depth_A">32768</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="Write_Width_A">40</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="Write_Depth_A">54272</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="Read_Width_A">40</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Operating_Mode_A">READ_FIRST</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Enable_A">Use_ENA_Pin</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="Write_Width_B">64</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="Read_Width_B">64</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="Write_Width_B">40</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="Read_Width_B">40</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Operating_Mode_B">READ_FIRST</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Enable_B">Always_Enabled</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="Register_PortA_Output_of_Memory_Primitives">false</spirit:configurableElementValue>
@@ -834,6 +835,7 @@
         <spirit:componentRef spirit:library="user" spirit:name="w7x_timing" spirit:vendor="user.org" spirit:version="1.0"/>
         <spirit:configurableElementValues>
           <spirit:configurableElementValue spirit:referenceId="bd:xciName">system_w7x_timing_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="ADDR_WIDTH">16</spirit:configurableElementValue>
         </spirit:configurableElementValues>
       </spirit:componentInstance>
     </spirit:componentInstances>
@@ -1490,7 +1492,7 @@
             <spirit:name>SEG_w7x_timing_0_S00_AXI_reg</spirit:name>
             <spirit:displayName>/w7x_timing_0/S00_AXI/S00_AXI_reg</spirit:displayName>
             <spirit:addressOffset>0x43C00000</spirit:addressOffset>
-            <spirit:range>256K</spirit:range>
+            <spirit:range>512K</spirit:range>
           </spirit:segment>
         </spirit:segments>
       </spirit:addressSpace>

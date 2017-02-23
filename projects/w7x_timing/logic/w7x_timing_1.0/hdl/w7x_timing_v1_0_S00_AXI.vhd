@@ -56,6 +56,7 @@ architecture arch_imp of w7x_timing_v1_0_S00_AXI is
     signal axi_rdata   : std_logic_vector(DATA_WIDTH-1 downto 0);
     signal axi_rvalid  : std_logic := '0';
     signal bram_en     : std_logic := '0';
+    signal bram_rready : std_logic := '0';
 
     function axi_addr2addr(addr : std_logic_vector(AXI_ADDR_WIDTH-1 downto 0)) return unsigned is
     -- local parameter for addressing 32 bit / 64 bit C_S_AXI_DATA_WIDTH
@@ -129,17 +130,21 @@ begin
     procedure rgo_idle0 is begin
       axi_arready <= '1';
       axi_rvalid  <= '0';
+      bram_rready <= '0';
     end rgo_idle0;
     procedure rgo_arready1 is begin
       bram_en     <= '1';
       axi_arready <= '0';
       axi_aaddr   <= axi_addr2addr(S_AXI_ARADDR);
     end rgo_arready1;
-    procedure rgo_rvalid2 is begin
-      axi_arready <= '1';
+    procedure rgo_bram_rready2 is begin
+      bram_rready <= '1';
+    end rgo_bram_rready2;
+    procedure rgo_rvalid3 is begin
+      axi_arready <= '0';
       axi_rvalid  <= '1';
       axi_rdata  <= DATA_IN;
-    end rgo_rvalid2;
+    end rgo_rvalid3;
 
     begin
       if rising_edge(S_AXI_CLK) then
@@ -163,8 +168,10 @@ begin
           wgo_awready1;
         -- reading
         elsif axi_arready = '0' then
-          if axi_rvalid = '0' then
-            rgo_rvalid2;
+          if bram_rready = '0' then
+            rgo_bram_rready2;
+          elsif axi_rvalid = '0' then
+              rgo_rvalid3;
           elsif S_AXI_RREADY  = '1' then
             rgo_idle0;              
           end if;        
