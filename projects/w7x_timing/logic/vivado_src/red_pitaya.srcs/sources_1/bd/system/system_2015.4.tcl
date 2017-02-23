@@ -166,16 +166,17 @@ CONFIG.Operating_Mode_B {READ_FIRST} \
 CONFIG.Port_B_Clock {100} \
 CONFIG.Port_B_Enable_Rate {100} \
 CONFIG.Port_B_Write_Rate {50} \
-CONFIG.Read_Width_B {64} \
+CONFIG.Read_Width_A {40} \
+CONFIG.Read_Width_B {40} \
 CONFIG.Register_PortA_Output_of_Memory_Primitives {false} \
 CONFIG.Register_PortB_Output_of_Memory_Primitives {false} \
 CONFIG.Remaining_Memory_Locations {0} \
 CONFIG.Use_Byte_Write_Enable {false} \
 CONFIG.Use_RSTA_Pin {false} \
 CONFIG.Use_RSTB_Pin {false} \
-CONFIG.Write_Depth_A {32768} \
-CONFIG.Write_Width_A {64} \
-CONFIG.Write_Width_B {64} \
+CONFIG.Write_Depth_A {54272} \
+CONFIG.Write_Width_A {40} \
+CONFIG.Write_Width_B {40} \
 CONFIG.use_bram_block {Stand_Alone} \
  ] $blk_mem_gen_0
 
@@ -775,6 +776,9 @@ CONFIG.S00_HAS_REGSLICE {3} \
 
   # Create instance: w7x_timing_0, and set properties
   set w7x_timing_0 [ create_bd_cell -type ip -vlnv user.org:user:w7x_timing:1.0 w7x_timing_0 ]
+  set_property -dict [ list \
+CONFIG.ADDR_WIDTH {16} \
+ ] $w7x_timing_0
 
   # Create instance: xlconstant_0, and set properties
   set xlconstant_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 xlconstant_0 ]
@@ -805,7 +809,7 @@ CONFIG.CONST_WIDTH {8} \
   connect_bd_net -net xlconstant_0_dout [get_bd_ports state0] [get_bd_pins xlconstant_0/dout]
 
   # Create address segments
-  create_bd_addr_seg -range 0x40000 -offset 0x43C00000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs w7x_timing_0/S00_AXI/S00_AXI_reg] SEG_w7x_timing_0_S00_AXI_reg
+  create_bd_addr_seg -range 0x80000 -offset 0x43C00000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs w7x_timing_0/S00_AXI/S00_AXI_reg] SEG_w7x_timing_0_S00_AXI_reg
 
   # Perform GUI Layout
   regenerate_bd_layout -layout_string {

@@ -3,9 +3,10 @@ proc init_gui { IPINST } {
   ipgui::add_param $IPINST -name "Component_Name"
   #Adding Page
   set Page_0 [ipgui::add_page $IPINST -name "Page 0"]
+  ipgui::add_param $IPINST -name "DATA_WIDTH" -parent ${Page_0}
   ipgui::add_param $IPINST -name "BRAM_SIZE" -parent ${Page_0}
   ipgui::add_param $IPINST -name "ADDR_WIDTH" -parent ${Page_0}
-  ipgui::add_param $IPINST -name "DATA_WIDTH" -parent ${Page_0}
+  ipgui::add_param $IPINST -name "BRAM_WIDTH" -parent ${Page_0}
 
 
 }
@@ -28,12 +29,12 @@ proc validate_PARAM_VALUE.BRAM_SIZE { PARAM_VALUE.BRAM_SIZE } {
 	return true
 }
 
-proc update_PARAM_VALUE.CTRL_COUNT { PARAM_VALUE.CTRL_COUNT } {
-	# Procedure called to update CTRL_COUNT when any of the dependent parameters in the arguments change
+proc update_PARAM_VALUE.BRAM_WIDTH { PARAM_VALUE.BRAM_WIDTH } {
+	# Procedure called to update BRAM_WIDTH when any of the dependent parameters in the arguments change
 }
 
-proc validate_PARAM_VALUE.CTRL_COUNT { PARAM_VALUE.CTRL_COUNT } {
-	# Procedure called to validate CTRL_COUNT
+proc validate_PARAM_VALUE.BRAM_WIDTH { PARAM_VALUE.BRAM_WIDTH } {
+	# Procedure called to validate BRAM_WIDTH
 	return true
 }
 
@@ -43,24 +44,6 @@ proc update_PARAM_VALUE.DATA_WIDTH { PARAM_VALUE.DATA_WIDTH } {
 
 proc validate_PARAM_VALUE.DATA_WIDTH { PARAM_VALUE.DATA_WIDTH } {
 	# Procedure called to validate DATA_WIDTH
-	return true
-}
-
-proc update_PARAM_VALUE.HEAD_COUNT { PARAM_VALUE.HEAD_COUNT } {
-	# Procedure called to update HEAD_COUNT when any of the dependent parameters in the arguments change
-}
-
-proc validate_PARAM_VALUE.HEAD_COUNT { PARAM_VALUE.HEAD_COUNT } {
-	# Procedure called to validate HEAD_COUNT
-	return true
-}
-
-proc update_PARAM_VALUE.STAT_COUNT { PARAM_VALUE.STAT_COUNT } {
-	# Procedure called to update STAT_COUNT when any of the dependent parameters in the arguments change
-}
-
-proc validate_PARAM_VALUE.STAT_COUNT { PARAM_VALUE.STAT_COUNT } {
-	# Procedure called to validate STAT_COUNT
 	return true
 }
 
@@ -75,23 +58,13 @@ proc update_MODELPARAM_VALUE.ADDR_WIDTH { MODELPARAM_VALUE.ADDR_WIDTH PARAM_VALU
 	set_property value [get_property value ${PARAM_VALUE.ADDR_WIDTH}] ${MODELPARAM_VALUE.ADDR_WIDTH}
 }
 
-proc update_MODELPARAM_VALUE.STAT_COUNT { MODELPARAM_VALUE.STAT_COUNT PARAM_VALUE.STAT_COUNT } {
-	# Procedure called to set VHDL generic/Verilog parameter value(s) based on TCL parameter value
-	set_property value [get_property value ${PARAM_VALUE.STAT_COUNT}] ${MODELPARAM_VALUE.STAT_COUNT}
-}
-
-proc update_MODELPARAM_VALUE.CTRL_COUNT { MODELPARAM_VALUE.CTRL_COUNT PARAM_VALUE.CTRL_COUNT } {
-	# Procedure called to set VHDL generic/Verilog parameter value(s) based on TCL parameter value
-	set_property value [get_property value ${PARAM_VALUE.CTRL_COUNT}] ${MODELPARAM_VALUE.CTRL_COUNT}
-}
-
-proc update_MODELPARAM_VALUE.HEAD_COUNT { MODELPARAM_VALUE.HEAD_COUNT PARAM_VALUE.HEAD_COUNT } {
-	# Procedure called to set VHDL generic/Verilog parameter value(s) based on TCL parameter value
-	set_property value [get_property value ${PARAM_VALUE.HEAD_COUNT}] ${MODELPARAM_VALUE.HEAD_COUNT}
-}
-
 proc update_MODELPARAM_VALUE.BRAM_SIZE { MODELPARAM_VALUE.BRAM_SIZE PARAM_VALUE.BRAM_SIZE } {
 	# Procedure called to set VHDL generic/Verilog parameter value(s) based on TCL parameter value
 	set_property value [get_property value ${PARAM_VALUE.BRAM_SIZE}] ${MODELPARAM_VALUE.BRAM_SIZE}
+}
+
+proc update_MODELPARAM_VALUE.BRAM_WIDTH { MODELPARAM_VALUE.BRAM_WIDTH PARAM_VALUE.BRAM_WIDTH } {
+	# Procedure called to set VHDL generic/Verilog parameter value(s) based on TCL parameter value
+	set_property value [get_property value ${PARAM_VALUE.BRAM_WIDTH}] ${MODELPARAM_VALUE.BRAM_WIDTH}
 }
 
