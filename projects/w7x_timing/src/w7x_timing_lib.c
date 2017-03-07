@@ -133,15 +133,19 @@ int getParams(uint64_t *delay_p, uint32_t *width_p, uint32_t *period_p, uint64_t
 }
 
 int getTimes(uint32_t offset, uint32_t count, uint64_t *times_p) {
-  int i, max = MAX_SAMPLES - offset;
+  int i;
   INIT_DEVICE
-  memcpy(times_p, &(dev->w_times[offset]), (count<max ? count : max)*sizeof(uint64_t));
-  for (i = max ; i < count ; i++) times_p[i] = 0;
+  memcpy(times_p, &(dev->w_times[offset]), (count<MAX_SAMPLES ? count : MAX_SAMPLES)*sizeof(uint64_t));
+  for (i = MAX_SAMPLES ; i < count ; i++) times_p[i] = 0;
   return C_OK;
 }
 
 int setParams(uint64_t delay, uint32_t width, uint32_t period, uint64_t cycle, uint32_t repeat, uint32_t count, int *pos) {
   *pos += sprintf(error+*pos,"DELAY: %llu, WIDTH: %u, PERIOD: %u, COUNT: %u, CYCLE: %llu, REPEAT: %u\n", delay, width, period, count, cycle, repeat);
+  if (count > MAX_SAMPLES) {
+    *pos += sprintf(error+*pos,"ERROR: COUNT > MAX_SAMPLES(%d)\n",MAX_SAMPLES);
+    return C_PARAM_ERROR;
+  }
   if (period < 2){
     *pos += sprintf(error+*pos,"ERROR: PERIOD < 2\n");
     return C_PARAM_ERROR;

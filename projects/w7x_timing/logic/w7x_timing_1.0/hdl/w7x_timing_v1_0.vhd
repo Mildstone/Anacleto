@@ -4,13 +4,10 @@ use ieee.numeric_std.all;
 
 entity w7x_timing_v1_0 is
     generic (
-        STAT_COUNT : integer := 1;
-        CTRL_COUNT : integer := 1;
-        HEAD_COUNT : integer := 4;
-        
-        BRAM_SIZE  : integer := 32768;
+        BRAM_SIZE  : integer := 54272;
+        BRAM_WIDTH : integer := 40;
         DATA_WIDTH : integer := 64;
-        ADDR_WIDTH : integer := 15
+        ADDR_WIDTH : integer := 16
     );
     port (
         clk_axi_in : in  std_logic;
@@ -22,8 +19,8 @@ entity w7x_timing_v1_0 is
         power_down : out STD_LOGIC;
         -- PortA of blk_mem_gen
         bram_clka  : out  STD_LOGIC;
-        bram_douta : in   STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
-        bram_dina  : out  STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
+        bram_douta : in   STD_LOGIC_VECTOR(BRAM_WIDTH-1 downto 0);
+        bram_dina  : out  STD_LOGIC_VECTOR(BRAM_WIDTH-1 downto 0);
         bram_addra : out  STD_LOGIC_VECTOR(ADDR_WIDTH-1 downto 0);
         bram_ena   : out  STD_LOGIC;
         bram_wea   : out  STD_LOGIC;
@@ -31,7 +28,7 @@ entity w7x_timing_v1_0 is
         -- PortB of blk_mem_gen
         bram_addrb : out  STD_LOGIC_VECTOR(ADDR_WIDTH-1 downto 0);
         bram_clkb  : out  STD_LOGIC;
-        bram_doutb : in   STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
+        bram_doutb : in   STD_LOGIC_VECTOR(BRAM_WIDTH-1 downto 0);
         bram_rstb  : out  STD_LOGIC;
         -- Ports of Axi Slave Bus Interface S00_AXI
         s00_axi_resetn  : in  std_logic;
@@ -61,8 +58,8 @@ architecture arch_imp of w7x_timing_v1_0 is
  -- component declaration
     component w7x_timing_v1_0_S00_AXI is
     generic (
-      DATA_WIDTH : integer;
-      ADDR_WIDTH : integer;
+      DATA_WIDTH     : integer;
+      ADDR_WIDTH     : integer;
       AXI_ADDR_WIDTH : integer 
     );
     port (
@@ -101,6 +98,7 @@ architecture arch_imp of w7x_timing_v1_0 is
     generic (
       HEAD_COUNT  : integer;
       ADDR_WIDTH  : integer;
+      TIME_WIDTH  : integer;
       DATA_WIDTH  : integer
     );
     port (
@@ -109,13 +107,16 @@ architecture arch_imp of w7x_timing_v1_0 is
     armed_in   : in  STD_LOGIC;
     clear_in   : in  STD_LOGIC;
     head_in    : in  STD_LOGIC_VECTOR(HEAD_COUNT*DATA_WIDTH-1 downto 0);
-    sample_in  : in  STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
+    sample_in  : in  STD_LOGIC_VECTOR(TIME_WIDTH-1 downto 0);
     index_out  : out UNSIGNED(ADDR_WIDTH-1 downto 0);
     state_out  : out STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0)
     );
     end component w7x_timing;
 
-    constant DATA_COUNT: integer := STAT_COUNT+CTRL_COUNT+HEAD_COUNT;
+    constant STAT_COUNT: integer := 1;
+    constant CTRL_COUNT: integer := 1;
+    constant HEAD_COUNT: integer := 6;
+    constant DATA_COUNT: integer := 8;
     constant STAT_MIN  : integer := 0;
     constant STAT_MAX  : integer := STAT_COUNT;
     constant CTRL_MIN  : integer := STAT_MAX;
@@ -129,7 +130,7 @@ architecture arch_imp of w7x_timing_v1_0 is
     constant CTRL_HEAD : integer := CTRL_MAX*DATA_WIDTH-1;
     constant HEAD_BASE : integer := HEAD_MIN*DATA_WIDTH;
     constant HEAD_HEAD : integer := HEAD_MAX*DATA_WIDTH-1;
-    constant offset    : unsigned(ADDR_WIDTH-1 downto 0) := to_unsigned(HEAD_MAX,ADDR_WIDTH);
+    constant offset    : unsigned(ADDR_WIDTH-1 downto 0) := to_unsigned(DATA_COUNT,ADDR_WIDTH);
 
     function addr2base(addr : unsigned) return integer is begin
       return to_integer(addr)*DATA_WIDTH;
@@ -147,6 +148,8 @@ architecture arch_imp of w7x_timing_v1_0 is
     alias  state_buf : std_logic_vector(STAT_COUNT*DATA_WIDTH-1 downto 0) is data_buf(STAT_HEAD downto STAT_BASE);
     alias  ctrl_buf  : std_logic_vector(CTRL_COUNT*DATA_WIDTH-1 downto 0) is data_buf(CTRL_HEAD downto CTRL_BASE);
     alias  head_buf  : std_logic_vector(HEAD_COUNT*DATA_WIDTH-1 downto 0) is data_buf(HEAD_HEAD downto HEAD_BASE);
+    
+    signal bram_douta_buf : std_logic_vector(BRAM_WIDTH-1 downto 0);
 
     alias c_init     : std_logic_vector(7 downto 0) is ctrl_buf(0*8+7 downto 0*8);
     alias c_trig     : std_logic_vector(7 downto 0) is ctrl_buf(1*8+7 downto 1*8);
@@ -180,16 +183,27 @@ power_down <= c_extclk(0);
 ---- BRAM
 bram_clka   <= clk_axi_in;
 bram_rsta   <= '0';
-bram_addra  <= std_logic_vector(m_addr);
-strb: for i in 0 to DATA_WIDTH/8-1 generate begin
-  bram_dina(i*8+7 downto i*8) <= m_wdata(i*8+7 downto i*8) when m_strb(i) = '1' else bram_douta(i*8+7 downto i*8);
-end generate;
-m_rdata <= data_buf(addr2base(m_addr)+DATA_WIDTH-1 downto addr2base(m_addr))
+bram_addra  <= std_logic_vector(m_addr-offset);
+bram_update: process(clk_axi_in,m_strb,m_wdata,bram_douta) begin
+  if rising_edge(clk_axi_in) then
+    bram_douta_buf <= bram_douta;
+    for i in 0 to BRAM_WIDTH/8-1 loop
+      if m_strb(i) = '1'
+      then bram_dina(i*8+7 downto i*8) <= m_wdata(i*8+7 downto i*8);
+      else bram_dina(i*8+7 downto i*8) <= bram_douta_buf(i*8+7 downto i*8);
+      end if;
+    end loop;
+  end if;
+end process bram_update;
+m_rdata(BRAM_WIDTH-1 downto 0)          <= data_buf(addr2base(m_addr)+BRAM_WIDTH-1 downto addr2base(m_addr))
    when m_addr < offset else bram_douta;
+m_rdata(DATA_WIDTH-1 downto BRAM_WIDTH) <= data_buf(addr2base(m_addr)+DATA_WIDTH-1 downto addr2base(m_addr)+BRAM_WIDTH)
+   when m_addr < offset else (others => '0');
+
 -- b channel
 bram_rstb  <= '0';
 bram_clkb  <= clk;
-bram_addrb <= std_logic_vector(s_addr+offset);
+bram_addrb <= std_logic_vector(s_addr);
 ---- translate DOUT states
 output: for i in 2 to 7 generate
   state_do(i) <= not gate when (c_invert(i) and     c_gate(i)) = '1'
@@ -278,6 +292,7 @@ w7x_timing_v1_0_S00_AXI_inst : w7x_timing_v1_0_S00_AXI
 w7x_timing_inst : w7x_timing
     generic map (
         DATA_WIDTH => DATA_WIDTH,
+        TIME_WIDTH => BRAM_WIDTH,
         ADDR_WIDTH => ADDR_WIDTH,
         HEAD_COUNT => HEAD_COUNT
     )

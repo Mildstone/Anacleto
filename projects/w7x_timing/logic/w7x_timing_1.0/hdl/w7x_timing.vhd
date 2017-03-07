@@ -6,6 +6,7 @@ entity w7x_timing is
     generic (
       ADDR_WIDTH  : integer := 15;
       DATA_WIDTH  : integer := 64;
+      TIME_WIDTH  : integer := 40;
       HEAD_COUNT  : integer := 4
     );
     port (
@@ -14,7 +15,7 @@ entity w7x_timing is
        armed_in   : in  STD_LOGIC;
        clear_in   : in  STD_LOGIC;
        head_in    : in  STD_LOGIC_VECTOR(HEAD_COUNT*DATA_WIDTH-1 downto 0);
-       sample_in  : in  STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0);
+       sample_in  : in  STD_LOGIC_VECTOR(TIME_WIDTH-1 downto 0);
        index_out  : out UNSIGNED(ADDR_WIDTH-1 downto 0);
        state_out  : out STD_LOGIC_VECTOR(DATA_WIDTH-1 downto 0)
     );
@@ -22,7 +23,6 @@ end  w7x_timing;
 
 
 architecture Behavioral of w7x_timing is
-    constant TIME_WIDTH : integer := DATA_WIDTH-24;
     constant zero32     : unsigned(        32-1 downto 0) := to_unsigned(0,32);
     constant zeroaddr   : unsigned(ADDR_WIDTH-1 downto 0) := to_unsigned(0,ADDR_WIDTH);
     constant zerotime   : unsigned(TIME_WIDTH-1 downto 0) := to_unsigned(0,TIME_WIDTH);
@@ -62,15 +62,16 @@ begin
     state_out(0) <= not error(8+1);
     state_out(DATA_WIDTH-1 downto 8) <= error;
 
+    -- set input
+    sample       <= unsigned(sample_in(TIME_WIDTH-1 downto 0));
   buffer_input: process(clk_in,sample_in,head_in) begin
     if falling_edge(clk_in) then
-      sample       <= unsigned(sample_in(TIME_WIDTH-1 downto 0));
-      delay_total  <= unsigned(head_in(0*64+TIME_WIDTH-1 downto 0*64));
-      high_total   <= unsigned(head_in(1*64+31 downto 1*64));
-      period_total <= unsigned(head_in(1*64+63 downto 1*64+32));
-      cycle_total  <= unsigned(head_in(2*64+TIME_WIDTH-1 downto 2*64));
-      repeat_total <= unsigned(head_in(3*64+31 downto 3*64));
-      sample_total <= unsigned(head_in(3*64+32+ADDR_WIDTH-1 downto 3*64+32));
+      delay_total  <= unsigned(head_in(0*DATA_WIDTH+TIME_WIDTH-1 downto 0*DATA_WIDTH));
+      high_total   <= unsigned(head_in(1*DATA_WIDTH+31           downto 1*DATA_WIDTH));
+      period_total <= unsigned(head_in(2*DATA_WIDTH+31           downto 2*DATA_WIDTH));
+      cycle_total  <= unsigned(head_in(3*DATA_WIDTH+TIME_WIDTH-1 downto 3*DATA_WIDTH));
+      repeat_total <= unsigned(head_in(4*DATA_WIDTH+31           downto 4*DATA_WIDTH));
+      sample_total <= unsigned(head_in(5*DATA_WIDTH+ADDR_WIDTH-1 downto 5*DATA_WIDTH));
     end if;
   end process buffer_input;
   clock_gen:  process(clk_in, armed_in, trigger_in, clear_in, 
