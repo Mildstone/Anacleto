@@ -18,3 +18,7 @@ autoheader
 automake --add-missing --copy
 
 autoconf
+
+echo "#"
+echo "# All done... now try to configure using \"./configure --enable-kconfig\""
+echo "#"

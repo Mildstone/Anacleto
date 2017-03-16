@@ -2,12 +2,8 @@ include Common.am
 AM_MAKEFLAGS = -j$(MAKE_PROCESS)
 
 
-# TOOLCHAIN #
-include conf/kscripts/toolchain.am
-
-
-all: ##@all download and build the selected toolchain and the linux image
-all:
+all: ##@all all target
+all: toolchain
 
 clean-local:
 
