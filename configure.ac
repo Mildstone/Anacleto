@@ -101,6 +101,38 @@ AX_KCONFIG_VAR_WITH([CROSS_COMPILE],["Set crosscompile command"])
 AC_SUBST([CROSS_COMPILE])
 
 
+# //////////////////////////////////////////////////////////////////////////// #
+# //  EXAMPLES /////////////////////////////////////////////////////////////// #
+# //////////////////////////////////////////////////////////////////////////// #
+
+
+AX_KCONFIG_VAR_ENABLE([EXAMPLE_BOOL_VAR],["Set example bool var"])
+AC_SUBST([EXAMPLE_BOOL_VAR])
+
+AX_KCONFIG_VAR_WITH([EXAMPLE_STRING_VAR],["Set example string var"])
+AC_SUBST([EXAMPLE_STRING_VAR])
+
+
+AX_KCONFIG_MODULES([MDS],[java],[])
+AX_KCONFIG_MODULES([MDS],[lv],[labview],
+			 [ni],[national instruments components])
+AC_SUBST(MDS_JAVA)
+AC_SUBST(MDS_LV)
+AC_SUBST(MDS_NI)
+AC_SUBST(MDS_MODULES)
+
+
+AX_KCONFIG_MODULES([],[mod1],[],
+		      [mod2],[],
+		      [mod3],[])
+AC_SUBST(MDS_MOD1)
+AC_SUBST(MDS_MOD2)
+AC_SUBST(MDS_MOD3)
+AC_SUBST(MODULES)
+
+
+
+
 
 
 # // GIT IGNORE // #

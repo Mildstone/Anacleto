@@ -7,6 +7,50 @@ mainmenu "autoconf-bootstrap  Start new autoconf kconfig project"
 
 comment "Project Options (add here)"
 
+# //////////////////////////////////////////////////////////////////////////// #
+# //  EXAMPLES  ////////////////////////////////////////////////////////////// #
+# //////////////////////////////////////////////////////////////////////////// #
+
+menu EXAMPLES
+
+menu MDS_MODULES
+	config MDS_JAVA
+	bool "Enable java module"
+	default y
+
+	config MDS_LV
+	bool "Enable labview module"
+	default n
+
+	config MDS_NI
+	bool "Enable National Instruments module"
+	default n
+endmenu
+
+menu MODULES
+	config MOD1
+	 bool "Enable mod1 module"
+	config MOD2
+	 bool "Enable mod2 module"
+	config MOD3
+	 bool "Enable mod3 module"
+endmenu
+
+
+config EXAMPLE_BOOL_VAR
+	bool "Set a example bool variable"
+	---help---
+	      This is an example bool variable define within the kconfig
+	      autoconf addon.
+
+config EXAMPLE_STRING_VAR
+	string "get value for EXAMPLE_STRING_VAR"
+	---help---
+	      This is an example string variable define within the kconfig
+	      autoconf addon.
+
+endmenu
+
 comment "Build Options"
 
 # //////////////////////////////////////////////////////////////////////////// #
