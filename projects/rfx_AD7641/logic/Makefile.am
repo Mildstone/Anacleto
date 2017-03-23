@@ -11,7 +11,9 @@ SOURCES = red_pitaya.xdc
 BD_SOURCES =
 
 ## NOTE: the ip name must be formatted as: [ip_path]/[ipname]_[major.minor]
-IP_SOURCES = prescaler_clock_1.0
+IP_SOURCES = prescaler_clock_1.0 \
+	     rfx_AD7641_serial_slave_1.0 \
+	     rfx_AD7641_serial_emulator_1.0
 
 all: $(FPGA_BIT) $(DTB) ##@all Write bitstream and devicetree
 

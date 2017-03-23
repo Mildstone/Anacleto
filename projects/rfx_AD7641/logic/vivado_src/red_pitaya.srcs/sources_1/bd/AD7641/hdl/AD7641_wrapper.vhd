@@ -1,18 +1,19 @@
 --Copyright 1986-2015 Xilinx, Inc. All Rights Reserved.
 ----------------------------------------------------------------------------------
 --Tool Version: Vivado v.2015.4 (lin64) Build 1412921 Wed Nov 18 09:44:32 MST 2015
---Date        : Thu Dec 15 10:07:19 2016
---Host        : c0140022195e running 64-bit Ubuntu 14.04.5 LTS
---Command     : generate_target system_wrapper.bd
---Design      : system_wrapper
+--Date        : Thu Mar 23 18:08:50 2017
+--Host        : 8a33afeb022b running 64-bit Ubuntu 14.04.5 LTS
+--Command     : generate_target AD7641_wrapper.bd
+--Design      : AD7641_wrapper
 --Purpose     : IP block netlist
 ----------------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 library UNISIM;
 use UNISIM.VCOMPONENTS.ALL;
-entity system_wrapper is
+entity AD7641_wrapper is
   port (
+    CNVST_out : out STD_LOGIC;
     DDR_addr : inout STD_LOGIC_VECTOR ( 14 downto 0 );
     DDR_ba : inout STD_LOGIC_VECTOR ( 2 downto 0 );
     DDR_cas_n : inout STD_LOGIC;
@@ -34,25 +35,14 @@ entity system_wrapper is
     FIXED_IO_ps_clk : inout STD_LOGIC;
     FIXED_IO_ps_porb : inout STD_LOGIC;
     FIXED_IO_ps_srstb : inout STD_LOGIC;
-    IDS_N : in STD_LOGIC_VECTOR ( 0 to 0 );
-    IDS_P : in STD_LOGIC_VECTOR ( 0 to 0 );
-    IDS_led : out STD_LOGIC_VECTOR ( 0 to 0 );
-    clock_out_N : out STD_LOGIC_VECTOR ( 0 to 0 );
-    clock_out_P : out STD_LOGIC_VECTOR ( 0 to 0 );
-    led_o : out STD_LOGIC;
-    prescaler_output_LED_clk : out STD_LOGIC;
-    prescaler_output_clk_1 : out STD_LOGIC;
-    prescaler_output_clk_negato_2 : out STD_LOGIC;
-    pwm_n_out : out STD_LOGIC_VECTOR ( 0 to 0 );
-    pwm_n_out_1 : out STD_LOGIC_VECTOR ( 0 to 0 );
-    pwm_out : out STD_LOGIC_VECTOR ( 0 to 0 );
-    pwm_out_1 : out STD_LOGIC_VECTOR ( 0 to 0 );
-    test_speed_out_led : out STD_LOGIC
+    SCLK_out : out STD_LOGIC;
+    SDAT_out : out STD_LOGIC;
+    prescaler_output_clk : out STD_LOGIC
   );
-end system_wrapper;
+end AD7641_wrapper;
 
-architecture STRUCTURE of system_wrapper is
-  component system is
+architecture STRUCTURE of AD7641_wrapper is
+  component AD7641 is
   port (
     DDR_cas_n : inout STD_LOGIC;
     DDR_cke : inout STD_LOGIC;
@@ -75,25 +65,16 @@ architecture STRUCTURE of system_wrapper is
     FIXED_IO_ps_srstb : inout STD_LOGIC;
     FIXED_IO_ps_clk : inout STD_LOGIC;
     FIXED_IO_ps_porb : inout STD_LOGIC;
-    pwm_n_out : out STD_LOGIC_VECTOR ( 0 to 0 );
-    pwm_n_out_1 : out STD_LOGIC_VECTOR ( 0 to 0 );
-    pwm_out : out STD_LOGIC_VECTOR ( 0 to 0 );
-    pwm_out_1 : out STD_LOGIC_VECTOR ( 0 to 0 );
-    led_o : out STD_LOGIC;
-    IDS_led : out STD_LOGIC_VECTOR ( 0 to 0 );
-    clock_out_P : out STD_LOGIC_VECTOR ( 0 to 0 );
-    clock_out_N : out STD_LOGIC_VECTOR ( 0 to 0 );
-    IDS_P : in STD_LOGIC_VECTOR ( 0 to 0 );
-    IDS_N : in STD_LOGIC_VECTOR ( 0 to 0 );
-    prescaler_output_clk_negato_2 : out STD_LOGIC;
-    test_speed_out_led : out STD_LOGIC;
-    prescaler_output_clk_1 : out STD_LOGIC;
-    prescaler_output_LED_clk : out STD_LOGIC
+    prescaler_output_clk : out STD_LOGIC;
+    SCLK_out : out STD_LOGIC;
+    SDAT_out : out STD_LOGIC;
+    CNVST_out : out STD_LOGIC
   );
-  end component system;
+  end component AD7641;
 begin
-system_i: component system
+AD7641_i: component AD7641
      port map (
+      CNVST_out => CNVST_out,
       DDR_addr(14 downto 0) => DDR_addr(14 downto 0),
       DDR_ba(2 downto 0) => DDR_ba(2 downto 0),
       DDR_cas_n => DDR_cas_n,
@@ -115,19 +96,8 @@ system_i: component system
       FIXED_IO_ps_clk => FIXED_IO_ps_clk,
       FIXED_IO_ps_porb => FIXED_IO_ps_porb,
       FIXED_IO_ps_srstb => FIXED_IO_ps_srstb,
-      IDS_N(0) => IDS_N(0),
-      IDS_P(0) => IDS_P(0),
-      IDS_led(0) => IDS_led(0),
-      clock_out_N(0) => clock_out_N(0),
-      clock_out_P(0) => clock_out_P(0),
-      led_o => led_o,
-      prescaler_output_LED_clk => prescaler_output_LED_clk,
-      prescaler_output_clk_1 => prescaler_output_clk_1,
-      prescaler_output_clk_negato_2 => prescaler_output_clk_negato_2,
-      pwm_n_out(0) => pwm_n_out(0),
-      pwm_n_out_1(0) => pwm_n_out_1(0),
-      pwm_out(0) => pwm_out(0),
-      pwm_out_1(0) => pwm_out_1(0),
-      test_speed_out_led => test_speed_out_led
+      SCLK_out => SCLK_out,
+      SDAT_out => SDAT_out,
+      prescaler_output_clk => prescaler_output_clk
     );
 end STRUCTURE;
