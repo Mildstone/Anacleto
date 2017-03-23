@@ -35,3 +35,4 @@ linux/include
 linux/arch/arm/include
 m4
 .
+projects/rfx_axibase/logic/vivado_src
