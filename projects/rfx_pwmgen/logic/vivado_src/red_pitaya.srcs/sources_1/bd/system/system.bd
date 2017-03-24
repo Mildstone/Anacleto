@@ -827,12 +827,12 @@
         <spirit:internalPortReference spirit:componentRef="processing_system7_0" spirit:portRef="M_AXI_GP0_ACLK"/>
         <spirit:internalPortReference spirit:componentRef="processing_system7_0" spirit:portRef="S_AXI_HP0_ACLK"/>
         <spirit:internalPortReference spirit:componentRef="processing_system7_0" spirit:portRef="S_AXI_HP1_ACLK"/>
-        <spirit:internalPortReference spirit:componentRef="processing_system7_0_axi_periph" spirit:portRef="ACLK"/>
-        <spirit:internalPortReference spirit:componentRef="processing_system7_0_axi_periph" spirit:portRef="M00_ACLK"/>
-        <spirit:internalPortReference spirit:componentRef="processing_system7_0_axi_periph" spirit:portRef="S00_ACLK"/>
         <spirit:internalPortReference spirit:componentRef="rfx_pwmgen_0" spirit:portRef="clk"/>
         <spirit:internalPortReference spirit:componentRef="rfx_pwmgen_0" spirit:portRef="s00_axi_aclk"/>
         <spirit:internalPortReference spirit:componentRef="rst_processing_system7_0_125M" spirit:portRef="slowest_sync_clk"/>
+        <spirit:internalPortReference spirit:componentRef="processing_system7_0_axi_periph" spirit:portRef="ACLK"/>
+        <spirit:internalPortReference spirit:componentRef="processing_system7_0_axi_periph" spirit:portRef="M00_ACLK"/>
+        <spirit:internalPortReference spirit:componentRef="processing_system7_0_axi_periph" spirit:portRef="S00_ACLK"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>processing_system7_0_FCLK_RESET0_N</spirit:name>
@@ -847,14 +847,14 @@
       <spirit:adHocConnection>
         <spirit:name>rfx_pwmgen_0_pwm_n_out</spirit:name>
         <spirit:internalPortReference spirit:componentRef="rfx_pwmgen_0" spirit:portRef="pwm_n_out"/>
-        <spirit:externalPortReference spirit:portRef="pwm_n_out"/>
         <spirit:externalPortReference spirit:portRef="pwm_n_out_1"/>
+        <spirit:externalPortReference spirit:portRef="pwm_n_out"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>rfx_pwmgen_0_pwm_out</spirit:name>
         <spirit:internalPortReference spirit:componentRef="rfx_pwmgen_0" spirit:portRef="pwm_out"/>
-        <spirit:externalPortReference spirit:portRef="pwm_out"/>
         <spirit:externalPortReference spirit:portRef="pwm_out_1"/>
+        <spirit:externalPortReference spirit:portRef="pwm_out"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>rst_processing_system7_0_125M_interconnect_aresetn</spirit:name>
@@ -864,10 +864,10 @@
       <spirit:adHocConnection>
         <spirit:name>rst_processing_system7_0_125M_peripheral_aresetn</spirit:name>
         <spirit:internalPortReference spirit:componentRef="rst_processing_system7_0_125M" spirit:portRef="peripheral_aresetn"/>
-        <spirit:internalPortReference spirit:componentRef="processing_system7_0_axi_periph" spirit:portRef="M00_ARESETN"/>
-        <spirit:internalPortReference spirit:componentRef="processing_system7_0_axi_periph" spirit:portRef="S00_ARESETN"/>
         <spirit:internalPortReference spirit:componentRef="rfx_pwmgen_0" spirit:portRef="reset_n"/>
         <spirit:internalPortReference spirit:componentRef="rfx_pwmgen_0" spirit:portRef="s00_axi_aresetn"/>
+        <spirit:internalPortReference spirit:componentRef="processing_system7_0_axi_periph" spirit:portRef="M00_ARESETN"/>
+        <spirit:internalPortReference spirit:componentRef="processing_system7_0_axi_periph" spirit:portRef="S00_ARESETN"/>
       </spirit:adHocConnection>
     </spirit:adHocConnections>
     <spirit:hierConnections>

@@ -243,8 +243,10 @@ proc make_open_project {} {
     source $v::pe(dir_src)/../$project_name.tcl
   }
   ## no chance to open project ##
-  if { [catch {current_project}] } { error "Could not open project" }
+  if { [catch {current_project}] } { error "Could not open project" } \
+  else { puts "PROJECT LOADED..."}
 
+  ## load remote sources
   make_load_sources
 }
 
