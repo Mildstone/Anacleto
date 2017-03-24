@@ -2,3 +2,5 @@ vivado_project/
 .cache/
 .hw/
 .xpr
+linux
+Makefile.in
