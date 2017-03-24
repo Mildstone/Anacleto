@@ -255,31 +255,31 @@ set files [list \
 set imported_files [import_files -fileset sources_1 $files]
 
 set files [list \
- "[file normalize "$origin_dir/../rtl/red_pitaya_pid_block.v"]"\
- "[file normalize "$origin_dir/../rtl/red_pitaya_dfilt1.v"]"\
- "[file normalize "$origin_dir/../rtl/red_pitaya_asg_ch.v"]"\
- "[file normalize "$origin_dir/../rtl/axi_wr_fifo.v"]"\
- "[file normalize "$origin_dir/../rtl/axi_slave.v"]"\
- "[file normalize "$origin_dir/../rtl/axi_master.v"]"\
- "[file normalize "$origin_dir/../rtl/red_pitaya_scope.v"]"\
- "[file normalize "$origin_dir/../rtl/red_pitaya_ps.v"]"\
- "[file normalize "$origin_dir/../rtl/red_pitaya_pll.sv"]"\
- "[file normalize "$origin_dir/../rtl/red_pitaya_pid.v"]"\
- "[file normalize "$origin_dir/../rtl/red_pitaya_hk.v"]"\
- "[file normalize "$origin_dir/../rtl/red_pitaya_asg.v"]"\
- "[file normalize "$origin_dir/../rtl/red_pitaya_ams.v"]"\
- "[file normalize "$origin_dir/../rtl/red_pitaya_pwm.sv"]"\
- "[file normalize "$origin_dir/../rtl/red_pitaya_top.v"]"\
+ "[file normalize "$origin_dir/rtl/red_pitaya_pid_block.v"]"\
+ "[file normalize "$origin_dir/rtl/red_pitaya_dfilt1.v"]"\
+ "[file normalize "$origin_dir/rtl/red_pitaya_asg_ch.v"]"\
+ "[file normalize "$origin_dir/rtl/axi_wr_fifo.v"]"\
+ "[file normalize "$origin_dir/rtl/axi_slave.v"]"\
+ "[file normalize "$origin_dir/rtl/axi_master.v"]"\
+ "[file normalize "$origin_dir/rtl/red_pitaya_scope.v"]"\
+ "[file normalize "$origin_dir/rtl/red_pitaya_ps.v"]"\
+ "[file normalize "$origin_dir/rtl/red_pitaya_pll.sv"]"\
+ "[file normalize "$origin_dir/rtl/red_pitaya_pid.v"]"\
+ "[file normalize "$origin_dir/rtl/red_pitaya_hk.v"]"\
+ "[file normalize "$origin_dir/rtl/red_pitaya_asg.v"]"\
+ "[file normalize "$origin_dir/rtl/red_pitaya_ams.v"]"\
+ "[file normalize "$origin_dir/rtl/red_pitaya_pwm.sv"]"\
+ "[file normalize "$origin_dir/rtl/red_pitaya_top.v"]"\
 ]
 add_files -norecurse -fileset $obj $files
 
 # Set 'sources_1' fileset file properties for remote files
-set file "$origin_dir/../rtl/red_pitaya_pll.sv"
+set file "$origin_dir/rtl/red_pitaya_pll.sv"
 set file [file normalize $file]
 set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
 set_property "file_type" "SystemVerilog" $file_obj
 
-set file "$origin_dir/../rtl/red_pitaya_pwm.sv"
+set file "$origin_dir/rtl/red_pitaya_pwm.sv"
 set file [file normalize $file]
 set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
 set_property "file_type" "SystemVerilog" $file_obj
@@ -315,7 +315,7 @@ set_property "file_type" "XDC" $file_obj
 
 # Set 'constrs_1' fileset properties
 set obj [get_filesets constrs_1]
-set_property "target_constrs_file" "[file normalize "$origin_dir/../sdc/red_pitaya.xdc"]" $obj
+set_property "target_constrs_file" "[file normalize "$origin_dir/sdc/red_pitaya.xdc"]" $obj
 
 # Create 'sim_1' fileset (if not found)
 if {[string equal [get_filesets -quiet sim_1] ""]} {
