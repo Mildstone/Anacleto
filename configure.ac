@@ -267,10 +267,10 @@ AC_CONFIG_FILES(
 		 projects/rfx_pwmgen/logic/Makefile
 		 projects/rfx_pwmgen/src/Kbuild
 		 projects/rfx_pwmgen/src/Makefile
-		 projects/rfx_axibase/Makefile
-		 projects/rfx_axibase/logic/Makefile
-		 projects/rfx_axibase/src/Kbuild
-		 projects/rfx_axibase/src/Makefile
+dnl		 projects/rfx_axibase/Makefile
+dnl		 projects/rfx_axibase/logic/Makefile
+dnl		 projects/rfx_axibase/src/Kbuild
+dnl		 projects/rfx_axibase/src/Makefile
 		 projects/rfx_AD7641/Makefile
 		 projects/rfx_AD7641/logic/Makefile
 		 projects/rfx_AD7641/src/Kbuild
