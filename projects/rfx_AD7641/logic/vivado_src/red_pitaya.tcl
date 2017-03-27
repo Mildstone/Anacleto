@@ -151,7 +151,7 @@ namespace upvar ::tclapp::socdev::makeutils project_set project_set
 
 
 # Set the reference directory for source file relative paths (by default the value is script directory path)
-set origin_dir "$make_env(srcdir)"
+set origin_dir "$project_set(dir_src)"
 
 # Use origin directory path location variable, if specified in the tcl shell
 if { [info exists ::origin_dir_loc] } {
@@ -202,7 +202,7 @@ if { $::argc > 0 } {
 }
 
 # Set the directory path for the original project from where this script was exported
-set orig_proj_dir "[file normalize "$origin_dir/../../../../../linux-socdev-build/projects/rfx_AD7641/logic/vivado_project"]"
+set orig_proj_dir "[file normalize "$origin_dir/../../../../../../linux-socdev-build/projects/rfx_AD7641/logic/vivado_project"]"
 
 # Create project
 create_project red_pitaya "vivado_project" -part xc7z010clg400-1
@@ -228,7 +228,7 @@ if {[string equal [get_filesets -quiet sources_1] ""]} {
 
 # Set IP repository paths
 set obj [get_filesets sources_1]
-set_property "ip_repo_paths" "[file normalize "$origin_dir/../../../fpga/ip_repo"] [file normalize "$origin_dir/"]" $obj
+set_property "ip_repo_paths" "[file normalize "$origin_dir/../../../../fpga/ip_repo"] [file normalize "$origin_dir/.."]" $obj
 
 # Rebuild user ip_repo's index before adding any source files
 update_ip_catalog -rebuild
@@ -280,9 +280,9 @@ if {[string equal [get_filesets -quiet constrs_1] ""]} {
 set obj [get_filesets constrs_1]
 
 # Add/Import constrs file and set constrs file properties
-set file "[file normalize "$origin_dir/red_pitaya.xdc"]"
+set file "[file normalize "$origin_dir/../red_pitaya.xdc"]"
 set file_added [add_files -norecurse -fileset $obj $file]
-set file "$origin_dir/red_pitaya.xdc"
+set file "$origin_dir/../red_pitaya.xdc"
 set file [file normalize $file]
 set file_obj [get_files -of_objects [get_filesets constrs_1] [list "*$file"]]
 set_property "file_type" "XDC" $file_obj
