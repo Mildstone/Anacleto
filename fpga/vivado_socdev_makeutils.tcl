@@ -240,7 +240,7 @@ proc make_open_project {} {
     set  ::origin_dir_loc    $v::pe(dir_src)
     set  ::orig_proj_dir_loc $v::pe(dir_prj)
     puts "RESTORING PROJECT FROM: $v::pe(dir_src)/$project_name.tcl"
-    source $v::pe(dir_src)/$project_name.tcl
+    source -notrace $v::pe(dir_src)/$project_name.tcl
   }
   ## no chance to open project ##
   if { [catch {current_project}] } { error "Could not open project" } \

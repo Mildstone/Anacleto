@@ -25,9 +25,10 @@ proc make { args } {
       }
     }
   }
-  if { [catch { ::tclapp::socdev::makeutils::make_$command }] } {
-    puts "ERROR executin make $command"
-  }
+  ::tclapp::socdev::makeutils::make_$command
+#  if { [catch { ::tclapp::socdev::makeutils::make_$command }] } {
+#    puts "ERROR executing make $command"
+#  }
 }
 
 if { [llength $argv] > 0 } { make $argv }
