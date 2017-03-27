@@ -66,7 +66,7 @@ proc reset_project_env { } {
   set project_set(VIVADO_VERSION) "\$make_env(VIVADO_VERSION)"
   set project_set(project_name)   "\$make_env(project_name)"
   set project_set(dir_prj)        "vivado_project"
-  set project_set(dir_src)        "\$make_env(srcdir)/vivado_src/\${make_env(project_name)}.srcs"
+  set project_set(dir_src)        "\$make_env(srcdir)/vivado_src"
   set project_set(dir_sdc)        "sdc"
   set project_set(dir_out)        "out"
   set project_set(dir_sdk)        "sdk"

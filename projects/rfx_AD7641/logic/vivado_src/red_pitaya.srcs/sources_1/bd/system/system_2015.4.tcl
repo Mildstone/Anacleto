@@ -212,51 +212,6 @@ CONFIG.C_BUF_TYPE {IBUFDS} \
   # Create address segments
   create_bd_addr_seg -range 0x10000 -offset 0x43C10000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs prescaler_clock_0/S00_AXI/S00_AXI_reg] SEG_prescaler_clock_0_S00_AXI_reg
 
-  # Perform GUI Layout
-  regenerate_bd_layout -layout_string {
-   guistr: "# # String gsaved with Nlview 6.5.5  2015-06-26 bk=1.3371 VDI=38 GEI=35 GUI=JA:1.8
-#  -string -flagsOSRD
-preplace port DDR -pg 1 -y 280 -defaultsOSRD
-preplace port test_speed_out_led -pg 1 -y 190 -defaultsOSRD
-preplace port led_o -pg 1 -y 40 -defaultsOSRD
-preplace port prescaler_output_LED_clk -pg 1 -y 130 -defaultsOSRD
-preplace port FIXED_IO -pg 1 -y 300 -defaultsOSRD
-preplace port prescaler_output_clk_1 -pg 1 -y 150 -defaultsOSRD
-preplace port prescaler_output_clk_negato_2 -pg 1 -y 170 -defaultsOSRD
-preplace portBus clock_out_P -pg 1 -y 80 -defaultsOSRD
-preplace portBus IDS_N -pg 1 -y 430 -defaultsOSRD
-preplace portBus pwm_out_1 -pg 1 -y 250 -defaultsOSRD
-preplace portBus pwm_n_out_1 -pg 1 -y 210 -defaultsOSRD
-preplace portBus IDS_P -pg 1 -y 410 -defaultsOSRD
-preplace portBus pwm_n_out -pg 1 -y 60 -defaultsOSRD
-preplace portBus IDS_led -pg 1 -y 20 -defaultsOSRD
-preplace portBus pwm_out -pg 1 -y 230 -defaultsOSRD
-preplace portBus clock_out_N -pg 1 -y 100 -defaultsOSRD
-preplace inst util_ds_buf_1 -pg 1 -lvl 2 -y 410 -defaultsOSRD
-preplace inst rst_processing_system7_0_50M -pg 1 -lvl 1 -y 140 -defaultsOSRD
-preplace inst prescaler_clock_0 -pg 1 -lvl 3 -y 170 -defaultsOSRD
-preplace inst processing_system7_0_axi_periph -pg 1 -lvl 2 -y 130 -defaultsOSRD
-preplace inst processing_system7_0 -pg 1 -lvl 1 -y 320 -defaultsOSRD
-preplace inst util_ds_buf_0 -pg 1 -lvl 4 -y 90 -defaultsOSRD
-preplace netloc processing_system7_0_DDR 1 1 4 NJ 280 NJ 280 NJ 280 NJ
-preplace netloc util_ds_buf_1_IBUF_OUT 1 2 1 750
-preplace netloc prescaler_clock_0_test_speed_out_led 1 3 2 NJ 190 NJ
-preplace netloc rst_processing_system7_0_50M_interconnect_aresetn 1 1 1 440
-preplace netloc util_ds_buf_0_OBUF_DS_N 1 4 1 NJ
-preplace netloc processing_system7_0_M_AXI_GP0 1 1 1 430
-preplace netloc processing_system7_0_FCLK_RESET0_N 1 0 2 30 230 410
-preplace netloc util_ds_buf_0_OBUF_DS_P 1 4 1 NJ
-preplace netloc rst_processing_system7_0_50M_peripheral_aresetn 1 1 2 450 270 NJ
-preplace netloc IBUF_DS_N_1 1 0 2 NJ 430 NJ
-preplace netloc processing_system7_0_FIXED_IO 1 1 4 NJ 300 NJ 300 NJ 300 NJ
-preplace netloc IBUF_DS_P_1 1 0 2 NJ 410 NJ
-preplace netloc prescaler_clock_0_prescaler_output_clk_negato_2 1 3 2 NJ 170 NJ
-preplace netloc processing_system7_0_FCLK_CLK0 1 0 3 20 50 420 290 760
-preplace netloc processing_system7_0_axi_periph_M01_AXI 1 2 1 N
-preplace netloc prescaler_clock_0_prescaler_output_clk 1 3 2 1130 150 NJ
-levelinfo -pg 1 0 220 600 950 1260 1410 -top 0 -bot 480
-",
-}
 
   # Restore current instance
   current_bd_instance $oldCurInst

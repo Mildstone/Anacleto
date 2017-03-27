@@ -18,6 +18,7 @@ namespace eval ::tclapp::xilinx::projutils {
 ##
 
 namespace eval ::tclapp::xilinx::projutils {
+
 proc write_project_tcl {args} {
   # Summary:
   # Export Tcl script for re-creating the current project
@@ -146,7 +147,7 @@ proc wr_create_project { proj_dir name part_name } {
 
   lappend l_script_data "# Set the reference directory for source file relative paths (by default the value is script directory path)"
 ##  lappend l_script_data "set origin_dir \"$a_global_vars(s_relative_to)\""
-  lappend l_script_data "set origin_dir \"\$make_env(srcdir)\""
+  lappend l_script_data "set origin_dir \"\$project_set(dir_src)\""
 
   lappend l_script_data ""
   set var_name "origin_dir_loc"
@@ -312,7 +313,7 @@ proc write_specified_fileset { proj_dir proj_name filesets } {
 	    if { $a_global_vars(b_absolute_path) } {
 	      lappend path_list $path
 	    } else {
-	      set rel_file_path "[get_relative_file_path_for_source $path $make_env(srcdir)]"
+	      set rel_file_path "[get_relative_file_path_for_source $path [get_script_execution_dir]]"
 	      set path "\[file normalize \"\$origin_dir/$rel_file_path\"\]"
 	      lappend path_list $path
 	    }
@@ -397,7 +398,7 @@ proc write_files { proj_dir proj_name tcl_obj type } {
     set begin [lsearch -exact $path_dirs "$proj_name.srcs"]
     set src_file [join [lrange $path_dirs $begin+1 end] "/"]
     set file_no_quotes [string trim $file "\""]
-    set src_file_path "$project_set(dir_src)/$src_file"
+    set src_file_path "$project_set(dir_src)/\${make_env(project_name)}.srcs/$src_file"
     set file_object [lindex [get_files -of_objects [get_filesets $fs_name] [list $file]] 0]
     set file_props [list_property $file_object]
     if { [lsearch $file_props "IMPORTED_FROM"] != -1 } {
@@ -450,7 +451,7 @@ proc write_files { proj_dir proj_name tcl_obj type } {
 	  validate_bd_design
 	  write_bd_tcl -force [file root [subst $src_file_path]]_$project_env(VIVADO_VERSION).tcl
 	}
-	#	set src_file_path [copy_file_to_srcdir $file_no_quotes $fs_name]
+	# set src_file_path [copy_file_to_srcdir $file_no_quotes $fs_name]
 	# add to the import collection
 	lappend import_coln "\"\[file normalize \"$src_file_path\"\]\""
 	lappend l_local_file_list $file
@@ -459,8 +460,8 @@ proc write_files { proj_dir proj_name tcl_obj type } {
 	### REMOTE   ###
 	###          ###
 	puts "-> remote: $src_file"
-	lappend l_remote_file_list $file
-	lappend add_file_coln "$file"
+	lappend l_remote_file_list $src_file
+	lappend add_file_coln "$src_file"
       }
       # set flag that local sources were found and print warning at the end
       if { !$a_global_vars(b_local_sources) } {
@@ -468,6 +469,8 @@ proc write_files { proj_dir proj_name tcl_obj type } {
       }
     }
   }
+  ## end foreach file
+
   ###
   ### IMPORT LOCALS
   ###
@@ -502,6 +505,8 @@ proc write_files { proj_dir proj_name tcl_obj type } {
 	} else {
 	  set file_no_quotes [string trim $file "\""]
 	  set rel_file_path [get_relative_file_path_for_source $file_no_quotes [get_script_execution_dir]]
+	  #	  puts "SCRIPT EXE DIR: -> [get_script_execution_dir]"
+	  #	  puts "REL FILE PATH : -> $rel_file_path"
 	  lappend l_script_data " \"\[file normalize \"\$origin_dir/$rel_file_path\"\]\"\\"
 	}
       }
@@ -563,8 +568,8 @@ proc write_constrs { proj_dir proj_name tcl_obj type } {
     # constrs sources imported?
     if { [lsearch $file_props "IMPORTED_FROM"] != -1 } {
       set imported_path  [get_property "imported_from" $file]
-      set rel_file_path  [get_relative_file_path_for_source $file $make_env(srcdir)]
-      set proj_file_path "$project_set(dir_src)/$rel_file_path"
+      set rel_file_path  [get_relative_file_path_for_source $file [get_script_execution_dir]]
+      set proj_file_path "$project_set(dir_src)/\${make_env(project_name)}.srcs/$rel_file_path"
       set file           "\"[file normalize $proj_dir/${proj_name}.srcs/$src_file]\""
       # donot copy imported constrs in new project? set it as remote file in new project.
       if { $a_global_vars(b_arg_no_copy_srcs) } {
@@ -619,7 +624,7 @@ proc write_constrs { proj_dir proj_name tcl_obj type } {
 	# find relative file path of the added constrs if no_copy in the new project
 	if { $a_global_vars(b_arg_no_copy_srcs) && (!$a_global_vars(b_absolute_path)) } {
 	  set file_no_quotes [string trim $file "\""]
-	  set rel_file_path [get_relative_file_path_for_source $file_no_quotes $make_env(srcdir)]
+	  set rel_file_path [get_relative_file_path_for_source $file_no_quotes [get_script_execution_dir]]
 	  set file_1 "\"\[file normalize \"\$origin_dir/$rel_file_path\"\]\""
 	  add_constrs_file "$file_1"
 	} else {
@@ -655,7 +660,7 @@ proc add_constrs_file { file_str } {
       lappend l_script_data "set file $file_str"
     } else {
       set file_no_quotes [string trim $file_str "\""]
-      set rel_file_path [get_relative_file_path_for_source $file_no_quotes $make_env(srcdir)]
+      set rel_file_path [get_relative_file_path_for_source $file_no_quotes [get_script_execution_dir]]
       lappend l_script_data "set file \"\[file normalize \"\$origin_dir/$rel_file_path\"\]\""
     }
   }
@@ -1140,7 +1145,7 @@ proc write_constrs_fileset_file_properties { tcl_obj fs_name proj_dir file file_
       if { $a_global_vars(b_absolute_path) } {
 	lappend l_script_data "set file \"$file\""
       } else {
-	lappend l_script_data "set file \"\$origin_dir/[get_relative_file_path_for_source $file $make_env(srcdir)]\""
+	lappend l_script_data "set file \"\$origin_dir/[get_relative_file_path_for_source $file [get_script_execution_dir]]\""
 	lappend l_script_data "set file \[file normalize \$file\]"
       }
     } else {

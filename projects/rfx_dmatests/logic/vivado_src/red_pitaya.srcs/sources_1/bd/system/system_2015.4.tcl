@@ -498,11 +498,6 @@ CONFIG.PCW_M_AXI_GP0_FREQMHZ {125} \
 CONFIG.PCW_M_AXI_GP0_ID_WIDTH {12} \
 CONFIG.PCW_M_AXI_GP0_SUPPORT_NARROW_BURST {0} \
 CONFIG.PCW_M_AXI_GP0_THREAD_ID_WIDTH {12} \
-CONFIG.PCW_M_AXI_GP1_ENABLE_STATIC_REMAP {0} \
-CONFIG.PCW_M_AXI_GP1_FREQMHZ {200} \
-CONFIG.PCW_M_AXI_GP1_ID_WIDTH {12} \
-CONFIG.PCW_M_AXI_GP1_SUPPORT_NARROW_BURST {0} \
-CONFIG.PCW_M_AXI_GP1_THREAD_ID_WIDTH {12} \
 CONFIG.PCW_NAND_CYCLES_T_AR {1} \
 CONFIG.PCW_NAND_CYCLES_T_CLR {1} \
 CONFIG.PCW_NAND_CYCLES_T_RC {11} \
@@ -627,7 +622,6 @@ CONFIG.PCW_TTC1_CLK1_PERIPHERAL_DIVISOR0 {1} \
 CONFIG.PCW_TTC1_CLK2_PERIPHERAL_CLKSRC {CPU_1X} \
 CONFIG.PCW_TTC1_CLK2_PERIPHERAL_DIVISOR0 {1} \
 CONFIG.PCW_TTC1_PERIPHERAL_ENABLE {0} \
-CONFIG.PCW_TTC_PERIPHERAL_FREQMHZ {50} \
 CONFIG.PCW_UART0_BASEADDR {0xE0000000} \
 CONFIG.PCW_UART0_BAUD_RATE {115200} \
 CONFIG.PCW_UART0_GRP_FULL_ENABLE {0} \
@@ -793,43 +787,6 @@ CONFIG.NUM_PORTS {2} \
   create_bd_addr_seg -range 0x20000000 -offset 0x0 [get_bd_addr_spaces axi_dma_1/Data_S2MM] [get_bd_addr_segs processing_system7_0/S_AXI_HP0/HP0_DDR_LOWOCM] SEG_processing_system7_0_HP0_DDR_LOWOCM
   create_bd_addr_seg -range 0x10000 -offset 0x40400000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs axi_dma_1/S_AXI_LITE/Reg] SEG_axi_dma_1_Reg
 
-  # Perform GUI Layout
-  regenerate_bd_layout -layout_string {
-   guistr: "# # String gsaved with Nlview 6.5.5  2015-06-26 bk=1.3371 VDI=38 GEI=35 GUI=JA:1.8
-#  -string -flagsOSRD
-preplace port DDR -pg 1 -y 180 -defaultsOSRD
-preplace port FIXED_IO -pg 1 -y 200 -defaultsOSRD
-preplace inst rst_processing_system7_0_125M -pg 1 -lvl 1 -y 200 -defaultsOSRD
-preplace inst axi_dma_1 -pg 1 -lvl 3 -y 230 -defaultsOSRD
-preplace inst rst_processing_system7_0_200M -pg 1 -lvl 1 -y 510 -defaultsOSRD
-preplace inst xlconcat_0 -pg 1 -lvl 4 -y 70 -defaultsOSRD
-preplace inst axi_mem_intercon -pg 1 -lvl 4 -y 260 -defaultsOSRD
-preplace inst processing_system7_0_axi_periph -pg 1 -lvl 2 -y 150 -defaultsOSRD
-preplace inst axis_data_fifo_0 -pg 1 -lvl 2 -y 450 -defaultsOSRD
-preplace inst processing_system7_0 -pg 1 -lvl 5 -y 270 -defaultsOSRD
-preplace netloc processing_system7_0_DDR 1 5 1 NJ
-preplace netloc rst_processing_system7_0_200M_peripheral_aresetn 1 1 3 370 540 NJ 540 1110
-preplace netloc axi_dma_1_M_AXI_S2MM 1 3 1 N
-preplace netloc rst_processing_system7_0_125M_interconnect_aresetn 1 1 1 360
-preplace netloc rst_processing_system7_0_200M_interconnect_aresetn 1 1 3 NJ 530 NJ 530 1090
-preplace netloc processing_system7_0_axi_periph_M00_AXI 1 2 1 700
-preplace netloc processing_system7_0_M_AXI_GP0 1 1 5 370 10 NJ 10 NJ 10 NJ 10 1890
-preplace netloc axi_dma_1_M_AXI_MM2S 1 3 1 N
-preplace netloc axi_dma_1_M_AXIS_MM2S 1 1 3 380 370 NJ 370 1060
-preplace netloc processing_system7_0_FCLK_RESET0_N 1 0 6 20 360 NJ 360 NJ 360 NJ 430 NJ 430 1870
-preplace netloc axi_dma_1_s2mm_introut 1 3 1 1080
-preplace netloc axi_mem_intercon_M00_AXI 1 4 1 1410
-preplace netloc processing_system7_0_FCLK_RESET1_N 1 0 6 20 600 NJ 600 NJ 600 NJ 600 NJ 600 1860
-preplace netloc xlconcat_0_dout 1 4 1 1420
-preplace netloc processing_system7_0_FIXED_IO 1 5 1 NJ
-preplace netloc rst_processing_system7_0_125M_peripheral_aresetn 1 1 2 380 280 NJ
-preplace netloc axis_data_fifo_0_M_AXIS 1 2 1 700
-preplace netloc processing_system7_0_FCLK_CLK0 1 0 6 20 110 370 270 710 350 NJ 410 1430 410 1890
-preplace netloc processing_system7_0_FCLK_CLK1 1 0 6 20 420 360 610 720 340 1100 420 1440 420 1880
-preplace netloc axi_dma_1_mm2s_introut 1 3 1 1070
-levelinfo -pg 1 0 190 540 890 1260 1650 1910 -top 0 -bot 620
-",
-}
 
   # Restore current instance
   current_bd_instance $oldCurInst

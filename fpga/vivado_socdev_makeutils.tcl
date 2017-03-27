@@ -237,10 +237,10 @@ proc make_open_project {} {
 	 $v::pe(dir_prj)/$project_name.xpr}
   ## restore project from tcl script ##
   if { [catch {current_project}] } {
-    set  ::origin_dir_loc    $v::me(srcdir)
+    set  ::origin_dir_loc    $v::pe(dir_src)
     set  ::orig_proj_dir_loc $v::pe(dir_prj)
     puts "RESTORING PROJECT FROM: $v::pe(dir_src)/$project_name.tcl"
-    source $v::pe(dir_src)/../$project_name.tcl
+    source $v::pe(dir_src)/$project_name.tcl
   }
   ## no chance to open project ##
   if { [catch {current_project}] } { error "Could not open project" } \
@@ -262,7 +262,7 @@ proc make_write_project {} {
   file mkdir $v::pe(dir_src)
   write_project_tcl \
     -force -target_proj_dir $v::pe(dir_prj) \
-    $v::pe(dir_src)/../$v::pe(project_name).tcl
+    $v::pe(dir_src)/$v::pe(project_name).tcl
 }
 
 
