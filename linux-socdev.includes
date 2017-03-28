@@ -36,3 +36,17 @@ linux/arch/arm/include
 m4
 .
 projects/rfx_axibase/logic/vivado_src
+projects/rfx_AD7641/logic/rfx_AD7641_serial_emulator_1.0/drivers/rfx_AD7641_serial_emulator_v1_0/src
+projects/rfx_AD7641/logic/prescaler_clock_1.0/drivers/prescaler_clock_v1_0/src
+projects/rfx_RPHctl/logic/ip/myip_1.0/drivers/myip_lnx_v1_0/src
+projects/ext_HrRossi/logic/ip
+projects/rfx_axibase/logic/rfx_prescaler_1.0/drivers/rfx_prescaler_v1_0/src
+projects/rfx_axibase/src
+projects/ext_HrRossi/logic/sdc
+projects/rfx_AD7641/logic/rfx_AD7641_serial_slave_1.0/drivers/rfx_AD7641_serial_slave_v1_0/src
+projects/ext_HrRossi/logic/tbn
+projects/ext_HrRossi/logic/rtl
+projects/ext_HrRossi/src
+projects/rfx_RPHctl/logic/ip/myip_1.0/drivers/myip_v1_0/src
+projects/ext_HrRossi/logic
+projects/ext_HrRossi/src/rp_remote

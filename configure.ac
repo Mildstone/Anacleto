@@ -259,30 +259,42 @@ AX_GITIGNORE_SUBST
 AC_CONFIG_FILES( 
                  Makefile
 		 fpga/Makefile
+
 		 projects/rfx_dmatests/Makefile
 		 projects/rfx_dmatests/logic/Makefile
 		 projects/rfx_dmatests/src/Kbuild
 		 projects/rfx_dmatests/src/Makefile
+
 		 projects/rfx_pwmgen/Makefile
 		 projects/rfx_pwmgen/logic/Makefile
 		 projects/rfx_pwmgen/src/Kbuild
 		 projects/rfx_pwmgen/src/Makefile
-dnl		 projects/rfx_axibase/Makefile
-dnl		 projects/rfx_axibase/logic/Makefile
-dnl		 projects/rfx_axibase/src/Kbuild
-dnl		 projects/rfx_axibase/src/Makefile
+
+		 dnl		 projects/rfx_axibase/Makefile
+		 dnl		 projects/rfx_axibase/logic/Makefile
+		 dnl		 projects/rfx_axibase/src/Kbuild
+		 dnl		 projects/rfx_axibase/src/Makefile
+
+		 projects/ext_HrRossi/Makefile
+		 projects/ext_HrRossi/logic/Makefile
+		 projects/ext_HrRossi/src/Kbuild
+		 projects/ext_HrRossi/src/Makefile
+
 		 projects/rfx_AD7641/Makefile
 		 projects/rfx_AD7641/logic/Makefile
 		 projects/rfx_AD7641/src/Kbuild
 		 projects/rfx_AD7641/src/Makefile
+
 		 projects/rfx_RPHctl/Makefile
 		 projects/rfx_RPHctl/logic/Makefile
 		 projects/rfx_RPHctl/src/Kbuild
 		 projects/rfx_RPHctl/src/Makefile
+
 		 projects/w7x_timing/Makefile
 		 projects/w7x_timing/logic/Makefile
 		 projects/w7x_timing/src/Kbuild
 		 projects/w7x_timing/src/Makefile
+
 		 .gitignore
                )
 AC_OUTPUT
