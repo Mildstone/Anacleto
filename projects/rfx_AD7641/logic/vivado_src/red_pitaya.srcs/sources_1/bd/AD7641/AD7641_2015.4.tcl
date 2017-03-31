@@ -758,41 +758,6 @@ CONFIG.CONST_VAL {0} \
   create_bd_addr_seg -range 0x10000 -offset 0x43C20000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs rfx_AD7641_serial_emulator_0/S00_AXI/S00_AXI_reg] SEG_rfx_AD7641_serial_emulator_0_S00_AXI_reg
   create_bd_addr_seg -range 0x10000 -offset 0x43C10000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs rfx_AD7641_serial_slave_0/S00_AXI/S00_AXI_reg] SEG_rfx_AD7641_serial_slave_0_S00_AXI_reg
 
-  # Perform GUI Layout
-  regenerate_bd_layout -layout_string {
-   guistr: "# # String gsaved with Nlview 6.5.5  2015-06-26 bk=1.3371 VDI=38 GEI=35 GUI=JA:1.8
-#  -string -flagsOSRD
-preplace port DDR -pg 1 -y 310 -defaultsOSRD
-preplace port SDAT_out -pg 1 -y 450 -defaultsOSRD
-preplace port prescaler_output_clk -pg 1 -y 140 -defaultsOSRD
-preplace port SCLK_out -pg 1 -y 430 -defaultsOSRD
-preplace port FIXED_IO -pg 1 -y 330 -defaultsOSRD
-preplace port CNVST_out -pg 1 -y 550 -defaultsOSRD
-preplace inst rst_processing_system7_0_125M -pg 1 -lvl 1 -y 170 -defaultsOSRD
-preplace inst xlconstant_0 -pg 1 -lvl 2 -y 400 -defaultsOSRD
-preplace inst rfx_AD7641_serial_emulator_0 -pg 1 -lvl 3 -y 440 -defaultsOSRD
-preplace inst rfx_AD7641_serial_slave_0 -pg 1 -lvl 3 -y 660 -defaultsOSRD
-preplace inst prescaler_clock_0 -pg 1 -lvl 3 -y 160 -defaultsOSRD
-preplace inst processing_system7_0_axi_periph -pg 1 -lvl 2 -y 150 -defaultsOSRD
-preplace inst processing_system7_0 -pg 1 -lvl 1 -y 360 -defaultsOSRD
-preplace netloc processing_system7_0_DDR 1 1 3 NJ 310 NJ 310 NJ
-preplace netloc rfx_AD7641_serial_slave_0_CNVST_out 1 2 2 790 550 1150
-preplace netloc rst_processing_system7_0_125M_interconnect_aresetn 1 1 1 410
-preplace netloc processing_system7_0_axi_periph_M00_AXI 1 2 1 N
-preplace netloc processing_system7_0_M_AXI_GP0 1 1 1 400
-preplace netloc rfx_AD7641_serial_emulator_0_SDAT_out 1 2 2 790 560 1160
-preplace netloc processing_system7_0_FCLK_RESET0_N 1 0 2 0 80 390
-preplace netloc processing_system7_0_axi_periph_M02_AXI 1 2 1 730
-preplace netloc rfx_AD7641_serial_emulator_0_SCLK_out 1 2 2 780 540 1170
-preplace netloc processing_system7_0_FIXED_IO 1 1 3 NJ 330 NJ 330 NJ
-preplace netloc rst_processing_system7_0_125M_peripheral_aresetn 1 1 2 430 350 770
-preplace netloc Net 1 2 1 750
-preplace netloc processing_system7_0_FCLK_CLK0 1 0 3 10 260 420 340 760
-preplace netloc processing_system7_0_axi_periph_M01_AXI 1 2 1 740
-preplace netloc prescaler_clock_0_prescaler_output_clk 1 2 2 790 340 1170
-levelinfo -pg 1 -20 200 580 970 1190 -top 0 -bot 760
-",
-}
 
   # Restore current instance
   current_bd_instance $oldCurInst
