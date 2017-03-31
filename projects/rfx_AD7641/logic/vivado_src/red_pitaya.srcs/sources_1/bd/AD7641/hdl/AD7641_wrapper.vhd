@@ -1,8 +1,8 @@
 --Copyright 1986-2015 Xilinx, Inc. All Rights Reserved.
 ----------------------------------------------------------------------------------
 --Tool Version: Vivado v.2015.4 (lin64) Build 1412921 Wed Nov 18 09:44:32 MST 2015
---Date        : Thu Mar 23 18:08:50 2017
---Host        : 8a33afeb022b running 64-bit Ubuntu 14.04.5 LTS
+--Date        : Mon Mar 27 14:46:51 2017
+--Host        : 960294461aff running 64-bit Ubuntu 14.04.5 LTS
 --Command     : generate_target AD7641_wrapper.bd
 --Design      : AD7641_wrapper
 --Purpose     : IP block netlist
@@ -65,10 +65,10 @@ architecture STRUCTURE of AD7641_wrapper is
     FIXED_IO_ps_srstb : inout STD_LOGIC;
     FIXED_IO_ps_clk : inout STD_LOGIC;
     FIXED_IO_ps_porb : inout STD_LOGIC;
-    prescaler_output_clk : out STD_LOGIC;
     SCLK_out : out STD_LOGIC;
     SDAT_out : out STD_LOGIC;
-    CNVST_out : out STD_LOGIC
+    CNVST_out : out STD_LOGIC;
+    prescaler_output_clk : out STD_LOGIC
   );
   end component AD7641;
 begin
