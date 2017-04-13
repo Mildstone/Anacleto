@@ -4,12 +4,7 @@ use ieee.numeric_std.all;
 
 entity rfx_AD7641_serial_emulator_v1_0 is
 	generic (
-		-- Users to add parameters here
-
-		-- User parameters ends
-		-- Do not modify the parameters beyond this line
-
-
+        SERIAL_DATA_LEN : integer := 18;
 		-- Parameters of Axi Slave Bus Interface S00_AXI
 		C_S00_AXI_DATA_WIDTH	: integer	:= 32;
 		C_S00_AXI_ADDR_WIDTH	: integer	:= 4
@@ -17,10 +12,11 @@ entity rfx_AD7641_serial_emulator_v1_0 is
 	port (
 		-- Users to add ports here
 		reset    : in STD_LOGIC;
-        clk_ref : in std_logic;
         CNVST_in : in  STD_LOGIC;
         SCLK_out : out STD_LOGIC;
         SDAT_out : out STD_LOGIC;
+        clk      : in std_logic;
+        
 		-- User ports ends
 		-- Do not modify the ports beyond this line
 
@@ -54,7 +50,7 @@ architecture arch_imp of rfx_AD7641_serial_emulator_v1_0 is
 
     signal reg0 : std_logic_vector(C_S00_AXI_DATA_WIDTH-1 downto 0);
     signal reg1 : std_logic_vector(C_S00_AXI_DATA_WIDTH-1 downto 0);
-
+    signal pclk : std_logic;
 	-- component declaration
 	component rfx_AD7641_serial_emulator_v1_0_S00_AXI is
 		generic (
@@ -102,6 +98,12 @@ architecture arch_imp of rfx_AD7641_serial_emulator_v1_0 is
            data_in  : in  STD_LOGIC_VECTOR (31 downto 0));
     end component;
 
+    component prescaler is
+    Port ( div : in STD_LOGIC_VECTOR (31 downto 0);
+           clk : in STD_LOGIC;
+           clk_out : out STD_LOGIC);
+    end component;
+
 begin
 
 -- Instantiation of Axi Bus Interface S00_AXI
@@ -138,15 +140,25 @@ rfx_AD7641_serial_emulator_v1_0_S00_AXI_inst : rfx_AD7641_serial_emulator_v1_0_S
 
 	-- Add user logic here
    AD7641_serial_emulator_inst : AD7641_serial_emulator
+   generic map (
+     SERIAL_DATA_LEN => SERIAL_DATA_LEN
+   )
    port map(
-     reset => reset,
-     clk   => s00_axi_aclk,    
-     clk_ref  =>  clk_ref,
+     reset => not reset,
+     clk   => clk,    
+     clk_ref  =>  pclk,
      CNVST_in => CNVST_in,
      SCLK_out => SCLK_out,
      SDAT_out => SDAT_out,
      data_in  => reg0
    );
 	-- User logic ends
+
+   prescaler_inst : prescaler
+   port map(
+     div => reg1,
+     clk => clk,
+     clk_out => pclk
+   );
 
 end arch_imp;

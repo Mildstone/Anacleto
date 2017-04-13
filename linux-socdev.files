@@ -610,6 +610,10 @@ projects/rfx_AD7641/logic/rfx_AD7641_serial_emulator_1.0/drivers/rfx_AD7641_seri
 projects/rfx_AD7641/logic/rfx_AD7641_serial_slave_1.0/drivers/rfx_AD7641_serial_slave_v1_0/src/rfx_AD7641_serial_slave.c
 projects/rfx_AD7641/logic/rfx_AD7641_serial_slave_1.0/drivers/rfx_AD7641_serial_slave_v1_0/src/rfx_AD7641_serial_slave.h
 projects/rfx_AD7641/logic/rfx_AD7641_serial_slave_1.0/drivers/rfx_AD7641_serial_slave_v1_0/src/rfx_AD7641_serial_slave_selftest.c
+projects/rfx_AD7641/logic/rfx_AD7641_serial_slave_1.0/hdl/AD7641_serial_slave.vhd
+projects/rfx_AD7641/logic/rfx_AD7641_serial_slave_1.0/hdl/AD7641_tb.vhd
+projects/rfx_AD7641/logic/rfx_AD7641_serial_slave_1.0/hdl/rfx_AD7641_serial_slave_v1_0.vhd
+projects/rfx_AD7641/logic/rfx_AD7641_serial_slave_1.0/hdl/rfx_AD7641_serial_slave_v1_0_S00_AXI.vhd
 projects/rfx_AD7641/logic/rfx_ad7641_1.0/bd/bd.tcl
 projects/rfx_AD7641/logic/rfx_ad7641_1.0/component.xml
 projects/rfx_AD7641/logic/rfx_ad7641_1.0/drivers/rfx_ad7641_v1_0/data/rfx_ad7641.mdd

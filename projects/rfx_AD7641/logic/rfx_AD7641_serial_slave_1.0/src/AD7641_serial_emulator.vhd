@@ -53,7 +53,7 @@ signal data_buffer_ready : std_logic := '1';
 
 begin
  
- SCLK_out <= clk_ref and not data_buffer_ready;
+ SCLK_out <= SCLK_gen and not data_buffer_ready;
  SDAT_out <= data_buffer(SERIAL_DATA_LEN) and not data_buffer_ready;
 
  main : process (clk, reset, CNVST_in)  
@@ -69,20 +69,19 @@ begin
   end if;
  end process main;
 
--- gen_SCLK : process (clk_ref, enable)
--- begin 
---  if enable = '0' then
---   SCLK_gen <= '0';
---  elsif rising_edge(clk_ref) then
---   SCLK_gen <= not SCLK_gen;
---  end if;
--- end process; 
+ gen_SCLK : process (clk_ref, enable)
+ begin 
+  if enable = '0' then
+   SCLK_gen <= '0';
+  elsif rising_edge(clk_ref) then
+   SCLK_gen <= not SCLK_gen;
+  end if;
+ end process; 
 
  gen_SDAT : process (clk_ref, enable)
   variable count : integer := 0;
   -- variable data  : std_logic := '0';
- begin 
-  
+ begin   
   if enable = '0' then
    data_buffer <= data_in;
    count := 0;

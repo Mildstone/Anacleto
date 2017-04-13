@@ -50,3 +50,4 @@ projects/ext_HrRossi/src
 projects/rfx_RPHctl/logic/ip/myip_1.0/drivers/myip_v1_0/src
 projects/ext_HrRossi/logic
 projects/ext_HrRossi/src/rp_remote
+projects/rfx_AD7641/logic/rfx_AD7641_serial_slave_1.0/hdl
