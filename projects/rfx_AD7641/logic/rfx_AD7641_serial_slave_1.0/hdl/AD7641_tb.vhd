@@ -61,8 +61,9 @@ begin
   clk <= not clk after 2ns;
   clk_ref <= not clk_ref after 5ns;
   
-  data_in <= x"0002a055";
-  --data_in <= x"00021000";
+  --data_in <= x"0002a055";
+  --data_in <= x"00023001";
+  data_in <= x"0002_000a";
   store_tics    <= 50;
   cnvst_hi_tics <= 8;
   cnvst_lo_tics <= 125;

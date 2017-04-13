@@ -17,26 +17,13 @@ use ieee.numeric_std.all;
 
 entity prescaler_clock_v1_0 is
 	generic (
-		-- Users to add parameters here
-
-		-- User parameters ends
-		-- Do not modify the parameters beyond this line
-
-
 		-- Parameters of Axi Slave Bus Interface S00_AXI
 		C_S00_AXI_DATA_WIDTH	: integer	:= 32;
 		C_S00_AXI_ADDR_WIDTH	: integer	:= 4
 	);
 	port (
 		-- Users to add ports here
-        prescaler_output_clk : out std_logic;
-        prescaler_output_clk_negato_2 : out std_logic;
-        speed_test	: in std_logic;
-        test_speed_out_led : out STD_LOGIC;
-		-- User ports ends
-		-- Do not modify the ports beyond this line
-
-
+        clk_out : out std_logic;
 		-- Ports of Axi Slave Bus Interface S00_AXI
 		s00_axi_aclk	: in std_logic;
 		s00_axi_aresetn	: in std_logic;
@@ -99,13 +86,11 @@ architecture arch_imp of prescaler_clock_v1_0 is
 	end component prescaler_clock_v1_0_S00_AXI;
 	
     component Prescaler_code is
-        Port ( clk : in STD_LOGIC;
-               prescaler_output : out STD_LOGIC;
-               divider : in STD_LOGIC_VECTOR (31 downto 0);
-               speed_test : in STD_LOGIC;
-               test_speed_out_led : out STD_LOGIC
-               );
-               
+        Port ( clk     : in STD_LOGIC;
+               reset   : in std_logic;    
+               divider : in STD_LOGIC_VECTOR (31 downto 0) := x"FFFFFFFF";
+               clk_out : out STD_LOGIC
+             );
     end component Prescaler_code;
 begin
 
@@ -143,10 +128,9 @@ prescaler_clock_v1_0_S00_AXI_inst : prescaler_clock_v1_0_S00_AXI
 	-- Add user logic here
     prescaler_inst : Prescaler_code
     port map ( clk => s00_axi_aclk,
-               prescaler_output => prescaler_output_clk,
+               reset => '0',
                divider => R0_divider,
-               speed_test => speed_test,
-               test_speed_out_led => test_speed_out_led
+               clk_out => clk_out
     );
 	-- User logic ends
 	

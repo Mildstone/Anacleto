@@ -352,10 +352,10 @@ begin
 	    -- Address decoding for reading registers
 	    loc_addr := axi_araddr(ADDR_LSB + OPT_MEM_ADDR_BITS downto ADDR_LSB);
 	    case loc_addr is
-	      when b"00" =>
-	        reg_data_out <= slv_reg0;
-	      when b"01" =>
-	        reg_data_out <= slv_reg1;
+--	      when b"00" =>
+--	        reg_data_out <= slv_reg0;
+--	      when b"01" =>
+--	        reg_data_out <= slv_reg1;
 	      when b"10" =>
 	        reg_data_out <= slv_reg2;
 	      when b"11" =>

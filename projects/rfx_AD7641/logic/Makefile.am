@@ -5,7 +5,6 @@ SOC_BOARD       ?= red_pitaya
 VIVADO_VERSION  ?= 2015.4
 VIVADO_SOC_PART ?= xc7z010clg400-1
 
-
 SOURCES = red_pitaya.xdc
 
 BD_SOURCES =
