@@ -29,7 +29,7 @@ dnl AX_TARGET_SELFHELP /////////////////////////////////////////////////////////
 AX_TARGET_SELFHELP
 
 dnl AX_DOCKER_BUILD ////////////////////////////////////////////////////////////
-dnl see: m4_ax_docker_build.m4
+dnl see: ax_docker_build.m4
 dnl /// Kconfig docker variables import example ...
 AS_VAR_IF([CONFIG_ENABLE_DOCKER],[y],[
            AS_VAR_SET_IF([CONFIG_DOCKER_CONTAINER], 
