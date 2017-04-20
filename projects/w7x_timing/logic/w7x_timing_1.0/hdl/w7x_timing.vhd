@@ -93,19 +93,27 @@ begin
       inc_cycle;
     end inc_period;
 
-    procedure start_sample(csample : unsigned) is
+    procedure start_sample is
     -- resets period_ticks (1)
-    -- increments sample_count
     begin
-      sample_count <= csample + 1;
       state <= WAITING_HIGH;
       period_ticks <= one32;
     end start_sample;
+
+    procedure start_burst(csample : unsigned) is
+    -- resets burst_count
+    -- increments sample_count
+    begin
+      burst_count  <= onetime;
+      sample_count <= csample + 1;
+      start_sample;
+    end start_burst;
 
     procedure start_armed is
     -- resets everything
     begin
       cycle_ticks  <= onetime;
+      burst_count  <= zerotime;
       period_ticks <= one32;
       sample_count <= zeroaddr;
       repeat_count <= zero32;
@@ -129,8 +137,7 @@ begin
     procedure do_waiting_sample is
     begin
       if cycle_ticks = sample then
-        burst_count <= onetime;
-        start_sample(sample_count);
+        start_burst(sample_count);
         inc_cycle;
       elsif cycle_ticks > sample then
         do_error(WAITING_SAMPLE);
@@ -145,8 +152,7 @@ begin
     -- resets cycle_ticks  (1)
     begin
       if sample = 0 then -- short cut if first sample is at 0
-        burst_count <= onetime;
-        start_sample(zeroaddr);
+        start_burst(zeroaddr);
       else
         sample_count <= zeroaddr;
         period_ticks <= zero32;
@@ -180,10 +186,12 @@ begin
 
     procedure start_waiting_sample is
     begin
-      if sample_count < sample_total then
-        do_waiting_sample;       
-      else
+      if sample_count = sample_total then
         start_waiting_repeat;
+      elsif sample_count > sample_total then
+        do_error(WAITING_SAMPLE);       
+      else
+        do_waiting_sample;
       end if;
     end start_waiting_sample;     
 
@@ -196,7 +204,8 @@ begin
           do_error(WAITING_LOW);
         else
           burst_count <= burst_count + 1;
-          start_sample(zeroaddr);
+          start_sample;
+          inc_cycle;
         end if;
       elsif period_ticks > period_total then
         do_error(WAITING_LOW);

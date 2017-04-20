@@ -448,7 +448,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>91d05016</spirit:value>
+            <spirit:value>64033b3c</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -1279,8 +1279,8 @@
         <xilinx:taxonomy>AXI_Peripheral</xilinx:taxonomy>
       </xilinx:taxonomies>
       <xilinx:displayName>w7x_timing_v1.0</xilinx:displayName>
-      <xilinx:coreRevision>216</xilinx:coreRevision>
-      <xilinx:coreCreationDateTime>2017-04-20T17:28:54Z</xilinx:coreCreationDateTime>
+      <xilinx:coreRevision>220</xilinx:coreRevision>
+      <xilinx:coreCreationDateTime>2017-04-20T22:35:08Z</xilinx:coreCreationDateTime>
       <xilinx:tags>
         <xilinx:tag xilinx:name="user.org:user:w7x_timing:1.0_ARCHIVE_LOCATION">/git/linux-socdev/projects/w7x_timing/logic/w7x_timing_1.0</xilinx:tag>
       </xilinx:tags>
@@ -1289,7 +1289,7 @@
       <xilinx:xilinxVersion>2015.4</xilinx:xilinxVersion>
       <xilinx:checksum xilinx:scope="busInterfaces" xilinx:value="153543e8"/>
       <xilinx:checksum xilinx:scope="memoryMaps" xilinx:value="e934d49c"/>
-      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="1caf2cb3"/>
+      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="66a69ac6"/>
       <xilinx:checksum xilinx:scope="ports" xilinx:value="2e269c87"/>
       <xilinx:checksum xilinx:scope="hdlParameters" xilinx:value="69de7adc"/>
       <xilinx:checksum xilinx:scope="parameters" xilinx:value="70589cbb"/>

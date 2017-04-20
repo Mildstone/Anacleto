@@ -7,19 +7,19 @@ class w7x_timing(object):
     def _tobyte(val):
         if not isinstance(val,int):
             value = 0;
-            for ch in val: value.value |= 4<<ch
+            for ch in val: value |= 4<<ch
             return value
         return val
     @staticmethod
-    def _toctypes(delay,width,period,burst,cycle,repeat,*arg):
+    def _toctypes(delay,width,period,burst,cycle,repeat,*args):
         delay  = None if delay  is None else _c.c_uint64(int(delay ))
         width  = None if width  is None else _c.c_uint32(int(width ))
         period = None if period is None else _c.c_uint32(int(period))
-        busrt  = None if burst  is None else _c.c_uint64(int(burst ))
+        burst  = None if burst  is None else _c.c_uint64(int(burst ))
         cycle  = None if cycle  is None else _c.c_uint64(int(cycle ))
         repeat = None if repeat is None else _c.c_uint32(int(repeat))
-        if len(arg)>0
-          count= None if arg[0] is None else _c.c_uint32(int(arg[0]))
+        if len(args)>0:
+          count= None if args[0] is None else _c.c_uint32(int(args[0]))
           return (delay,width,period,burst,cycle,repeat,count)
         return (delay,width,period,burst,cycle,repeat)
 
@@ -40,14 +40,14 @@ class w7x_timing(object):
     def makeClock(self,delay=None,width=None,period=None,burst=None,cycle=None,repeat=None):
         args = w7x_timing._toctypes(delay,width,period,burst,cycle,repeat)
         delay,width,period,burst,cycle,repeat = w7x_timing._byref(*args)
-        self.cdll.makeClock(delay,width,period,cycle,repeat,count)
+        self.cdll.makeClock(delay,width,period,burst,cycle,repeat)
     def makeSequence(self,delay=None,width=None,period=None,burst=None,cycle=None,repeat=None,times=[]):
         times = _n.ascontiguousarray(times,dtype=_n.uint64)
         timref= times.ctypes.data_as(_c.POINTER(_c.c_uint64))
         args  = w7x_timing._toctypes(delay,width,period,burst,cycle,repeat,len(times))
         delay,width,period,burst,cycle,repeat,count = w7x_timing._byref(*args)
         self.cdll.makeSequence(delay,width,period,burst,cycle,repeat,count,timref)
-    def reinit(self,delay=6e7):
+    def reinit(self,delay=None):
         delay = None if delay  is None else _c.c_uint64(int(delay))
         ref   = w7x_timing._NULL if delay is None else _c.byref(delay)
         self.cdll.reinit(ref)
@@ -69,7 +69,7 @@ class w7x_timing(object):
         return self.cdll.getState()
     @property
     def params(self):
-        args = w7x_timing._toctypes(0,0,0,0,0,0)
+        args = w7x_timing._toctypes(0,0,0,0,0,0,0)
         refs = w7x_timing._byref(*args)
         self.cdll.getParams(*refs)
         return tuple(int(a.value) for a in args)
@@ -113,7 +113,7 @@ class w7x_timing(object):
                             self.makeClock(*param)
                         elif cmd == 'S':
                             args = tuple((None if p<0 else p) for p in _p.unpack('<qllqql',param[:36]))
-                            times = _n.frombuffer(param[36:length],_n.uint64)
+                            times = _n.fromstring(param[36:length],_n.uint64)
                             self.makeSequence(*args,times=times)
                         elif cmd == 'R':
                             self.reinit([(None if p<0 else p) for p in _p.unpack('<q',param[:8])][0])
@@ -133,7 +133,7 @@ class w7x_timing(object):
                             conn.send(_p.pack('<L',self.state))
                             continue
                         elif cmd == 'p':
-                            conn.send(_p.pack('<qllqll',*self.params))
+                            conn.send(_p.pack('<qllqqll',*self.params))
                             continue
                         elif cmd == 'e':
                             pass #only return error
@@ -172,8 +172,8 @@ class remote(object):
     def makeClock(self,delay=-1,width=-1,period=-1,burst=-1,cycle=-1,repeat=-1):
         msg = remote._makeMsg('C','qllqql',36,int(delay),int(width),int(period),int(burst),int(cycle),int(repeat))
         return self._exchange(msg)
-    def makeSequence(self,delay=-1,width=-1,period=-1,cycle=-1,repeat=-1,times=-1):
-        times = _n.array(times,_n.int64).tobytes()
+    def makeSequence(self,delay=-1,width=-1,period=-1,burst=-1,cycle=-1,repeat=-1,times=-1):
+        times = _n.array(times,_n.int64).tostring()
         length = len(times)+36
         msg = remote._makeMsg('S','qllqql',length,int(delay),int(width),int(period),int(burst),int(cycle),int(repeat))+times
         return self._exchange(msg)
@@ -205,43 +205,61 @@ class remote(object):
     @property
     def params(self):
         self.sock.send(remote._makeMsg('p','',0))
-        return _p.unpack('<qllqll',self.sock.recv(64)[:32])
+        return _p.unpack('<qllqqll',self.sock.recv(40)[:40])
     @property
     def error(self):
         msg = remote._makeMsg('e','',0)
         return int(self._exchange(msg))
 
-if __name__=="__main__":
-    import sys
-    if len(sys.argv)==2:
-       w7x = w7x_timing()
-       w7x.run(int(sys.argv[1]))
-    elif len(sys.argv)==3:
-       remote((sys.argv[1],int(sys.argv[2])))
+""" UNIT TEST """
 
 import unittest as _u
 class Test(_u.TestCase):
+    _redpitaya = ('localhost',5000)
     def checkClock(self,out,error,*args,**kwargs):
         self.assertEqual(self.remote.makeClock(*args,**kwargs).split('\n',2)[1].strip(),error)
         self.assertEqual(self.remote.params,out)
 
     def connect(self):
-        self.remote=remote(('192.168.44.109',5000))
+        import time
+        self.remote=remote(Test._redpitaya)
         self.assertIsNone(self.remote.reinit())
-        self.checkClock((0,5,10,10000000,5,54272),'',cycle=1e7,count=54272,repeat=5)
-        self.checkClock((0,5,10,10000000,5,10000000),'',cycle=10000000,count=10000000,repeat=5)
-        self.assertEqual(self.remote.reinit(6e8),'MAKE CLOCK: DELAY: 600000000, WIDTH: 5, PERIOD: 10, BURST: 0, CYCLE: 0, REPEAT: 0, COUNT: 0\n' is not None
-)
-        self.assertEqual(self.remote.params,out)
-        self.assertIsNone(self.remote.arm())
-        self.assertIsNone(self.remote.disarm())
-        self.assertIsNone(self.remote.trig())
+        self.assertEqual(self.remote.reinit(6e8),'MAKE CLOCK: DELAY: 600000000, WIDTH: 5, PERIOD: 10, BURST: 0, CYCLE: 0, REPEAT: 0, COUNT: 1\n')
+        self.remote.reinit();
+        self.checkClock((0,5,10,1000,10000000,5,1),'',cycle=10000000,burst=1000,repeat=5)
+        self.assertEqual(self.remote.makeSequence(200,5,10,100,1e6,3,[0,1e4,4e4,5e4,6e4]).strip(),
+        "MAKE SEQUENCE: TIMES: [0, 10000, 40000, 50000, 60000],\nDELAY: 200, WIDTH: 5, PERIOD: 10, BURST: 100, CYCLE: 1000000, REPEAT: 3, COUNT: 5")
         self.assertIsNone(self.remote.gate([2,4]))
         self.assertIsNone(self.remote.invert([4,5]))
+        self.assertIsNone(self.remote.arm())
+        self.assertIsNone(self.remote.trig())
+        time.sleep(1)
+        self.assertIsNone(self.remote.disarm())
     def runTest(self):
         self.connect()
 
-def test():
+def test(hostname=None):
+    if hostname is None:
+      import os
+      Test._redpitaya = (os.getenv('RedPitaya','RP-F0432C'),5000)
+    else:
+      Test._redpitaya = (hostname,5000)
     suite=_u.TestSuite((Test('connect'),))
     tr=_u.TextTestRunner()
     tr.run(suite)
+
+""" EXECUTION """
+
+if __name__=="__main__":
+    import sys
+    if len(sys.argv)==1:
+        test()
+    elif len(sys.argv)==2:
+        try:
+            port = int(sys.argv[1])
+            w7x = w7x_timing()
+            w7x.run(port)
+        except:
+            test(sys.argv[1])
+    elif len(sys.argv)==3:
+        remote((sys.argv[1],int(sys.argv[2])))

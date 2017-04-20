@@ -811,38 +811,6 @@ CONFIG.CONST_WIDTH {8} \
   # Create address segments
   create_bd_addr_seg -range 0x80000 -offset 0x43C00000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs w7x_timing_0/S00_AXI/S00_AXI_reg] SEG_w7x_timing_0_S00_AXI_reg
 
-  # Perform GUI Layout
-  regenerate_bd_layout -layout_string {
-   guistr: "# # String gsaved with Nlview 6.5.5  2015-06-26 bk=1.3371 VDI=38 GEI=35 GUI=JA:1.8
-#  -string -flagsOSRD
-preplace port clk_led -pg 1 -y 20 -defaultsOSRD
-preplace port DDR -pg 1 -y 320 -defaultsOSRD
-preplace port FIXED_IO -pg 1 -y 340 -defaultsOSRD
-preplace port trig -pg 1 -y 260 -defaultsOSRD
-preplace port clk -pg 1 -y 20 -defaultsOSRD
-preplace portBus trig_led -pg 1 -y 270 -defaultsOSRD
-preplace portBus state_leds -pg 1 -y 150 -defaultsOSRD
-preplace portBus state -pg 1 -y 130 -defaultsOSRD
-preplace inst rst_processing_system7_0_125M -pg 1 -lvl 1 -y 170 -defaultsOSRD
-preplace inst util_vector_logic_0 -pg 1 -lvl 3 -y 270 -defaultsOSRD
-preplace inst w7x_timing_0 -pg 1 -lvl 3 -y 140 -defaultsOSRD
-preplace inst processing_system7_0_axi_periph -pg 1 -lvl 2 -y 140 -defaultsOSRD
-preplace inst processing_system7_0 -pg 1 -lvl 1 -y 370 -defaultsOSRD
-preplace netloc processing_system7_0_DDR 1 1 3 NJ 320 NJ 320 NJ
-preplace netloc rst_processing_system7_0_125M_interconnect_aresetn 1 1 1 420
-preplace netloc processing_system7_0_axi_periph_M00_AXI 1 2 1 730
-preplace netloc processing_system7_0_M_AXI_GP0 1 1 1 410
-preplace netloc util_vector_logic_0_Res 1 3 1 NJ
-preplace netloc processing_system7_0_FCLK_RESET0_N 1 0 2 10 270 390
-preplace netloc clk_1 1 0 4 NJ 20 NJ 20 740 20 NJ
-preplace netloc processing_system7_0_FIXED_IO 1 1 3 NJ 340 NJ 340 NJ
-preplace netloc w7x_timing_0_state 1 3 1 1010
-preplace netloc rst_processing_system7_0_125M_peripheral_aresetn 1 1 2 430 270 NJ
-preplace netloc processing_system7_0_FCLK_CLK0 1 0 3 0 80 400 350 750
-preplace netloc trig_1 1 0 3 NJ 260 NJ 260 740
-levelinfo -pg 1 -20 200 580 880 1030 -top 0 -bot 470
-",
-}
 
   # Restore current instance
   current_bd_instance $oldCurInst

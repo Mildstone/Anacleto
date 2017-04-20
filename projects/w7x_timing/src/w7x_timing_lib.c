@@ -7,13 +7,13 @@ static struct timespec t = {0,100};
 static char error[1024];
 #define CHECK_INPUTS \
   uint64_t delay, cycle, burst; \
-  uint32_t width, period, repeat, count; \
+  uint32_t width, period, repeat; \
   if (!width_p && !period_p && !cycle_p && !repeat_p && !burst_p) { \
     delay  = delay_p ? *delay_p : DEFAULT_DELAY; \
-    cycle  = 0; \
     width  = 5; \
     period = 10; \
     burst  = 0; \
+    cycle  = 0; \
     repeat = 0; \
   } else { \
     delay  = delay_p  ? *delay_p  : 0; \
@@ -172,8 +172,8 @@ int setParams(uint64_t delay, uint32_t width, uint32_t period, uint64_t burst, u
   dev->w_count  = 0;
   dev->w_delay  = delay;
   dev->w_width  = width;
-  dev->w_burst  = burst;
   dev->w_period = period;
+  dev->w_burst  = burst;
   dev->w_cycle  = cycle;
   dev->w_repeat = repeat;
   return C_OK;
@@ -210,30 +210,31 @@ int makeSequence(const uint64_t *delay_p, const uint32_t *width_p, const uint32_
       printf(error);
       return C_PARAM_ERROR;
     }
+    uint32_t count = *count_p;
     CHECK_INPUTS
     if (count < 1) {
       pos += sprintf(error+pos,"ERROR: COUNT < 1\n");
       printf(error);
       return C_PARAM_ERROR;
     }
+    uint64_t periodxburst = period*burst;
     if (cycle_p) {
       cycle = *cycle_p;
-      if (cycle < times[count-1] + period){
-        pos += sprintf(error+pos,"ERROR: CYCLE < TIMES[COUNT-1] + PERIOD\n");
+      if (cycle < times[count-1] + periodxburst){
+        pos += sprintf(error+pos,"ERROR: CYCLE < TIMES[end] + PERIOD x BURST\n");
         pos += sprintf(error+pos,"       TIMES[end]: %llu\n", times[count-1]);
         printf(error);
         return C_PARAM_ERROR;
       }
     } else
-      cycle = times[count-1] + period;
+      cycle = times[count-1] + periodxburst;
     pos += sprintf(error+pos,"TIMES: [%llu", times[0]);
     int i;
-    uint64_t gab = period*burst;
     for(i = 1; i < count; i++){
        if (i < 16)  pos += sprintf(error+pos,", %llu", times[i]);
        if (i == 16) pos += sprintf(error+pos,", ...");
-       if(times[i] < times[i-1] + gab) {
-         pos += sprintf(error+pos,"ERROR: TIMES[%ld] - TIMES[%ld] < PERIOD\n",i,i-1);
+       if(times[i] < times[i-1] + periodxburst) {
+         pos += sprintf(error+pos,"\nERROR: TIMES[%ld] - TIMES[%ld] < PERIOD x BURST\n",i,i-1);
          printf(error);
        return C_PARAM_ERROR;
        }
