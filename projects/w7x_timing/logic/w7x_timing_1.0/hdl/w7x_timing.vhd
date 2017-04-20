@@ -7,7 +7,7 @@ entity w7x_timing is
       ADDR_WIDTH  : integer := 15;
       DATA_WIDTH  : integer := 64;
       TIME_WIDTH  : integer := 40;
-      HEAD_COUNT  : integer := 4
+      HEAD_COUNT  : integer := 6
     );
     port (
        clk_in     : in  STD_LOGIC;
@@ -29,7 +29,7 @@ architecture Behavioral of w7x_timing is
     constant one32      : unsigned(        32-1 downto 0) := to_unsigned(1,32);
     constant oneaddr    : unsigned(ADDR_WIDTH-1 downto 0) := to_unsigned(1,ADDR_WIDTH);
     constant onetime    : unsigned(TIME_WIDTH-1 downto 0) := to_unsigned(1,TIME_WIDTH);
-     -- summary of valid states                                 SGPWActE
+     -- summary of valid states                                SGPWActE
     constant IDLE           : std_logic_vector(7 downto 0) := "00000110";--  6
     constant ARMED          : std_logic_vector(7 downto 0) := "00001110";-- 14
     constant WAITING_DELAY  : std_logic_vector(7 downto 0) := "00010110";-- 22
@@ -47,6 +47,9 @@ architecture Behavioral of w7x_timing is
     -- measure number of repetitions
     signal repeat_count : unsigned(31 downto 0) := zero32; -- start_program =0, start_waiting_repeat ++
     signal repeat_total : unsigned(31 downto 0);
+    -- measure number of bursts
+    signal burst_count  : unsigned(TIME_WIDTH-1 downto 0) := zerotime; -- start_program =0, start_waiting_repeat ++
+    signal burst_total  : unsigned(TIME_WIDTH-1 downto 0);
     -- measure high and low of signal
     signal period_ticks : unsigned(31 downto 0) := zero32;
     signal high_total   : unsigned(31 downto 0);
@@ -68,7 +71,8 @@ begin
     if falling_edge(clk_in) then
       delay_total  <= unsigned(head_in(0*DATA_WIDTH+TIME_WIDTH-1 downto 0*DATA_WIDTH));
       high_total   <= unsigned(head_in(1*DATA_WIDTH+31           downto 1*DATA_WIDTH));
-      period_total <= unsigned(head_in(2*DATA_WIDTH+31           downto 2*DATA_WIDTH));
+      period_total <= unsigned(head_in(1*DATA_WIDTH+31+32        downto 1*DATA_WIDTH+32));
+      burst_total  <= unsigned(head_in(2*DATA_WIDTH+TIME_WIDTH-1 downto 2*DATA_WIDTH));
       cycle_total  <= unsigned(head_in(3*DATA_WIDTH+TIME_WIDTH-1 downto 3*DATA_WIDTH));
       repeat_total <= unsigned(head_in(4*DATA_WIDTH+31           downto 4*DATA_WIDTH));
       sample_total <= unsigned(head_in(5*DATA_WIDTH+ADDR_WIDTH-1 downto 5*DATA_WIDTH));
@@ -125,6 +129,7 @@ begin
     procedure do_waiting_sample is
     begin
       if cycle_ticks = sample then
+        burst_count <= onetime;
         start_sample(sample_count);
         inc_cycle;
       elsif cycle_ticks > sample then
@@ -140,6 +145,7 @@ begin
     -- resets cycle_ticks  (1)
     begin
       if sample = 0 then -- short cut if first sample is at 0
+        burst_count <= onetime;
         start_sample(zeroaddr);
       else
         sample_count <= zeroaddr;
@@ -184,7 +190,14 @@ begin
     procedure do_waiting_low is
     begin
       if period_ticks = period_total then
-        start_waiting_sample;
+        if burst_count = burst_total then
+          start_waiting_sample;
+        elsif burst_count > burst_total then
+          do_error(WAITING_LOW);
+        else
+          burst_count <= burst_count + 1;
+          start_sample(zeroaddr);
+        end if;
       elsif period_ticks > period_total then
         do_error(WAITING_LOW);
       else
