@@ -142,7 +142,7 @@ int getTimes(uint32_t offset, uint32_t count, uint64_t *times_p) {
 }
 
 int setParams(uint64_t delay, uint32_t width, uint32_t period, uint64_t burst, uint64_t cycle, uint32_t repeat, uint32_t count, int *pos) {
-  *pos += sprintf(error+*pos,"DELAY: %llu, WIDTH: %u, PERIOD: %u, COUNT: %u, CYCLE: %llu, REPEAT: %u\n", delay, width, period, count, cycle, repeat);
+  *pos += sprintf(error+*pos,"DELAY: %llu, WIDTH: %u, PERIOD: %u, BURST: %llu, CYCLE: %llu, REPEAT: %u, COUNT: %u\n", delay, width, period, burst, cycle, repeat, count);
   if (count > MAX_SAMPLES) {
     *pos += sprintf(error+*pos,"ERROR: COUNT > MAX_SAMPLES(%d)\n",MAX_SAMPLES);
     return C_PARAM_ERROR;
