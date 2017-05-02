@@ -118,78 +118,98 @@ static void axidma_start_transfer(struct dma_chan *chan, struct completion *cmp,
 
 static void axidma_test_transfer(void)
 {
-	const int dma_length = 4*1024*1024; //4MB
+    const int dma_length = 4*1024; //1KB
 	int i;
 
 	/* Step 3, allocate cached memory for the transmit and receive buffers to use for DMA
 	 * zeroing the destination buffer
 	 */
 
-    //	char *src_dma_buffer = kmalloc(dma_length, GFP_KERNEL);
-    //	char *dest_dma_buffer = kzalloc(dma_length, GFP_KERNEL);
+    //        char *src_dma_buffer = kmalloc(dma_length, GFP_KERNEL);
+    //        char *dest_dma_buffer = kzalloc(dma_length, GFP_KERNEL);
+
+
+    printk("tx_chan: %d\n",tx_chan);
+    printk("device: %d\n",tx_chan->device);
+    printk("dev: %d\n",tx_chan->device->dev);
+
+    printk("1\n");
     char *src_dma_buffer = dma_alloc_coherent(tx_chan->device->dev,dma_length,&tx_dma_handle,GFP_KERNEL);
+    printk("2\n");
     char *dest_dma_buffer = dma_alloc_coherent(rx_chan->device->dev,dma_length,&rx_dma_handle,GFP_KERNEL);
 
-	if (!src_dma_buffer || !dest_dma_buffer) {
-		printk(KERN_ERR "Allocating DMA memory failed\n");
-		return;
-	}
+    printk("3\n");
+    if (!src_dma_buffer || !dest_dma_buffer) {
+        printk(KERN_ERR "Allocating DMA memory failed\n");
+        return;
+    }
 
-	/* Initialize the source buffer with known data to allow the destination buffer to
-	 * be checked for success
-	 */
-	for (i = 0; i < dma_length; i++) 
-		src_dma_buffer[i] = i;
+    /* Initialize the source buffer with known data to allow the destination buffer to
+     * be checked for success
+     */
+    printk("4\n");
+    for (i = 0; i < dma_length; i++)
+        src_dma_buffer[i] = i;
 
-	/* Step 4, since the CPU is done with the buffers, transfer ownership to the DMA and don't
-	 * touch the buffers til the DMA is done, transferring ownership may involve cache operations
-	 */
+    /* Step 4, since the CPU is done with the buffers, transfer ownership to the DMA and don't
+     * touch the buffers til the DMA is done, transferring ownership may involve cache operations
+     */
 
-	tx_dma_handle = dma_map_single(tx_chan->device->dev, src_dma_buffer, dma_length, DMA_TO_DEVICE);	
-	rx_dma_handle = dma_map_single(rx_chan->device->dev, dest_dma_buffer, dma_length, DMA_FROM_DEVICE);	
+    printk("5\n");
+    tx_dma_handle = dma_map_single(tx_chan->device->dev, src_dma_buffer, dma_length, DMA_TO_DEVICE);
+    printk("6\n");
+    rx_dma_handle = dma_map_single(rx_chan->device->dev, dest_dma_buffer, dma_length, DMA_FROM_DEVICE);
 	
-	/* Prepare the DMA buffers and the DMA transactions to be performed and make sure there was not
-	 * any errors
-	 */
+    /* Prepare the DMA buffers and the DMA transactions to be performed and make sure there was not
+     * any errors
+     */
+    printk("7\n");
     tx_cookie = axidma_prep_buffer(tx_chan, tx_dma_handle, dma_length, DMA_MEM_TO_DEV, &tx_cmp);
-	rx_cookie = axidma_prep_buffer(rx_chan, rx_dma_handle, dma_length, DMA_DEV_TO_MEM, &rx_cmp);
+    printk("8\n");
+    rx_cookie = axidma_prep_buffer(rx_chan, rx_dma_handle, dma_length, DMA_DEV_TO_MEM, &rx_cmp);
 
-	if (dma_submit_error(rx_cookie) || dma_submit_error(tx_cookie)) {
-		printk(KERN_ERR "xdma_prep_buffer error\n");
-		return;
-	}
+    if (dma_submit_error(rx_cookie) || dma_submit_error(tx_cookie)) {
+        printk(KERN_ERR "xdma_prep_buffer error\n");
+        return;
+    }
 
-	printk(KERN_INFO "Starting DMA transfers\n");
+    printk(KERN_INFO "Starting DMA transfers\n");
 
-	/* Start both DMA transfers and wait for them to complete
-	 */
-	axidma_start_transfer(rx_chan, &rx_cmp, rx_cookie, NO_WAIT);
-	axidma_start_transfer(tx_chan, &tx_cmp, tx_cookie, WAIT);
+    /* Start both DMA transfers and wait for them to complete
+     */
+    printk("9\n");
+    axidma_start_transfer(rx_chan, &rx_cmp, rx_cookie, NO_WAIT);
+    printk("10\n");
+    axidma_start_transfer(tx_chan, &tx_cmp, tx_cookie, WAIT);
 
-	/* Step 10, the DMA is done with the buffers so transfer ownership back to the CPU so that
-	 * any cache operations needed are done
-	 */
+    /* Step 10, the DMA is done with the buffers so transfer ownership back to the CPU so that
+     * any cache operations needed are done
+     */
 
-	dma_unmap_single(rx_chan->device->dev, rx_dma_handle, dma_length, DMA_FROM_DEVICE);	
-	dma_unmap_single(tx_chan->device->dev, tx_dma_handle, dma_length, DMA_TO_DEVICE);
+    printk("11\n");
+    dma_unmap_single(rx_chan->device->dev, rx_dma_handle, dma_length, DMA_FROM_DEVICE);
+    printk("12\n");
+    dma_unmap_single(tx_chan->device->dev, tx_dma_handle, dma_length, DMA_TO_DEVICE);
 
-	/* Verify the data in the destination buffer matches the source buffer 
-	 */
-	for (i = 0; i < dma_length; i++) {
-		if (dest_dma_buffer[i] != src_dma_buffer[i]) {
-			printk(KERN_INFO "DMA transfer failure");
-			break;	
-		}
-	}
+    /* Verify the data in the destination buffer matches the source buffer
+     */
+    for (i = 0; i < dma_length; i++) {
+        if (dest_dma_buffer[i] != src_dma_buffer[i]) {
+            printk(KERN_INFO "DMA transfer failure");
+            break;
+        }
+    }
 
-	printk(KERN_INFO "DMA bytes sent: %d\n", dma_length);
+    printk(KERN_INFO "DMA bytes sent: %d\n", dma_length);
 
-	/* Step 11, free the buffers used for DMA back to the kernel */
+    /* Step 11, free the buffers used for DMA back to the kernel */
 
+    printk("13\n");
     dma_free_coherent(tx_chan->device->dev,dma_length,src_dma_buffer,tx_dma_handle);
+    printk("14\n");
     dma_free_coherent(rx_chan->device->dev,dma_length,dest_dma_buffer,rx_dma_handle);
-    //	kfree(src_dma_buffer);
-    //	kfree(dest_dma_buffer);	
+//        kfree(src_dma_buffer);
+//        kfree(dest_dma_buffer);
     
 }
 
@@ -241,9 +261,13 @@ static int xilinx_axidmatest_probe(struct platform_device *pdev)
     //
         
 	tx_chan = dma_request_slave_channel(&pdev->dev, "dma0");
-	if (IS_ERR(tx_chan)) {
+    if (!tx_chan) {
+        pr_err("CACCA OVUNQUE!");
+        return -1;
+    }
+    else if (IS_ERR(tx_chan)) {
 		pr_err("xilinx_dmatest: No Tx channel\n");
-		return PTR_ERR(tx_chan);
+        return PTR_ERR(tx_chan);
 	}
 
 	rx_chan = dma_request_slave_channel(&pdev->dev, "dma1");
@@ -253,11 +277,12 @@ static int xilinx_axidmatest_probe(struct platform_device *pdev)
 		goto free_tx;
 	}    
     
+    printk("OK now starting transfer\n");
     axidma_test_transfer();
 	return 0;
 
-	dma_release_channel(rx_chan);
 free_tx:
+    printk("ERROR REQUESTING DMA TX\n");
 	dma_release_channel(tx_chan);
 
 	return 0;
@@ -275,7 +300,7 @@ static int xilinx_axidmatest_remove(struct platform_device *pdev)
 }
 
 static const struct of_device_id rfx_axidmatest_of_ids[] = {
-    { .compatible = "xlnx,axi-dma-1.00.a",},
+    { .compatible = "xlnx,axi-dma-test-1.00.a",},
 	{}
 };
 

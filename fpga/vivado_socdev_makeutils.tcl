@@ -12,6 +12,7 @@ namespace eval ::tclapp::socdev::makeutils {
   namespace export make_edit_peripheral
   namespace export make_write_bitstream
   namespace export make_write_devicetree
+  namespace export make_write_linux_bsp
   namespace export make_write_fsbl
 }
 
@@ -66,7 +67,7 @@ proc make_set_repo_path {} {
 ## /// CREATE PROJECT /////////////////////////////////////////////////////// ##
 ## ////////////////////////////////////////////////////////////////////////// ##
 
-proc make_new_project { } {
+proc make_new_project {} {
   set_compatible_with Vivado
 
   set project_name $v::me(project_name)
@@ -94,6 +95,18 @@ proc make_new_project { } {
 
   # write project
   make_write_project
+}
+
+## ////////////////////////////////////////////////////////////////////////// ##
+## /// CREATE PERIPHERAL //////////////////////////////////////////////////// ##
+## ////////////////////////////////////////////////////////////////////////// ##
+
+proc make_create_peripheral { } {
+
+#  create_ip -name axi_interconnect -vendor xilinx.com -library ip -module_name axi_interconnect -dir .
+#  generate_target all [get_files ./axi_interconnect/axi_interconnect.xci]
+#  synth_ip [get_files ./axi_interconnect/axi_interconnect.xci]
+
 }
 
 
@@ -304,7 +317,6 @@ proc make_write_bitstream {} {
   #  set_property DIRECTORY $v::pe(rel_dir_prj)/$path_out/synth [get_runs auto_synth_1]
   #  set_property DIRECTORY $v::pe(rel_dir_prj)/$path_out/impl  [get_runs auto_impl_1 ]
 
-
   ## START SYNTH ##
   reset_run auto_impl_1
   reset_run auto_synth_1
@@ -338,10 +350,9 @@ proc make_write_bitstream {} {
   write_sysdef    -force   -hwdef   $path_sdk/$prj_name.hwdef \
 			   -bitfile $path_sdk/$prj_name.bit \
 			   -file    $path_sdk/$prj_name.sysdef
+
   # Export Hardware for petalinux inclusion #
-
-  write_hwdef     -force   -file    $path_sdk/$prj_name.hdf
-
+  # write_hwdef     -force   -file    $path_sdk/$prj_name.hdf
 }
 
 
@@ -387,9 +398,47 @@ proc make_write_fsbl {} {
   open_hw_design $path_sdk/$prj_name.sysdef
   set_repo_path $v::me(DTREE_DIR)
 
-  #  generate_app  -os standalone -proc ps7_cortexa9_0 -app zynq_fsbl \
-  #    -compile -sw fsbl -dir $path_sdk/fsbl
+  generate_app  -os standalone -proc ps7_cortexa9_0 -app zynq_fsbl \
+      -compile -sw fsbl -dir $path_sdk/fsbl
 }
+
+proc make_write_linux_bsp {} {
+  set_compatible_with Hsi
+
+  set prj_name $v::pe(project_name)
+  set path_out $v::pe(dir_out)
+  set path_sdk $v::pe(dir_sdk)
+
+  open_hw_design $path_sdk/$prj_name.sysdef
+
+  set_repo_path  $v::me(top_srcdir)/fpga/hsi/linux-bsp
+  foreach ip_name [split $v::me(IP_SOURCES)] {
+    set_repo_path $v::me(srcdir)/$ip_name
+  }
+
+  create_sw_design ll -os linux -proc ps7_cortexa9_0 -verbose
+  generate_bsp -dir $path_sdk/bsp
+}
+
+proc make_write_fsbl {} {
+  set_compatible_with Hsi
+
+  set prj_name $v::pe(project_name)
+  set path_out $v::pe(dir_out)
+  set path_sdk $v::pe(dir_sdk)
+
+  #  set boot_args { console=ttyPS0,115200n8 root=/dev/ram rw \
+  #		  initrd=0x00800000,16M earlyprintk \
+  #		  mtdparts=physmap-flash.0:512K(nor-fsbl),512K(nor-u-boot),\
+  #		  5M(nor-linux),9M(nor-user),1M(nor-scratch),-(nor-rootfs) }
+
+  open_hw_design $path_sdk/$prj_name.sysdef
+  set_repo_path $v::me(DTREE_DIR)
+
+  generate_app  -os standalone -proc ps7_cortexa9_0 -app zynq_fsbl \
+      -compile -sw fsbl -dir $path_sdk/fsbl
+}
+
 
 }
 ## END NAMESPACE

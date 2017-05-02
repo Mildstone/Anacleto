@@ -80,7 +80,7 @@ static struct file_operations fops = {
 
 // DEVICE ID //
 static const struct of_device_id rfx_axidmatest_of_ids[] = {
-    { .compatible = "xlnx,axi-dma-1.00.a",},
+    { .compatible = "xlnx,axi-dma-test-1.00.a",},
 	{}
 };
 
@@ -211,8 +211,8 @@ static int axidma_test_transfer(unsigned int dma_length)
 
 	printk(KERN_INFO "Starting DMA transfers\n");
 
-	axidma_start_test_transfer(rx_chan, &rx_cmp, rx_cookie, NO_WAIT);
-	axidma_start_test_transfer(tx_chan, &tx_cmp, tx_cookie, WAIT);    
+    axidma_start_test_transfer(rx_chan, &rx_cmp, rx_cookie, NO_WAIT);
+    axidma_start_test_transfer(tx_chan, &tx_cmp, tx_cookie, WAIT);
 
     // see above..
     //    dma_unmap_single(rx_chan->device->dev, rx_dma_handle, dma_length, DMA_FROM_DEVICE);	
@@ -266,7 +266,7 @@ static int device_ioctl_mmap_testtransfer(void ) {
 	}
         
     axidma_start_test_transfer(rx_chan, &rx_cmp, rx_cookie, NO_WAIT);
-	axidma_start_test_transfer(tx_chan, &tx_cmp, tx_cookie, WAIT);   
+    axidma_start_test_transfer(tx_chan, &tx_cmp, tx_cookie, WAIT);
     return 0;
 }
 
@@ -405,7 +405,7 @@ static long device_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
         status = device_ioctl_testtrasfer(0);
         break;
     case XDMA_TEST_MMAPTRASFER:
-        printk(KERN_DEBUG "<%s> ioctl: XDMA_TEST_TRASFER\n", MODULE_NAME);        
+        //        printk(KERN_DEBUG "<%s> ioctl: XDMA_TEST_TRASFER\n", MODULE_NAME);
         status = device_ioctl_mmap_testtransfer();
         break;
         

@@ -8,12 +8,16 @@ menu LINUX_BUILD
 	string  "Linux sources directory name"
 	default "linux"
 
+  config LINUX_DIR_IN_SRCTREE
+	bool    "Place linux sources in src tree"
+	default n
+
   choice LINUX_DLMETHOD
 	prompt "Linux sources download method"
+	config WITH_LINUX_TAR
+	 bool "tar archive"
 	config WITH_LINUX_GIT
 	 bool "git repository"
-	config WITH_LINUX_TAR
-	 bool "tar archive (not working yet)"
   endchoice
 
   config LINUX_GIT
@@ -24,7 +28,7 @@ menu LINUX_BUILD
   config LINUX_TAR
 	string  "Linux tar repository"
 	depends on WITH_LINUX_TAR
-	default ""
+	default "https://github.com/Xilinx/linux-xlnx/archive/xilinx-v2016.1.tar.gz"
 
   choice LINUX_PACKAGE
 	prompt  "Linux image type"
@@ -33,6 +37,26 @@ menu LINUX_BUILD
 	config LINUX_ZIMAGE
 	 bool "zImage"
   endchoice
+
+  config LINUX_UIMAGE_LOADADDR
+	string  "Linux uImage load address defined in u-boot"
+	depends on LINUX_UIMAGE
+	default "0x8000"
+
+  config LINUX_DEF_CONFIG
+	string  "Linux def config"
+	default ""
+#	default "${srcdir}/conf/linux/${KERNELVERSION}/red_pitaya.def" if WITH_SOC_RED_PITAYA
+#	default "${srcdir}/conf/linux/${KERNELVERSION}/parallella.def" if WITH_SOC_PARALLELLA
+
+  config MAKE_PROCESS
+      int "Number of parallel process (aka -j option)"
+      range 1 16
+      default 8
+
+  config LINUX_CFLAGS
+      string  "linux and modules compiler flags"
+      default "-O2 -mtune=cortex-a9 -mfpu=neon -mfloat-abi=hard"
 
 
 endmenu # LINUX_BUILD

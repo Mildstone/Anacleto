@@ -31,7 +31,7 @@ AX_TARGET_SELFHELP
 dnl AX_DOCKER_BUILD ////////////////////////////////////////////////////////////
 dnl see: ax_docker_build.m4
 dnl /// Kconfig docker variables import example ...
-AS_VAR_IF([CONFIG_ENABLE_DOCKER],[y],[
+AS_VAR_IF([CONFIG_ENABLE_DOCKER_BUILD],[y],[
            AS_VAR_SET_IF([CONFIG_DOCKER_CONTAINER], 
               [AS_VAR_SET([DOCKER_CONTAINER],[${CONFIG_DOCKER_CONTAINER}])] )
            AS_VAR_SET_IF([CONFIG_DOCKER_IMAGE], 
@@ -64,27 +64,43 @@ AC_CHECK_PROGS([UNIQ],[uniq])
 AC_CHECK_PROGS([WC],[wc])
 
 
+# //////////////////////////////////////////////////////////////////////////// #
+# //  BUILD COMMON  ////////////////////////////////////////////////////////// #
+# //////////////////////////////////////////////////////////////////////////// #
+
+AX_KCONFIG_VAR_WITH([DOWNLOAD_DIR],["Default download directory path"])
+AC_SUBST([DOWNLOAD_DIR])
+AX_GITIGNORE_ADD([${DOWNLOAD_DIR}])
+
+AX_KCONFIG_VAR_WITH([MAKE_PROCESS],
+		    ["Number of parallel process (aka -j option, 0=auto)"])
+AS_VAR_IF([MAKE_PROCESS],[0],
+	  [AS_VAR_SET([MAKE_PROCESS],[$(grep -c ^processor /proc/cpuinfo)])])
+AC_MSG_NOTICE([build make process -j${MAKE_PROCESS}])
+AC_SUBST([MAKE_PROCESS])
+
 
 # //////////////////////////////////////////////////////////////////////////// #
 # //  TOOLCHAIN  ///////////////////////////////////////////////////////////// #
 # //////////////////////////////////////////////////////////////////////////// #
 
+AX_KCONFIG_VAR_ENABLE([ENABLE_CUSTOM_TOOLCHAIN],["Enable external toolchain"])
 
-AX_KCONFIG_VAR_ENABLE([ENABLE_TOOLCHAIN],["Enable external toolchain"])
-AX_KCONFIG_CHOICE([TOOLCHAIN_VENDOR],
-		  [TOOLCHAIN_LINARO_BIN],["linaro_web"],
-		  [TOOLCHAIN_DIR],["dir"])
+AX_KCONFIG_CHOICE([TOOLCHAIN_RETRIEVE],
+		  [TOOLCHAIN_RETRIEVE_TAR],["tar"],
+		  [TOOLCHAIN_RETRIEVE_DIR],["dir"])
 
-AS_ECHO(["linaro bin: ${TOOLCHAIN_LINARO_BIN}"])
+AX_KCONFIG_VAR_WITH([TOOLCHAIN_TAR],["url path for Linaro toolchain binaries"])
+AC_SUBST([TOOLCHAIN_TAR])
 
-AX_KCONFIG_VAR_WITH([LINARO_BIN_TAR],["url path for Linaro toolchain binaries"])
-AC_SUBST([LINARO_BIN_TAR])
+AX_KCONFIG_VAR_WITH([TOOLCHAIN_DIR],["Set toolchain base dir"])
+AC_SUBST([TOOLCHAIN_DIR])
+AX_GITIGNORE_ADD([${TOOLCHAIN_DIR}])
 
-AX_KCONFIG_VAR_WITH([WITH_TOOLCHAIN_DIR],["Set toolchain base dir"])
-AC_SUBST([WITH_TOOLCHAIN_DIR])
-
-AX_KCONFIG_VAR_WITH([CROSS_COMPILE],["Toolchain prefix of build executables"])
+AX_KCONFIG_VAR_WITH([CROSS_COMPILE],["Set crosscompile command"])
 AC_SUBST([CROSS_COMPILE])
+
+
 
 dnl AS_IF([test -f ${WITH_TOOLCHAIN_DIR}/${WITH_CROSS_COMPILE}${CC} ],,
 dnl      [AS_VAR_IF([TOOLCHAIN_VENDOR],[linaro_web],
@@ -252,37 +268,26 @@ AC_SUBST([YOCTO_XILINX_TAR])
 
 
 
-
 # // GIT IGNORE // #
 AX_GITIGNORE_SUBST
+
+AC_DEFUN([def_prj],[
+ projects/$1/Makefile
+ projects/$1/logic/Makefile
+ projects/$1/src/Kbuild
+ projects/$1/src/Makefile
+])
+
 
 AC_CONFIG_FILES( 
                  Makefile
 		 fpga/Makefile
-		 projects/rfx_dmatests/Makefile
-		 projects/rfx_dmatests/logic/Makefile
-		 projects/rfx_dmatests/src/Kbuild
-		 projects/rfx_dmatests/src/Makefile
-		 projects/rfx_pwmgen/Makefile
-		 projects/rfx_pwmgen/logic/Makefile
-		 projects/rfx_pwmgen/src/Kbuild
-		 projects/rfx_pwmgen/src/Makefile
-dnl		 projects/rfx_axibase/Makefile
-dnl		 projects/rfx_axibase/logic/Makefile
-dnl		 projects/rfx_axibase/src/Kbuild
-dnl		 projects/rfx_axibase/src/Makefile
-		 projects/rfx_AD7641/Makefile
-		 projects/rfx_AD7641/logic/Makefile
-		 projects/rfx_AD7641/src/Kbuild
-		 projects/rfx_AD7641/src/Makefile
-		 projects/rfx_RPHctl/Makefile
-		 projects/rfx_RPHctl/logic/Makefile
-		 projects/rfx_RPHctl/src/Kbuild
-		 projects/rfx_RPHctl/src/Makefile
-		 projects/w7x_timing/Makefile
-		 projects/w7x_timing/logic/Makefile
-		 projects/w7x_timing/src/Kbuild
-		 projects/w7x_timing/src/Makefile
+		 def_prj(rfx_dmatests)
+		 def_prj(rfx_prova)
+		 def_prj(rfx_pwmgen)
+		 def_prj(rfx_AD7641)
+		 def_prj(rfx_RPHctl)
+		 def_prj(w7x_timing)
 		 .gitignore
                )
 AC_OUTPUT

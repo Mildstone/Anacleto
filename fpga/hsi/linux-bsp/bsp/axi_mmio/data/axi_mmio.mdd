@@ -1,0 +1,12 @@
+
+OPTION psf_version = 3.0;
+
+BEGIN driver axi_mmio
+  OPTION driver_state = ACTIVE;
+  OPTION supported_peripherals = (axi_mmio);
+  OPTION supported_os_types = (LINUX);
+  OPTION NAME = axi_mmio;
+END driver
+
+
+

@@ -1,0 +1,11 @@
+
+OPTION psf_version = 3.0;
+
+BEGIN driver cpu_cortexa53
+
+  OPTION driver_state = ACTIVE;
+  OPTION supported_peripherals = (psu_cortexa53);
+  OPTION supported_os_types = (LINUX);
+  OPTION NAME = cpu_cortexa53;
+
+END driver

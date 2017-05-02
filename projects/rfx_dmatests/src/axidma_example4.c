@@ -1,15 +1,7 @@
 /* AXI DMA Example 4
 *
-* This example demonstrates the use of dma transfer in two ways:
+* This example demonstrates the use of dma in polling.
 * 
-* 1) A single send/receive short circuit loop PS->PL->PS where the overall
-*    memory involved are allocated and handled within the kernel.
-* 
-* 2) Send and receive a mmapped memory, the user can do the tranfer directly.
-*    See: test_example3.c
-*
-* 
-* NOTE: Both methods are using a coherent allocated memory.
 * 
 */
 
@@ -90,7 +82,7 @@ static struct file_operations fops = {
 
 // DEVICE ID //
 static const struct of_device_id rfx_axidmatest_of_ids[] = {
-    { .compatible = "xlnx,axi-dma-1.00.a",},
+    { .compatible = "xlnx,axi-dma-test-1.00.a",},
 	{}
 };
 

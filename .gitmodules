@@ -10,3 +10,6 @@
 [submodule "conf/autoconf-archive"]
 	path = conf/autoconf-archive
 	url = https://github.com/andrearigoni/autoconf-archive.git
+[submodule "fpga/hsi/device-tree-xlnx"]
+	path = fpga/hsi/device-tree-xlnx
+	url = https://github.com/andrearigoni/device-tree-xlnx.git

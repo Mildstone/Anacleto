@@ -1,0 +1,21 @@
+
+# //////////////////////////////////////////////////////////////////////////// #
+# //  BUILD_COMMON  ////////////////////////////////////////////////////////// #
+# //////////////////////////////////////////////////////////////////////////// #
+
+menu  "General build options"
+
+  config DOWNLOAD_DIR
+	 string "Default download directory path"
+	 default "${builddir}/download"
+	 ---help---
+	  Select the default dowload directory to be used if any package must be
+	  retrieved from url or remote. The path set here should be made available to
+	  Makefile through the AC_SUBST of this variable.
+
+  config MAKE_PROCESS
+	 int "Number of parallel process (aka -j option, 0=auto)"
+	 range 0 16
+	 default 0
+
+endmenu

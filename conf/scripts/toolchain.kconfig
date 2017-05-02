@@ -1,32 +1,35 @@
+# //////////////////////////////////////////////////////////////////////////// #
+# //  TOOLCHAIN  ///////////////////////////////////////////////////////////// #
+# //////////////////////////////////////////////////////////////////////////// #
 
-  config ENABLE_TOOLCHAIN
-	 bool "Enable custom toolchain"
+menuconfig  ENABLE_CUSTOM_TOOLCHAIN
+	 bool "Enable PS crosscompiler toolchain"
 	 default y
+	 ---help---
+	  Enable custom tool chain ( work in progress .. )
 
-  menu   TOOLCHAIN
-	 depends on ENABLE_TOOLCHAIN
+if ENABLE_CUSTOM_TOOLCHAIN
 
-  choice TOOLCHAIN_VENDOR
+  choice TOOLCHAIN_RETRIEVE
 	 prompt "Select the toolchain retrieve method"
-	 config TOOLCHAIN_LINARO_BIN
-	 bool "Linaro binaries from web"
-	 config TOOLCHAIN_DIR
+	 config TOOLCHAIN_RETRIEVE_TAR
+	 bool "tar binaries from web"
+	 config TOOLCHAIN_RETRIEVE_DIR
 	 bool "Use toolchain from existing directory"
   endchoice
 
-  config LINARO_BIN_TAR
+  config TOOLCHAIN_TAR
 	 string "url path for Linaro toolchain binaries"
-	 depends on TOOLCHAIN_LINARO_BIN
+	 depends on TOOLCHAIN_RETRIEVE_TAR
 	 default "http://releases.linaro.org/components/toolchain/binaries/6.2-2016.11/arm-linux-gnueabihf/gcc-linaro-6.2.1-2016.11-x86_64_arm-linux-gnueabihf.tar.xz"
 
-  config WITH_TOOLCHAIN_DIR
+  config TOOLCHAIN_DIR
 	 string  "toolchain root path"
-	 default "${builddir}/toolchain" if TOOLCHAIN_LINARO_BIN
+	 default "${builddir}/toolchain"
 
   config CROSS_COMPILE
 	 string "toolchain prefix of build executables"
 	 default "arm-linux-gnueabihf-"
 
-endmenu # TOOLCHAIN
-
+endif # ENABLE_CUSTOM_TOOLCHAIN
 

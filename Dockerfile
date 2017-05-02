@@ -42,8 +42,17 @@ RUN apt-get -y install \
 
 RUN  apt-get -y install automake sshpass tk diffstat gawk  chrpath texinfo p7zip 
 
+
+
 # yocto 
-RUN  apt-get -y install qemu-system-arm qemu
+RUN apt-get -y install qemu-system-arm qemu
 
 RUN ln -s /usr/bin/make /usr/bin/gmake
 
+
+
+# LOCALE
+RUN locale-gen "en_US.UTF-8";
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV LC_ALL en_US.UTF-8

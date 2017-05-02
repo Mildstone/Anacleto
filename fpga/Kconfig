@@ -2,13 +2,11 @@
 # //  FPGA  ////////////////////////////////////////////////////////////////// #
 # //////////////////////////////////////////////////////////////////////////// #
 
-config ENABLE_FPGA
-	bool "Enable fpga development"
+menuconfig ENABLE_FPGA
+	bool "Enable FPGA development toolchain"
 	default y
 
-menu  FPGA
-	depends on ENABLE_FPGA
-
+if ENABLE_FPGA
 
   choice VIVADO_VERSION
 	prompt "Vivado version yyyy.v "
@@ -48,4 +46,4 @@ menu  FPGA
 #        string "Path to the vivado system folder"
 #        default ""
 
-endmenu # FPGA
+endif # FPGA

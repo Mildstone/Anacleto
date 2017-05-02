@@ -2,8 +2,7 @@
 # For a description of the syntax of this configuration file,
 # see Documentation/kbuild/kconfig-language.txt.
 #
-mainmenu "linux-socdev - Linux drivers build system for SoC devices"
-
+mainmenu "Anacleto - GNU Linux build system for FPGA SoC devices"
 
 choice SOC_BOARD
       prompt "Select SOC board"
@@ -13,6 +12,13 @@ choice SOC_BOARD
       config WITH_SOC_PARALLELLA
        bool "parallella"
 endchoice
+
+
+# //////////////////////////////////////////////////////////////////////////// #
+# //  BULD COMMON  /////////////////////////////////////////////////////////// #
+# //////////////////////////////////////////////////////////////////////////// #
+
+source conf/scripts/build_common.kconfig
 
 
 # //////////////////////////////////////////////////////////////////////////// #
@@ -26,7 +32,6 @@ source conf/scripts/toolchain.kconfig
 # //  FPGA  ////////////////////////////////////////////////////////////////// #
 # //////////////////////////////////////////////////////////////////////////// #
 
-
 source fpga/Kconfig
 
 
@@ -34,63 +39,7 @@ source fpga/Kconfig
 # //  LINUX  ///////////////////////////////////////////////////////////////// #
 # //////////////////////////////////////////////////////////////////////////// #
 
-menu LINUX_BUILD
-  config LINUX_DIR
-	string  "Linux sources directory name"
-	default "linux"
-
-  config LINUX_DIR_IN_SRCTREE
-	bool    "Place linux sources in src tree"
-	default n
-
-  choice LINUX_DLMETHOD
-	prompt "Linux sources download method"
-	config WITH_LINUX_TAR
-	 bool "tar archive"
-	config WITH_LINUX_GIT
-	 bool "git repository"
-  endchoice
-
-  config LINUX_GIT
-	string  "Linux git repository"
-	depends on WITH_LINUX_GIT
-	default "https://github.com/Xilinx/linux-xlnx.git"
-
-  config LINUX_TAR
-	string  "Linux tar repository"
-	depends on WITH_LINUX_TAR
-	default "https://github.com/Xilinx/linux-xlnx/archive/xilinx-v2016.1.tar.gz"
-
-  choice LINUX_PACKAGE
-	prompt  "Linux image type"
-	config LINUX_UIMAGE
-	 bool "uImage"
-	config LINUX_ZIMAGE
-	 bool "zImage"
-  endchoice
-
-  config LINUX_UIMAGE_LOADADDR
-	string  "Linux uImage load address defined in u-boot"
-	depends on LINUX_UIMAGE
-	default "0x8000"
-
-  config LINUX_DEF_CONFIG
-	string  "Linux def config"
-	default ""
-#	default "${srcdir}/conf/linux/${KERNELVERSION}/red_pitaya.def" if WITH_SOC_RED_PITAYA
-#	default "${srcdir}/conf/linux/${KERNELVERSION}/parallella.def" if WITH_SOC_PARALLELLA
-
-  config MAKE_PROCESS
-      int "Number of parallel process (aka -j option)"
-      range 1 16
-      default 8
-
-  config LINUX_CFLAGS
-      string  "linux and modules compiler flags"
-      default "-O2 -mtune=cortex-a9 -mfpu=neon -mfloat-abi=hard"
-
-
-endmenu # LINUX_BUILD
+source conf/scripts/linux.kconfig
 
 
 # //////////////////////////////////////////////////////////////////////////// #
@@ -123,7 +72,7 @@ menu YOCTO
   config YOCTO_GIT
 	string  "Yocto git repository"
 	depends on WITH_YOCTO_GIT
-	default "git://git.yoctoproject.org/poky.git"
+	default "https://git.yoctoproject.org/poky.git"
 
   config YOCTO_VERSION
 	string  "Yocto version"
@@ -166,64 +115,7 @@ endmenu # YOCTO
 # //  DOCKER  //////////////////////////////////////////////////////////////// #
 # //////////////////////////////////////////////////////////////////////////// #
 
-config ENABLE_DOCKER
-        bool "Enable docker build"
-	---help---
-	  This enables the docker build mechanism provided by a m4 macro
-	  that uses a custom script for SHELL command in  make  to enter
-	  a given running docker container. The actual  configure script
-	  and all make commands are executed  within that container.
-	  To see  how to manage  this please run "make docker" after the
-	  configuration completes.
-
-menu   DOCKER_BUILD
-        depends on ENABLE_DOCKER
-
-  choice DOCKER_BUILD
-        prompt "Select the docker build method"
-        depends on ENABLE_DOCKER
-	config WITH_DOCKER_URL
-	 bool "Create from url with a Dockerfile"
-        config WITH_DOCKER_IMAGE
-         bool "Pull docker image"
-        config WITH_DOCKER_CONTAINER
-         bool "Start existing docker container"
-  endchoice
-
-  config DOCKER_IMAGE
-        string "Docker image"
-        depends on ENABLE_DOCKER
-        depends on WITH_DOCKER_IMAGE
-	default "rigoni/linux-socdev:latest"
-
-  config DOCKER_CONTAINER
-        string "Container name or ID"
-        depends on ENABLE_DOCKER
-        depends on WITH_DOCKER_CONTAINER
-
-  config DOCKER_URL
-        string "Url"
-        depends on ENABLE_DOCKER
-        depends on WITH_DOCKER_URL
-	default "${srcdir}"
-	---help---
-	  Url or path to a directory wiht a valid Dockerfile
-
-  config DOCKER_SHARES
-	string "Additional user shares"
-	depends on ENABLE_DOCKER
-	default "/opt:/opt"
-	---help---
-	  Read a list of additional docker shares in the form:
-	  <local_path_1>:<remote_path_> [<lcoal_path_2>:<remote_path_2>] [...]
-	  This could be used to add common paths such the Vivado local install
-	  or toolchains.
-	  
-	  Note:
-	  The srcdir and current build dir are always shared to the container
-         
-
-endmenu # DOCKER_BUILD
+source conf/scripts/docker.kconfig
 
 
 # //////////////////////////////////////////////////////////////////////////// #

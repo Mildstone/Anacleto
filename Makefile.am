@@ -1,31 +1,11 @@
 include Common.am
+
 AM_MAKEFLAGS = -j$(MAKE_PROCESS)
 
 all: ##@all download and build the selected toolchain and the linux image
 all: $(top_builddir)/toolchain $(LINUX_IMAGE)
 
-################################################################################
-# LINARO
-################################################################################
 
-# TODO: remove this and put it to configure
-# TODO: identify file type
-if TOOLCHAIN_LINARO_BIN
-$(top_builddir)/toolchain:
-	@ \
-	  mkdir -p ${DL} $@; \
-	  echo "getting linaro from tar: ${LINARO_BIN_TAR}"; \
-	  _tar=${DL}/$$(echo $(LINARO_BIN_TAR) | sed -e 's|.*/||'); \
-	  test -f $$_tar || curl -SL $(LINARO_BIN_TAR) > $$_tar; \
-	  _wcl=$$(tar -tJf $$_tar | sed -e 's|/.*||' | uniq | wc -l); \
-	  if test $$_wcl = 1; then \
-	  tar -xJf $$_tar -C $@ --strip 1; \
-	  else \
-	  tar -xJf $$_tar -C $@; \
-	  fi
-else
-$(top_builddir)/toolchain:
-endif
 
 ################################################################################
 # Linux build
@@ -124,6 +104,48 @@ $(LINUX_IMAGE): $(LINUX_SRCDIR) $(LINUX_BUILDDIR) $(LINUX_BUILDDIR)/.config
 .PHONY: linux
 linux: ##@linux build linux image
 linux: $(LINUX_IMAGE)
+
+
+
+
+################################################################################
+# U-Boot build provides: $(UBOOT)
+################################################################################
+
+ENVTOOLS_CFG    = $(INSTALL_DIR)/etc/fw_env.config
+
+UBOOT_URL             ?= https://github.com/Xilinx/u-boot-xlnx/archive/xilinx-v2015.4.tar.gz
+
+UBOOT_SCRIPT_BUILDROOT = patches/u-boot.script.buildroot
+UBOOT_SCRIPT_DEBIAN    = patches/u-boot.script.debian
+UBOOT_SCRIPT           = $(INSTALL_DIR)/u-boot.scr
+
+.PHONY: u-boot
+
+u-boot: $(UBOOT) $(UBOOT_SCRIPT) $(ENVTOOLS_CFG)
+
+$(UBOOT_TAR): | $(DL)
+	curl -L $(UBOOT_URL) -o $@
+
+$(UBOOT_DIR): $(UBOOT_TAR)
+	mkdir -p $@
+	tar -zxf $< --strip-components=1 --directory=$@
+	patch -d $@ -p 1 < patches/u-boot-xlnx-$(UBOOT_TAG).patch
+
+$(UBOOT): $(UBOOT_DIR)
+	mkdir -p $(@D)
+	make -C $< arch=ARM zynq_red_pitaya_defconfig
+	make -C $< arch=ARM CFLAGS=$(UBOOT_CFLAGS) all
+	cp $</u-boot $@
+
+$(UBOOT_SCRIPT): $(INSTALL_DIR) $(UBOOT_DIR) $(UBOOT_SCRIPT_BUILDROOT) $(UBOOT_SCRIPT_DEBIAN)
+	$(UBOOT_DIR)/tools/mkimage -A ARM -O linux -T script -C none -a 0 -e 0 -n "boot Buildroot" -d $(UBOOT_SCRIPT_BUILDROOT) $@.buildroot
+	$(UBOOT_DIR)/tools/mkimage -A ARM -O linux -T script -C none -a 0 -e 0 -n "boot Debian"    -d $(UBOOT_SCRIPT_DEBIAN)    $@.debian
+	cp $@.debian $@
+
+$(ENVTOOLS_CFG): $(UBOOT_DIR)
+	mkdir -p $(INSTALL_DIR)/etc/
+	cp $</tools/env/fw_env.config $(INSTALL_DIR)/etc
 
 
 

@@ -1,0 +1,11 @@
+
+OPTION psf_version = 2.1;
+
+BEGIN OS linux
+ OPTION drc = linux_drc;
+ OPTION DESC = "Linux software layer";
+ OPTION copyfiles = all;
+ OPTION VERSION = 4.4;
+ OPTION NAME = linux;
+ OPTION OS_TYPE = LINUX
+END OS
