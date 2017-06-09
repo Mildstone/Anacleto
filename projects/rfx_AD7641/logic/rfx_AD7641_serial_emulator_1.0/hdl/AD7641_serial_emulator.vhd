@@ -46,47 +46,51 @@ end AD7641_serial_emulator;
 
 architecture Behavioral of AD7641_serial_emulator is
 
+signal sclk_gen          : std_logic := '0';
+signal sdat_buf          : std_logic := '0';
+signal enable            : std_logic := '0';
+signal clk_delay         : std_logic := '0';
 
-signal enable : std_logic := '0';
-signal data_buffer : std_logic_vector(31 downto 0) := (others => '0');
-signal data_buffer_ready : std_logic := '1';
+signal data       : std_logic_vector(SERIAL_DATA_LEN-1 downto 0) := (others => '0');
+signal data_ready : std_logic := '1';
 
 begin
  
- SCLK_out <= clk_ref and not data_buffer_ready after 20ns;
+ SCLK_out <= sclk_gen and not data_ready; 
 
- main : process (clk, reset, CNVST_in)  
+ main : process (clk, reset)  
  begin
   if reset = '1' then
    enable <= '0';
   elsif rising_edge(clk) then
-   if (CNVST_in = '1') and data_buffer_ready = '1' then
-    data_buffer <= data_in;
+   if (CNVST_in = '1') then    
     enable <= '1';
-   elsif enable = '1' and data_buffer_ready = '1' then
+   elsif enable = '1' and data_ready = '1' then
     enable <= '0';
    end if;
   end if;
  end process main;
 
- 
-
- gen_SDAT : process (clk_ref, reset)
-  variable pos : integer := 0;
---  variable ena : std_logic := '0';
- begin  
-  if reset = '1' then
+ proc_sdat : process (clk_ref, enable)
+  variable count : integer := 0;
+ begin   
+  if enable = '0' then
+   data <= data_in(SERIAL_DATA_LEN-1 downto 0);
    SDAT_out <= '0';
-   pos := 0;
-  elsif rising_edge(clk_ref) and enable = '1' then   
-    SDAT_out <= data_buffer(pos);
-    pos := (pos+1) mod SERIAL_DATA_LEN;   
-    if pos = 0 then     
-     data_buffer_ready <= '1';
+   SCLK_gen <= '0';
+   count := 0;
+  elsif rising_edge(clk_ref) then    
+    if count < SERIAL_DATA_LEN then
+     count := count+1;
+     SDAT_out  <= data(SERIAL_DATA_LEN-1);
+     SCLK_gen <= not SCLK_gen;     
+     data <= data(SERIAL_DATA_LEN-2 downto 0) & '0';
+     data_ready <= '0';
     else
-     data_buffer_ready <= '0';
+     data_ready <= '1';
     end if;      
   end if;
- end process gen_SDAT;
+ end process;
+
 
 end Behavioral;

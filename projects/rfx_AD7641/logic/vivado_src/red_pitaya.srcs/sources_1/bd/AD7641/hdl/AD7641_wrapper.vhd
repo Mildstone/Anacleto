@@ -1,8 +1,8 @@
 --Copyright 1986-2015 Xilinx, Inc. All Rights Reserved.
 ----------------------------------------------------------------------------------
 --Tool Version: Vivado v.2015.4 (lin64) Build 1412921 Wed Nov 18 09:44:32 MST 2015
---Date        : Thu Mar 23 18:08:50 2017
---Host        : 8a33afeb022b running 64-bit Ubuntu 14.04.5 LTS
+--Date        : Fri Jun  9 13:01:21 2017
+--Host        : c9b68b82cb6f running 64-bit Ubuntu 14.04.5 LTS
 --Command     : generate_target AD7641_wrapper.bd
 --Design      : AD7641_wrapper
 --Purpose     : IP block netlist
@@ -13,7 +13,9 @@ library UNISIM;
 use UNISIM.VCOMPONENTS.ALL;
 entity AD7641_wrapper is
   port (
-    CNVST_out : out STD_LOGIC;
+    CNVST_led : out STD_LOGIC_VECTOR ( 0 to 0 );
+    CNVST_out_N : out STD_LOGIC_VECTOR ( 0 to 0 );
+    CNVST_out_P : out STD_LOGIC_VECTOR ( 0 to 0 );
     DDR_addr : inout STD_LOGIC_VECTOR ( 14 downto 0 );
     DDR_ba : inout STD_LOGIC_VECTOR ( 2 downto 0 );
     DDR_cas_n : inout STD_LOGIC;
@@ -35,9 +37,13 @@ entity AD7641_wrapper is
     FIXED_IO_ps_clk : inout STD_LOGIC;
     FIXED_IO_ps_porb : inout STD_LOGIC;
     FIXED_IO_ps_srstb : inout STD_LOGIC;
-    SCLK_out : out STD_LOGIC;
-    SDAT_out : out STD_LOGIC;
-    prescaler_output_clk : out STD_LOGIC
+    RST_out_N : out STD_LOGIC_VECTOR ( 0 to 0 );
+    RST_out_P : out STD_LOGIC_VECTOR ( 0 to 0 );
+    SCLK_in_N : in STD_LOGIC_VECTOR ( 0 to 0 );
+    SCLK_in_P : in STD_LOGIC_VECTOR ( 0 to 0 );
+    SDAT_in_N : in STD_LOGIC_VECTOR ( 0 to 0 );
+    SDAT_in_P : in STD_LOGIC_VECTOR ( 0 to 0 );
+    error_state_led : out STD_LOGIC
   );
 end AD7641_wrapper;
 
@@ -65,16 +71,24 @@ architecture STRUCTURE of AD7641_wrapper is
     FIXED_IO_ps_srstb : inout STD_LOGIC;
     FIXED_IO_ps_clk : inout STD_LOGIC;
     FIXED_IO_ps_porb : inout STD_LOGIC;
-    prescaler_output_clk : out STD_LOGIC;
-    SCLK_out : out STD_LOGIC;
-    SDAT_out : out STD_LOGIC;
-    CNVST_out : out STD_LOGIC
+    CNVST_out_N : out STD_LOGIC_VECTOR ( 0 to 0 );
+    CNVST_out_P : out STD_LOGIC_VECTOR ( 0 to 0 );
+    SCLK_in_N : in STD_LOGIC_VECTOR ( 0 to 0 );
+    SDAT_in_N : in STD_LOGIC_VECTOR ( 0 to 0 );
+    SCLK_in_P : in STD_LOGIC_VECTOR ( 0 to 0 );
+    SDAT_in_P : in STD_LOGIC_VECTOR ( 0 to 0 );
+    error_state_led : out STD_LOGIC;
+    CNVST_led : out STD_LOGIC_VECTOR ( 0 to 0 );
+    RST_out_P : out STD_LOGIC_VECTOR ( 0 to 0 );
+    RST_out_N : out STD_LOGIC_VECTOR ( 0 to 0 )
   );
   end component AD7641;
 begin
 AD7641_i: component AD7641
      port map (
-      CNVST_out => CNVST_out,
+      CNVST_led(0) => CNVST_led(0),
+      CNVST_out_N(0) => CNVST_out_N(0),
+      CNVST_out_P(0) => CNVST_out_P(0),
       DDR_addr(14 downto 0) => DDR_addr(14 downto 0),
       DDR_ba(2 downto 0) => DDR_ba(2 downto 0),
       DDR_cas_n => DDR_cas_n,
@@ -96,8 +110,12 @@ AD7641_i: component AD7641
       FIXED_IO_ps_clk => FIXED_IO_ps_clk,
       FIXED_IO_ps_porb => FIXED_IO_ps_porb,
       FIXED_IO_ps_srstb => FIXED_IO_ps_srstb,
-      SCLK_out => SCLK_out,
-      SDAT_out => SDAT_out,
-      prescaler_output_clk => prescaler_output_clk
+      RST_out_N(0) => RST_out_N(0),
+      RST_out_P(0) => RST_out_P(0),
+      SCLK_in_N(0) => SCLK_in_N(0),
+      SCLK_in_P(0) => SCLK_in_P(0),
+      SDAT_in_N(0) => SDAT_in_N(0),
+      SDAT_in_P(0) => SDAT_in_P(0),
+      error_state_led => error_state_led
     );
 end STRUCTURE;
