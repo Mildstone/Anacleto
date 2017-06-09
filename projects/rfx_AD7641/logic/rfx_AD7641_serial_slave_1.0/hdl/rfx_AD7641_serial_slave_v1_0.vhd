@@ -8,8 +8,10 @@ entity rfx_AD7641_serial_slave_v1_0 is
 		-- User parameters ends
 		-- Do not modify the parameters beyond this line
         SERIAL_DATA_LEN : integer := 18;
-        CNVST_TICS      : integer := 10;
-        START_IDLE      : integer := 10;
+        TIME_MULT       : integer := 1000000;
+--        STORE_TICS : integer := 250000000;
+--        CNVST_HI   : integer :=  20000000;
+--        CNVST_LO   : integer := 380000000;
 
 		-- Parameters of Axi Slave Bus Interface S00_AXI
 		C_S00_AXI_DATA_WIDTH	: integer	:= 32;
@@ -21,6 +23,9 @@ entity rfx_AD7641_serial_slave_v1_0 is
         SDAT_in     : in   std_logic; 
         SCLK_in     : in   std_logic; 
         CNVST_out   : out  std_logic; 
+        error_state   : out  std_logic;
+        RST_P   : out  std_logic;
+        RST_N   : out  std_logic;
 		-- User ports ends
 		-- Do not modify the ports beyond this line
 
@@ -51,9 +56,12 @@ entity rfx_AD7641_serial_slave_v1_0 is
 end rfx_AD7641_serial_slave_v1_0;
 
 architecture arch_imp of rfx_AD7641_serial_slave_v1_0 is
- 
+  
     signal reg0 : std_logic_vector(C_S00_AXI_DATA_WIDTH-1 downto 0);
-
+    signal reg1 : std_logic_vector(C_S00_AXI_DATA_WIDTH-1 downto 0);
+    signal reg2 : std_logic_vector(C_S00_AXI_DATA_WIDTH-1 downto 0);
+    signal reg3 : std_logic_vector(C_S00_AXI_DATA_WIDTH-1 downto 0);
+    
 	-- component declaration
 	component rfx_AD7641_serial_slave_v1_0_S00_AXI is
 		generic (
@@ -82,23 +90,33 @@ architecture arch_imp of rfx_AD7641_serial_slave_v1_0 is
 		S_AXI_RRESP	: out std_logic_vector(1 downto 0);
 		S_AXI_RVALID	: out std_logic;
 		S_AXI_RREADY	: in std_logic;
-		reg0_in : in std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0)
+		reg0 : out  std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
+		reg1 : out  std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
+		reg2 : out  std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
+		reg3 : in   std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0)
 		);
 	end component rfx_AD7641_serial_slave_v1_0_S00_AXI;
 
     component AD7641_serial_slave is
      Generic (
            SERIAL_DATA_LEN : integer := 18;
-           CNVST_TICS      : integer := 10;
-           START_IDLE      : integer := 10
+           TIME_MULT       : integer := 100000
      );
      Port ( 
-           data_out    : out  std_logic_vector (31 downto 0);
+           store_tics      : in   integer;
+           cnvst_hi_tics   : in   integer;
+           cnvst_lo_tics   : in   integer;
+           data_out        : out  std_logic_vector (31 downto 0);
+           
+           error_out   : out  std_logic;
            clk         : in   std_logic;
            reset       : in   std_logic; 
            SDAT_in     : in   std_logic; 
-           SCLK_in     : in   std_logic; 
-           CNVST_out   : out  std_logic 
+           SCLK_in     : in   std_logic;
+           CNVST_in    : in   std_logic; 
+           CNVST_out   : out  std_logic;
+           RST_P   : out  std_logic;
+           RST_N   : out  std_logic
            );
     end component AD7641_serial_slave;
 
@@ -132,23 +150,35 @@ rfx_AD7641_serial_slave_v1_0_S00_AXI_inst : rfx_AD7641_serial_slave_v1_0_S00_AXI
 		S_AXI_RRESP	=> s00_axi_rresp,
 		S_AXI_RVALID	=> s00_axi_rvalid,
 		S_AXI_RREADY	=> s00_axi_rready,
-		reg0_in => reg0
+		reg0 => reg0,
+		reg1 => reg1,
+		reg2 => reg2,
+		reg3 => reg3
+
 	);
 
 	-- Add user logic here
 AD7641_serial_slave_inst : AD7641_serial_slave
    generic map(
-    START_IDLE => START_IDLE,
-    CNVST_TICS => CNVST_TICS,
-    SERIAL_DATA_LEN => SERIAL_DATA_LEN
+    SERIAL_DATA_LEN => SERIAL_DATA_LEN,
+    TIME_MULT => TIME_MULT
    )
    port map (
-     data_out => reg0,
+     store_tics    => to_integer(signed(reg0)),
+     cnvst_hi_tics => to_integer(signed(reg1)),
+     cnvst_lo_tics => to_integer(signed(reg2)),
+     data_out      => reg3,
+     
      clk => s00_axi_aclk,
      reset => reset,
      SDAT_in => SDAT_in,
      SCLK_in => SCLK_in,
-     CNVST_out => CNVST_out
+     CNVST_in => '0',
+     CNVST_out => CNVST_out,
+     error_out => error_state,
+     		------ Marco port map for reset ----
+     rst_p => RST_P,
+     rst_n => RST_N
    );   
 	-- User logic ends
 

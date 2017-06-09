@@ -326,7 +326,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>84131a4f</spirit:value>
+            <spirit:value>f2611da9</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -342,7 +342,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>84131a4f</spirit:value>
+            <spirit:value>f2611da9</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -370,7 +370,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>d6d2cc67</spirit:value>
+            <spirit:value>26ca009f</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -385,21 +385,6 @@
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
             <spirit:value>45a2f450</spirit:value>
-          </spirit:parameter>
-        </spirit:parameters>
-      </spirit:view>
-      <spirit:view>
-        <spirit:name>xilinx_testbench</spirit:name>
-        <spirit:displayName>Test Bench</spirit:displayName>
-        <spirit:envIdentifier>:vivado.xilinx.com:simulation.testbench</spirit:envIdentifier>
-        <spirit:modelName>AD7641_tb</spirit:modelName>
-        <spirit:fileSetRef>
-          <spirit:localName>xilinx_testbench_view_fileset</spirit:localName>
-        </spirit:fileSetRef>
-        <spirit:parameters>
-          <spirit:parameter>
-            <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>3629286c</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -446,6 +431,45 @@
       </spirit:port>
       <spirit:port>
         <spirit:name>CNVST_out</spirit:name>
+        <spirit:wire>
+          <spirit:direction>out</spirit:direction>
+          <spirit:wireTypeDefs>
+            <spirit:wireTypeDef>
+              <spirit:typeName>std_logic</spirit:typeName>
+              <spirit:viewNameRef>xilinx_vhdlsynthesis</spirit:viewNameRef>
+              <spirit:viewNameRef>xilinx_vhdlbehavioralsimulation</spirit:viewNameRef>
+            </spirit:wireTypeDef>
+          </spirit:wireTypeDefs>
+        </spirit:wire>
+      </spirit:port>
+      <spirit:port>
+        <spirit:name>error_state</spirit:name>
+        <spirit:wire>
+          <spirit:direction>out</spirit:direction>
+          <spirit:wireTypeDefs>
+            <spirit:wireTypeDef>
+              <spirit:typeName>std_logic</spirit:typeName>
+              <spirit:viewNameRef>xilinx_vhdlsynthesis</spirit:viewNameRef>
+              <spirit:viewNameRef>xilinx_vhdlbehavioralsimulation</spirit:viewNameRef>
+            </spirit:wireTypeDef>
+          </spirit:wireTypeDefs>
+        </spirit:wire>
+      </spirit:port>
+      <spirit:port>
+        <spirit:name>RST_P</spirit:name>
+        <spirit:wire>
+          <spirit:direction>out</spirit:direction>
+          <spirit:wireTypeDefs>
+            <spirit:wireTypeDef>
+              <spirit:typeName>std_logic</spirit:typeName>
+              <spirit:viewNameRef>xilinx_vhdlsynthesis</spirit:viewNameRef>
+              <spirit:viewNameRef>xilinx_vhdlbehavioralsimulation</spirit:viewNameRef>
+            </spirit:wireTypeDef>
+          </spirit:wireTypeDefs>
+        </spirit:wire>
+      </spirit:port>
+      <spirit:port>
+        <spirit:name>RST_N</spirit:name>
         <spirit:wire>
           <spirit:direction>out</spirit:direction>
           <spirit:wireTypeDefs>
@@ -786,14 +810,9 @@
         <spirit:value spirit:format="long" spirit:resolve="generated" spirit:id="MODELPARAM_VALUE.SERIAL_DATA_LEN">18</spirit:value>
       </spirit:modelParameter>
       <spirit:modelParameter spirit:dataType="integer">
-        <spirit:name>CNVST_TICS</spirit:name>
-        <spirit:displayName>Cnvst Tics</spirit:displayName>
-        <spirit:value spirit:format="long" spirit:resolve="generated" spirit:id="MODELPARAM_VALUE.CNVST_TICS">10</spirit:value>
-      </spirit:modelParameter>
-      <spirit:modelParameter spirit:dataType="integer">
-        <spirit:name>START_IDLE</spirit:name>
-        <spirit:displayName>Start Idle</spirit:displayName>
-        <spirit:value spirit:format="long" spirit:resolve="generated" spirit:id="MODELPARAM_VALUE.START_IDLE">10</spirit:value>
+        <spirit:name>TIME_MULT</spirit:name>
+        <spirit:displayName>Time Mult</spirit:displayName>
+        <spirit:value spirit:format="long" spirit:resolve="generated" spirit:id="MODELPARAM_VALUE.TIME_MULT">1000000</spirit:value>
       </spirit:modelParameter>
     </spirit:modelParameters>
   </spirit:model>
@@ -827,7 +846,7 @@
       <spirit:file>
         <spirit:name>hdl/rfx_AD7641_serial_slave_v1_0.vhd</spirit:name>
         <spirit:fileType>vhdlSource</spirit:fileType>
-        <spirit:userFileType>CHECKSUM_5d923e4c</spirit:userFileType>
+        <spirit:userFileType>CHECKSUM_e0682b04</spirit:userFileType>
       </spirit:file>
     </spirit:fileSet>
     <spirit:fileSet>
@@ -885,7 +904,7 @@
       <spirit:file>
         <spirit:name>xgui/rfx_AD7641_serial_slave_v1_0.tcl</spirit:name>
         <spirit:fileType>tclSource</spirit:fileType>
-        <spirit:userFileType>CHECKSUM_d6d2cc67</spirit:userFileType>
+        <spirit:userFileType>CHECKSUM_26ca009f</spirit:userFileType>
         <spirit:userFileType>XGUI_VERSION_2</spirit:userFileType>
       </spirit:file>
     </spirit:fileSet>
@@ -894,17 +913,6 @@
       <spirit:file>
         <spirit:name>bd/bd.tcl</spirit:name>
         <spirit:fileType>tclSource</spirit:fileType>
-      </spirit:file>
-    </spirit:fileSet>
-    <spirit:fileSet>
-      <spirit:name>xilinx_testbench_view_fileset</spirit:name>
-      <spirit:file>
-        <spirit:name>src/AD7641_serial_emulator.vhd</spirit:name>
-        <spirit:fileType>vhdlSource</spirit:fileType>
-      </spirit:file>
-      <spirit:file>
-        <spirit:name>hdl/AD7641_tb.vhd</spirit:name>
-        <spirit:fileType>vhdlSource</spirit:fileType>
       </spirit:file>
     </spirit:fileSet>
   </spirit:fileSets>
@@ -970,14 +978,9 @@
       <spirit:value spirit:format="long" spirit:resolve="user" spirit:id="PARAM_VALUE.SERIAL_DATA_LEN">18</spirit:value>
     </spirit:parameter>
     <spirit:parameter>
-      <spirit:name>CNVST_TICS</spirit:name>
-      <spirit:displayName>Cnvst Tics</spirit:displayName>
-      <spirit:value spirit:format="long" spirit:resolve="user" spirit:id="PARAM_VALUE.CNVST_TICS">10</spirit:value>
-    </spirit:parameter>
-    <spirit:parameter>
-      <spirit:name>START_IDLE</spirit:name>
-      <spirit:displayName>Start Idle</spirit:displayName>
-      <spirit:value spirit:format="long" spirit:resolve="user" spirit:id="PARAM_VALUE.START_IDLE">10</spirit:value>
+      <spirit:name>TIME_MULT</spirit:name>
+      <spirit:displayName>Time Mult</spirit:displayName>
+      <spirit:value spirit:format="long" spirit:resolve="user" spirit:id="PARAM_VALUE.TIME_MULT">1000000</spirit:value>
     </spirit:parameter>
   </spirit:parameters>
   <spirit:vendorExtensions>
@@ -989,8 +992,8 @@
         <xilinx:taxonomy>AXI_Peripheral</xilinx:taxonomy>
       </xilinx:taxonomies>
       <xilinx:displayName>rfx_AD7641_serial_slave_v1.0</xilinx:displayName>
-      <xilinx:coreRevision>9</xilinx:coreRevision>
-      <xilinx:coreCreationDateTime>2017-03-23T18:03:17Z</xilinx:coreCreationDateTime>
+      <xilinx:coreRevision>60</xilinx:coreRevision>
+      <xilinx:coreCreationDateTime>2017-06-09T13:09:24Z</xilinx:coreCreationDateTime>
       <xilinx:tags>
         <xilinx:tag xilinx:name="user.org:user:rfx_AD7641_serial_slave:1.0_ARCHIVE_LOCATION">/home/andrea/devel/rfx/linux-socdev/projects/rfx_AD7641/logic/rfx_AD7641_serial_slave_1.0</xilinx:tag>
       </xilinx:tags>
@@ -999,10 +1002,10 @@
       <xilinx:xilinxVersion>2015.4</xilinx:xilinxVersion>
       <xilinx:checksum xilinx:scope="busInterfaces" xilinx:value="9cace5b6"/>
       <xilinx:checksum xilinx:scope="memoryMaps" xilinx:value="493665f4"/>
-      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="d2f0e321"/>
-      <xilinx:checksum xilinx:scope="ports" xilinx:value="35adf78c"/>
-      <xilinx:checksum xilinx:scope="hdlParameters" xilinx:value="4185cb64"/>
-      <xilinx:checksum xilinx:scope="parameters" xilinx:value="acf08511"/>
+      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="4772a62e"/>
+      <xilinx:checksum xilinx:scope="ports" xilinx:value="281cea04"/>
+      <xilinx:checksum xilinx:scope="hdlParameters" xilinx:value="5331e3a2"/>
+      <xilinx:checksum xilinx:scope="parameters" xilinx:value="13e0129a"/>
     </xilinx:packagingInfo>
   </spirit:vendorExtensions>
 </spirit:component>

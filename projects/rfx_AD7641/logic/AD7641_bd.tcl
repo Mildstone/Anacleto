@@ -1,6 +1,6 @@
 
 ################################################################
-# This is a generated script based on design: system
+# This is a generated script based on design: AD7641
 #
 # Though there are limitations about the generated script,
 # the main purpose of this utility is to make learning
@@ -25,7 +25,7 @@ if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
 ################################################################
 
 # To test this script, run the following commands from Vivado Tcl console:
-# source system_script.tcl
+# source AD7641_script.tcl
 
 # If you do not already have a project created,
 # you can create a project using the following command:
@@ -40,7 +40,7 @@ if { [get_projects -quiet] eq "" } {
 
 
 # CHANGE DESIGN NAME HERE
-set design_name system
+set design_name AD7641
 
 # If you do not already have an existing IP Integrator design open,
 # you can create a design using the following command:
@@ -147,70 +147,58 @@ proc create_root_design { parentCell } {
   set FIXED_IO [ create_bd_intf_port -mode Master -vlnv xilinx.com:display_processing_system7:fixedio_rtl:1.0 FIXED_IO ]
 
   # Create ports
-  set clk_in [ create_bd_port -dir I clk_in ]
-  set state0 [ create_bd_port -dir O -from 7 -to 0 state0 ]
-  set state1 [ create_bd_port -dir O -from 7 -to 2 state1 ]
-  set state_leds [ create_bd_port -dir O -from 7 -to 0 state_leds ]
-  set trig_in [ create_bd_port -dir I trig_in ]
+  set CNVST_in_N [ create_bd_port -dir I -from 0 -to 0 CNVST_in_N ]
+  set CNVST_in_P [ create_bd_port -dir I -from 0 -to 0 CNVST_in_P ]
+  set CNVST_led [ create_bd_port -dir O -from 0 -to 0 CNVST_led ]
+  set CNVST_out_N [ create_bd_port -dir O -from 0 -to 0 CNVST_out_N ]
+  set CNVST_out_P [ create_bd_port -dir O -from 0 -to 0 CNVST_out_P ]
+  set SCLK_in_N [ create_bd_port -dir I -from 0 -to 0 SCLK_in_N ]
+  set SCLK_in_P [ create_bd_port -dir I -from 0 -to 0 SCLK_in_P ]
+  set SCLK_led [ create_bd_port -dir O -from 0 -to 0 SCLK_led ]
+  set SCLK_out_N [ create_bd_port -dir O -from 0 -to 0 SCLK_out_N ]
+  set SCLK_out_P [ create_bd_port -dir O -from 0 -to 0 SCLK_out_P ]
+  set SDAT_in_N [ create_bd_port -dir I -from 0 -to 0 SDAT_in_N ]
+  set SDAT_in_P [ create_bd_port -dir I -from 0 -to 0 SDAT_in_P ]
+  set SDAT_led [ create_bd_port -dir O -from 0 -to 0 SDAT_led ]
+  set SDAT_out_N [ create_bd_port -dir O -from 0 -to 0 SDAT_out_N ]
+  set SDAT_out_P [ create_bd_port -dir O -from 0 -to 0 SDAT_out_P ]
+  set error_state_led [ create_bd_port -dir O error_state_led ]
 
-  # Create instance: blk_mem_gen_0, and set properties
-  set blk_mem_gen_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:blk_mem_gen:8.3 blk_mem_gen_0 ]
+  # Create instance: CNVST_in_buf, and set properties
+  set CNVST_in_buf [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_ds_buf:2.1 CNVST_in_buf ]
   set_property -dict [ list \
-CONFIG.Enable_32bit_Address {false} \
-CONFIG.Enable_A {Use_ENA_Pin} \
-CONFIG.Enable_B {Always_Enabled} \
-CONFIG.Fill_Remaining_Memory_Locations {false} \
-CONFIG.Memory_Type {True_Dual_Port_RAM} \
-CONFIG.Operating_Mode_A {READ_FIRST} \
-CONFIG.Operating_Mode_B {READ_FIRST} \
-CONFIG.Port_B_Clock {100} \
-CONFIG.Port_B_Enable_Rate {100} \
-CONFIG.Port_B_Write_Rate {50} \
-CONFIG.Read_Width_A {40} \
-CONFIG.Read_Width_B {40} \
-CONFIG.Register_PortA_Output_of_Memory_Primitives {false} \
-CONFIG.Register_PortB_Output_of_Memory_Primitives {false} \
-CONFIG.Remaining_Memory_Locations {0} \
-CONFIG.Use_Byte_Write_Enable {false} \
-CONFIG.Use_RSTA_Pin {false} \
-CONFIG.Use_RSTB_Pin {false} \
-CONFIG.Write_Depth_A {54272} \
-CONFIG.Write_Width_A {40} \
-CONFIG.Write_Width_B {40} \
-CONFIG.use_bram_block {Stand_Alone} \
- ] $blk_mem_gen_0
+CONFIG.C_BUF_TYPE {IBUFDS} \
+ ] $CNVST_in_buf
 
-  # Create instance: clk_wiz_0, and set properties
-  set clk_wiz_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:clk_wiz:5.2 clk_wiz_0 ]
+  # Create instance: CNVST_out_buf, and set properties
+  set CNVST_out_buf [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_ds_buf:2.1 CNVST_out_buf ]
   set_property -dict [ list \
-CONFIG.CLKIN1_JITTER_PS {80.0} \
-CONFIG.CLKOUT1_DRIVES {BUFGCE} \
-CONFIG.CLKOUT1_JITTER {330.728} \
-CONFIG.CLKOUT1_PHASE_ERROR {249.865} \
-CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {20.000} \
-CONFIG.CLKOUT2_DRIVES {BUFGCE} \
-CONFIG.CLKOUT3_DRIVES {BUFGCE} \
-CONFIG.CLKOUT4_DRIVES {BUFGCE} \
-CONFIG.CLKOUT5_DRIVES {BUFGCE} \
-CONFIG.CLKOUT6_DRIVES {BUFGCE} \
-CONFIG.CLKOUT7_DRIVES {BUFGCE} \
-CONFIG.FEEDBACK_SOURCE {FDBK_AUTO} \
-CONFIG.JITTER_SEL {No_Jitter} \
-CONFIG.MMCM_CLKFBOUT_MULT_F {36} \
-CONFIG.MMCM_CLKIN1_PERIOD {8.0} \
-CONFIG.MMCM_CLKOUT0_DIVIDE_F {45} \
-CONFIG.MMCM_CLKOUT0_DUTY_CYCLE {0.5} \
-CONFIG.MMCM_COMPENSATION {ZHOLD} \
-CONFIG.MMCM_DIVCLK_DIVIDE {5} \
-CONFIG.PRIMITIVE {PLL} \
-CONFIG.PRIM_IN_FREQ {125.000} \
-CONFIG.RESET_PORT {resetn} \
-CONFIG.RESET_TYPE {ACTIVE_LOW} \
-CONFIG.USE_LOCKED {false} \
-CONFIG.USE_MIN_POWER {true} \
-CONFIG.USE_POWER_DOWN {true} \
-CONFIG.USE_SAFE_CLOCK_STARTUP {true} \
- ] $clk_wiz_0
+CONFIG.C_BUF_TYPE {OBUFDS} \
+ ] $CNVST_out_buf
+
+  # Create instance: SCLK_in_buf, and set properties
+  set SCLK_in_buf [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_ds_buf:2.1 SCLK_in_buf ]
+  set_property -dict [ list \
+CONFIG.C_BUF_TYPE {IBUFDS} \
+ ] $SCLK_in_buf
+
+  # Create instance: SCLK_out_buf, and set properties
+  set SCLK_out_buf [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_ds_buf:2.1 SCLK_out_buf ]
+  set_property -dict [ list \
+CONFIG.C_BUF_TYPE {OBUFDS} \
+ ] $SCLK_out_buf
+
+  # Create instance: SDAT_in_buf, and set properties
+  set SDAT_in_buf [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_ds_buf:2.1 SDAT_in_buf ]
+  set_property -dict [ list \
+CONFIG.C_BUF_TYPE {IBUFDS} \
+ ] $SDAT_in_buf
+
+  # Create instance: SDAT_out_buf, and set properties
+  set SDAT_out_buf [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_ds_buf:2.1 SDAT_out_buf ]
+  set_property -dict [ list \
+CONFIG.C_BUF_TYPE {OBUFDS} \
+ ] $SDAT_out_buf
 
   # Create instance: processing_system7_0, and set properties
   set processing_system7_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:processing_system7:5.5 processing_system7_0 ]
@@ -223,9 +211,9 @@ CONFIG.PCW_ACT_DCI_PERIPHERAL_FREQMHZ {10.158731} \
 CONFIG.PCW_ACT_ENET0_PERIPHERAL_FREQMHZ {125.000000} \
 CONFIG.PCW_ACT_ENET1_PERIPHERAL_FREQMHZ {10.000000} \
 CONFIG.PCW_ACT_FPGA0_PERIPHERAL_FREQMHZ {125.000000} \
-CONFIG.PCW_ACT_FPGA1_PERIPHERAL_FREQMHZ {20.000000} \
+CONFIG.PCW_ACT_FPGA1_PERIPHERAL_FREQMHZ {250.000000} \
 CONFIG.PCW_ACT_FPGA2_PERIPHERAL_FREQMHZ {50.000000} \
-CONFIG.PCW_ACT_FPGA3_PERIPHERAL_FREQMHZ {10.000000} \
+CONFIG.PCW_ACT_FPGA3_PERIPHERAL_FREQMHZ {200.000000} \
 CONFIG.PCW_ACT_I2C_PERIPHERAL_FREQMHZ {50} \
 CONFIG.PCW_ACT_PCAP_PERIPHERAL_FREQMHZ {200.000000} \
 CONFIG.PCW_ACT_QSPI_PERIPHERAL_FREQMHZ {125.000000} \
@@ -253,12 +241,12 @@ CONFIG.PCW_CAN1_PERIPHERAL_ENABLE {0} \
 CONFIG.PCW_CAN_PERIPHERAL_CLKSRC {IO PLL} \
 CONFIG.PCW_CAN_PERIPHERAL_VALID {0} \
 CONFIG.PCW_CLK0_FREQ {125000000} \
-CONFIG.PCW_CLK1_FREQ {20000000} \
+CONFIG.PCW_CLK1_FREQ {250000000} \
 CONFIG.PCW_CLK2_FREQ {50000000} \
-CONFIG.PCW_CLK3_FREQ {10000000} \
+CONFIG.PCW_CLK3_FREQ {200000000} \
 CONFIG.PCW_CPU_CPU_6X4X_MAX_RANGE {667} \
 CONFIG.PCW_CPU_PERIPHERAL_CLKSRC {ARM PLL} \
-CONFIG.PCW_CRYSTAL_PERIPHERAL_FREQMHZ {33.333333333} \
+CONFIG.PCW_CRYSTAL_PERIPHERAL_FREQMHZ {33.333333} \
 CONFIG.PCW_DCI_PERIPHERAL_CLKSRC {DDR PLL} \
 CONFIG.PCW_DCI_PERIPHERAL_FREQMHZ {10.159} \
 CONFIG.PCW_DDR_PERIPHERAL_CLKSRC {DDR PLL} \
@@ -285,7 +273,7 @@ CONFIG.PCW_EN_4K_TIMER {0} \
 CONFIG.PCW_EN_CAN0 {0} \
 CONFIG.PCW_EN_CAN1 {0} \
 CONFIG.PCW_EN_CLK0_PORT {1} \
-CONFIG.PCW_EN_CLK1_PORT {0} \
+CONFIG.PCW_EN_CLK1_PORT {1} \
 CONFIG.PCW_EN_CLK2_PORT {0} \
 CONFIG.PCW_EN_CLK3_PORT {0} \
 CONFIG.PCW_EN_CLKTRIG0_PORT {0} \
@@ -343,7 +331,7 @@ CONFIG.PCW_EN_TTC0 {0} \
 CONFIG.PCW_EN_TTC1 {0} \
 CONFIG.PCW_EN_UART0 {1} \
 CONFIG.PCW_EN_UART1 {1} \
-CONFIG.PCW_EN_USB0 {0} \
+CONFIG.PCW_EN_USB0 {1} \
 CONFIG.PCW_EN_USB1 {0} \
 CONFIG.PCW_EN_WDT {0} \
 CONFIG.PCW_FCLK0_PERIPHERAL_CLKSRC {IO PLL} \
@@ -352,9 +340,9 @@ CONFIG.PCW_FCLK2_PERIPHERAL_CLKSRC {IO PLL} \
 CONFIG.PCW_FCLK3_PERIPHERAL_CLKSRC {IO PLL} \
 CONFIG.PCW_FCLK_CLK0_BUF {true} \
 CONFIG.PCW_FPGA0_PERIPHERAL_FREQMHZ {125} \
-CONFIG.PCW_FPGA1_PERIPHERAL_FREQMHZ {20} \
+CONFIG.PCW_FPGA1_PERIPHERAL_FREQMHZ {250} \
 CONFIG.PCW_FPGA2_PERIPHERAL_FREQMHZ {50} \
-CONFIG.PCW_FPGA3_PERIPHERAL_FREQMHZ {10} \
+CONFIG.PCW_FPGA3_PERIPHERAL_FREQMHZ {200} \
 CONFIG.PCW_FPGA_FCLK0_ENABLE {1} \
 CONFIG.PCW_GPIO_BASEADDR {0xE000A000} \
 CONFIG.PCW_GPIO_EMIO_GPIO_ENABLE {0} \
@@ -532,8 +520,8 @@ CONFIG.PCW_MIO_9_IOTYPE {LVCMOS 3.3V} \
 CONFIG.PCW_MIO_9_PULLUP {enabled} \
 CONFIG.PCW_MIO_9_SLEW {slow} \
 CONFIG.PCW_MIO_PRIMITIVE {54} \
-CONFIG.PCW_MIO_TREE_PERIPHERALS {GPIO#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#GPIO#UART 1#UART 1#SPI 1#SPI 1#SPI 1#SPI 1#UART 0#UART 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#GPIO#SD 0#SD 0#SD 0#SD 0#SD 0#SD 0#SD 0#SD 0#GPIO#GPIO#I2C 0#I2C 0#Enet 0#Enet 0} \
-CONFIG.PCW_MIO_TREE_SIGNALS {gpio[0]#qspi0_ss_b#qspi0_io[0]#qspi0_io[1]#qspi0_io[2]#qspi0_io[3]#qspi0_sclk#gpio[7]#tx#rx#mosi#miso#sclk#ss[0]#rx#tx#tx_clk#txd[0]#txd[1]#txd[2]#txd[3]#tx_ctl#rx_clk#rxd[0]#rxd[1]#rxd[2]#rxd[3]#rx_ctl#gpio[28]#gpio[29]#gpio[30]#gpio[31]#gpio[32]#gpio[33]#gpio[34]#gpio[35]#gpio[36]#gpio[37]#gpio[38]#gpio[39]#clk#cmd#data[0]#data[1]#data[2]#data[3]#cd#wp#gpio[48]#gpio[49]#scl#sda#mdc#mdio} \
+CONFIG.PCW_MIO_TREE_PERIPHERALS {GPIO#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#GPIO#UART 1#UART 1#SPI 1#SPI 1#SPI 1#SPI 1#UART 0#UART 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#Enet 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#SD 0#SD 0#SD 0#SD 0#SD 0#SD 0#SD 0#SD 0#USB Reset#GPIO#I2C 0#I2C 0#Enet 0#Enet 0} \
+CONFIG.PCW_MIO_TREE_SIGNALS {gpio[0]#qspi0_ss_b#qspi0_io[0]#qspi0_io[1]#qspi0_io[2]#qspi0_io[3]#qspi0_sclk#gpio[7]#tx#rx#mosi#miso#sclk#ss[0]#rx#tx#tx_clk#txd[0]#txd[1]#txd[2]#txd[3]#tx_ctl#rx_clk#rxd[0]#rxd[1]#rxd[2]#rxd[3]#rx_ctl#data[4]#dir#stp#nxt#data[0]#data[1]#data[2]#data[3]#clk#data[5]#data[6]#data[7]#clk#cmd#data[0]#data[1]#data[2]#data[3]#cd#wp#reset#gpio[49]#scl#sda#mdc#mdio} \
 CONFIG.PCW_M_AXI_GP0_ENABLE_STATIC_REMAP {0} \
 CONFIG.PCW_M_AXI_GP0_FREQMHZ {125} \
 CONFIG.PCW_M_AXI_GP0_ID_WIDTH {12} \
@@ -600,7 +588,7 @@ CONFIG.PCW_QSPI_GRP_SS1_ENABLE {0} \
 CONFIG.PCW_QSPI_INTERNAL_HIGHADDRESS {0xFCFFFFFF} \
 CONFIG.PCW_QSPI_PERIPHERAL_CLKSRC {IO PLL} \
 CONFIG.PCW_QSPI_PERIPHERAL_ENABLE {1} \
-CONFIG.PCW_QSPI_PERIPHERAL_FREQMHZ {120} \
+CONFIG.PCW_QSPI_PERIPHERAL_FREQMHZ {125} \
 CONFIG.PCW_QSPI_QSPI_IO {MIO 1 .. 6} \
 CONFIG.PCW_SD0_GRP_CD_ENABLE {1} \
 CONFIG.PCW_SD0_GRP_CD_IO {MIO 46} \
@@ -651,6 +639,7 @@ CONFIG.PCW_TTC1_CLK1_PERIPHERAL_DIVISOR0 {1} \
 CONFIG.PCW_TTC1_CLK2_PERIPHERAL_CLKSRC {CPU_1X} \
 CONFIG.PCW_TTC1_CLK2_PERIPHERAL_DIVISOR0 {1} \
 CONFIG.PCW_TTC1_PERIPHERAL_ENABLE {0} \
+CONFIG.PCW_TTC_PERIPHERAL_FREQMHZ {50} \
 CONFIG.PCW_UART0_BASEADDR {0xE0000000} \
 CONFIG.PCW_UART0_BAUD_RATE {115200} \
 CONFIG.PCW_UART0_GRP_FULL_ENABLE {0} \
@@ -727,10 +716,16 @@ CONFIG.PCW_UIPARAM_DDR_TRAIN_READ_GATE {1} \
 CONFIG.PCW_UIPARAM_DDR_TRAIN_WRITE_LEVEL {1} \
 CONFIG.PCW_UIPARAM_DDR_USE_INTERNAL_VREF {0} \
 CONFIG.PCW_UIPARAM_GENERATE_SUMMARY {NA} \
-CONFIG.PCW_USB0_PERIPHERAL_ENABLE {0} \
+CONFIG.PCW_USB0_BASEADDR {0xE0102000} \
+CONFIG.PCW_USB0_HIGHADDR {0xE0102fff} \
+CONFIG.PCW_USB0_PERIPHERAL_ENABLE {1} \
+CONFIG.PCW_USB0_RESET_ENABLE {1} \
+CONFIG.PCW_USB0_RESET_IO {MIO 48} \
+CONFIG.PCW_USB0_USB0_IO {MIO 28 .. 39} \
 CONFIG.PCW_USB1_PERIPHERAL_ENABLE {0} \
 CONFIG.PCW_USB_RESET_ENABLE {1} \
 CONFIG.PCW_USB_RESET_POLARITY {Active Low} \
+CONFIG.PCW_USB_RESET_SELECT {Share reset pin} \
 CONFIG.PCW_USE_AXI_FABRIC_IDLE {0} \
 CONFIG.PCW_USE_AXI_NONSECURE {0} \
 CONFIG.PCW_USE_CORESIGHT {0} \
@@ -766,51 +761,121 @@ CONFIG.PCW_WDT_PERIPHERAL_ENABLE {0} \
   # Create instance: processing_system7_0_axi_periph, and set properties
   set processing_system7_0_axi_periph [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 processing_system7_0_axi_periph ]
   set_property -dict [ list \
-CONFIG.NUM_MI {1} \
-CONFIG.S00_HAS_DATA_FIFO {1} \
-CONFIG.S00_HAS_REGSLICE {3} \
+CONFIG.NUM_MI {3} \
  ] $processing_system7_0_axi_periph
+
+  # Create instance: rfx_AD7641_portoghese_0, and set properties
+  set rfx_AD7641_portoghese_0 [ create_bd_cell -type ip -vlnv user.org:user:rfx_AD7641_serial_emulator:1.0 rfx_AD7641_portoghese_0 ]
+
+  # Create instance: rfx_AD7641_serial_slave_0, and set properties
+  set rfx_AD7641_serial_slave_0 [ create_bd_cell -type ip -vlnv user.org:user:rfx_AD7641_serial_slave:1.0 rfx_AD7641_serial_slave_0 ]
 
   # Create instance: rst_processing_system7_0_125M, and set properties
   set rst_processing_system7_0_125M [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset:5.0 rst_processing_system7_0_125M ]
-
-  # Create instance: w7x_timing_0, and set properties
-  set w7x_timing_0 [ create_bd_cell -type ip -vlnv user.org:user:w7x_timing:1.0 w7x_timing_0 ]
-  set_property -dict [ list \
-CONFIG.ADDR_WIDTH {16} \
- ] $w7x_timing_0
 
   # Create instance: xlconstant_0, and set properties
   set xlconstant_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 xlconstant_0 ]
   set_property -dict [ list \
 CONFIG.CONST_VAL {0} \
-CONFIG.CONST_WIDTH {8} \
  ] $xlconstant_0
 
   # Create interface connections
   connect_bd_intf_net -intf_net processing_system7_0_DDR [get_bd_intf_ports DDR] [get_bd_intf_pins processing_system7_0/DDR]
   connect_bd_intf_net -intf_net processing_system7_0_FIXED_IO [get_bd_intf_ports FIXED_IO] [get_bd_intf_pins processing_system7_0/FIXED_IO]
   connect_bd_intf_net -intf_net processing_system7_0_M_AXI_GP0 [get_bd_intf_pins processing_system7_0/M_AXI_GP0] [get_bd_intf_pins processing_system7_0_axi_periph/S00_AXI]
-  connect_bd_intf_net -intf_net processing_system7_0_axi_periph_M00_AXI [get_bd_intf_pins processing_system7_0_axi_periph/M00_AXI] [get_bd_intf_pins w7x_timing_0/S00_AXI]
-  connect_bd_intf_net -intf_net w7x_timing_0_BRAM_PORTA [get_bd_intf_pins blk_mem_gen_0/BRAM_PORTA] [get_bd_intf_pins w7x_timing_0/BRAM_PORTA]
-  connect_bd_intf_net -intf_net w7x_timing_0_BRAM_PORTB [get_bd_intf_pins blk_mem_gen_0/BRAM_PORTB] [get_bd_intf_pins w7x_timing_0/BRAM_PORTB]
+  connect_bd_intf_net -intf_net processing_system7_0_axi_periph_M01_AXI [get_bd_intf_pins processing_system7_0_axi_periph/M01_AXI] [get_bd_intf_pins rfx_AD7641_serial_slave_0/S00_AXI]
+  connect_bd_intf_net -intf_net processing_system7_0_axi_periph_M02_AXI [get_bd_intf_pins processing_system7_0_axi_periph/M02_AXI] [get_bd_intf_pins rfx_AD7641_portoghese_0/S00_AXI]
 
   # Create port connections
-  connect_bd_net -net clk_1 [get_bd_ports clk_in] [get_bd_pins w7x_timing_0/clk_in]
-  connect_bd_net -net clk_wiz_0_clk_out1 [get_bd_pins clk_wiz_0/clk_out1] [get_bd_pins w7x_timing_0/clk20_in]
-  connect_bd_net -net processing_system7_0_FCLK_CLK0 [get_bd_pins clk_wiz_0/clk_in1] [get_bd_pins processing_system7_0/FCLK_CLK0] [get_bd_pins processing_system7_0/M_AXI_GP0_ACLK] [get_bd_pins processing_system7_0_axi_periph/ACLK] [get_bd_pins processing_system7_0_axi_periph/M00_ACLK] [get_bd_pins processing_system7_0_axi_periph/S00_ACLK] [get_bd_pins rst_processing_system7_0_125M/slowest_sync_clk] [get_bd_pins w7x_timing_0/clk_axi_in]
-  connect_bd_net -net processing_system7_0_FCLK_RESET0_N [get_bd_pins clk_wiz_0/resetn] [get_bd_pins processing_system7_0/FCLK_RESET0_N] [get_bd_pins rst_processing_system7_0_125M/ext_reset_in]
+  connect_bd_net -net CNVST_out_buf_OBUF_DS_N [get_bd_ports CNVST_out_N] [get_bd_pins CNVST_out_buf/OBUF_DS_N]
+  connect_bd_net -net CNVST_out_buf_OBUF_DS_P [get_bd_ports CNVST_out_P] [get_bd_pins CNVST_out_buf/OBUF_DS_P]
+  connect_bd_net -net IBUF_DS_N_1 [get_bd_ports SCLK_in_N] [get_bd_pins SCLK_in_buf/IBUF_DS_N]
+  connect_bd_net -net IBUF_DS_N_1_1 [get_bd_ports CNVST_in_N] [get_bd_pins CNVST_in_buf/IBUF_DS_N]
+  connect_bd_net -net IBUF_DS_N_2_1 [get_bd_ports SDAT_in_N] [get_bd_pins SDAT_in_buf/IBUF_DS_N]
+  connect_bd_net -net IBUF_DS_P_1 [get_bd_ports SCLK_in_P] [get_bd_pins SCLK_in_buf/IBUF_DS_P]
+  connect_bd_net -net IBUF_DS_P_1_1 [get_bd_ports CNVST_in_P] [get_bd_pins CNVST_in_buf/IBUF_DS_P]
+  connect_bd_net -net IBUF_DS_P_2_1 [get_bd_ports SDAT_in_P] [get_bd_pins SDAT_in_buf/IBUF_DS_P]
+  connect_bd_net -net Net [get_bd_pins rfx_AD7641_serial_slave_0/reset] [get_bd_pins xlconstant_0/dout]
+  connect_bd_net -net SCLK_out_buf_OBUF_DS_N [get_bd_ports SCLK_out_N] [get_bd_pins SCLK_out_buf/OBUF_DS_N]
+  connect_bd_net -net SCLK_out_buf_OBUF_DS_P [get_bd_ports SCLK_out_P] [get_bd_pins SCLK_out_buf/OBUF_DS_P]
+  connect_bd_net -net SDAT_out_buf_OBUF_DS_N [get_bd_ports SDAT_out_N] [get_bd_pins SDAT_out_buf/OBUF_DS_N]
+  connect_bd_net -net SDAT_out_buf_OBUF_DS_P [get_bd_ports SDAT_out_P] [get_bd_pins SDAT_out_buf/OBUF_DS_P]
+  connect_bd_net -net processing_system7_0_FCLK_CLK0 [get_bd_pins processing_system7_0/FCLK_CLK0] [get_bd_pins processing_system7_0/M_AXI_GP0_ACLK] [get_bd_pins processing_system7_0_axi_periph/ACLK] [get_bd_pins processing_system7_0_axi_periph/M00_ACLK] [get_bd_pins processing_system7_0_axi_periph/M01_ACLK] [get_bd_pins processing_system7_0_axi_periph/M02_ACLK] [get_bd_pins processing_system7_0_axi_periph/S00_ACLK] [get_bd_pins rfx_AD7641_portoghese_0/clk] [get_bd_pins rfx_AD7641_portoghese_0/s00_axi_aclk] [get_bd_pins rfx_AD7641_serial_slave_0/s00_axi_aclk] [get_bd_pins rst_processing_system7_0_125M/slowest_sync_clk]
+  connect_bd_net -net processing_system7_0_FCLK_RESET0_N [get_bd_pins processing_system7_0/FCLK_RESET0_N] [get_bd_pins rst_processing_system7_0_125M/ext_reset_in]
+  connect_bd_net -net rfx_AD7641_portoghese_0_SCLK_out [get_bd_ports SCLK_led] [get_bd_pins rfx_AD7641_portoghese_0/SCLK_out] [get_bd_pins rfx_AD7641_serial_slave_0/SCLK_in]
+  connect_bd_net -net rfx_AD7641_portoghese_0_SDAT_out [get_bd_ports SDAT_led] [get_bd_pins rfx_AD7641_portoghese_0/SDAT_out] [get_bd_pins rfx_AD7641_serial_slave_0/SDAT_in]
+  connect_bd_net -net rfx_AD7641_serial_slave_0_CNVST_out [get_bd_ports CNVST_led] [get_bd_pins rfx_AD7641_portoghese_0/CNVST_in] [get_bd_pins rfx_AD7641_serial_slave_0/CNVST_out]
+  connect_bd_net -net rfx_AD7641_serial_slave_0_error_state [get_bd_ports error_state_led] [get_bd_pins rfx_AD7641_serial_slave_0/error_state]
   connect_bd_net -net rst_processing_system7_0_125M_interconnect_aresetn [get_bd_pins processing_system7_0_axi_periph/ARESETN] [get_bd_pins rst_processing_system7_0_125M/interconnect_aresetn]
-  connect_bd_net -net rst_processing_system7_0_125M_peripheral_aresetn [get_bd_pins processing_system7_0_axi_periph/M00_ARESETN] [get_bd_pins processing_system7_0_axi_periph/S00_ARESETN] [get_bd_pins rst_processing_system7_0_125M/peripheral_aresetn] [get_bd_pins w7x_timing_0/s00_axi_resetn]
-  connect_bd_net -net trig_in_1 [get_bd_ports trig_in] [get_bd_pins w7x_timing_0/trig_in]
-  connect_bd_net -net w7x_timing_0_power_down [get_bd_pins clk_wiz_0/power_down] [get_bd_pins w7x_timing_0/power_down]
-  connect_bd_net -net w7x_timing_0_state_do [get_bd_ports state1] [get_bd_pins w7x_timing_0/state_do]
-  connect_bd_net -net w7x_timing_0_state_led [get_bd_ports state_leds] [get_bd_pins w7x_timing_0/state_led]
-  connect_bd_net -net xlconstant_0_dout [get_bd_ports state0] [get_bd_pins xlconstant_0/dout]
+  connect_bd_net -net rst_processing_system7_0_125M_peripheral_aresetn [get_bd_pins processing_system7_0_axi_periph/M00_ARESETN] [get_bd_pins processing_system7_0_axi_periph/M01_ARESETN] [get_bd_pins processing_system7_0_axi_periph/M02_ARESETN] [get_bd_pins processing_system7_0_axi_periph/S00_ARESETN] [get_bd_pins rfx_AD7641_portoghese_0/reset] [get_bd_pins rfx_AD7641_portoghese_0/s00_axi_aresetn] [get_bd_pins rfx_AD7641_serial_slave_0/s00_axi_aresetn] [get_bd_pins rst_processing_system7_0_125M/peripheral_aresetn]
 
   # Create address segments
-  create_bd_addr_seg -range 0x80000 -offset 0x43C00000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs w7x_timing_0/S00_AXI/S00_AXI_reg] SEG_w7x_timing_0_S00_AXI_reg
+  create_bd_addr_seg -range 0x10000 -offset 0x43C20000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs rfx_AD7641_portoghese_0/S00_AXI/S00_AXI_reg] SEG_rfx_AD7641_serial_emulator_0_S00_AXI_reg
+  create_bd_addr_seg -range 0x10000 -offset 0x43C10000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs rfx_AD7641_serial_slave_0/S00_AXI/S00_AXI_reg] SEG_rfx_AD7641_serial_slave_0_S00_AXI_reg
 
+  # Perform GUI Layout
+  regenerate_bd_layout -layout_string {
+   guistr: "# # String gsaved with Nlview 6.5.5  2015-06-26 bk=1.3371 VDI=38 GEI=35 GUI=JA:1.8
+#  -string -flagsOSRD
+preplace port DDR -pg 1 -y 420 -defaultsOSRD
+preplace port error_state_led -pg 1 -y 310 -defaultsOSRD
+preplace port FIXED_IO -pg 1 -y 440 -defaultsOSRD
+preplace portBus CNVST_out_N -pg 1 -y 510 -defaultsOSRD
+preplace portBus SDAT_out_N -pg 1 -y 730 -defaultsOSRD
+preplace portBus SCLK_in_N -pg 1 -y 660 -defaultsOSRD
+preplace portBus CNVST_out_P -pg 1 -y 490 -defaultsOSRD
+preplace portBus SDAT_out_P -pg 1 -y 710 -defaultsOSRD
+preplace portBus SCLK_in_P -pg 1 -y 640 -defaultsOSRD
+preplace portBus SDAT_led -pg 1 -y 110 -defaultsOSRD
+preplace portBus CNVST_led -pg 1 -y 290 -defaultsOSRD
+preplace portBus CNVST_in_N -pg 1 -y 90 -defaultsOSRD
+preplace portBus SCLK_out_N -pg 1 -y 620 -defaultsOSRD
+preplace portBus SDAT_in_N -pg 1 -y 790 -defaultsOSRD
+preplace portBus CNVST_in_P -pg 1 -y 70 -defaultsOSRD
+preplace portBus SCLK_out_P -pg 1 -y 600 -defaultsOSRD
+preplace portBus SDAT_in_P -pg 1 -y 770 -defaultsOSRD
+preplace portBus SCLK_led -pg 1 -y 90 -defaultsOSRD
+preplace inst CNVST_in_buf -pg 1 -lvl 1 -y 70 -defaultsOSRD
+preplace inst rst_processing_system7_0_125M -pg 1 -lvl 1 -y 270 -defaultsOSRD
+preplace inst SCLK_in_buf -pg 1 -lvl 1 -y 640 -defaultsOSRD
+preplace inst xlconstant_0 -pg 1 -lvl 2 -y 360 -defaultsOSRD
+preplace inst SDAT_in_buf -pg 1 -lvl 1 -y 770 -defaultsOSRD
+preplace inst rfx_AD7641_portoghese_0 -pg 1 -lvl 3 -y 90 -defaultsOSRD
+preplace inst rfx_AD7641_serial_slave_0 -pg 1 -lvl 3 -y 300 -defaultsOSRD
+preplace inst SCLK_out_buf -pg 1 -lvl 3 -y 610 -defaultsOSRD
+preplace inst CNVST_out_buf -pg 1 -lvl 3 -y 500 -defaultsOSRD
+preplace inst SDAT_out_buf -pg 1 -lvl 3 -y 720 -defaultsOSRD
+preplace inst processing_system7_0_axi_periph -pg 1 -lvl 2 -y 140 -defaultsOSRD
+preplace inst processing_system7_0 -pg 1 -lvl 1 -y 460 -defaultsOSRD
+preplace netloc processing_system7_0_DDR 1 1 3 NJ 410 NJ 410 NJ
+preplace netloc rfx_AD7641_serial_slave_0_CNVST_out 1 2 2 840 190 1120
+preplace netloc rst_processing_system7_0_125M_interconnect_aresetn 1 1 1 430
+preplace netloc processing_system7_0_M_AXI_GP0 1 1 1 450
+preplace netloc IBUF_DS_P_1_1 1 0 1 NJ
+preplace netloc SCLK_out_buf_OBUF_DS_N 1 3 1 NJ
+preplace netloc IBUF_DS_N_2_1 1 0 1 NJ
+preplace netloc SDAT_out_buf_OBUF_DS_N 1 3 1 NJ
+preplace netloc processing_system7_0_FCLK_RESET0_N 1 0 2 20 180 410
+preplace netloc SCLK_out_buf_OBUF_DS_P 1 3 1 NJ
+preplace netloc processing_system7_0_axi_periph_M02_AXI 1 2 1 770
+preplace netloc SDAT_out_buf_OBUF_DS_P 1 3 1 NJ
+preplace netloc rfx_AD7641_portoghese_0_SDAT_out 1 2 2 830 -10 1110
+preplace netloc IBUF_DS_N_1 1 0 1 NJ
+preplace netloc processing_system7_0_FIXED_IO 1 1 3 NJ 420 NJ 420 NJ
+preplace netloc IBUF_DS_P_1 1 0 1 NJ
+preplace netloc rst_processing_system7_0_125M_peripheral_aresetn 1 1 2 420 -40 800
+preplace netloc rfx_AD7641_serial_slave_0_error_state 1 3 1 NJ
+preplace netloc rfx_AD7641_portoghese_0_SCLK_out 1 2 2 820 -20 1120
+preplace netloc CNVST_out_buf_OBUF_DS_N 1 3 1 NJ
+preplace netloc Net 1 2 1 810
+preplace netloc processing_system7_0_FCLK_CLK0 1 0 3 30 570 440 -20 790
+preplace netloc IBUF_DS_N_1_1 1 0 1 NJ
+preplace netloc processing_system7_0_axi_periph_M01_AXI 1 2 1 780
+preplace netloc IBUF_DS_P_2_1 1 0 1 NJ
+preplace netloc CNVST_out_buf_OBUF_DS_P 1 3 1 NJ
+levelinfo -pg 1 0 220 620 980 1150 -top -50 -bot 840
+",
+}
 
   # Restore current instance
   current_bd_instance $oldCurInst

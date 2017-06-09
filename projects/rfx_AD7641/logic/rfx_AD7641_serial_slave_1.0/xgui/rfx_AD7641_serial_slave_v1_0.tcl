@@ -11,18 +11,8 @@ proc init_gui { IPINST } {
   ipgui::add_param $IPINST -name "C_S00_AXI_HIGHADDR" -parent ${Page_0}
 
   ipgui::add_param $IPINST -name "SERIAL_DATA_LEN"
-  ipgui::add_param $IPINST -name "CNVST_TICS"
-  ipgui::add_param $IPINST -name "START_IDLE"
+  ipgui::add_param $IPINST -name "TIME_MULT"
 
-}
-
-proc update_PARAM_VALUE.CNVST_TICS { PARAM_VALUE.CNVST_TICS } {
-	# Procedure called to update CNVST_TICS when any of the dependent parameters in the arguments change
-}
-
-proc validate_PARAM_VALUE.CNVST_TICS { PARAM_VALUE.CNVST_TICS } {
-	# Procedure called to validate CNVST_TICS
-	return true
 }
 
 proc update_PARAM_VALUE.SERIAL_DATA_LEN { PARAM_VALUE.SERIAL_DATA_LEN } {
@@ -34,12 +24,12 @@ proc validate_PARAM_VALUE.SERIAL_DATA_LEN { PARAM_VALUE.SERIAL_DATA_LEN } {
 	return true
 }
 
-proc update_PARAM_VALUE.START_IDLE { PARAM_VALUE.START_IDLE } {
-	# Procedure called to update START_IDLE when any of the dependent parameters in the arguments change
+proc update_PARAM_VALUE.TIME_MULT { PARAM_VALUE.TIME_MULT } {
+	# Procedure called to update TIME_MULT when any of the dependent parameters in the arguments change
 }
 
-proc validate_PARAM_VALUE.START_IDLE { PARAM_VALUE.START_IDLE } {
-	# Procedure called to validate START_IDLE
+proc validate_PARAM_VALUE.TIME_MULT { PARAM_VALUE.TIME_MULT } {
+	# Procedure called to validate TIME_MULT
 	return true
 }
 
@@ -95,13 +85,8 @@ proc update_MODELPARAM_VALUE.SERIAL_DATA_LEN { MODELPARAM_VALUE.SERIAL_DATA_LEN 
 	set_property value [get_property value ${PARAM_VALUE.SERIAL_DATA_LEN}] ${MODELPARAM_VALUE.SERIAL_DATA_LEN}
 }
 
-proc update_MODELPARAM_VALUE.CNVST_TICS { MODELPARAM_VALUE.CNVST_TICS PARAM_VALUE.CNVST_TICS } {
+proc update_MODELPARAM_VALUE.TIME_MULT { MODELPARAM_VALUE.TIME_MULT PARAM_VALUE.TIME_MULT } {
 	# Procedure called to set VHDL generic/Verilog parameter value(s) based on TCL parameter value
-	set_property value [get_property value ${PARAM_VALUE.CNVST_TICS}] ${MODELPARAM_VALUE.CNVST_TICS}
-}
-
-proc update_MODELPARAM_VALUE.START_IDLE { MODELPARAM_VALUE.START_IDLE PARAM_VALUE.START_IDLE } {
-	# Procedure called to set VHDL generic/Verilog parameter value(s) based on TCL parameter value
-	set_property value [get_property value ${PARAM_VALUE.START_IDLE}] ${MODELPARAM_VALUE.START_IDLE}
+	set_property value [get_property value ${PARAM_VALUE.TIME_MULT}] ${MODELPARAM_VALUE.TIME_MULT}
 }
 

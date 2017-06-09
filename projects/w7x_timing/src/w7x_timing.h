@@ -23,8 +23,9 @@ extern "C" {
 
 #define DEVICE_NAME "w7x_timing"  /* Dev name as it appears in /proc/devices */
 #define MODULE_NAME "w7x_timing"
-#define MAX_SAMPLES 10
-#define MAX_STATUS   8
+#define MAX_SAMPLES 54272
+#define MAX_TIME    0xFFFFFFFFFF // (1<<40)-1
+#define MAX_STATUS  8
 #define W7X_TIMING_IOCTL_BASE	'W'
 #define W7X_TIMING_RESOFFSET _IO(W7X_TIMING_IOCTL_BASE, 0)
 
@@ -41,16 +42,17 @@ struct w7x_timing {//manual packing 64 bit
   uint8_t  w_clear;             //0x0A
   uint8_t  w_reinit;            //0x0B
   uint8_t  w_save;              //0x0C
-  uint8_t  w_flag5;             //0x0D
-  uint8_t  w_flag6;             //0x0E
-  uint8_t  w_flag7;             //0x0F
+  uint8_t  w_extclk;            //0x0D
+  uint8_t  w_invert;            //0x0E
+  uint8_t  w_gate;              //0x0F
   uint64_t w_delay;             //0x10
   uint32_t w_width;             //0x18
   uint32_t w_period;            //0x1C
-  uint64_t w_cycle;             //0x20
-  uint32_t w_repeat;            //0x28
-  uint32_t w_count;             //0x2C
-  uint64_t w_times[MAX_SAMPLES];//0x30 ++0x08
+  uint64_t w_burst;             //0x20
+  uint64_t w_cycle;             //0x28
+  uint64_t w_repeat;            //0x30
+  uint64_t w_count;             //0x38
+  uint64_t w_times[MAX_SAMPLES];//0x40 ++0x08
 };
 
 

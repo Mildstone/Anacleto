@@ -46,22 +46,22 @@ end AD7641_serial_emulator;
 
 architecture Behavioral of AD7641_serial_emulator is
 
-
-signal enable : std_logic := '0';
-signal data_buffer : std_logic_vector(31 downto 0) := (others => '0');
+signal sclk_gen          : std_logic := '0';
+signal enable            : std_logic := '0';
+signal data_buffer       : std_logic_vector(31 downto 0) := (others => '0');
 signal data_buffer_ready : std_logic := '1';
 
 begin
  
- SCLK_out <= clk_ref and not data_buffer_ready after 20ns;
+ SCLK_out <= SCLK_gen and not data_buffer_ready;
+ SDAT_out <= data_buffer(SERIAL_DATA_LEN) and not data_buffer_ready;
 
  main : process (clk, reset, CNVST_in)  
  begin
   if reset = '1' then
    enable <= '0';
   elsif rising_edge(clk) then
-   if (CNVST_in = '1') and data_buffer_ready = '1' then
-    data_buffer <= data_in;
+   if (CNVST_in = '1') then    
     enable <= '1';
    elsif enable = '1' and data_buffer_ready = '1' then
     enable <= '0';
@@ -69,22 +69,30 @@ begin
   end if;
  end process main;
 
- 
+ gen_SCLK : process (clk_ref, enable)
+ begin 
+  if enable = '0' then
+   SCLK_gen <= '0';
+  elsif rising_edge(clk_ref) then
+   SCLK_gen <= not SCLK_gen;
+  end if;
+ end process; 
 
- gen_SDAT : process (clk_ref, reset)
-  variable pos : integer := 0;
---  variable ena : std_logic := '0';
- begin  
-  if reset = '1' then
-   SDAT_out <= '0';
-   pos := 0;
-  elsif rising_edge(clk_ref) and enable = '1' then   
-    SDAT_out <= data_buffer(pos);
-    pos := (pos+1) mod (SERIAL_DATA_LEN+1);   
-    if pos = 0 then     
-     data_buffer_ready <= '1';
-    else
+ gen_SDAT : process (clk_ref, enable)
+  variable count : integer := 0;
+  -- variable data  : std_logic := '0';
+ begin   
+  if enable = '0' then
+   data_buffer <= data_in;
+   count := 0;
+  elsif rising_edge(clk_ref) then    
+    if count < SERIAL_DATA_LEN then
+     count := count+1;     
+     data_buffer <= data_buffer(30 downto 0) & '0';
      data_buffer_ready <= '0';
+    else 
+     count := 0;     
+     data_buffer_ready <= '1';
     end if;      
   end if;
  end process gen_SDAT;
