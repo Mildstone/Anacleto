@@ -24,6 +24,8 @@ entity rfx_AD7641_serial_slave_v1_0 is
         SCLK_in     : in   std_logic; 
         CNVST_out   : out  std_logic; 
         error_state   : out  std_logic;
+        RST_P   : out  std_logic;
+        RST_N   : out  std_logic;
 		-- User ports ends
 		-- Do not modify the ports beyond this line
 
@@ -106,13 +108,15 @@ architecture arch_imp of rfx_AD7641_serial_slave_v1_0 is
            cnvst_lo_tics   : in   integer;
            data_out        : out  std_logic_vector (31 downto 0);
            
-           error_out   : out  std_logic_vector ( 0 downto 0);
+           error_out   : out  std_logic;
            clk         : in   std_logic;
            reset       : in   std_logic; 
            SDAT_in     : in   std_logic; 
            SCLK_in     : in   std_logic;
            CNVST_in    : in   std_logic; 
-           CNVST_out   : out  std_logic
+           CNVST_out   : out  std_logic;
+           RST_P   : out  std_logic;
+           RST_N   : out  std_logic
            );
     end component AD7641_serial_slave;
 
@@ -150,6 +154,7 @@ rfx_AD7641_serial_slave_v1_0_S00_AXI_inst : rfx_AD7641_serial_slave_v1_0_S00_AXI
 		reg1 => reg1,
 		reg2 => reg2,
 		reg3 => reg3
+
 	);
 
 	-- Add user logic here
@@ -170,7 +175,10 @@ AD7641_serial_slave_inst : AD7641_serial_slave
      SCLK_in => SCLK_in,
      CNVST_in => '0',
      CNVST_out => CNVST_out,
-     error_out(0) => error_state
+     error_out => error_state,
+     		------ Marco port map for reset ----
+     rst_p => RST_P,
+     rst_n => RST_N
    );   
 	-- User logic ends
 
