@@ -15,6 +15,6 @@ autoheader
 
 # libtoolize
 
-automake --add-missing --copy
+automake --copy -W none
 
 autoconf

@@ -3,11 +3,23 @@ set srcdir       $env(srcdir)
 set top_srcdir   $env(top_srcdir)
 
 source -notrace $top_srcdir/fpga/vivado_socdev_utils.tcl
+source -notrace $top_srcdir/fpga/vivado_socdev_env.tcl
+source -notrace $top_srcdir/fpga/vivado_socdev_makeutils.tcl
+catch { namespace import ::tclapp::socdev::makeutils::* }
 
 proc make_reload {} {
  variable top_srcdir
  source -notrace $top_srcdir/fpga/vivado_socdev_utils.tcl
+ source -notrace $top_srcdir/fpga/vivado_socdev_env.tcl
+ source -notrace $top_srcdir/fpga/vivado_socdev_makeutils.tcl
 }
+
+catch {
+  source -notrace $top_srcdir/fpga/vivado_socdev_listutils.tcl
+  namespace import ::tclapp::socdev::listutils::*
+}
+
+
 
 proc make { args } {
   for {set i 0} {$i < [llength $args]} {incr i} {

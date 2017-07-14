@@ -682,6 +682,8 @@ proc write_props { proj_dir proj_name get_what tcl_obj type } {
   # Return Value:
   # none
 
+
+
   variable a_global_vars
   variable l_script_data
   variable b_project_board_set
@@ -696,17 +698,19 @@ proc write_props { proj_dir proj_name get_what tcl_obj type } {
 
     # skip read-only properties
     if { [lsearch $read_only_props $prop] != -1 } { continue }
-
     set prop_type "unknown"
     if { [string equal $type "run"] } {
       if { [regexp "STEPS" $prop] } {
 	# skip step properties
       } else {
 	set attr_names [rdi::get_attr_specs -class [get_property class [get_runs $tcl_obj] ]]
-	set prop_type [get_property type [lindex $attr_names [lsearch $attr_names $prop]]]
+	if { [lsearch $attr_names $prop] != -1 } {
+	 set prop_type [get_property type [lindex $attr_names [lsearch $attr_names $prop]]]
+	}
       }
     } else {
       set attr_spec [rdi::get_attr_specs -quiet $prop -object [$get_what $tcl_obj]]
+
       if { {} == $attr_spec } {
 	set prop_lower [string tolower $prop]
 	set attr_spec [rdi::get_attr_specs -quiet $prop_lower -object [$get_what $tcl_obj]]

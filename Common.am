@@ -4,10 +4,6 @@ include $(top_srcdir)/conf/scripts/toolchain.am
 
 
 TMP          ?= $(abs_top_builddir)
-FPGA_DIR      = $(abs_top_srcdir)/fpga
-FPGA_REPO_DIR = $(abs_top_srcdir)/fpga/ip_repo
-DTREE_DIR    ?= $(abs_top_builddir)/fpga/device-tree-xlnx-${VIVADO_VERSION}
-VIVADO_VERSION ?= 2015.4
 
 
 
@@ -75,7 +71,7 @@ endef
 ## /////////////////////////////////////////////////////////////////////////////
 
 .PHONY: reconfigure
-reconfigure: ##@micellaneous re-run configure with last passed arguments
+reconfigure: ##@miscellaneous re-run configure with last passed arguments
 	@ \
 	echo " -- Reconfiguring build with following parameters: -----------"; \
 	echo $(shell $(abs_top_builddir)/config.status --config);              \
@@ -85,29 +81,5 @@ reconfigure: ##@micellaneous re-run configure with last passed arguments
 	$(abs_top_srcdir)/configure $(shell $(abs_top_builddir)/config.status --config);
 	
 
-## /////////////////////////////////////////////////////////////////////////////
-## // DUMPS  ///////////////////////////////////////////////////////////////////
-## /////////////////////////////////////////////////////////////////////////////
-
-print-env: ##@micellaneous print environment used for crosscompiling linux
-	@\
-	$(_set_export); \
-	echo ""; \
-	echo "---[KERNEL BUILD]----------------------------------------------------------"; \
-	echo " compiler: $${CROSS_COMPILE}${CC}"; \
-	echo " arch    : ${ARCH}"; \
-	echo " flags   : ${LINUX_CFLAGS}"; \
-	echo " TOOLCH  : ${TOOLCHAIN_PATH}"; \
-	echo " PATH    : $${PATH}"; \
-	echo " builddir: $${O}"; \
-	echo " "; \
-	echo " LINUX_IMAGE    : ${LINUX_IMAGE}"; \
-	echo " LINUX_DIR      : ${LINUX_DIR}"; \
-	echo " LINUX_SRCDIR   : ${LINUX_SRCDIR}"; \
-	echo " LINUX_BUILDDIR : ${LINUX_BUILDDIR}"; \
-	echo " LINUX_GIT      : ${LINUX_GIT}"; \
-	echo " "; \
-	echo "---------------------------------------------------------------------------"; \
-	echo ""
 
 

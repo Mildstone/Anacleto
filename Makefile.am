@@ -105,6 +105,30 @@ $(LINUX_IMAGE): $(LINUX_SRCDIR) $(LINUX_BUILDDIR) $(LINUX_BUILDDIR)/.config
 linux: ##@linux build linux image
 linux: $(LINUX_IMAGE)
 
+## /////////////////////////////////////////////////////////////////////////////
+## // DUMPS  ///////////////////////////////////////////////////////////////////
+## /////////////////////////////////////////////////////////////////////////////
+
+print-env: ##@micellaneous print environment used for crosscompiling linux
+	@\
+	$(_set_export); \
+	echo ""; \
+	echo "---[KERNEL BUILD]----------------------------------------------------------"; \
+	echo " compiler: $${CROSS_COMPILE}${CC}"; \
+	echo " arch    : ${ARCH}"; \
+	echo " flags   : ${LINUX_CFLAGS}"; \
+	echo " TOOLCH  : ${TOOLCHAIN_PATH}"; \
+	echo " PATH    : $${PATH}"; \
+	echo " builddir: $${O}"; \
+	echo " "; \
+	echo " LINUX_IMAGE    : ${LINUX_IMAGE}"; \
+	echo " LINUX_DIR      : ${LINUX_DIR}"; \
+	echo " LINUX_SRCDIR   : ${LINUX_SRCDIR}"; \
+	echo " LINUX_BUILDDIR : ${LINUX_BUILDDIR}"; \
+	echo " LINUX_GIT      : ${LINUX_GIT}"; \
+	echo " "; \
+	echo "---------------------------------------------------------------------------"; \
+	echo ""
 
 
 

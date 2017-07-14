@@ -3,55 +3,146 @@
 # Vivado from Xilinx provides IP handling, FPGA compilation
 # hsi (hardware software interface) provides software integration
 # both tools are run in batch mode with an option to avoid log/journal files
-VIVADO = vivado -nolog -nojournal -mode batch
+VIVADO       = vivado -nolog -nojournal -mode batch
 VIVADO_SHELL = vivado -nolog -nojournal -mode tcl
-HSI    = hsi    -nolog -nojournal -mode batch
+HSI          = hsi    -nolog -nojournal -mode batch
 HSI_SHELL    = hsi    -nolog -nojournal -mode tcl
 
-FPGA_BIT  ?= out/$(SOC_BOARD).bit
-FSBL_ELF  ?= sdk/fsbl/executable.elf
-DTS       ?= sdk/dts/devicetree.dts
-DTB       ?= sdk/dts/devicetree.dtb
+FPGA_BIT    ?= out/$(BOARD).bit
+FSBL_ELF    ?= sdk/fsbl/executable.elf
+DTS         ?= sdk/dts/devicetree.dts
+DTB         ?= sdk/dts/devicetree.dtb
 
+FPGA_DIR        = $(abs_top_srcdir)/fpga
+FPGA_REPO_DIR   = $(abs_top_srcdir)/fpga/ip_repo
+DTREE_DIR      ?= $(abs_top_builddir)/fpga/device-tree-xlnx-${VIVADO_VERSION}
+VIVADO_VERSION ?= 2015.4
 
-# Petalinux ...
-# . /opt/Xilinx/petalinux-v2015.4-final/settings.sh;
 
 define _envset
-. $(VIVADO_SETUP_SCRIPT); \
-. $(VIVADO_SDK_SETUP_SCRIPT); \
-export PETALINUX=$${PETALINUX}; \
-export srcdir=$(srcdir); \
-export top_srcdir=$(top_srcdir); \
-export tmp=$(TMP); \
-export maxThreads=1; \
-export FPGA_REPO_DIR=${FPGA_REPO_DIR}; \
-export FPGA_DIR=${FPGA_DIR}; \
-export FPGA_BIT=${FPGA_BIT}; \
-export DTREE_DIR=${DTREE_DIR}; \
-export SOC_BOARD=${SOC_BOARD}; \
-export VIVADO_VERSION=${VIVADO_VERSION}; \
-export VIVADO_SOC_PART=${VIVADO_SOC_PART}; \
-export SOURCES="${SOURCES}"; \
-export BD_SOURCES="${BD_SOURCES}"; \
-export IP_SOURCES="${IP_SOURCES}"
+ . $(VIVADO_SETUP_SCRIPT); \
+ . $(VIVADO_SDK_SETUP_SCRIPT)
 endef
 
+export srcdir \
+       top_srcdir
+
+export maxThreads=1
+
+export FPGA_DIR \
+       FPGA_BIT \
+       DTREE_DIR \
+       VIVADO_VERSION \
+       VIVADO_SOC_PART \
+       FPGA_REPO_DIR
+
+export NAME \
+       BOARD \
+       VENDOR \
+       LIBRARY \
+       VERSION \
+       SOURCES \
+       BD_SOURCES \
+       IP_SOURCES
+
+bash:
+	@ ${_envset}; \
+	  /bin/bash
+
+
+## ////////////////////////////////////////////////////////////////////////// ##
+## ///  CORE BUILD      ///////////////////////////////////////////////////// ##
+## ////////////////////////////////////////////////////////////////////////// ##
+
+export VIVADO_PRJDIR = $(BOARD)
+export VIVADO_IPDIR  = ip/vivado
+
+_p_ven  = $(firstword $(subst _, ,$(1)))
+_p_ver  = $(lastword $(subst _, ,$(1)))
+_p_name = $(subst $(call _p_ven,$(1))_,,$(subst _$(call _p_ver,$(1)),,$(1)))
+
+_p_set = $(if $1, NAME="$(call _p_name,$1)" \
+		  VENDOR="$(call _p_ven,$1)" \
+		  VERSION="$(call _p_ver,$1)" \
+		  SOURCES="$($(subst .,_,$1)_SOURCES)"      \
+		  BD_SOURCES="$($(subst .,_,$1)_BD_SOURCES)" \
+		  IP_SOURCES="$($(subst .,_,$1)_IP_SOURCES)"  \
+		  DRV_LINUX="$($(subst .,_,$1)_DRV_LINUX)" \
+		, $(if $2,$(call _p_set,$2)) )
+
+vivado       = $(VIVADO)       -source $(FPGA_DIR)/vivado_make.tcl -tclargs $1
+vivado_shell = $(VIVADO_SHELL) -source $(FPGA_DIR)/vivado_make.tcl -tclargs $1
+
+
+check_sources: $(SOURCES) $(BD_SOURCES) $(IP_SOURCES)
+
+
+## HELP
+projects:      ##@projects build all projects defined in vivado_PROJECTS variable
+cores:         ##@cores build all cores defined in vivado_CORES variable
+list_projects: ##@projects list all projects defined in vivado_PROJECTS variable
+list_cores:    ##@cores list all projects defined in vivado_PROJECTS variable
 
 
 
 ## ////////////////////////////////////////////////////////////////////////// ##
-## ///  VIVADO PROJECT  ///////////////////////////////////////////////////// ##
+## ///  TARGET DIRECTORIES  ///////////////////////////////////////////////// ##
+## ////////////////////////////////////////////////////////////////////////// ##
+
+$(vivado_PROJECTS):
+	@ $(MAKE) $(builddir)/$(VIVADO_PRJDIR)/$@_edit $(call _p_set,$@)
+
+$(srcdir)/$(VIVADO_PRJDIR)/%: $(builddir)/$(VIVADO_PRJDIR)/%_edit $(SOURCES) $(BD_SOURCES) $(IP_SOURCES)
+	@ ${_envset}; \
+	  $(call vivado, write_project)
+
+$(builddir)/$(VIVADO_PRJDIR)/%_edit: $(SOURCES) $(BD_SOURCES) $(IP_SOURCES)
+	@ ${_envset}; \
+	  $(call vivado, new_project)
+
+projects: $(vivado_PROJECTS)
+
+list_projects:
+	@ echo $(vivado_PROJECTS)
+
+
+$(vivado_CORES):
+	@ $(MAKE) $(srcdir)/$(VIVADO_IPDIR)/$@ BOARD="ip/vivado" $(call _p_set,$@)
+
+$(filter-out $(vivado_CORES),$(IP_SOURCES)):
+	@ $(MAKE) -C $(@D) $(@F)
+
+# $(FPGA_REPO_DIR)/%/$(VIVADO_IPDIR)/%_edit:
+#	@ $(MAKE) -C $(@D) $(@F)
+
+$(srcdir)/$(VIVADO_IPDIR)/%: $(SOURCES) $(BD_SOURCES) $(IP_SOURCES)
+	@ ${_envset}; \
+	  $(call vivado, new_ip)
+
+$(builddir)/$(VIVADO_IPDIR)/%_edit: $(srcdir)/$(VIVADO_IPDIR)/% $(SOURCES) $(BD_SOURCES) $(IP_SOURCES)
+	@ ${_envset}; \
+	  $(call vivado, edit_ip)
+
+cores: $(vivado_CORES)
+
+list_cores:
+	@ echo $(vivado_CORES)
+
+
+## ////////////////////////////////////////////////////////////////////////// ##
+## ///  VIVADO SHELL    ///////////////////////////////////////////////////// ##
 ## ////////////////////////////////////////////////////////////////////////// ##
 
 .PHONY: vivado_shell
 vivado_shell: ##@vivado open a vivado shell with configured env
 	@ ${_envset}; \
+	$(call _p_set,$(NAME)) \
 	$(VIVADO_SHELL) -source $(FPGA_DIR)/vivado_make.tcl
 
 .PHONY: hsi_shell
 hsi_shell:  ##@vivado open hsi shell with configured env
 	@ ${_envset}; \
+	$(call _p_set,$(NAME)) \
 	$(HSI_SHELL) -source $(FPGA_DIR)/vivado_make.tcl
 
 
@@ -59,22 +150,42 @@ hsi_shell:  ##@vivado open hsi shell with configured env
 ## ///  VIVADO PROJECT  ///////////////////////////////////////////////////// ##
 ## ////////////////////////////////////////////////////////////////////////// ##
 
-new_project:   ##@vivado Create a new vivado project in vivado_project folder named as the currently selected board.
-open_project:  ##@vivado Open the current project in vivado_project folder  or generate it using previously stored tcl script.
-write_project: ##@vivado Store the current  project saving all related local sources in vivado_src folder.
-write_bitstream:  ##@vivado generate bitstream using auto_synth and auto_impl runs.
-edit_peripheral:  ##@vivado open all module pheripherals projects for edit.
+new_project:   ##@projects Create a new vivado project in vivado_project folder named as the currently selected board.
+open_project:  ##@projects Open the current project in vivado_project folder  or generate it using previously stored tcl script.
+write_project: ##@projects Store the current  project saving all related local sources in vivado_src folder.
+write_bitstream:  ##@projects generate bitstream using auto_synth and auto_impl runs.
 
+new_ip:   ##@cores create a new pheripheral project for edit.
+edit_ip:  ##@cores open all module pheripherals projects for edit.
+
+# .PHONY: new_project new_ip write_project write_bitstream
 write_project write_bitstream:
 	@ ${_envset}; \
-	  $(VIVADO) -source $(FPGA_DIR)/vivado_make.tcl -tclargs $@
+	  $(call _p_set,$(NAME),$(lastword $(vivado_PROJECTS))) $(MAKE) check_sources; \
+	  $(call _p_set,$(NAME),$(lastword $(vivado_PROJECTS))) $(call vivado,$@)
 
-new_project open_project edit_peripheral:
+.PHONY: open_project edit_ip
+new_project open_project:
 	@ ${_envset}; \
-	  $(VIVADO_SHELL) -source $(FPGA_DIR)/vivado_make.tcl -tclargs $@
+	  $(call _p_set,$(NAME),$(lastword $(vivado_PROJECTS))) $(MAKE) check_sources; \
+	  $(call _p_set,$(NAME),$(lastword $(vivado_PROJECTS))) $(call vivado_shell,$@)
 
-clean_project: ##@vivado Clean all build project files from disk (make write_project before this)
-	-rm -rf vivado_project vivado.jou  vivado.log  \
+new_ip edit_ip:
+	@ ${_envset}; \
+	  $(call _p_set,$(NAME),$(lastword $(vivado_CORES))) $(MAKE) check_sources; \
+	  $(call _p_set,$(NAME),$(lastword $(vivado_CORES))) $(call vivado_shell,$@)
+
+
+test_name:
+	@ $(call _p_set,$(NAME),$(lastword $(vivado_PROJECTS))) \
+	  echo $(NAME)
+
+## TODO LINE:  -----------------------------------------------------------------
+
+.PHONY: clean_project
+clean_project: ##@projects Clean all build project files from disk (make write_project before this)
+	@- ${_envset}; \
+	  rm -rf $(if $NAME,$(builddir)/$(VIVADO_IPDIR)/$(NAME)) vivado.jou  vivado.log  \
 		vivado_*.backup.jou  vivado_*.backup.log  vivado_pid*.str \
 		webtalk.jou  webtalk.log  \
 		webtalk_*.backup.jou  webtalk_*.backup.log

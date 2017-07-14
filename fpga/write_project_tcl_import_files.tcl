@@ -29,5 +29,3 @@ proc import_files { args } {
     add_files -force -fileset $fs_name $file_out
   }
 }
-
-

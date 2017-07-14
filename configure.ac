@@ -9,8 +9,6 @@ AC_CONFIG_AUX_DIR([conf])
 dnl AC_CONFIG_SRCDIR([...])
 AC_CANONICAL_TARGET
 
-dnl AUTOMAKE ///////////////////////////////////////////////////////////////////
-AM_INIT_AUTOMAKE([1.14 foreign subdir-objects])
 
 
 dnl update submodules at first ... (must be cleaned out)
@@ -43,6 +41,10 @@ AS_VAR_IF([CONFIG_ENABLE_DOCKER_BUILD],[y],[
 AX_KCONFIG_VAR([DOCKER_SHARES])
 AC_SUBST([DOCKER_SHARES])
 AX_DOCKER_BUILD
+
+dnl AUTOMAKE ///////////////////////////////////////////////////////////////////
+AM_INIT_AUTOMAKE([no-define foreign subdir-objects])
+dnl ([1.14 foreign subdir-objects])
 
 
 AC_CONFIG_HEADERS([config.h])
@@ -174,23 +176,29 @@ dnl AX_KCONFIG_CONDITIONAL([VIVADO_VERSION_2016_2])
 dnl AS_VAR_IF([VIVADO_VERSION_2015_4],[yes], AS_VAR_SET([VIVADO_VERSION],["2015.4"]))
 dnl AS_VAR_IF([VIVADO_VERSION_2016_2],[yes], AS_VAR_SET([VIVADO_VERSION],["2016.2"]))
 
+AX_KCONFIG_WITH_CHOICE([BOARD],["Select SoC board to use"],
+		       [WITH_SOC_RED_PITAYA],["red_pitaya"],
+		       [WITH_SOC_PARALLELLA],["parallella"])
+AC_SUBST([BOARD])
+
 AX_KCONFIG_WITH_CHOICE([VIVADO_VERSION],["Vivado version to use"],
 		       [VIVADO_VERSION_2015_4],["2015.4"],
+		       [VIVADO_VERSION_2016_1],["2016.1"],
 		       [VIVADO_VERSION_2016_2],["2016.2"],
-		       [VIVADO_VERSION_2016_4],["2016.4"]
+		       [VIVADO_VERSION_2016_4],["2016.4"],
+		       [VIVADO_VERSION_2017_1],["2017.1"],
+		       [VIVADO_VERSION_2017_2],["2017.2"]
 		      )
 AC_SUBST([VIVADO_VERSION])
+
+AX_KCONFIG_VAR([VIVADO_SOC_PART])
+AC_SUBST([VIVADO_SOC_PART])
 
 AX_KCONFIG_VAR([VIVADO_SETUP_SCRIPT])
 AC_SUBST([VIVADO_SETUP_SCRIPT])
 
 AX_KCONFIG_VAR([VIVADO_SDK_SETUP_SCRIPT])
 AC_SUBST([VIVADO_SDK_SETUP_SCRIPT])
-
-AX_KCONFIG_WITH_CHOICE([SOC_BOARD],["Select SoC board to use"],
-		       [WITH_SOC_RED_PITAYA],["red_pitaya"],
-		       [WITH_SOC_PARALLELLA],["parallella"])
-AC_SUBST([SOC_BOARD])
 
 AX_KCONFIG_VAR_ENABLE([ENABLE_FPGA])
 AM_CONDITIONAL([ENABLE_FPGA],[test -n "${ENABLE_FPGA}" -a -f "${VIVADO_SETUP_SCRIPT}"])
@@ -278,16 +286,23 @@ AC_DEFUN([def_prj],[
  projects/$1/src/Makefile
 ])
 
+AC_DEFUN([rfx_core],[
+ fpga/lib/rfx/$1/Makefile
+])
 
 AC_CONFIG_FILES( 
                  Makefile
 		 fpga/Makefile
+		 fpga/lib/red-pitaya-notes/Makefile
+		 rfx_core(scc_52460)
 		 def_prj(rfx_dmatests)
 		 def_prj(rfx_prova)
 		 def_prj(rfx_pwmgen)
 		 def_prj(rfx_AD7641)
 		 def_prj(rfx_RPHctl)
 		 def_prj(w7x_timing)
+		 def_prj(axi_rp)
+		 projects/core_pwm/Makefile
 		 .gitignore
                )
 AC_OUTPUT

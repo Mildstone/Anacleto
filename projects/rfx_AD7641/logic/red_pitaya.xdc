@@ -8,7 +8,7 @@ set_property IOSTANDARD BLVDS_25 [get_ports {SDAT_in_P[0]}]
 set_property IOSTANDARD TMDS_33 [get_ports {CNVST_out_P[0]}]
 set_property IOSTANDARD LVCMOS33 [get_ports {CNVST_led[0]}]
 
-set_property PACKAGE_PIN K17 [get_ports {SCLK_in_P[0]}]
+set_property PACKAGE_PIN J18 [get_ports {SCLK_in_P[0]}]
 set_property PACKAGE_PIN L16 [get_ports {SDAT_in_P[0]}]
 set_property PACKAGE_PIN K16 [get_ports {CNVST_out_P[0]}]
 set_property PACKAGE_PIN F17 [get_ports {CNVST_led[0]}]
@@ -38,3 +38,6 @@ set_input_delay -clock [get_clocks {SCLK_in_P[0]}] -max -add_delay 12.000 [get_p
 # set_property LOC ILOGIC_X0Y74 [get_cells {AD7641_i/rfx_AD7641_serial_slave_0/U0/AD7641_serial_slave_inst/data_0_reg[0]data_1_reg[0]}]
 
 set_false_path -from [get_clocks clk_fpga_0] -to [get_clocks {SCLK_in_P[0]}]
+
+
+

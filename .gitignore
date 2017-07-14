@@ -26,7 +26,6 @@ configure
 download/
 fpga/device-tree-xlnx*/
 Kbuild
-lib/
 linux
 Makefile
 Makefile.in
@@ -42,3 +41,4 @@ projects/*/src/w7x_timing_test
 stamp-h1
 toolchain/
 uImage
+build

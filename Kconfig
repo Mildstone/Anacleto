@@ -4,14 +4,6 @@
 #
 mainmenu "Anacleto - GNU Linux build system for FPGA SoC devices"
 
-choice SOC_BOARD
-      prompt "Select SOC board"
-      depends on ENABLE_FPGA
-      config WITH_SOC_RED_PITAYA
-       bool "red_pitaya"
-      config WITH_SOC_PARALLELLA
-       bool "parallella"
-endchoice
 
 
 # //////////////////////////////////////////////////////////////////////////// #
