@@ -18,7 +18,6 @@ namespace eval ::tclapp::socdev::listutils {
   namespace export is_block_design
   namespace export ls_all_ip
   namespace export ls_find_bd_wrapper
-  namespace export get_fileset_files
 }
 
 source -notrace $top_srcdir/fpga/vivado_socdev_env.tcl
@@ -80,21 +79,23 @@ proc ls_project_properties { } {
 
 proc ls_fileset_files { fileset } {
   set path_dir [get_property DIRECTORY [current_project]]
-  set proj_name [get_property NAME [current_project]]  
-  set fout [list]
+  set proj_name [get_property NAME [current_project]]
+  set fs_name [get_filesets $fileset]
+  set import_coln [list]
+  set add_file_coln [list]
   foreach file [get_files -norecurse -of_objects [get_filesets $fileset]] {
     if { [file extension $file] == ".xcix" } { continue }
     set path_dirs [split [string trim [file normalize [string map {\\ /} $file]]] "/"]
     set begin [lsearch -exact $path_dirs "$proj_name.srcs"]
     set src_file [join [lrange $path_dirs $begin+1 end] "/"]
     puts "src_file -> $src_file"
-    set file_object [lindex [get_files -of_objects [get_filesets $fileset] [list $file]] 0]
+    set file_object [lindex [get_files -of_objects [get_filesets $fs_name] [list $file]] 0]
     ls_properties $file_object
-    # puts " --- is_local = [is_local_to_project $file]"
-    # puts "\n"
+   puts " --- is_local = [is_local_to_project $file]"
+   puts "\n"
   }
-}
 
+}
 
 proc ls_all_local_files_in_fileset { fileset } {
   set file_out [list]

@@ -13,6 +13,8 @@ entity AD7641_serial_slave is
 
            data_out    : out  std_logic_vector (31 downto 0);
            error_out   : out  std_logic;
+	   store_out   : out  std_logic;
+
            clk         : in   std_logic;
            reset       : in   std_logic;
            SDAT_in     : in   std_logic;
@@ -52,6 +54,7 @@ begin
   CNVST_out <= cnvst;
   SCLK_buf <= SCLK_in;
   error_out <= SCLK_buf;
+  store_out <= store;
   --data_out(31 downto SERIAL_DATA_LEN) <= (others => '0');
   
   -- CNVST generator --

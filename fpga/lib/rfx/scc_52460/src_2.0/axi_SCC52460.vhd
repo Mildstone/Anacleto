@@ -6,7 +6,8 @@ entity axi_SCC52460 is
 	generic (
 		 SERIAL_DATA_LEN        : integer := 18;
 		 C_S00_AXI_DATA_WIDTH	: integer := 32;
-		 C_S00_AXI_ADDR_WIDTH	: integer := 4
+		 C_S00_AXI_ADDR_WIDTH	: integer := 4;
+		 C_M00_AXS_DATA_WIDTH   : integer := 32
 	);
 	port (
 		reset       : in   std_logic;
@@ -37,7 +38,13 @@ entity axi_SCC52460 is
 		s00_axi_rdata	: out std_logic_vector(C_S00_AXI_DATA_WIDTH-1 downto 0);
 		s00_axi_rresp	: out std_logic_vector(1 downto 0);
 		s00_axi_rvalid	: out std_logic;
-		s00_axi_rready	: in std_logic
+		s00_axi_rready	: in std_logic;
+		-- Ports of Axi Stream master interface
+		m00_axis_aclk    : in std_logic;
+		m00_axis_aresetn : in std_logic;
+		m00_axis_tvalid  : out std_logic;
+		m00_axis_tdata   : out std_logic_vector(C_M00_AXS_DATA_WIDTH-1 downto 0)
+
 	);
 end axi_SCC52460;
 
@@ -47,7 +54,11 @@ architecture arch_imp of axi_SCC52460 is
     signal reg1 : std_logic_vector(C_S00_AXI_DATA_WIDTH-1 downto 0);
     signal reg2 : std_logic_vector(C_S00_AXI_DATA_WIDTH-1 downto 0);
     signal reg3 : std_logic_vector(C_S00_AXI_DATA_WIDTH-1 downto 0);
-    
+    signal store : std_logic := '0';
+
+
+
+
 	-- component declaration
 	component axi_SCC52560_S00_AXI is
 		generic (
@@ -92,6 +103,7 @@ architecture arch_imp of axi_SCC52460 is
            cnvst_hi_tics   : in   integer;
            cnvst_lo_tics   : in   integer;
            data_out        : out  std_logic_vector (31 downto 0);
+	   store_out       : out  std_logic;
            
            error_out   : out  std_logic;
            clk         : in   std_logic;
@@ -152,6 +164,7 @@ AD7641_serial_slave_inst : AD7641_serial_slave
      cnvst_hi_tics => to_integer(signed(reg1)),
      cnvst_lo_tics => to_integer(signed(reg2)),
      data_out      => reg3,
+     store_out     => store,
      
      clk => s00_axi_aclk,
      reset => reset,
@@ -164,6 +177,27 @@ AD7641_serial_slave_inst : AD7641_serial_slave
      rst_p => RST_P,
      rst_n => RST_N
    );   
+
+  -- Axi stream connection
+  m00_axis_tdata <= reg3;
+  proc_tvalid : process (m00_axis_aclk, m00_axis_aresetn)
+    variable st : std_logic;
+  begin
+  if m00_axis_aresetn = '0' then
+   st := '0';
+   m00_axis_tvalid <= '0';
+  elsif rising_edge (m00_axis_aclk) then
+   if store = '1' and st = '0' then
+    st := '1';
+    m00_axis_tvalid <= '1';
+   else
+    st := '0';
+    m00_axis_tvalid <= '0';
+   end if;
+  end if;
+
+  end process;
+
 
 
 end arch_imp;
