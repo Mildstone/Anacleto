@@ -190,10 +190,6 @@ CONFIG.C_AXI4_HIGHADDR.VALUE_SRC {DEFAULT} \
   # Create instance: axis_decimator_0, and set properties
   set axis_decimator_0 [ create_bd_cell -type ip -vlnv pavel-demin:user:axis_decimator:1.0 axis_decimator_0 ]
 
-  set_property -dict [ list \
-CONFIG.TDATA_NUM_BYTES {4} \
- ] [get_bd_intf_pins /sc52460_fifo/axis_decimator_0/M_AXIS]
-
   # Create instance: axis_packetizer_0, and set properties
   set axis_packetizer_0 [ create_bd_cell -type ip -vlnv pavel-demin:user:axis_packetizer:1.0 axis_packetizer_0 ]
   set_property -dict [ list \
@@ -326,10 +322,6 @@ proc create_hier_cell_rp_adc { parentCell nameHier } {
 
   # Create instance: axis_red_pitaya_adc_0, and set properties
   set axis_red_pitaya_adc_0 [ create_bd_cell -type ip -vlnv pavel-demin:user:axis_red_pitaya_adc:2.0 axis_red_pitaya_adc_0 ]
-
-  set_property -dict [ list \
-CONFIG.TDATA_NUM_BYTES {4} \
- ] [get_bd_intf_pins /rp_adc/axis_red_pitaya_adc_0/M_AXIS]
 
   # Create instance: clk_wiz_0, and set properties
   set clk_wiz_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:clk_wiz:5.3 clk_wiz_0 ]
@@ -1371,66 +1363,6 @@ CONFIG.NUM_MI {2} \
   create_bd_addr_seg -range 0x00010000 -offset 0x43C10000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs sc52460_fifo/axi_fifo_mm_s_0/S_AXI/Mem0] SEG_axi_fifo_mm_s_0_Mem0
   create_bd_addr_seg -range 0x00010000 -offset 0x43C00000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs sc52460_fifo/scc52460_0/s00_axi/reg0] SEG_scc52460_0_reg0
 
-  # Perform GUI Layout
-  regenerate_bd_layout -layout_string {
-   guistr: "# # String gsaved with Nlview 6.6.5b  2016-09-06 bk=1.3687 VDI=39 GEI=35 GUI=JA:1.6
-#  -string -flagsOSRD
-preplace port DDR -pg 1 -y 30 -defaultsOSRD
-preplace port RST_N -pg 1 -y 490 -defaultsOSRD
-preplace port adc_clk_o -pg 1 -y 650 -defaultsOSRD
-preplace port RST_P -pg 1 -y 470 -defaultsOSRD
-preplace port adc_clk_p_i -pg 1 -y 690 -defaultsOSRD
-preplace port FIXED_IO -pg 1 -y 50 -defaultsOSRD
-preplace port adc_csn -pg 1 -y 670 -defaultsOSRD
-preplace port error_state -pg 1 -y 450 -defaultsOSRD
-preplace port adc_clk_n_i -pg 1 -y 710 -defaultsOSRD
-preplace portBus adc_dat_b_i -pg 1 -y 670 -defaultsOSRD
-preplace portBus SDAT_N -pg 1 -y 570 -defaultsOSRD
-preplace portBus SDAT_P -pg 1 -y 550 -defaultsOSRD
-preplace portBus CNVST_N -pg 1 -y 290 -defaultsOSRD
-preplace portBus CNVST_P -pg 1 -y 270 -defaultsOSRD
-preplace portBus SCLK_N -pg 1 -y 430 -defaultsOSRD
-preplace portBus adc_dat_a_i -pg 1 -y 650 -defaultsOSRD
-preplace portBus SCLK_P -pg 1 -y 410 -defaultsOSRD
-preplace inst rst_ps7_0_50M -pg 1 -lvl 1 -y 310 -defaultsOSRD
-preplace inst rp_adc -pg 1 -lvl 4 -y 660 -defaultsOSRD
-preplace inst SCLK_in_buf -pg 1 -lvl 2 -y 410 -defaultsOSRD
-preplace inst sc52460_fifo -pg 1 -lvl 4 -y 470 -defaultsOSRD
-preplace inst SDAT_in_buf -pg 1 -lvl 2 -y 550 -defaultsOSRD
-preplace inst ps7_0_axi_periph -pg 1 -lvl 3 -y 190 -defaultsOSRD
-preplace inst CNVST_out_buf -pg 1 -lvl 4 -y 280 -defaultsOSRD
-preplace inst processing_system7_0 -pg 1 -lvl 2 -y 100 -defaultsOSRD
-preplace netloc processing_system7_0_DDR 1 2 3 820J 30 NJ 30 NJ
-preplace netloc SDAT_in_buf_IBUF_OUT 1 2 2 NJ 550 1170
-preplace netloc clk_in1_n_1 1 0 4 NJ 710 NJ 710 NJ 710 NJ
-preplace netloc processing_system7_0_M_AXI_GP0 1 2 1 N
-preplace netloc axis_red_pitaya_adc_0_adc_csn 1 4 1 NJ
-preplace netloc util_vector_logic_0_Res 1 3 2 1170 350 1450
-preplace netloc processing_system7_0_FCLK_RESET0_N 1 0 3 20 210 NJ 210 820
-preplace netloc SCLK_in_buf_IBUF_OUT 1 2 2 NJ 410 1140
-preplace netloc scc52460_0_error_state 1 4 1 NJ
-preplace netloc ps7_0_axi_periph_M01_AXI 1 3 1 1150
-preplace netloc rst_ps7_0_50M_interconnect_aresetn 1 1 2 N 330 840J
-preplace netloc adc_dat_a_1 1 0 4 NJ 650 NJ 650 NJ 650 NJ
-preplace netloc IBUF_DS_N_1 1 0 2 NJ 570 NJ
-preplace netloc scc52460_0_RST_N 1 4 1 NJ
-preplace netloc processing_system7_0_FIXED_IO 1 2 3 850J 50 NJ 50 NJ
-preplace netloc clk_wiz_0_clk_out1 1 4 1 NJ
-preplace netloc IBUF_DS_N_2 1 0 2 NJ 430 NJ
-preplace netloc IBUF_DS_P_1 1 0 2 NJ 550 NJ
-preplace netloc rst_ps7_0_50M_peripheral_aresetn 1 1 3 370J 480 850 480 1150
-preplace netloc IBUF_DS_P_2 1 0 2 NJ 410 NJ
-preplace netloc scc52460_0_RST_P 1 4 1 NJ
-preplace netloc CNVST_out_buf_OBUF_DS_N 1 4 1 NJ
-preplace netloc axi_fifo_mm_s_0_interrupt 1 1 4 390 340 NJ 340 NJ 340 1460
-preplace netloc processing_system7_0_FCLK_CLK0 1 0 4 30 630 380 630 830 630 1160
-preplace netloc ps7_0_axi_periph_M00_AXI 1 3 1 1160
-preplace netloc adc_dat_b_1 1 0 4 NJ 670 NJ 670 NJ 670 NJ
-preplace netloc clk_in1_p_1 1 0 4 NJ 690 NJ 690 NJ 690 NJ
-preplace netloc CNVST_out_buf_OBUF_DS_P 1 4 1 NJ
-levelinfo -pg 1 0 200 610 1000 1320 1480 -top 0 -bot 760
-",
-}
 
   # Restore current instance
   current_bd_instance $oldCurInst
