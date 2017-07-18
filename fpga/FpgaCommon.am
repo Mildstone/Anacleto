@@ -54,21 +54,31 @@ bash:
 ## ///  CORE BUILD      ///////////////////////////////////////////////////// ##
 ## ////////////////////////////////////////////////////////////////////////// ##
 
-export VIVADO_PRJDIR = $(BOARD)
+export VIVADO_SRCDIR = $(srcdir)/prj/$(BOARD)
+export VIVADO_PRJDIR = $(builddir)/edit/$(BOARD)
 export VIVADO_IPDIR  = ip/vivado
 
-_p_ven  = $(firstword $(subst _, ,$(1)))
-_p_ver  = $(lastword $(subst _, ,$(1)))
-_p_name = $(subst $(call _p_ven,$(1))_,,$(subst _$(call _p_ver,$(1)),,$(1)))
+_c_ven  = $(firstword $(subst _, ,$(1)))
+_c_ver  = $(lastword $(subst _, ,$(1)))
+_c_name = $(subst $(call _c_ven,$(1))_,,$(subst _$(call _c_ver,$(1)),,$(1)))
 
-_p_set = $(if $1, NAME="$(call _p_name,$1)" \
-		  VENDOR="$(call _p_ven,$1)" \
-		  VERSION="$(call _p_ver,$1)" \
+_c_set = $(if $1, NAME="$(call _c_name,$1)" \
+		  VENDOR="$(call _c_ven,$1)" \
+		  VERSION="$(call _c_ver,$1)" \
+		  SOURCES="$($(subst .,_,$1)_SOURCES)"      \
+		  BD_SOURCES="$($(subst .,_,$1)_BD_SOURCES)" \
+		  IP_SOURCES="$($(subst .,_,$1)_IP_SOURCES)"  \
+		  DRV_LINUX="$($(subst .,_,$1)_DRV_LINUX)" \
+		, $(if $2,$(call _c_set,$2)) )
+
+
+_p_set = $(if $1, NAME="$1" \
 		  SOURCES="$($(subst .,_,$1)_SOURCES)"      \
 		  BD_SOURCES="$($(subst .,_,$1)_BD_SOURCES)" \
 		  IP_SOURCES="$($(subst .,_,$1)_IP_SOURCES)"  \
 		  DRV_LINUX="$($(subst .,_,$1)_DRV_LINUX)" \
 		, $(if $2,$(call _p_set,$2)) )
+
 
 vivado       = $(VIVADO)       -source $(FPGA_DIR)/vivado_make.tcl -tclargs $1
 vivado_shell = $(VIVADO_SHELL) -source $(FPGA_DIR)/vivado_make.tcl -tclargs $1
@@ -90,13 +100,13 @@ list_cores:    ##@cores list all projects defined in vivado_PROJECTS variable
 ## ////////////////////////////////////////////////////////////////////////// ##
 
 $(vivado_PROJECTS):
-	@ $(MAKE) $(builddir)/$(VIVADO_PRJDIR)/$@_edit $(call _p_set,$@)
+	@ $(MAKE) $(builddir)/$(VIVADO_PRJDIR)/$@ $(call _p_set,$@)
 
-$(srcdir)/$(VIVADO_PRJDIR)/%: $(builddir)/$(VIVADO_PRJDIR)/%_edit $(SOURCES) $(BD_SOURCES) $(IP_SOURCES)
+$(VIVADO_SRCDIR)/%: $(VIVADO_PRJDIR)/% $(SOURCES) $(BD_SOURCES) $(IP_SOURCES)
 	@ ${_envset}; \
 	  $(call vivado, write_project)
 
-$(builddir)/$(VIVADO_PRJDIR)/%_edit: $(SOURCES) $(BD_SOURCES) $(IP_SOURCES)
+$(VIVADO_PRJDIR)/%: $(SOURCES) $(BD_SOURCES) $(IP_SOURCES)
 	@ ${_envset}; \
 	  $(call vivado, new_project)
 
@@ -107,7 +117,7 @@ list_projects:
 
 
 $(vivado_CORES):
-	@ $(MAKE) $(srcdir)/$(VIVADO_IPDIR)/$@ BOARD="ip/vivado" $(call _p_set,$@)
+	@ $(MAKE) $(srcdir)/$(VIVADO_IPDIR)/$@ BOARD="ip/vivado" $(call _c_set,$@)
 
 $(filter-out $(vivado_CORES),$(IP_SOURCES)):
 	@ $(MAKE) -C $(@D) $(@F)
@@ -136,13 +146,11 @@ list_cores:
 .PHONY: vivado_shell
 vivado_shell: ##@vivado open a vivado shell with configured env
 	@ ${_envset}; \
-	$(call _p_set,$(NAME)) \
 	$(VIVADO_SHELL) -source $(FPGA_DIR)/vivado_make.tcl
 
 .PHONY: hsi_shell
 hsi_shell:  ##@vivado open hsi shell with configured env
 	@ ${_envset}; \
-	$(call _p_set,$(NAME)) \
 	$(HSI_SHELL) -source $(FPGA_DIR)/vivado_make.tcl
 
 
@@ -172,13 +180,9 @@ new_project open_project:
 
 new_ip edit_ip:
 	@ ${_envset}; \
-	  $(call _p_set,$(NAME),$(lastword $(vivado_CORES))) $(MAKE) check_sources; \
-	  $(call _p_set,$(NAME),$(lastword $(vivado_CORES))) $(call vivado_shell,$@)
+	  $(call _c_set,$(NAME),$(lastword $(vivado_CORES))) $(MAKE) check_sources; \
+	  $(call _c_set,$(NAME),$(lastword $(vivado_CORES))) $(call vivado_shell,$@)
 
-
-test_name:
-	@ $(call _p_set,$(NAME),$(lastword $(vivado_PROJECTS))) \
-	  echo $(NAME)
 
 ## TODO LINE:  -----------------------------------------------------------------
 

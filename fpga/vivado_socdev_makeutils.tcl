@@ -375,7 +375,7 @@ proc make_open_project {} {
   if { [catch {current_project}] } {
       set  ::origin_dir_loc    $dir_src
       set  ::orig_proj_dir_loc $dir_prj
-      puts "RESTORING PROJECT FROM: $dir_src/$project_name.tcl"
+      puts "RESTORING PROJECT FROM: $dir_src/$name.tcl"
       source -notrace $dir_src/$name.tcl
   }
   ## no chance to open project ##

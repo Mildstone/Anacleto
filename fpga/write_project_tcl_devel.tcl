@@ -279,8 +279,6 @@ proc write_specified_fileset { proj_dir proj_name filesets } {
   set type "file"
   foreach tcl_obj $filesets {
 
-    puts " writing fileset: $filesets "
-
     # Is this a IP block fileset for a proxy IP that is owned by another composite file?
     # If so, we don't want to write it out as an independent file. The parent will take care of it.
     if { [is_proxy_ip_fileset $tcl_obj] } {

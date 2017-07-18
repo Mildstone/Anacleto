@@ -72,3 +72,6 @@ fpga/lib/rfx/scc_52460
 fpga/lib/red-pitaya-notes/cores/axis_red_pitaya_adc_v2_0
 fpga/lib/rfx/scc_52460/src_2.0
 fpga/lib/rfx/scc_52460/red_pitaya/scc52460_example_2.0
+fpga/lib/rfx/scc_52460/red_pitaya/scc52460_axi
+fpga/lib/rfx/scc_52460/red_pitaya/scc52460_example_2.0/red_pitaya_scc52460_example_2.0.srcs/constrs_1/new
+fpga/lib/rfx/scc_52460/prj/red_pitaya

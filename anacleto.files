@@ -6449,6 +6449,9 @@ fpga/lib/rfx/axi_pwmgen_v1_0/src/axi_pwmgen_S00_AXI.vhd
 fpga/lib/rfx/axi_pwmgen_v1_0/src/pwm.vhd
 fpga/lib/rfx/axi_pwmgen_v1_0/src/pwm.vhd
 fpga/lib/rfx/scc_52460/Makefile.am
+fpga/lib/rfx/scc_52460/prj/red_pitaya/scc52460_axi4.tcl
+fpga/lib/rfx/scc_52460/red_pitaya/scc52460_axi/scc52460_axi.tcl
+fpga/lib/rfx/scc_52460/red_pitaya/scc52460_example_2.0/red_pitaya_scc52460_example_2.0.srcs/constrs_1/new/red_pitaya.xdc
 fpga/lib/rfx/scc_52460/red_pitaya/scc52460_example_2.0/red_pitaya_scc52460_example_2.0.tcl
 fpga/lib/rfx/scc_52460/src/AD7641_serial_emulator.vhd
 fpga/lib/rfx/scc_52460/src/AD7641_serial_slave.vhd

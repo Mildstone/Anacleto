@@ -7,8 +7,8 @@ global env
 set srcdir       $env(srcdir)
 set top_srcdir   $env(top_srcdir)
 
-proc srcdir     {} { variable srcdir; return $srcdir }
-proc top_srcdir {} { variable srcdir; return $srcdir }
+proc srcdir     {} { global env; if {[info exists env(srcdir)]} {return $env(srcdir)} }
+proc top_srcdir {} { global env; if {[info exists env(top_srcdir)]} {return $env(top_srcdir)} }
 proc builddir   {} { return . }
 
 
@@ -33,11 +33,8 @@ proc  getenv { name {default ""}} {
 proc compute_project_name {} {
   set name [getenv NAME]
   if { $name eq "" } {set name [getenv PROJECT_NAME]}
-  if { $name eq "" } {set name [lindex [split [srcdir] "/"] end]}
-  set version [getenv VERSION]
-  if { $version eq "" } {set version 1.0}
-  set project_name [getenv BOARD]_${name}_${version}
-  return $project_name
+  if { $name eq "" } {set name [lindex [split [srcdir] "/"] end]}  
+  return ${name}
 }
 
 proc compute_core_fullname {} {
@@ -51,14 +48,10 @@ proc compute_core_fullname {} {
 }
 
 proc compute_project_dir { mode } {
-  set name [getenv NAME]
-  if { $name eq "" } {set name [getenv PROJECT_NAME]}
-  if { $name eq "" } {set name [lindex [split [srcdir] "/"] end]}
-  set version [getenv VERSION]
-  if { $version eq "" } {set version 1.0}
+  set name [compute_project_name]
   switch $mode {
-    "src"  {return [srcdir]/[getenv BOARD]/${name}_${version}}
-    "edit" {return [getenv BOARD]/${name}_${version}_edit}
+    "src"  {return [getenv VIVADO_SRCDIR]}
+    "edit" {return [getenv VIVADO_PRJDIR]}
   }
   return [compute_project_name]
 }
