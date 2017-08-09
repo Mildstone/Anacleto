@@ -5,7 +5,6 @@ set top_srcdir   $env(top_srcdir)
 
 
 
-
 # overload import
 # source -notrace $top_srcdir/fpga/write_project_tcl_import_files.tcl
 

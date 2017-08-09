@@ -13,6 +13,7 @@ proc make_reload {} {
  source -notrace $top_srcdir/fpga/vivado_socdev_utils.tcl
  source -notrace $top_srcdir/fpga/vivado_socdev_env.tcl
  source -notrace $top_srcdir/fpga/vivado_socdev_makeutils.tcl
+ source  $top_srcdir/fpga/write_anacleto_prj.tcl
 }
 
 catch {

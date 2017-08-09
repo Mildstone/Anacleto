@@ -59,6 +59,7 @@ AC_PROG_AWK
 AC_PROG_MKDIR_P
 AC_PROG_SED
 AC_PROG_CC
+AC_PROG_RANLIB
 
 AC_CHECK_PROGS([CURL],[curl])
 AC_CHECK_PROGS([TAR],[gtar tar])
@@ -295,6 +296,9 @@ AC_CONFIG_FILES(
 		 fpga/Makefile
 		 fpga/lib/red-pitaya-notes/Makefile
 		 rfx_core(scc_52460)
+		 fpga/lib/rfx/scc_52460/mdsplus/Makefile
+		 fpga/lib/rfx/scc_52460/linux/src/Makefile
+		 fpga/lib/rfx/scc_52460/linux/src/Kbuild
 		 def_prj(rfx_dmatests)
 		 def_prj(rfx_prova)
 		 def_prj(rfx_pwmgen)

@@ -1,8 +1,8 @@
 //Copyright 1986-2016 Xilinx, Inc. All Rights Reserved.
 //--------------------------------------------------------------------------------
 //Tool Version: Vivado v.2016.4 (lin64) Build 1733598 Wed Dec 14 22:35:42 MST 2016
-//Date        : Tue Jul 18 08:20:34 2017
-//Host        : 172a52d958a7 running 64-bit Ubuntu 14.04.5 LTS
+//Date        : Tue Aug  8 08:22:43 2017
+//Host        : cb13ddfa3661 running 64-bit Ubuntu 14.04.5 LTS
 //Command     : generate_target scc52460_wrapper.bd
 //Design      : scc52460_wrapper
 //Purpose     : IP block netlist
@@ -35,11 +35,13 @@ module scc52460_wrapper
     FIXED_IO_ps_srstb,
     RST_N,
     RST_P,
-    SCLK_D_clk_n,
-    SCLK_D_clk_p,
+    SCLK_N,
+    SCLK_P,
     SDAT_N,
     SDAT_P,
-    store);
+    reset,
+    store,
+    trig);
   output [0:0]CNVST_N;
   output [0:0]CNVST_P;
   inout [14:0]DDR_addr;
@@ -65,11 +67,13 @@ module scc52460_wrapper
   inout FIXED_IO_ps_srstb;
   output RST_N;
   output RST_P;
-  input [0:0]SCLK_D_clk_n;
-  input [0:0]SCLK_D_clk_p;
+  input [0:0]SCLK_N;
+  input [0:0]SCLK_P;
   input [0:0]SDAT_N;
   input [0:0]SDAT_P;
+  input reset;
   output store;
+  input trig;
 
   wire [0:0]CNVST_N;
   wire [0:0]CNVST_P;
@@ -96,11 +100,13 @@ module scc52460_wrapper
   wire FIXED_IO_ps_srstb;
   wire RST_N;
   wire RST_P;
-  wire [0:0]SCLK_D_clk_n;
-  wire [0:0]SCLK_D_clk_p;
+  wire [0:0]SCLK_N;
+  wire [0:0]SCLK_P;
   wire [0:0]SDAT_N;
   wire [0:0]SDAT_P;
+  wire reset;
   wire store;
+  wire trig;
 
   scc52460 scc52460_i
        (.CNVST_N(CNVST_N),
@@ -128,9 +134,11 @@ module scc52460_wrapper
         .FIXED_IO_ps_srstb(FIXED_IO_ps_srstb),
         .RST_N(RST_N),
         .RST_P(RST_P),
-        .SCLK_D_clk_n(SCLK_D_clk_n),
-        .SCLK_D_clk_p(SCLK_D_clk_p),
+        .SCLK_N(SCLK_N),
+        .SCLK_P(SCLK_P),
         .SDAT_N(SDAT_N),
         .SDAT_P(SDAT_P),
-        .store(store));
+        .reset(reset),
+        .store(store),
+        .trig(trig));
 endmodule

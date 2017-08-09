@@ -1,17 +1,16 @@
 
+mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
+current_dir := $(notdir $(patsubst %/,%,$(dir $(mkfile_path))))
+default_project_name := $(lastword $(patsubst _, ,$(current_dir)))
+NAME ?= $(if $(lastword $(vivado_PROJECTS)),$(lastword $(vivado_PROJECTS)),$(default_project_name))
 
 # Vivado from Xilinx provides IP handling, FPGA compilation
 # hsi (hardware software interface) provides software integration
 # both tools are run in batch mode with an option to avoid log/journal files
-VIVADO       = vivado -nolog -nojournal -mode batch
-VIVADO_SHELL = vivado -nolog -nojournal -mode tcl
-HSI          = hsi    -nolog -nojournal -mode batch
-HSI_SHELL    = hsi    -nolog -nojournal -mode tcl
-
-FPGA_BIT    ?= out/$(BOARD).bit
-FSBL_ELF    ?= sdk/fsbl/executable.elf
-DTS         ?= sdk/dts/devicetree.dts
-DTB         ?= sdk/dts/devicetree.dtb
+VIVADO       = vivado -nolog -journal $(NAME)_jou.tcl      -mode batch
+VIVADO_SHELL = vivado -nolog -journal vivado_shell_jou.tcl -mode tcl
+HSI          = hsi    -nolog -journal $(NAME)_hsi_jou.tcl  -mode batch
+HSI_SHELL    = hsi    -nolog -journal hsi_shell_jou.tcl    -mode tcl
 
 FPGA_DIR        = $(abs_top_srcdir)/fpga
 FPGA_REPO_DIR   = $(abs_top_srcdir)/fpga/ip_repo
@@ -25,7 +24,9 @@ define _envset
 endef
 
 export srcdir \
-       top_srcdir
+       top_srcdir \
+       builddir \
+       top_builddir
 
 export maxThreads=1
 
@@ -56,12 +57,18 @@ bash:
 
 export VIVADO_SRCDIR = $(srcdir)/prj/$(BOARD)
 export VIVADO_PRJDIR = $(builddir)/edit/$(BOARD)
+export VIVADO_BITDIR = $(builddir)/edit/$(BOARD)/$(NAME).bit
+export VIVADO_SDKDIR = $(builddir)/edit/$(BOARD)/$(NAME).sdk
 export VIVADO_IPDIR  = ip/vivado
+
+FPGA_BIT    = $(VIVADO_BITDIR)/$(NAME).bit
+FSBL_ELF    = $(VIVADO_SDKDIR)/fsbl/executable.elf
+DTS         = $(VIVADO_SDKDIR)/dts/devicetree.dts
+DTB         = $(VIVADO_SDKDIR)/dts/devicetree.dtb
 
 _c_ven  = $(firstword $(subst _, ,$(1)))
 _c_ver  = $(lastword $(subst _, ,$(1)))
 _c_name = $(subst $(call _c_ven,$(1))_,,$(subst _$(call _c_ver,$(1)),,$(1)))
-
 _c_set = $(if $1, NAME="$(call _c_name,$1)" \
 		  VENDOR="$(call _c_ven,$1)" \
 		  VERSION="$(call _c_ver,$1)" \
@@ -77,27 +84,25 @@ _p_set = $(if $1, NAME="$1" \
 		  BD_SOURCES="$($(subst .,_,$1)_BD_SOURCES)" \
 		  IP_SOURCES="$($(subst .,_,$1)_IP_SOURCES)"  \
 		  DRV_LINUX="$($(subst .,_,$1)_DRV_LINUX)" \
-		, $(if $2,$(call _p_set,$2)) )
-
+		, $(if $2,$(call _p_set,$2), NAME="$(default_project_name)") )
 
 vivado       = $(VIVADO)       -source $(FPGA_DIR)/vivado_make.tcl -tclargs $1
 vivado_shell = $(VIVADO_SHELL) -source $(FPGA_DIR)/vivado_make.tcl -tclargs $1
 
-
 check_sources: $(SOURCES) $(BD_SOURCES) $(IP_SOURCES)
 
-
-## HELP
-projects:      ##@projects build all projects defined in vivado_PROJECTS variable
-cores:         ##@cores build all cores defined in vivado_CORES variable
-list_projects: ##@projects list all projects defined in vivado_PROJECTS variable
-list_cores:    ##@cores list all projects defined in vivado_PROJECTS variable
 
 
 
 ## ////////////////////////////////////////////////////////////////////////// ##
 ## ///  TARGET DIRECTORIES  ///////////////////////////////////////////////// ##
 ## ////////////////////////////////////////////////////////////////////////// ##
+
+## HELP
+projects:      ##@projects build all projects defined in vivado_PROJECTS variable
+cores:         ##@cores build all cores defined in vivado_CORES variable
+list_projects: ##@projects list all projects defined in vivado_PROJECTS variable
+list_cores:    ##@cores list all projects defined in vivado_PROJECTS variable
 
 $(vivado_PROJECTS):
 	@ $(MAKE) $(builddir)/$(VIVADO_PRJDIR)/$@ $(call _p_set,$@)
@@ -154,6 +159,7 @@ hsi_shell:  ##@vivado open hsi shell with configured env
 	$(HSI_SHELL) -source $(FPGA_DIR)/vivado_make.tcl
 
 
+
 ## ////////////////////////////////////////////////////////////////////////// ##
 ## ///  VIVADO PROJECT  ///////////////////////////////////////////////////// ##
 ## ////////////////////////////////////////////////////////////////////////// ##
@@ -189,10 +195,12 @@ new_ip edit_ip:
 .PHONY: clean_project
 clean_project: ##@projects Clean all build project files from disk (make write_project before this)
 	@- ${_envset}; \
-	  rm -rf $(if $NAME,$(builddir)/$(VIVADO_IPDIR)/$(NAME)) vivado.jou  vivado.log  \
-		vivado_*.backup.jou  vivado_*.backup.log  vivado_pid*.str \
-		webtalk.jou  webtalk.log  \
-		webtalk_*.backup.jou  webtalk_*.backup.log
+	  rm -rf $(builddir)/$(VIVADO_IPDIR)/$(NAME)_edit \
+		 $(VIVADO_PRJDIR)/$(NAME).* \
+		 vivado.jou  vivado.log  \
+		 vivado_*.backup.jou  vivado_*.backup.log  vivado_pid*.str \
+		 webtalk.jou  webtalk.log  \
+		 webtalk_*.backup.jou  webtalk_*.backup.log
 
 
 
@@ -216,6 +224,7 @@ fsbl: $(FSBL_ELF)
 
 $(FSBL_ELF):  $(FPGA_BIT)
 	@ ${_envset}; \
+	  $(call _p_set,$(NAME),$(lastword $(vivado_PROJECTS))) \
 	  $(HSI) -source $(FPGA_DIR)/vivado_make.tcl -tclargs write_fsbl
 
 
@@ -224,16 +233,21 @@ $(FSBL_ELF):  $(FPGA_BIT)
 ## ///  DEVICE TREEE  /////////////////////////////////////////////////////// ##
 ## ////////////////////////////////////////////////////////////////////////// ##
 
-.PHONY: dts dtb
-dts: $(DTS)
-dtb: $(DTB)
 
-sdk/dts/system.dts:  $(FPGA_BIT)
+
+.PHONY: dts dtb
+dts: ##@hsi compile device tree source file
+	$(call _p_set,$(NAME),$(lastword $(vivado_PROJECTS))) $(MAKE) $(DTS)
+dtb: ##@hsi compile device tree binary
+	$(call _p_set,$(NAME),$(lastword $(vivado_PROJECTS))) $(MAKE) $(DTB)
+
+
+$(VIVADO_SDKDIR)/dts/system.dts:  $(FPGA_BIT)
 	@ $(MAKE) -C $(top_builddir)/fpga xlnx-devicetree; \
 	  ${_envset}; \
 	  $(HSI) -source $(FPGA_DIR)/vivado_make.tcl -tclargs write_devicetree
 
-$(DTS): sdk/dts/system.dts $(LINUX_IMAGE)
+$(DTS): $(VIVADO_SDKDIR)/dts/system.dts $(LINUX_IMAGE)
 	$(LINUX_BUILDDIR)/scripts/dtc/dtc -I dts -O dts -o $@ -i sdk/dts/ $<
 
 $(DTB):  $(DTS) $(LINUX_IMAGE)

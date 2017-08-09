@@ -8,7 +8,8 @@ FPGA_REPO_DIR   += $(top_srcdir)/fpga/lib/rfx
 
 
 vivado_CORES = rfx_scc52460_1.0 \
-	       rfx_scc52460_2.0
+	       rfx_scc52460_2.0 \
+	       rfx_scc52460_fifo_2.0
 
 rfx_scc52460_1_0_SOURCES    = src/axi_SCC52460.vhd \
 			      src/axi_SCC52460_S00_AXI.vhd \
@@ -19,6 +20,8 @@ rfx_scc52460_2_0_SOURCES    = src_2.0/axi_SCC52460.vhd \
 			      src_2.0/axi_SCC52460_S00_AXI.vhd \
 			      src_2.0/AD7641_serial_slave.vhd
 
+
+rfx_scc52460_fifo_2_0_BD_SOURCES = scc52460_fifo_bd.tcl
 
 vivado_PROJECTS = scc52460_axi \
 		  scc52460_axi4

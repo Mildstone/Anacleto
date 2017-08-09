@@ -120,6 +120,368 @@ if { $nRet != 0 } {
 ##################################################################
 
 
+# Hierarchical cell: hier_1
+proc create_hier_cell_hier_1 { parentCell nameHier } {
+
+  variable script_folder
+
+  if { $parentCell eq "" || $nameHier eq "" } {
+     catch {common::send_msg_id "BD_TCL-102" "ERROR" create_hier_cell_hier_1() - Empty argument(s)!"}
+     return
+  }
+
+  # Get object for parentCell
+  set parentObj [get_bd_cells $parentCell]
+  if { $parentObj == "" } {
+     catch {common::send_msg_id "BD_TCL-100" "ERROR" "Unable to find parent cell <$parentCell>!"}
+     return
+  }
+
+  # Make sure parentObj is hier blk
+  set parentType [get_property TYPE $parentObj]
+  if { $parentType ne "hier" } {
+     catch {common::send_msg_id "BD_TCL-101" "ERROR" "Parent <$parentObj> has TYPE = <$parentType>. Expected to be <hier>."}
+     return
+  }
+
+  # Save current instance; Restore later
+  set oldCurInst [current_bd_instance .]
+
+  # Set parent object as current
+  current_bd_instance $parentObj
+
+  # Create cell and set as current instance
+  set hier_obj [create_bd_cell -type hier $nameHier]
+  current_bd_instance $hier_obj
+
+  # Create interface pins
+  create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 S00_AXI
+
+  # Create pins
+  create_bd_pin -dir I -type rst ARESETN1
+  create_bd_pin -dir I -from 0 -to 0 Op1
+  create_bd_pin -dir I -from 0 -to 0 Op2
+  create_bd_pin -dir O -type rst RST_N
+  create_bd_pin -dir O RST_P
+  create_bd_pin -dir O -from 0 -to 0 Res
+  create_bd_pin -dir I -type clk aclk
+  create_bd_pin -dir I -type rst aresetn
+  create_bd_pin -dir O error_state
+  create_bd_pin -dir O -type intr interrupt
+
+  # Create instance: axi_cfg_register_0, and set properties
+  set axi_cfg_register_0 [ create_bd_cell -type ip -vlnv pavel-demin:user:axi_cfg_register:1.0 axi_cfg_register_0 ]
+  set_property -dict [ list \
+CONFIG.AXI_ADDR_WIDTH {4} \
+CONFIG.CFG_DATA_WIDTH {32} \
+ ] $axi_cfg_register_0
+
+  # Create instance: axi_fifo_mm_s_0, and set properties
+  set axi_fifo_mm_s_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_fifo_mm_s:4.1 axi_fifo_mm_s_0 ]
+  set_property -dict [ list \
+CONFIG.C_DATA_INTERFACE_TYPE {1} \
+CONFIG.C_RX_FIFO_DEPTH {2048} \
+CONFIG.C_RX_FIFO_PE_THRESHOLD {2} \
+CONFIG.C_RX_FIFO_PF_THRESHOLD {1024} \
+CONFIG.C_USE_TX_CTRL {0} \
+CONFIG.C_USE_TX_DATA {0} \
+ ] $axi_fifo_mm_s_0
+
+  # Create instance: axis_decimator_0, and set properties
+  set axis_decimator_0 [ create_bd_cell -type ip -vlnv pavel-demin:user:axis_decimator:1.0 axis_decimator_0 ]
+
+  # Create instance: axis_packetizer_0, and set properties
+  set axis_packetizer_0 [ create_bd_cell -type ip -vlnv pavel-demin:user:axis_packetizer:1.0 axis_packetizer_0 ]
+  set_property -dict [ list \
+CONFIG.CNTR_WIDTH {16} \
+CONFIG.CONTINUOUS {TRUE} \
+ ] $axis_packetizer_0
+
+  # Create instance: ps7_0_axi_periph, and set properties
+  set ps7_0_axi_periph [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 ps7_0_axi_periph ]
+  set_property -dict [ list \
+CONFIG.NUM_MI {4} \
+ ] $ps7_0_axi_periph
+
+  # Create instance: scc52460_0, and set properties
+  set scc52460_0 [ create_bd_cell -type ip -vlnv rfx:rfx:scc52460:2.0 scc52460_0 ]
+
+  # Create instance: util_vector_logic_0, and set properties
+  set util_vector_logic_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_vector_logic:2.0 util_vector_logic_0 ]
+  set_property -dict [ list \
+CONFIG.C_OPERATION {not} \
+CONFIG.C_SIZE {1} \
+CONFIG.LOGO_FILE {data/sym_notgate.png} \
+ ] $util_vector_logic_0
+
+  # Create instance: util_vector_logic_1, and set properties
+  set util_vector_logic_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_vector_logic:2.0 util_vector_logic_1 ]
+  set_property -dict [ list \
+CONFIG.C_OPERATION {not} \
+CONFIG.C_SIZE {1} \
+ ] $util_vector_logic_1
+
+  # Create instance: util_vector_logic_2, and set properties
+  set util_vector_logic_2 [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_vector_logic:2.0 util_vector_logic_2 ]
+  set_property -dict [ list \
+CONFIG.C_OPERATION {not} \
+CONFIG.C_SIZE {1} \
+CONFIG.LOGO_FILE {data/sym_notgate.png} \
+ ] $util_vector_logic_2
+
+  # Create instance: xlconstant_0, and set properties
+  set xlconstant_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 xlconstant_0 ]
+  set_property -dict [ list \
+CONFIG.CONST_VAL {0} \
+ ] $xlconstant_0
+
+  # Create instance: xlconstant_1, and set properties
+  set xlconstant_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 xlconstant_1 ]
+  set_property -dict [ list \
+CONFIG.CONST_VAL {256} \
+CONFIG.CONST_WIDTH {16} \
+ ] $xlconstant_1
+
+  # Create interface connections
+  connect_bd_intf_net -intf_net axis_decimator_0_M_AXIS [get_bd_intf_pins axis_decimator_0/M_AXIS] [get_bd_intf_pins axis_packetizer_0/S_AXIS]
+  connect_bd_intf_net -intf_net axis_packetizer_0_M_AXIS [get_bd_intf_pins axi_fifo_mm_s_0/AXI_STR_RXD] [get_bd_intf_pins axis_packetizer_0/M_AXIS]
+  connect_bd_intf_net -intf_net processing_system7_0_M_AXI_GP0 [get_bd_intf_pins S00_AXI] [get_bd_intf_pins ps7_0_axi_periph/S00_AXI]
+  connect_bd_intf_net -intf_net ps7_0_axi_periph_M00_AXI [get_bd_intf_pins ps7_0_axi_periph/M00_AXI] [get_bd_intf_pins scc52460_0/s00_axi]
+  connect_bd_intf_net -intf_net ps7_0_axi_periph_M01_AXI [get_bd_intf_pins axi_cfg_register_0/S_AXI] [get_bd_intf_pins ps7_0_axi_periph/M01_AXI]
+  connect_bd_intf_net -intf_net ps7_0_axi_periph_M02_AXI [get_bd_intf_pins axi_fifo_mm_s_0/S_AXI] [get_bd_intf_pins ps7_0_axi_periph/M02_AXI]
+  connect_bd_intf_net -intf_net ps7_0_axi_periph_M03_AXI [get_bd_intf_pins axi_fifo_mm_s_0/S_AXI_FULL] [get_bd_intf_pins ps7_0_axi_periph/M03_AXI]
+  connect_bd_intf_net -intf_net scc52460_0_m00_axis [get_bd_intf_pins axis_decimator_0/S_AXIS] [get_bd_intf_pins scc52460_0/m00_axis]
+
+  # Create port connections
+  connect_bd_net -net axi_cfg_register_0_cfg_data [get_bd_pins axi_cfg_register_0/cfg_data] [get_bd_pins axis_decimator_0/cfg_data]
+  connect_bd_net -net axi_fifo_mm_s_0_interrupt [get_bd_pins interrupt] [get_bd_pins axi_fifo_mm_s_0/interrupt]
+  connect_bd_net -net processing_system7_0_FCLK_CLK0 [get_bd_pins aclk] [get_bd_pins axi_cfg_register_0/aclk] [get_bd_pins axi_fifo_mm_s_0/s_axi_aclk] [get_bd_pins axis_decimator_0/aclk] [get_bd_pins axis_packetizer_0/aclk] [get_bd_pins ps7_0_axi_periph/ACLK] [get_bd_pins ps7_0_axi_periph/M00_ACLK] [get_bd_pins ps7_0_axi_periph/M01_ACLK] [get_bd_pins ps7_0_axi_periph/M02_ACLK] [get_bd_pins ps7_0_axi_periph/M03_ACLK] [get_bd_pins ps7_0_axi_periph/S00_ACLK] [get_bd_pins scc52460_0/m00_axis_aclk] [get_bd_pins scc52460_0/s00_axi_aclk]
+  connect_bd_net -net rst_ps7_0_125M_interconnect_aresetn [get_bd_pins ARESETN1] [get_bd_pins ps7_0_axi_periph/ARESETN]
+  connect_bd_net -net rst_ps7_0_125M_peripheral_aresetn [get_bd_pins aresetn] [get_bd_pins axi_cfg_register_0/aresetn] [get_bd_pins axi_fifo_mm_s_0/s_axi_aresetn] [get_bd_pins axis_decimator_0/aresetn] [get_bd_pins axis_packetizer_0/aresetn] [get_bd_pins ps7_0_axi_periph/M00_ARESETN] [get_bd_pins ps7_0_axi_periph/M01_ARESETN] [get_bd_pins ps7_0_axi_periph/M02_ARESETN] [get_bd_pins ps7_0_axi_periph/M03_ARESETN] [get_bd_pins ps7_0_axi_periph/S00_ARESETN] [get_bd_pins scc52460_0/m00_axis_aresetn] [get_bd_pins scc52460_0/s00_axi_aresetn]
+  connect_bd_net -net scc52460_0_CNVST_out [get_bd_pins scc52460_0/CNVST_out] [get_bd_pins util_vector_logic_2/Op1]
+  connect_bd_net -net scc52460_0_RST_N [get_bd_pins RST_N] [get_bd_pins scc52460_0/RST_N]
+  connect_bd_net -net scc52460_0_RST_P [get_bd_pins RST_P] [get_bd_pins scc52460_0/RST_P]
+  connect_bd_net -net scc52460_0_error_state [get_bd_pins error_state] [get_bd_pins scc52460_0/error_state]
+  connect_bd_net -net util_ds_buf_0_IBUF_OUT [get_bd_pins Op1] [get_bd_pins util_vector_logic_0/Op1]
+  connect_bd_net -net util_ds_buf_1_IBUF_OUT [get_bd_pins Op2] [get_bd_pins util_vector_logic_1/Op1]
+  connect_bd_net -net util_vector_logic_0_Res [get_bd_pins scc52460_0/SCLK_in] [get_bd_pins util_vector_logic_0/Res]
+  connect_bd_net -net util_vector_logic_1_Res [get_bd_pins scc52460_0/SDAT_in] [get_bd_pins util_vector_logic_1/Res]
+  connect_bd_net -net util_vector_logic_2_Res [get_bd_pins Res] [get_bd_pins util_vector_logic_2/Res]
+  connect_bd_net -net xlconstant_0_dout [get_bd_pins scc52460_0/reset] [get_bd_pins xlconstant_0/dout]
+  connect_bd_net -net xlconstant_1_dout [get_bd_pins axis_packetizer_0/cfg_data] [get_bd_pins xlconstant_1/dout]
+
+  # Perform GUI Layout
+  regenerate_bd_layout -hierarchy [get_bd_cells /hier_1] -layout_string {
+   guistr: "# # String gsaved with Nlview 6.6.5b  2016-09-06 bk=1.3687 VDI=39 GEI=35 GUI=JA:1.6
+#  -string -flagsOSRD
+preplace port ARESETN1 -pg 1 -y 180 -defaultsOSRD
+preplace port RST_N -pg 1 -y -30 -defaultsOSRD
+preplace port S00_AXI -pg 1 -y 140 -defaultsOSRD
+preplace port RST_P -pg 1 -y -50 -defaultsOSRD
+preplace port aclk -pg 1 -y 160 -defaultsOSRD
+preplace port error_state -pg 1 -y -70 -defaultsOSRD
+preplace port interrupt -pg 1 -y 160 -defaultsOSRD
+preplace port aresetn -pg 1 -y 200 -defaultsOSRD
+preplace portBus Op1 -pg 1 -y -70 -defaultsOSRD
+preplace portBus Op2 -pg 1 -y 380 -defaultsOSRD
+preplace portBus Res -pg 1 -y -120 -defaultsOSRD
+preplace inst axis_packetizer_0 -pg 1 -lvl 4 -y 50 -defaultsOSRD
+preplace inst xlconstant_0 -pg 1 -lvl 1 -y 460 -defaultsOSRD
+preplace inst xlconstant_1 -pg 1 -lvl 3 -y 190 -defaultsOSRD
+preplace inst axis_decimator_0 -pg 1 -lvl 3 -y 40 -defaultsOSRD
+preplace inst util_vector_logic_0 -pg 1 -lvl 1 -y -70 -defaultsOSRD
+preplace inst util_vector_logic_1 -pg 1 -lvl 1 -y 380 -defaultsOSRD
+preplace inst util_vector_logic_2 -pg 1 -lvl 3 -y -120 -defaultsOSRD
+preplace inst axi_cfg_register_0 -pg 1 -lvl 2 -y 130 -defaultsOSRD
+preplace inst ps7_0_axi_periph -pg 1 -lvl 1 -y 140 -defaultsOSRD
+preplace inst scc52460_0 -pg 1 -lvl 2 -y -60 -defaultsOSRD
+preplace inst axi_fifo_mm_s_0 -pg 1 -lvl 5 -y 170 -defaultsOSRD
+preplace netloc ps7_0_axi_periph_M02_AXI 1 1 4 290J 60 620J 130 NJ 130 N
+preplace netloc xlconstant_1_dout 1 3 1 910J
+preplace netloc axis_packetizer_0_M_AXIS 1 4 1 1150
+preplace netloc util_ds_buf_1_IBUF_OUT 1 0 1 NJ
+preplace netloc axi_cfg_register_0_cfg_data 1 2 1 610
+preplace netloc processing_system7_0_M_AXI_GP0 1 0 1 -20
+preplace netloc rst_ps7_0_125M_peripheral_aresetn 1 0 5 0 -120 320 210 640 140 900 140 1140
+preplace netloc util_vector_logic_0_Res 1 1 1 NJ
+preplace netloc ps7_0_axi_periph_M03_AXI 1 1 4 290J 240 NJ 240 NJ 240 1150
+preplace netloc rst_ps7_0_125M_interconnect_aresetn 1 0 1 -10J
+preplace netloc scc52460_0_error_state 1 2 4 NJ -60 NJ -60 NJ -60 1480J
+preplace netloc ps7_0_axi_periph_M01_AXI 1 1 1 350J
+preplace netloc scc52460_0_m00_axis 1 2 1 640J
+preplace netloc util_ds_buf_0_IBUF_OUT 1 0 1 NJ
+preplace netloc scc52460_0_CNVST_out 1 2 1 630J
+preplace netloc scc52460_0_RST_N 1 2 4 630J -50 NJ -50 NJ -50 1480J
+preplace netloc xlconstant_0_dout 1 1 1 330J
+preplace netloc scc52460_0_RST_P 1 2 4 NJ -40 NJ -40 NJ -40 1490J
+preplace netloc util_vector_logic_2_Res 1 3 3 NJ -120 NJ -120 NJ
+preplace netloc processing_system7_0_FCLK_CLK0 1 0 5 10 -130 300 200 630 120 890 150 1130
+preplace netloc axi_fifo_mm_s_0_interrupt 1 5 1 NJ
+preplace netloc util_vector_logic_1_Res 1 1 1 340J
+preplace netloc ps7_0_axi_periph_M00_AXI 1 1 1 310J
+preplace netloc axis_decimator_0_M_AXIS 1 3 1 880J
+levelinfo -pg 1 -40 150 480 760 1020 1320 1510 -top -180 -bot 510
+",
+}
+
+  # Restore current instance
+  current_bd_instance $oldCurInst
+}
+
+# Hierarchical cell: hier_0
+proc create_hier_cell_hier_0 { parentCell nameHier } {
+
+  variable script_folder
+
+  if { $parentCell eq "" || $nameHier eq "" } {
+     catch {common::send_msg_id "BD_TCL-102" "ERROR" create_hier_cell_hier_0() - Empty argument(s)!"}
+     return
+  }
+
+  # Get object for parentCell
+  set parentObj [get_bd_cells $parentCell]
+  if { $parentObj == "" } {
+     catch {common::send_msg_id "BD_TCL-100" "ERROR" "Unable to find parent cell <$parentCell>!"}
+     return
+  }
+
+  # Make sure parentObj is hier blk
+  set parentType [get_property TYPE $parentObj]
+  if { $parentType ne "hier" } {
+     catch {common::send_msg_id "BD_TCL-101" "ERROR" "Parent <$parentObj> has TYPE = <$parentType>. Expected to be <hier>."}
+     return
+  }
+
+  # Save current instance; Restore later
+  set oldCurInst [current_bd_instance .]
+
+  # Set parent object as current
+  current_bd_instance $parentObj
+
+  # Create cell and set as current instance
+  set hier_obj [create_bd_cell -type hier $nameHier]
+  current_bd_instance $hier_obj
+
+  # Create interface pins
+  create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 S00_AXI
+
+  # Create pins
+  create_bd_pin -dir I -type rst ARESETN1
+  create_bd_pin -dir I -from 0 -to 0 Op1
+  create_bd_pin -dir I -from 0 -to 0 Op2
+  create_bd_pin -dir O -type rst RST_N
+  create_bd_pin -dir O RST_P
+  create_bd_pin -dir O -from 0 -to 0 Res
+  create_bd_pin -dir I -type clk aclk
+  create_bd_pin -dir I -type rst aresetn
+  create_bd_pin -dir O error_state
+  create_bd_pin -dir O -type intr interrupt
+
+  # Create instance: axi_cfg_register_0, and set properties
+  set axi_cfg_register_0 [ create_bd_cell -type ip -vlnv pavel-demin:user:axi_cfg_register:1.0 axi_cfg_register_0 ]
+  set_property -dict [ list \
+CONFIG.AXI_ADDR_WIDTH {4} \
+CONFIG.CFG_DATA_WIDTH {32} \
+ ] $axi_cfg_register_0
+
+  # Create instance: axi_fifo_mm_s_0, and set properties
+  set axi_fifo_mm_s_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_fifo_mm_s:4.1 axi_fifo_mm_s_0 ]
+  set_property -dict [ list \
+CONFIG.C_DATA_INTERFACE_TYPE {1} \
+CONFIG.C_RX_FIFO_DEPTH {2048} \
+CONFIG.C_RX_FIFO_PE_THRESHOLD {2} \
+CONFIG.C_RX_FIFO_PF_THRESHOLD {1024} \
+CONFIG.C_USE_TX_CTRL {0} \
+CONFIG.C_USE_TX_DATA {0} \
+ ] $axi_fifo_mm_s_0
+
+  # Create instance: axis_decimator_0, and set properties
+  set axis_decimator_0 [ create_bd_cell -type ip -vlnv pavel-demin:user:axis_decimator:1.0 axis_decimator_0 ]
+
+  # Create instance: axis_packetizer_0, and set properties
+  set axis_packetizer_0 [ create_bd_cell -type ip -vlnv pavel-demin:user:axis_packetizer:1.0 axis_packetizer_0 ]
+  set_property -dict [ list \
+CONFIG.CNTR_WIDTH {16} \
+CONFIG.CONTINUOUS {TRUE} \
+ ] $axis_packetizer_0
+
+  # Create instance: ps7_0_axi_periph, and set properties
+  set ps7_0_axi_periph [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 ps7_0_axi_periph ]
+  set_property -dict [ list \
+CONFIG.NUM_MI {4} \
+ ] $ps7_0_axi_periph
+
+  # Create instance: scc52460_0, and set properties
+  set scc52460_0 [ create_bd_cell -type ip -vlnv rfx:rfx:scc52460:2.0 scc52460_0 ]
+
+  # Create instance: util_vector_logic_0, and set properties
+  set util_vector_logic_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_vector_logic:2.0 util_vector_logic_0 ]
+  set_property -dict [ list \
+CONFIG.C_OPERATION {not} \
+CONFIG.C_SIZE {1} \
+CONFIG.LOGO_FILE {data/sym_notgate.png} \
+ ] $util_vector_logic_0
+
+  # Create instance: util_vector_logic_1, and set properties
+  set util_vector_logic_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_vector_logic:2.0 util_vector_logic_1 ]
+  set_property -dict [ list \
+CONFIG.C_OPERATION {not} \
+CONFIG.C_SIZE {1} \
+ ] $util_vector_logic_1
+
+  # Create instance: util_vector_logic_2, and set properties
+  set util_vector_logic_2 [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_vector_logic:2.0 util_vector_logic_2 ]
+  set_property -dict [ list \
+CONFIG.C_OPERATION {not} \
+CONFIG.C_SIZE {1} \
+CONFIG.LOGO_FILE {data/sym_notgate.png} \
+ ] $util_vector_logic_2
+
+  # Create instance: xlconstant_0, and set properties
+  set xlconstant_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 xlconstant_0 ]
+  set_property -dict [ list \
+CONFIG.CONST_VAL {0} \
+ ] $xlconstant_0
+
+  # Create instance: xlconstant_1, and set properties
+  set xlconstant_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 xlconstant_1 ]
+  set_property -dict [ list \
+CONFIG.CONST_VAL {256} \
+CONFIG.CONST_WIDTH {16} \
+ ] $xlconstant_1
+
+  # Create interface connections
+  connect_bd_intf_net -intf_net axis_decimator_0_M_AXIS [get_bd_intf_pins axis_decimator_0/M_AXIS] [get_bd_intf_pins axis_packetizer_0/S_AXIS]
+  connect_bd_intf_net -intf_net axis_packetizer_0_M_AXIS [get_bd_intf_pins axi_fifo_mm_s_0/AXI_STR_RXD] [get_bd_intf_pins axis_packetizer_0/M_AXIS]
+  connect_bd_intf_net -intf_net processing_system7_0_M_AXI_GP0 [get_bd_intf_pins S00_AXI] [get_bd_intf_pins ps7_0_axi_periph/S00_AXI]
+  connect_bd_intf_net -intf_net ps7_0_axi_periph_M00_AXI [get_bd_intf_pins ps7_0_axi_periph/M00_AXI] [get_bd_intf_pins scc52460_0/s00_axi]
+  connect_bd_intf_net -intf_net ps7_0_axi_periph_M01_AXI [get_bd_intf_pins axi_cfg_register_0/S_AXI] [get_bd_intf_pins ps7_0_axi_periph/M01_AXI]
+  connect_bd_intf_net -intf_net ps7_0_axi_periph_M02_AXI [get_bd_intf_pins axi_fifo_mm_s_0/S_AXI] [get_bd_intf_pins ps7_0_axi_periph/M02_AXI]
+  connect_bd_intf_net -intf_net ps7_0_axi_periph_M03_AXI [get_bd_intf_pins axi_fifo_mm_s_0/S_AXI_FULL] [get_bd_intf_pins ps7_0_axi_periph/M03_AXI]
+  connect_bd_intf_net -intf_net scc52460_0_m00_axis [get_bd_intf_pins axis_decimator_0/S_AXIS] [get_bd_intf_pins scc52460_0/m00_axis]
+
+  # Create port connections
+  connect_bd_net -net axi_cfg_register_0_cfg_data [get_bd_pins axi_cfg_register_0/cfg_data] [get_bd_pins axis_decimator_0/cfg_data]
+  connect_bd_net -net axi_fifo_mm_s_0_interrupt [get_bd_pins interrupt] [get_bd_pins axi_fifo_mm_s_0/interrupt]
+  connect_bd_net -net processing_system7_0_FCLK_CLK0 [get_bd_pins aclk] [get_bd_pins axi_cfg_register_0/aclk] [get_bd_pins axi_fifo_mm_s_0/s_axi_aclk] [get_bd_pins axis_decimator_0/aclk] [get_bd_pins axis_packetizer_0/aclk] [get_bd_pins ps7_0_axi_periph/ACLK] [get_bd_pins ps7_0_axi_periph/M00_ACLK] [get_bd_pins ps7_0_axi_periph/M01_ACLK] [get_bd_pins ps7_0_axi_periph/M02_ACLK] [get_bd_pins ps7_0_axi_periph/M03_ACLK] [get_bd_pins ps7_0_axi_periph/S00_ACLK] [get_bd_pins scc52460_0/m00_axis_aclk] [get_bd_pins scc52460_0/s00_axi_aclk]
+  connect_bd_net -net rst_ps7_0_125M_interconnect_aresetn [get_bd_pins ARESETN1] [get_bd_pins ps7_0_axi_periph/ARESETN]
+  connect_bd_net -net rst_ps7_0_125M_peripheral_aresetn [get_bd_pins aresetn] [get_bd_pins axi_cfg_register_0/aresetn] [get_bd_pins axi_fifo_mm_s_0/s_axi_aresetn] [get_bd_pins axis_decimator_0/aresetn] [get_bd_pins axis_packetizer_0/aresetn] [get_bd_pins ps7_0_axi_periph/M00_ARESETN] [get_bd_pins ps7_0_axi_periph/M01_ARESETN] [get_bd_pins ps7_0_axi_periph/M02_ARESETN] [get_bd_pins ps7_0_axi_periph/M03_ARESETN] [get_bd_pins ps7_0_axi_periph/S00_ARESETN] [get_bd_pins scc52460_0/m00_axis_aresetn] [get_bd_pins scc52460_0/s00_axi_aresetn]
+  connect_bd_net -net scc52460_0_CNVST_out [get_bd_pins scc52460_0/CNVST_out] [get_bd_pins util_vector_logic_2/Op1]
+  connect_bd_net -net scc52460_0_RST_N [get_bd_pins RST_N] [get_bd_pins scc52460_0/RST_N]
+  connect_bd_net -net scc52460_0_RST_P [get_bd_pins RST_P] [get_bd_pins scc52460_0/RST_P]
+  connect_bd_net -net scc52460_0_error_state [get_bd_pins error_state] [get_bd_pins scc52460_0/error_state]
+  connect_bd_net -net util_ds_buf_0_IBUF_OUT [get_bd_pins Op1] [get_bd_pins util_vector_logic_0/Op1]
+  connect_bd_net -net util_ds_buf_1_IBUF_OUT [get_bd_pins Op2] [get_bd_pins util_vector_logic_1/Op1]
+  connect_bd_net -net util_vector_logic_0_Res [get_bd_pins scc52460_0/SCLK_in] [get_bd_pins util_vector_logic_0/Res]
+  connect_bd_net -net util_vector_logic_1_Res [get_bd_pins scc52460_0/SDAT_in] [get_bd_pins util_vector_logic_1/Res]
+  connect_bd_net -net util_vector_logic_2_Res [get_bd_pins Res] [get_bd_pins util_vector_logic_2/Res]
+  connect_bd_net -net xlconstant_0_dout [get_bd_pins scc52460_0/reset] [get_bd_pins xlconstant_0/dout]
+  connect_bd_net -net xlconstant_1_dout [get_bd_pins axis_packetizer_0/cfg_data] [get_bd_pins xlconstant_1/dout]
+
+  # Restore current instance
+  current_bd_instance $oldCurInst
+}
+
 
 # Procedure to create entire design; Provide argument to make
 # procedure reusable. If parentCell is "", will use root.
@@ -176,33 +538,14 @@ CONFIG.C_BUF_TYPE {OBUFDS} \
   # Create instance: SDAT_buf, and set properties
   set SDAT_buf [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_ds_buf:2.1 SDAT_buf ]
 
-  # Create instance: axi_cfg_register_0, and set properties
-  set axi_cfg_register_0 [ create_bd_cell -type ip -vlnv pavel-demin:user:axi_cfg_register:1.0 axi_cfg_register_0 ]
-  set_property -dict [ list \
-CONFIG.AXI_ADDR_WIDTH {4} \
-CONFIG.CFG_DATA_WIDTH {32} \
- ] $axi_cfg_register_0
+  # Create instance: axi_interconnect_0, and set properties
+  set axi_interconnect_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 axi_interconnect_0 ]
 
-  # Create instance: axi_fifo_mm_s_0, and set properties
-  set axi_fifo_mm_s_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_fifo_mm_s:4.1 axi_fifo_mm_s_0 ]
-  set_property -dict [ list \
-CONFIG.C_DATA_INTERFACE_TYPE {1} \
-CONFIG.C_RX_FIFO_DEPTH {2048} \
-CONFIG.C_RX_FIFO_PE_THRESHOLD {2} \
-CONFIG.C_RX_FIFO_PF_THRESHOLD {1024} \
-CONFIG.C_USE_TX_CTRL {0} \
-CONFIG.C_USE_TX_DATA {0} \
- ] $axi_fifo_mm_s_0
+  # Create instance: hier_0
+  create_hier_cell_hier_0 [current_bd_instance .] hier_0
 
-  # Create instance: axis_decimator_0, and set properties
-  set axis_decimator_0 [ create_bd_cell -type ip -vlnv pavel-demin:user:axis_decimator:1.0 axis_decimator_0 ]
-
-  # Create instance: axis_packetizer_0, and set properties
-  set axis_packetizer_0 [ create_bd_cell -type ip -vlnv pavel-demin:user:axis_packetizer:1.0 axis_packetizer_0 ]
-  set_property -dict [ list \
-CONFIG.CNTR_WIDTH {16} \
-CONFIG.CONTINUOUS {TRUE} \
- ] $axis_packetizer_0
+  # Create instance: hier_1
+  create_hier_cell_hier_1 [current_bd_instance .] hier_1
 
   # Create instance: processing_system7_0, and set properties
   set processing_system7_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:processing_system7:5.5 processing_system7_0 ]
@@ -1239,68 +1582,18 @@ CONFIG.PCW_WDT_PERIPHERAL_FREQMHZ.VALUE_SRC {DEFAULT} \
 CONFIG.PCW_WDT_WDT_IO.VALUE_SRC {DEFAULT} \
  ] $processing_system7_0
 
-  # Create instance: ps7_0_axi_periph, and set properties
-  set ps7_0_axi_periph [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 ps7_0_axi_periph ]
-  set_property -dict [ list \
-CONFIG.NUM_MI {4} \
- ] $ps7_0_axi_periph
-
   # Create instance: rst_ps7_0_125M, and set properties
   set rst_ps7_0_125M [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset:5.0 rst_ps7_0_125M ]
-
-  # Create instance: scc52460_0, and set properties
-  set scc52460_0 [ create_bd_cell -type ip -vlnv rfx:rfx:scc52460:2.0 scc52460_0 ]
 
   # Create instance: util_ds_buf_0, and set properties
   set util_ds_buf_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_ds_buf:2.1 util_ds_buf_0 ]
 
-  # Create instance: util_vector_logic_0, and set properties
-  set util_vector_logic_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_vector_logic:2.0 util_vector_logic_0 ]
-  set_property -dict [ list \
-CONFIG.C_OPERATION {not} \
-CONFIG.C_SIZE {1} \
-CONFIG.LOGO_FILE {data/sym_notgate.png} \
- ] $util_vector_logic_0
-
-  # Create instance: util_vector_logic_1, and set properties
-  set util_vector_logic_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_vector_logic:2.0 util_vector_logic_1 ]
-  set_property -dict [ list \
-CONFIG.C_OPERATION {not} \
-CONFIG.C_SIZE {1} \
- ] $util_vector_logic_1
-
-  # Create instance: util_vector_logic_2, and set properties
-  set util_vector_logic_2 [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_vector_logic:2.0 util_vector_logic_2 ]
-  set_property -dict [ list \
-CONFIG.C_OPERATION {not} \
-CONFIG.C_SIZE {1} \
-CONFIG.LOGO_FILE {data/sym_notgate.png} \
- ] $util_vector_logic_2
-
-  # Create instance: xlconstant_0, and set properties
-  set xlconstant_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 xlconstant_0 ]
-  set_property -dict [ list \
-CONFIG.CONST_VAL {0} \
- ] $xlconstant_0
-
-  # Create instance: xlconstant_1, and set properties
-  set xlconstant_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 xlconstant_1 ]
-  set_property -dict [ list \
-CONFIG.CONST_VAL {256} \
-CONFIG.CONST_WIDTH {16} \
- ] $xlconstant_1
-
   # Create interface connections
-  connect_bd_intf_net -intf_net axis_decimator_0_M_AXIS [get_bd_intf_pins axis_decimator_0/M_AXIS] [get_bd_intf_pins axis_packetizer_0/S_AXIS]
-  connect_bd_intf_net -intf_net axis_packetizer_0_M_AXIS [get_bd_intf_pins axi_fifo_mm_s_0/AXI_STR_RXD] [get_bd_intf_pins axis_packetizer_0/M_AXIS]
+  connect_bd_intf_net -intf_net S00_AXI_1 [get_bd_intf_pins axi_interconnect_0/M01_AXI] [get_bd_intf_pins hier_1/S00_AXI]
+  connect_bd_intf_net -intf_net axi_interconnect_0_M00_AXI [get_bd_intf_pins axi_interconnect_0/M00_AXI] [get_bd_intf_pins hier_0/S00_AXI]
   connect_bd_intf_net -intf_net processing_system7_0_DDR [get_bd_intf_ports DDR] [get_bd_intf_pins processing_system7_0/DDR]
   connect_bd_intf_net -intf_net processing_system7_0_FIXED_IO [get_bd_intf_ports FIXED_IO] [get_bd_intf_pins processing_system7_0/FIXED_IO]
-  connect_bd_intf_net -intf_net processing_system7_0_M_AXI_GP0 [get_bd_intf_pins processing_system7_0/M_AXI_GP0] [get_bd_intf_pins ps7_0_axi_periph/S00_AXI]
-  connect_bd_intf_net -intf_net ps7_0_axi_periph_M00_AXI [get_bd_intf_pins ps7_0_axi_periph/M00_AXI] [get_bd_intf_pins scc52460_0/s00_axi]
-  connect_bd_intf_net -intf_net ps7_0_axi_periph_M01_AXI [get_bd_intf_pins axi_cfg_register_0/S_AXI] [get_bd_intf_pins ps7_0_axi_periph/M01_AXI]
-  connect_bd_intf_net -intf_net ps7_0_axi_periph_M02_AXI [get_bd_intf_pins axi_fifo_mm_s_0/S_AXI] [get_bd_intf_pins ps7_0_axi_periph/M02_AXI]
-  connect_bd_intf_net -intf_net ps7_0_axi_periph_M03_AXI [get_bd_intf_pins axi_fifo_mm_s_0/S_AXI_FULL] [get_bd_intf_pins ps7_0_axi_periph/M03_AXI]
-  connect_bd_intf_net -intf_net scc52460_0_m00_axis [get_bd_intf_pins axis_decimator_0/S_AXIS] [get_bd_intf_pins scc52460_0/m00_axis]
+  connect_bd_intf_net -intf_net processing_system7_0_M_AXI_GP0 [get_bd_intf_pins axi_interconnect_0/S00_AXI] [get_bd_intf_pins processing_system7_0/M_AXI_GP0]
 
   # Create port connections
   connect_bd_net -net CNVST_buf_OBUF_DS_N [get_bd_ports CNVST_N] [get_bd_pins CNVST_buf/OBUF_DS_N]
@@ -1309,30 +1602,76 @@ CONFIG.CONST_WIDTH {16} \
   connect_bd_net -net IBUF_DS_P_1 [get_bd_ports SDAT_P] [get_bd_pins SDAT_buf/IBUF_DS_P]
   connect_bd_net -net SCLK_N_1 [get_bd_ports SCLK_N] [get_bd_pins util_ds_buf_0/IBUF_DS_N]
   connect_bd_net -net SCLK_P_1 [get_bd_ports SCLK_P] [get_bd_pins util_ds_buf_0/IBUF_DS_P]
-  connect_bd_net -net axi_cfg_register_0_cfg_data [get_bd_pins axi_cfg_register_0/cfg_data] [get_bd_pins axis_decimator_0/cfg_data]
-  connect_bd_net -net axi_fifo_mm_s_0_interrupt [get_bd_pins axi_fifo_mm_s_0/interrupt] [get_bd_pins processing_system7_0/IRQ_F2P]
-  connect_bd_net -net processing_system7_0_FCLK_CLK0 [get_bd_pins axi_cfg_register_0/aclk] [get_bd_pins axi_fifo_mm_s_0/s_axi_aclk] [get_bd_pins axis_decimator_0/aclk] [get_bd_pins axis_packetizer_0/aclk] [get_bd_pins processing_system7_0/FCLK_CLK0] [get_bd_pins processing_system7_0/M_AXI_GP0_ACLK] [get_bd_pins ps7_0_axi_periph/ACLK] [get_bd_pins ps7_0_axi_periph/M00_ACLK] [get_bd_pins ps7_0_axi_periph/M01_ACLK] [get_bd_pins ps7_0_axi_periph/M02_ACLK] [get_bd_pins ps7_0_axi_periph/M03_ACLK] [get_bd_pins ps7_0_axi_periph/S00_ACLK] [get_bd_pins rst_ps7_0_125M/slowest_sync_clk] [get_bd_pins scc52460_0/m00_axis_aclk] [get_bd_pins scc52460_0/s00_axi_aclk]
+  connect_bd_net -net axi_fifo_mm_s_0_interrupt [get_bd_pins hier_0/interrupt] [get_bd_pins processing_system7_0/IRQ_F2P]
+  connect_bd_net -net processing_system7_0_FCLK_CLK0 [get_bd_pins axi_interconnect_0/ACLK] [get_bd_pins axi_interconnect_0/M00_ACLK] [get_bd_pins axi_interconnect_0/M01_ACLK] [get_bd_pins axi_interconnect_0/S00_ACLK] [get_bd_pins hier_0/aclk] [get_bd_pins hier_1/aclk] [get_bd_pins processing_system7_0/FCLK_CLK0] [get_bd_pins processing_system7_0/M_AXI_GP0_ACLK] [get_bd_pins rst_ps7_0_125M/slowest_sync_clk]
   connect_bd_net -net processing_system7_0_FCLK_RESET0_N [get_bd_pins processing_system7_0/FCLK_RESET0_N] [get_bd_pins rst_ps7_0_125M/ext_reset_in]
-  connect_bd_net -net rst_ps7_0_125M_interconnect_aresetn [get_bd_pins ps7_0_axi_periph/ARESETN] [get_bd_pins rst_ps7_0_125M/interconnect_aresetn]
-  connect_bd_net -net rst_ps7_0_125M_peripheral_aresetn [get_bd_pins axi_cfg_register_0/aresetn] [get_bd_pins axi_fifo_mm_s_0/s_axi_aresetn] [get_bd_pins axis_decimator_0/aresetn] [get_bd_pins axis_packetizer_0/aresetn] [get_bd_pins ps7_0_axi_periph/M00_ARESETN] [get_bd_pins ps7_0_axi_periph/M01_ARESETN] [get_bd_pins ps7_0_axi_periph/M02_ARESETN] [get_bd_pins ps7_0_axi_periph/M03_ARESETN] [get_bd_pins ps7_0_axi_periph/S00_ARESETN] [get_bd_pins rst_ps7_0_125M/peripheral_aresetn] [get_bd_pins scc52460_0/m00_axis_aresetn] [get_bd_pins scc52460_0/s00_axi_aresetn]
-  connect_bd_net -net scc52460_0_CNVST_out [get_bd_pins scc52460_0/CNVST_out] [get_bd_pins util_vector_logic_2/Op1]
-  connect_bd_net -net scc52460_0_RST_N [get_bd_ports RST_N] [get_bd_pins scc52460_0/RST_N]
-  connect_bd_net -net scc52460_0_RST_P [get_bd_ports RST_P] [get_bd_pins scc52460_0/RST_P]
-  connect_bd_net -net scc52460_0_error_state [get_bd_ports store] [get_bd_pins scc52460_0/error_state]
-  connect_bd_net -net util_ds_buf_0_IBUF_OUT [get_bd_pins util_ds_buf_0/IBUF_OUT] [get_bd_pins util_vector_logic_0/Op1]
-  connect_bd_net -net util_ds_buf_1_IBUF_OUT [get_bd_pins SDAT_buf/IBUF_OUT] [get_bd_pins util_vector_logic_1/Op1]
-  connect_bd_net -net util_vector_logic_0_Res [get_bd_pins scc52460_0/SCLK_in] [get_bd_pins util_vector_logic_0/Res]
-  connect_bd_net -net util_vector_logic_1_Res [get_bd_pins scc52460_0/SDAT_in] [get_bd_pins util_vector_logic_1/Res]
-  connect_bd_net -net util_vector_logic_2_Res [get_bd_pins CNVST_buf/OBUF_IN] [get_bd_pins util_vector_logic_2/Res]
-  connect_bd_net -net xlconstant_0_dout [get_bd_pins scc52460_0/reset] [get_bd_pins xlconstant_0/dout]
-  connect_bd_net -net xlconstant_1_dout [get_bd_pins axis_packetizer_0/cfg_data] [get_bd_pins xlconstant_1/dout]
+  connect_bd_net -net rst_ps7_0_125M_interconnect_aresetn [get_bd_pins hier_0/ARESETN1] [get_bd_pins rst_ps7_0_125M/interconnect_aresetn]
+  connect_bd_net -net rst_ps7_0_125M_peripheral_aresetn [get_bd_pins axi_interconnect_0/ARESETN] [get_bd_pins axi_interconnect_0/M00_ARESETN] [get_bd_pins axi_interconnect_0/M01_ARESETN] [get_bd_pins axi_interconnect_0/S00_ARESETN] [get_bd_pins hier_0/aresetn] [get_bd_pins hier_1/aresetn] [get_bd_pins rst_ps7_0_125M/peripheral_aresetn]
+  connect_bd_net -net scc52460_0_RST_N [get_bd_ports RST_N] [get_bd_pins hier_0/RST_N]
+  connect_bd_net -net scc52460_0_RST_P [get_bd_ports RST_P] [get_bd_pins hier_0/RST_P]
+  connect_bd_net -net scc52460_0_error_state [get_bd_ports store] [get_bd_pins hier_0/error_state]
+  connect_bd_net -net util_ds_buf_0_IBUF_OUT [get_bd_pins hier_0/Op1] [get_bd_pins util_ds_buf_0/IBUF_OUT]
+  connect_bd_net -net util_ds_buf_1_IBUF_OUT [get_bd_pins SDAT_buf/IBUF_OUT] [get_bd_pins hier_0/Op2]
+  connect_bd_net -net util_vector_logic_2_Res [get_bd_pins CNVST_buf/OBUF_IN] [get_bd_pins hier_0/Res]
 
   # Create address segments
-  create_bd_addr_seg -range 0x00010000 -offset 0x43C00000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs axi_cfg_register_0/s_axi/reg0] SEG_axi_cfg_register_0_reg0
-  create_bd_addr_seg -range 0x00010000 -offset 0x43C10000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs axi_fifo_mm_s_0/S_AXI/Mem0] SEG_axi_fifo_mm_s_0_Mem0
-  create_bd_addr_seg -range 0x00010000 -offset 0x43C20000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs axi_fifo_mm_s_0/S_AXI_FULL/Mem1] SEG_axi_fifo_mm_s_0_Mem1
-  create_bd_addr_seg -range 0x00010000 -offset 0x43C30000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs scc52460_0/s00_axi/reg0] SEG_scc52460_0_reg0
+  create_bd_addr_seg -range 0x00010000 -offset 0x43C10000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs hier_0/axi_cfg_register_0/s_axi/reg0] SEG_axi_cfg_register_0_reg0
+  create_bd_addr_seg -range 0x00010000 -offset 0x43C40000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs hier_1/axi_cfg_register_0/s_axi/reg0] SEG_axi_cfg_register_0_reg01
+  create_bd_addr_seg -range 0x00010000 -offset 0x43C20000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs hier_0/axi_fifo_mm_s_0/S_AXI/Mem0] SEG_axi_fifo_mm_s_0_Mem0
+  create_bd_addr_seg -range 0x00010000 -offset 0x43C30000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs hier_0/axi_fifo_mm_s_0/S_AXI_FULL/Mem1] SEG_axi_fifo_mm_s_0_Mem1
+  create_bd_addr_seg -range 0x00010000 -offset 0x43C50000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs hier_1/axi_fifo_mm_s_0/S_AXI/Mem0] SEG_axi_fifo_mm_s_0_Mem03
+  create_bd_addr_seg -range 0x00010000 -offset 0x43C60000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs hier_1/axi_fifo_mm_s_0/S_AXI_FULL/Mem1] SEG_axi_fifo_mm_s_0_Mem15
+  create_bd_addr_seg -range 0x00010000 -offset 0x43C00000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs hier_0/scc52460_0/s00_axi/reg0] SEG_scc52460_0_reg0
+  create_bd_addr_seg -range 0x00010000 -offset 0x43C70000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs hier_1/scc52460_0/s00_axi/reg0] SEG_scc52460_0_reg07
 
+  # Perform GUI Layout
+  regenerate_bd_layout -layout_string {
+   guistr: "# # String gsaved with Nlview 6.6.5b  2016-09-06 bk=1.3687 VDI=39 GEI=35 GUI=JA:1.6
+#  -string -flagsOSRD
+preplace port DDR -pg 1 -y 20 -defaultsOSRD
+preplace port RST_N -pg 1 -y 520 -defaultsOSRD
+preplace port RST_P -pg 1 -y 500 -defaultsOSRD
+preplace port FIXED_IO -pg 1 -y 30 -defaultsOSRD
+preplace port store -pg 1 -y 480 -defaultsOSRD
+preplace portBus SDAT_N -pg 1 -y 480 -defaultsOSRD
+preplace portBus SDAT_P -pg 1 -y 460 -defaultsOSRD
+preplace portBus CNVST_N -pg 1 -y 650 -defaultsOSRD
+preplace portBus CNVST_P -pg 1 -y 630 -defaultsOSRD
+preplace portBus SCLK_N -pg 1 -y 620 -defaultsOSRD
+preplace portBus SCLK_P -pg 1 -y 600 -defaultsOSRD
+preplace inst CNVST_buf -pg 1 -lvl 4 -y 640 -defaultsOSRD
+preplace inst rst_ps7_0_125M -pg 1 -lvl 1 -y 300 -defaultsOSRD
+preplace inst hier_0 -pg 1 -lvl 4 -y 480 -defaultsOSRD
+preplace inst hier_1 -pg 1 -lvl 4 -y 270 -defaultsOSRD
+preplace inst axi_interconnect_0 -pg 1 -lvl 3 -y 210 -defaultsOSRD
+preplace inst SDAT_buf -pg 1 -lvl 2 -y 460 -defaultsOSRD
+preplace inst util_ds_buf_0 -pg 1 -lvl 2 -y 600 -defaultsOSRD
+preplace inst processing_system7_0 -pg 1 -lvl 2 -y 100 -defaultsOSRD
+preplace netloc processing_system7_0_DDR 1 2 3 760J 20 NJ 20 NJ
+preplace netloc SCLK_N_1 1 0 2 NJ 620 NJ
+preplace netloc util_ds_buf_1_IBUF_OUT 1 2 2 NJ 460 1090
+preplace netloc processing_system7_0_M_AXI_GP0 1 2 1 800
+preplace netloc CNVST_buf_OBUF_DS_N 1 4 1 NJ
+preplace netloc rst_ps7_0_125M_peripheral_aresetn 1 1 3 NJ 340 810 70 1100
+preplace netloc processing_system7_0_FCLK_RESET0_N 1 0 3 30 210 NJ 210 760
+preplace netloc scc52460_0_error_state 1 4 1 NJ
+preplace netloc rst_ps7_0_125M_interconnect_aresetn 1 1 3 380 530 NJ 530 NJ
+preplace netloc CNVST_buf_OBUF_DS_P 1 4 1 NJ
+preplace netloc util_ds_buf_0_IBUF_OUT 1 2 2 NJ 600 1110
+preplace netloc scc52460_0_RST_N 1 4 1 NJ
+preplace netloc IBUF_DS_N_1 1 0 2 NJ 480 NJ
+preplace netloc S00_AXI_1 1 3 1 N
+preplace netloc processing_system7_0_FIXED_IO 1 2 3 780J 30 NJ 30 NJ
+preplace netloc IBUF_DS_P_1 1 0 2 NJ 460 NJ
+preplace netloc axi_interconnect_0_M00_AXI 1 3 1 1110
+preplace netloc scc52460_0_RST_P 1 4 1 NJ
+preplace netloc axi_fifo_mm_s_0_interrupt 1 1 4 380 200 770J 10 NJ 10 1400
+preplace netloc util_vector_logic_2_Res 1 3 2 1130 370 1390
+preplace netloc processing_system7_0_FCLK_CLK0 1 0 4 20 90 370 220 790 50 1120
+preplace netloc SCLK_P_1 1 0 2 NJ 600 NJ
+levelinfo -pg 1 0 200 570 950 1260 1420 -top 0 -bot 700
+",
+}
 
   # Restore current instance
   current_bd_instance $oldCurInst
@@ -1348,4 +1687,6 @@ CONFIG.CONST_WIDTH {16} \
 
 create_root_design ""
 
+
+common::send_msg_id "BD_TCL-1000" "WARNING" "This Tcl script was generated from a block design that has not been validated. It is possible that design <$design_name> may result in errors during validation."
 

@@ -142,35 +142,46 @@ proc make_new_ip { } {
   # load files
   make_load_sources
 
+  set files_no [llength [get_files -quiet]]
 
-  ipx::package_project -import_files -root_dir $dir_src
-  set core [ipx::current_core]
-  set_property VERSION $v::ce(VERSION) $core
-  set_property NAME $v::ce(core_name) $core
-  set_property DISPLAY_NAME $v::ce(core_fullname) $core
-  set_property LIBRARY $v::ce(VENDOR) $core
-  set_property VENDOR $v::ce(VENDOR) $core
-  #  set_property DESCRIPTION $v::ce(DESCRIPTION) $core
+  if { $files_no > 0 } {
+   ipx::package_project -import_files -root_dir $dir_src
+   set core [ipx::current_core]
+   set_property VERSION $v::ce(VERSION) $core
+   set_property NAME $v::ce(core_name) $core
+   set_property DISPLAY_NAME $v::ce(core_fullname) $core
+   set_property LIBRARY $v::ce(VENDOR) $core
+   set_property VENDOR $v::ce(VENDOR) $core
+   #  set_property DESCRIPTION $v::ce(DESCRIPTION) $core
 
-  # synth design to make a first compile test
-  synth_design -rtl -name rtl_1
+   # synth design to make a first compile test
+   synth_design -rtl -name rtl_1
 
-  ipx::create_xgui_files $core
-  ipx::update_checksums $core
-  ipx::save_core $core
+   ipx::create_xgui_files $core
+   ipx::update_checksums $core
+   ipx::save_core $core
 
-  ipx::add_file_group -type software_driver {} $core
-  foreach file [split $v::ce(DRV_LINUX) " "] {
-   add_files -force -norecurse \
-    -copy_to ${src_dir}/drivers/[file dirname $file] $v::me(srcdir)/$file
-   ipx::add_file drivers/$file \
-    [ipx::get_file_groups xilinx_softwaredriver -of_objects $core]
+   ipx::add_file_group -type software_driver {} $core
+   foreach file [split $v::ce(DRV_LINUX) " "] {
+    add_files -force -norecurse \
+     -copy_to ${src_dir}/drivers/[file dirname $file] $v::me(srcdir)/$file
+    ipx::add_file drivers/$file \
+     [ipx::get_file_groups xilinx_softwaredriver -of_objects $core]
+   }
+  } else {
+   ipx::create_core $v::ce(VENDOR) $v::ce(VENDOR) \
+		    $v::ce(core_name) $v::ce(VERSION)
+   set core [ipx::current_core]
+   set_property ROOT_DIRECTORY $dir_src $core
   }
 
   ipx::save_core $core
-  # reopen ip project for editing
-  #  ipx::edit_ip_in_project -upgrade true -name $project_name \
-  #      -directory ${dir_bld} $dir_src/component.xml
+
+  if { $files_no == 0 } {
+    # reopen ip project for editing
+    ipx::edit_ip_in_project -upgrade true -name $project_name \
+      -directory ${dir_bld} $dir_src/component.xml
+  }
 
   # close dummy in memory project
   current_project dummy
@@ -209,56 +220,56 @@ proc make_edit_ip { } {
 }
 
 
-proc discontinued_make_edit_ip { } {
-  set_compatible_with Vivado
-  set missing_components [list]
+#proc discontinued_make_edit_ip { } {
+#  set_compatible_with Vivado
+#  set missing_components [list]
 
-  if { [catch {current_project}] } {
-    create_project -in_memory -part $v::me(VIVADO_SOC_PART) -force _dummy_edit_ip
-  }
-  foreach ip_name [split $v::me(IP_SOURCES) " "] {
-    set ip_path [file dirname $ip_name]
-    set ip_name [file tail $ip_name]
-    if {![file exists $v::me(srcdir)/${ip_path}/$ip_name/component.xml]} {
-	  #  set ip_name_seed    [join [lrange [split $ip_name "_"] 0 end-1] "_"]
-	  #  set ip_name_version [lindex [split $ip_name "_"] end]
-	  #  create_peripheral user.org user ${ip_name_seed} ${ip_name_version} \
-	  #    -dir $v::me(srcdir)/${ip_path}
-	  #  ipx::create_core user.org user ${ip_name_seed} ${ip_name_version}
-	  #  add_peripheral_interface S00_AXI -interface_mode slave -axi_type lite \
-	  #    [ipx::find_open_core user.org:user:${ip_name_seed}:${ip_name_version}]
-	  #  generate_peripheral -force \
-	  #    [ipx::find_open_core user.org:user:${ip_name_seed}:${ip_name_version}]
-	  #  write_peripheral [ipx::find_open_core user.org:user:${ip_name_seed}:${ip_name_version}]
-	  lappend missing_components $ip_name
-	  create_project -part $v::me(VIVADO_SOC_PART) -force $ip_name \
-	    $v::pe(dir_prj)/${ip_path}/${ip_name}_project
-	} else {
-	  ipx::edit_ip_in_project -upgrade true -name $ip_name \
-	    -directory $v::pe(dir_prj)/${ip_path}/${ip_name}_project \
-	    $v::me(srcdir)/${ip_path}/$ip_name/component.xml
-	}
-  }
-  # Print warning message
-  if { [llength $missing_components] > 0 } {
-    puts " "
-    puts "  ------------------------------------------------------------------------- "
-    puts " | Valid IP definitions were not found in the specified source  directory.  "
-    puts " | The script will continue creating a generic vivado project that must be  "
-    puts " | packed manually to a new ip using \"Tools->Create and Package IP\""
-    puts " |   list of missing ip:"
-    foreach ip $missing_components {
-      set ip_name_seed    [join [lrange [split $ip "_"] 0 end-1] "_"]
-      set ip_name_version [lindex [split $ip "_"] end]
-      puts " |                      $ip_name_seed $ip_name_version"
-    }
-    puts "  ------------------------------------------------------------------------- "
-  }
-  if { [get_projects _dummy_edit_ip] != "" } {
-    current_project _dummy_edit_ip
-    close_project -quiet
-  }
-}
+#  if { [catch {current_project}] } {
+#    create_project -in_memory -part $v::me(VIVADO_SOC_PART) -force _dummy_edit_ip
+#  }
+#  foreach ip_name [split $v::me(IP_SOURCES) " "] {
+#    set ip_path [file dirname $ip_name]
+#    set ip_name [file tail $ip_name]
+#    if {![file exists $v::me(srcdir)/${ip_path}/$ip_name/component.xml]} {
+#	  #  set ip_name_seed    [join [lrange [split $ip_name "_"] 0 end-1] "_"]
+#	  #  set ip_name_version [lindex [split $ip_name "_"] end]
+#	  #  create_peripheral user.org user ${ip_name_seed} ${ip_name_version} \
+#	  #    -dir $v::me(srcdir)/${ip_path}
+#	  #  ipx::create_core user.org user ${ip_name_seed} ${ip_name_version}
+#	  #  add_peripheral_interface S00_AXI -interface_mode slave -axi_type lite \
+#	  #    [ipx::find_open_core user.org:user:${ip_name_seed}:${ip_name_version}]
+#	  #  generate_peripheral -force \
+#	  #    [ipx::find_open_core user.org:user:${ip_name_seed}:${ip_name_version}]
+#	  #  write_peripheral [ipx::find_open_core user.org:user:${ip_name_seed}:${ip_name_version}]
+#	  lappend missing_components $ip_name
+#	  create_project -part $v::me(VIVADO_SOC_PART) -force $ip_name \
+#	    $v::pe(dir_prj)/${ip_path}/${ip_name}_project
+#	} else {
+#	  ipx::edit_ip_in_project -upgrade true -name $ip_name \
+#	    -directory $v::pe(dir_prj)/${ip_path}/${ip_name}_project \
+#	    $v::me(srcdir)/${ip_path}/$ip_name/component.xml
+#	}
+#  }
+#  # Print warning message
+#  if { [llength $missing_components] > 0 } {
+#    puts " "
+#    puts "  ------------------------------------------------------------------------- "
+#    puts " | Valid IP definitions were not found in the specified source  directory.  "
+#    puts " | The script will continue creating a generic vivado project that must be  "
+#    puts " | packed manually to a new ip using \"Tools->Create and Package IP\""
+#    puts " |   list of missing ip:"
+#    foreach ip $missing_components {
+#      set ip_name_seed    [join [lrange [split $ip "_"] 0 end-1] "_"]
+#      set ip_name_version [lindex [split $ip "_"] end]
+#      puts " |                      $ip_name_seed $ip_name_version"
+#    }
+#    puts "  ------------------------------------------------------------------------- "
+#  }
+#  if { [get_projects _dummy_edit_ip] != "" } {
+#    current_project _dummy_edit_ip
+#    close_project -quiet
+#  }
+#}
 
 
 ## ////////////////////////////////////////////////////////////////////////// ##
@@ -415,63 +426,53 @@ proc make_write_bitstream {} {
 
   make_open_project
   set prj_name $v::pe(project_name)
-  set path_out $v::pe(dir_out)
+  set path_bit $v::pe(dir_bit)
   set path_sdk $v::pe(dir_sdk)
 
-  file mkdir $path_out
-  file mkdir $path_sdk
+  # set name of run
+  set synth $v::pe(synth_name)
+  set impl  $v::pe(impl_name)
 
   ## ////////////////////////////////////////////////////// ##
   ## generate a bitstream
+  proc get_major { code } { return [lindex [split $code '.'] 0] }
 
-  proc get_major { code } {
-   return [lindex [split $code '.'] 0]
-  }
-
-  if { [lsearch -exact [get_runs] auto_synth_1] == -1 } {
+  if { [lsearch -exact [get_runs] $synth] == -1 } {
     set flow "Vivado Synthesis [get_major $v::me(VIVADO_VERSION)]"
-    create_run -flow $flow auto_synth_1
+    create_run -flow $flow $synth
   }
-  if { [lsearch -exact [get_runs] auto_impl_1] == -1 } {
+  if { [lsearch -exact [get_runs] $impl] == -1 } {
     set flow "Vivado Implementation [get_major $v::me(VIVADO_VERSION)]"
-    create_run auto_impl_1 -parent_run auto_synth_1 -flow $flow
+    create_run $impl -parent_run $synth -flow $flow
   }
 
   ## customize directory output for run ##
-  #  file mkdir $v::pe(rel_dir_prj)/$path_out/synth
-  #  file mkdir $v::pe(rel_dir_prj)/$path_out/impl
-  #  set_property DIRECTORY $v::pe(rel_dir_prj)/$path_out/synth [get_runs auto_synth_1]
-  #  set_property DIRECTORY $v::pe(rel_dir_prj)/$path_out/impl  [get_runs auto_impl_1 ]
+  #  file mkdir $v::pe(rel_dir_prj)/$path_bit/synth
+  #  file mkdir $v::pe(rel_dir_prj)/$path_bit/impl
+  #  set_property DIRECTORY $v::pe(rel_dir_prj)/$path_bit/synth [get_runs $synth]
+  #  set_property DIRECTORY $v::pe(rel_dir_prj)/$path_bit/impl  [get_runs $impl ]
+  #  set_property BITSTREAM.GENERAL.COMPRESS TRUE [current_design]
 
   ## START SYNTH ##
-  reset_run auto_impl_1
-  reset_run auto_synth_1
+  reset_run $impl
+  reset_run $synth
 
-#  launch_runs auto_impl_1 -jobs $v::me(maxThreads)
-#  wait_on_run auto_synth_1
 
-#  open_run auto_synth_1
-#  set_property BITSTREAM.GENERAL.COMPRESS TRUE [current_design]
-
-  ## START IMPL ##
-  #  launch_runs auto_impl_1 -jobs $v::me(maxThreads)
-  #  launch_runs auto_impl_1
-  #  wait_on_run auto_impl_1
-
-  launch_runs auto_impl_1 -to_step write_bitstream -jobs $v::me(maxThreads)
-  wait_on_run auto_synth_1
-  wait_on_run auto_impl_1
+  launch_runs $impl -to_step write_bitstream -jobs $v::me(maxThreads)
+  wait_on_run $synth
+  wait_on_run $impl
 
   ## ////////////////////////////////////////////////////// ##
   ## generate system definition ##
-
-  open_run auto_synth_1
-  set  synth_dir [get_property DIRECTORY [get_runs auto_synth_1]]
-  set  impl_dir  [get_property DIRECTORY [get_runs auto_impl_1 ]]
+  file mkdir $path_bit
+  file mkdir $path_sdk
+  open_run $synth
+  set  synth_dir [get_property DIRECTORY [get_runs $synth]]
+  set  impl_dir  [get_property DIRECTORY [get_runs $impl ]]
   set  top_name  [get_property TOP [current_design]]
   file  copy -force  $impl_dir/${top_name}.hwdef $path_sdk/$prj_name.hwdef
   file  copy -force  $impl_dir/${top_name}.bit   $path_sdk/$prj_name.bit
-  file  copy -force  $impl_dir/${top_name}.bit   $path_out/$prj_name.bit
+  file  copy -force  $impl_dir/${top_name}.bit   $path_bit/$prj_name.bit
 
   write_sysdef    -force   -hwdef   $path_sdk/$prj_name.hwdef \
 			   -bitfile $path_sdk/$prj_name.bit \
@@ -490,7 +491,7 @@ proc make_write_devicetree {} {
   set_compatible_with Hsi
 
   set prj_name $v::pe(project_name)
-  set path_out $v::pe(dir_out)
+  set path_bit $v::pe(dir_bit)
   set path_sdk $v::pe(dir_sdk)
 
   #  set boot_args { console=ttyPS0,115200n8 root=/dev/ram rw \
@@ -513,7 +514,7 @@ proc make_write_fsbl {} {
   set_compatible_with Hsi
 
   set prj_name $v::pe(project_name)
-  set path_out $v::pe(dir_out)
+  set path_bit $v::pe(dir_bit)
   set path_sdk $v::pe(dir_sdk)
 
   #  set boot_args { console=ttyPS0,115200n8 root=/dev/ram rw \
@@ -532,7 +533,7 @@ proc make_write_linux_bsp {} {
   set_compatible_with Hsi
 
   set prj_name $v::pe(project_name)
-  set path_out $v::pe(dir_out)
+  set path_bit $v::pe(dir_bit)
   set path_sdk $v::pe(dir_sdk)
 
   open_hw_design $path_sdk/$prj_name.sysdef
@@ -550,7 +551,7 @@ proc make_write_fsbl {} {
   set_compatible_with Hsi
 
   set prj_name $v::pe(project_name)
-  set path_out $v::pe(dir_out)
+  set path_bit $v::pe(dir_bit)
   set path_sdk $v::pe(dir_sdk)
 
   #  set boot_args { console=ttyPS0,115200n8 root=/dev/ram rw \

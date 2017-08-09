@@ -11,6 +11,7 @@ entity axi_SCC52460 is
 	);
 	port (
 		reset       : in   std_logic;
+		trig        : in   std_logic;
 		SDAT_in     : in   std_logic;
 		SCLK_in     : in   std_logic;
 		CNVST_out   : out  std_logic;
@@ -54,8 +55,8 @@ architecture arch_imp of axi_SCC52460 is
     signal reg1 : std_logic_vector(C_S00_AXI_DATA_WIDTH-1 downto 0);
     signal reg2 : std_logic_vector(C_S00_AXI_DATA_WIDTH-1 downto 0);
     signal reg3 : std_logic_vector(C_S00_AXI_DATA_WIDTH-1 downto 0);
-    signal store : std_logic := '0';
-
+	signal store  : std_logic := '0';
+	signal enable : std_logic := '0';
 
 
 
@@ -178,18 +179,33 @@ AD7641_serial_slave_inst : AD7641_serial_slave
      rst_n => RST_N
    );   
 
+
+  -- TODO: Enable S-R
+  --  enable <= trig;
+  proc_trig_sr : process (m00_axis_aclk, reset, trig)
+  begin
+   if reset = '1' then
+	enable <= '0';
+   elsif rising_edge(m00_axis_aclk) then
+	enable <= enable or trig;
+   end if;
+  end process;
+
   -- Axi stream connection
   m00_axis_tdata <= reg3;
   proc_tvalid : process (m00_axis_aclk, m00_axis_aresetn)
     variable st : std_logic;
   begin
   if m00_axis_aresetn = '0' then
-   st := '0';
    m00_axis_tvalid <= '0';
   elsif rising_edge (m00_axis_aclk) then
-   if store = '1' and st = '0' then
-    st := '1';
-    m00_axis_tvalid <= '1';
+   if store = '1' and enable = '1' then
+    if st = '0' then
+     st := '1';
+     m00_axis_tvalid <= '1';
+    else
+     m00_axis_tvalid <= '0';
+    end if;
    else
     st := '0';
     m00_axis_tvalid <= '0';

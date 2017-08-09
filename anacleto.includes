@@ -75,3 +75,11 @@ fpga/lib/rfx/scc_52460/red_pitaya/scc52460_example_2.0
 fpga/lib/rfx/scc_52460/red_pitaya/scc52460_axi
 fpga/lib/rfx/scc_52460/red_pitaya/scc52460_example_2.0/red_pitaya_scc52460_example_2.0.srcs/constrs_1/new
 fpga/lib/rfx/scc_52460/prj/red_pitaya
+fpga
+projects/rfx_prova/logic
+fpga/lib/rfx/scc_52460/linux/src
+build/linux/include
+build/linux/arch/arm/include
+
+
+fpga/lib/rfx/scc_52460/mdsplus

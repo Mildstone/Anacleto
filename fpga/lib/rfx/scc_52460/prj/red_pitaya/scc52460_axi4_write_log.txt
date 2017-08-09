@@ -1,0 +1,56 @@
+Aug08 09:43:21  25 ]   project_name=scc52460_axi4
+Aug08 09:43:21  25 ]   proj_dir=/home/andrea/devel/rfx/anacleto/build/fpga/lib/rfx/scc_52460/edit/red_pitaya
+Aug08 09:43:21  25 ]   part=xc7z010clg400-1
+Aug08 09:43:21  25 ]  writing filesets:
+Aug08 09:43:21  25 ]   - DesignSrcs
+Aug08 09:43:21  25 ]   - BlockSrcs
+Aug08 09:43:21  25 ]   - Constrs
+Aug08 09:43:21  25 ]   - SimulationSrcs
+Aug08 09:43:21  25 ]  
+Aug08 09:43:21  25 ]  create fileset: sources_1 
+Aug08 09:50:45  25 ]  writing files for filesset: sources_1
+Aug08 09:50:45  25 ]  -> local: file copy -force ./edit/red_pitaya/scc52460_axi4.srcs/sources_1/bd/scc52460/scc52460.bd ../../../../../fpga/lib/rfx/scc_52460/prj/red_pitaya/scc52460_axi4.srcs/sources_1/bd/scc52460
+Aug08 09:50:45  25 ]  -> local: writing tcl script scc52460.bd_2016.4.tcl
+Aug08 09:50:46  25 ]  -> local: file copy -force ./edit/red_pitaya/scc52460_axi4.srcs/sources_1/bd/scc52460/hdl/scc52460_wrapper.v ../../../../../fpga/lib/rfx/scc_52460/prj/red_pitaya/scc52460_axi4.srcs/sources_1/bd/scc52460/hdl
+Aug08 09:50:46  25 ]   --> file_prop: EXCLUDE_DEBUG_LOGIC
+Aug08 09:50:46  25 ]   --> file_prop: FILE_TYPE
+Aug08 09:50:46  25 ]   --> file_prop: GENERATE_SYNTH_CHECKPOINT
+Aug08 09:50:46  25 ]   --> file_prop: IS_ENABLED
+Aug08 09:50:46  25 ]   --> file_prop: IS_GLOBAL_INCLUDE
+Aug08 09:50:46  25 ]   --> file_prop: IS_LOCKED
+Aug08 09:50:46  25 ]   --> file_prop: LIBRARY
+Aug08 09:50:46  25 ]   --> file_prop: PATH_MODE
+Aug08 09:50:46  25 ]   --> file_prop: SYNTH_CHECKPOINT_MODE
+Aug08 09:50:46  25 ]   --> file_prop: USED_IN
+Aug08 09:50:46  25 ]   --> file_prop: USED_IN_IMPLEMENTATION
+Aug08 09:50:46  25 ]   --> file_prop: USED_IN_SIMULATION
+Aug08 09:50:46  25 ]   --> file_prop: USED_IN_SYNTHESIS
+Aug08 09:50:46  25 ]   --> file_prop: FILE_TYPE
+Aug08 09:50:46  25 ]   --> file_prop: IS_ENABLED
+Aug08 09:50:46  25 ]   --> file_prop: IS_GLOBAL_INCLUDE
+Aug08 09:50:46  25 ]   --> file_prop: LIBRARY
+Aug08 09:50:46  25 ]   --> file_prop: PATH_MODE
+Aug08 09:50:46  25 ]   --> file_prop: USED_IN
+Aug08 09:50:46  25 ]   --> file_prop: USED_IN_IMPLEMENTATION
+Aug08 09:50:46  25 ]   --> file_prop: USED_IN_SIMULATION
+Aug08 09:50:46  25 ]   --> file_prop: USED_IN_SYNTHESIS
+Aug08 09:50:46  25 ]  
+Aug08 09:50:46  25 ]  create fileset: constrs_1 
+Aug08 09:50:46  25 ]  writing files for filesset: constrs_1
+Aug08 09:50:46  25 ]  -> local: file copy -force ./edit/red_pitaya/scc52460_axi4.srcs/constrs_1/new/red_pitaya.xdc ../../../../../fpga/lib/rfx/scc_52460/prj/red_pitaya/scc52460_axi4.srcs/constrs_1/new
+Aug08 09:50:46  25 ]   --> file_prop: FILE_TYPE
+Aug08 09:50:46  25 ]   --> file_prop: IS_ENABLED
+Aug08 09:50:46  25 ]   --> file_prop: IS_GLOBAL_INCLUDE
+Aug08 09:50:46  25 ]   --> file_prop: LIBRARY
+Aug08 09:50:46  25 ]   --> file_prop: PATH_MODE
+Aug08 09:50:46  25 ]   --> file_prop: PROCESSING_ORDER
+Aug08 09:50:46  25 ]   --> file_prop: SCOPED_TO_CELLS
+Aug08 09:50:46  25 ]   --> file_prop: SCOPED_TO_REF
+Aug08 09:50:46  25 ]   --> file_prop: USED_IN
+Aug08 09:50:46  25 ]   --> file_prop: USED_IN_IMPLEMENTATION
+Aug08 09:50:46  25 ]   --> file_prop: USED_IN_SYNTHESIS
+Aug08 09:50:46  25 ]  
+Aug08 09:50:46  25 ]  create fileset: sim_1 
+Aug08 09:50:46  25 ]  writing files for filesset: sim_1
+Aug08 09:50:46  25 ]   - Empty fileset
+Aug08 09:50:46  25 ]  

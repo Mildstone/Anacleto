@@ -7,11 +7,6 @@ global env
 set srcdir       $env(srcdir)
 set top_srcdir   $env(top_srcdir)
 
-proc srcdir     {} { global env; if {[info exists env(srcdir)]} {return $env(srcdir)} }
-proc top_srcdir {} { global env; if {[info exists env(top_srcdir)]} {return $env(top_srcdir)} }
-proc builddir   {} { return . }
-
-
 set_param general.maxThreads $env(maxThreads)
 
 namespace eval ::tclapp::socdev::makeutils {
@@ -29,6 +24,11 @@ proc  getenv { name {default ""}} {
     return $default
   }
 }
+
+proc srcdir       {} { return [getenv srcdir .] }
+proc top_srcdir   {} { return [getenv top_srcdir .] }
+proc builddir     {} { return [getenv builddir .] }
+proc top_builddir {} { return [getenv top_builddir .] }
 
 proc compute_project_name {} {
   set name [getenv NAME]
@@ -78,7 +78,8 @@ proc reset_make_env {} {
   set    make_env(BOARD)            [getenv BOARD]
   set    make_env(VIVADO_VERSION)   [getenv VIVADO_VERSION]
   set    make_env(VIVADO_SOC_PART)  [getenv VIVADO_SOC_PART]
-  set    make_env(srcdir)           [getenv srcdir]
+  set    make_env(srcdir)           [getenv srcdir .]
+  set    make_env(builddir)         [getenv builddir .]
   set    make_env(top_srcdir)       [getenv top_srcdir]
   set    make_env(maxThreads)       [getenv maxThreads]
   set    make_env(fpga_dir)         [getenv FPGA_DIR]
@@ -102,11 +103,18 @@ proc reset_project_env { } {
 
   set project_set(VIVADO_VERSION) $make_env(VIVADO_VERSION)
   set project_set(project_name)   [compute_project_name]
+  set project_set(project_part)   [getenv VIVADO_SOC_PART]
   set project_set(dir_prj)        [compute_project_dir edit]
   set project_set(dir_src)        [compute_project_dir src]
-  set project_set(dir_sdc)        [compute_project_dir edit]/sdc
-  set project_set(dir_out)        [compute_project_dir edit]/out
-  set project_set(dir_sdk)        [compute_project_dir edit]/sdk
+  set project_set(dir_sdc)        [compute_project_dir edit]/[compute_project_name].sdc
+  set project_set(dir_bit)        [compute_project_dir edit]/[compute_project_name].bit
+  set project_set(dir_sdk)        [compute_project_dir edit]/[compute_project_name].sdk
+  set project_set(ip_repo)        [getenv FPGA_REPO_DIR]
+  set project_set(synth_name)     [getenv synth_name "anacleto_synth"]
+  set project_set(impl_name)      [getenv impl_name "anacleto_impl"]
+  set project_set(SOURCES)        [getenv SOURCES]
+  set project_set(BD_SOURCES)     [getenv BD_SOURCES]
+  set project_set(IP_SOURCES)     [getenv IP_SOURCES]
 
   set project_set(sources_list) [split $make_env(SOURCES) " "]
 
@@ -133,10 +141,9 @@ proc set_socdev_env {} {
   foreach line $data {
     lappend introspection $line
   }
-  lappend introspection "namespace upvar ::tclapp::socdev::makeutils make_env make_env"
+  lappend introspection "namespace upvar ::tclapp::socdev::makeutils make_env    make_env"
   lappend introspection "namespace upvar ::tclapp::socdev::makeutils project_env project_env"
-  lappend introspection "namespace upvar ::tclapp::socdev::makeutils project_set project_set"
-  lappend introspection "namespace upvar ::tclapp::socdev::makeutils core_env core_env"
+  lappend introspection "namespace upvar ::tclapp::socdev::makeutils core_env    core_env"
   close $fp
   set make_env(self) [list]
   lappend make_env(self) {*}$introspection
