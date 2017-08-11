@@ -83,3 +83,5 @@ build/linux/arch/arm/include
 
 
 fpga/lib/rfx/scc_52460/mdsplus
+projects/test1
+projects/test2

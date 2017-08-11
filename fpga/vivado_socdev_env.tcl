@@ -31,24 +31,20 @@ proc builddir     {} { return [getenv builddir .] }
 proc top_builddir {} { return [getenv top_builddir .] }
 
 proc compute_project_name {} {
-  set name [getenv NAME]
-  if { $name eq "" } {set name [getenv PROJECT_NAME]}
-  if { $name eq "" } {set name [lindex [split [srcdir] "/"] end]}  
+  set name [getenv NAME [getenv PROJECT_NAME]]
+  set vendor_name [getenv VENDOR]
+  set version_tag [getenv VERSION 1.0]
+  if { $name eq "" } {set name [lindex [split [srcdir] "/"] end]}
+  if { $vendor_name ne "" } { set name ${vendor_name}_${name} }
+  if { $version_tag ne "" } { set name ${name}_${version_tag} }
   return ${name}
 }
 
 proc compute_core_fullname {} {
-  set core_name   [getenv NAME]
-  set vendor_name [getenv VENDOR]
-  set version_tag [getenv VERSION]
-  if { $version_tag eq "" } { set version_tag 1.0 }
-  if { $vendor_name ne "" } { set core_name ${vendor_name}_${core_name} }
-  if { $version_tag ne "" } { set core_name ${core_name}_${version_tag} }
-  return $core_name
+  return [compute_project_name]
 }
 
 proc compute_project_dir { mode } {
-  set name [compute_project_name]
   switch $mode {
     "src"  {return [getenv VIVADO_SRCDIR]}
     "edit" {return [getenv VIVADO_PRJDIR]}
@@ -57,78 +53,53 @@ proc compute_project_dir { mode } {
 }
 
 
-proc reset_core_env {} {
-  variable core_env
-  set    core_env(core_fullname)    [compute_core_fullname]
-  set    core_env(core_name)        [getenv NAME]
-  set    core_env(srcdir)           [srcdir]/[getenv VIVADO_IPDIR]/[compute_core_fullname]
-  set    core_env(builddir)         [builddir]/[getenv VIVADO_IPDIR]/[compute_core_fullname]_edit
-  set    core_env(VENDOR)           [getenv VENDOR]
-  set    core_env(VERSION)          [getenv VERSION]
-  set    core_env(SOURCES)          [getenv SOURCES]
-  set    core_env(BD_SOURCES)       [getenv BD_SOURCES]
-  set    core_env(IP_SOURCES)       [getenv IP_SOURCES]
-  set    core_env(DRV_LINUX)        [getenv DRV_LINUX]
-}
-reset_core_env
-
 proc reset_make_env {} {
   variable make_env
-  set    make_env(project_name)     [compute_project_name]
-  set    make_env(BOARD)            [getenv BOARD]
-  set    make_env(VIVADO_VERSION)   [getenv VIVADO_VERSION]
-  set    make_env(VIVADO_SOC_PART)  [getenv VIVADO_SOC_PART]
   set    make_env(srcdir)           [getenv srcdir .]
   set    make_env(builddir)         [getenv builddir .]
+  set    make_env(VIVADO_VERSION)   [getenv VIVADO_VERSION]
   set    make_env(top_srcdir)       [getenv top_srcdir]
   set    make_env(maxThreads)       [getenv maxThreads]
   set    make_env(fpga_dir)         [getenv FPGA_DIR]
   set    make_env(DTREE_DIR)        [getenv DTREE_DIR]
-  set    make_env(ip_repo)          [getenv FPGA_REPO_DIR]
-  set    make_env(SOURCES)          [getenv SOURCES]
-  set    make_env(BD_SOURCES)       [getenv BD_SOURCES]
-  set    make_env(IP_SOURCES)       [getenv IP_SOURCES]
 }
-
 # set env by default when included
 reset_make_env
 
+proc reset_core_env {} {
+  variable core_env
+  set    core_env(core_fullname)    [compute_core_fullname]
+  set    core_env(core_name)        [getenv NAME]
+  set    core_env(ipdir)            [getenv VIVADO_IPDIR]/[compute_core_fullname]
+  set    core_env(VENDOR)           [getenv VENDOR]
+  set    core_env(VERSION)          [getenv VERSION]
+  set    core_env(DRV_LINUX)        [getenv DRV_LINUX]
+}
+# set env by default when included
+reset_core_env
 
-
-variable project_env
 proc reset_project_env { } {
   variable make_env
-  variable project_set
   variable project_env
 
-  set project_set(VIVADO_VERSION) $make_env(VIVADO_VERSION)
-  set project_set(project_name)   [compute_project_name]
-  set project_set(project_part)   [getenv VIVADO_SOC_PART]
-  set project_set(dir_prj)        [compute_project_dir edit]
-  set project_set(dir_src)        [compute_project_dir src]
-  set project_set(dir_sdc)        [compute_project_dir edit]/[compute_project_name].sdc
-  set project_set(dir_bit)        [compute_project_dir edit]/[compute_project_name].bit
-  set project_set(dir_sdk)        [compute_project_dir edit]/[compute_project_name].sdk
-  set project_set(ip_repo)        [getenv FPGA_REPO_DIR]
-  set project_set(synth_name)     [getenv synth_name "anacleto_synth"]
-  set project_set(impl_name)      [getenv impl_name "anacleto_impl"]
-  set project_set(SOURCES)        [getenv SOURCES]
-  set project_set(BD_SOURCES)     [getenv BD_SOURCES]
-  set project_set(IP_SOURCES)     [getenv IP_SOURCES]
-
-  set project_set(sources_list) [split $make_env(SOURCES) " "]
-
-  foreach { key val } [array get project_set] {
-   # puts "project_env($key) [subst $val]"
-   set project_env($key) [subst $val]
-  }
-
-  # save to projutils global variable
-  #  catch {
-  #    variable ::tclapp::xilinx::projutils::a_make_vars
-  #    array set a_make_vars [array get a_project_vars]
-  #  }
+  set project_env(project_name)    [compute_project_name]
+  set project_env(VIVADO_VERSION)  [getenv VIVADO_VERSION]
+  set project_env(VIVADO_SOC_PART) [getenv VIVADO_SOC_PART]
+  set project_env(BOARD)           [getenv BOARD]
+  set project_env(dir_prj)         [compute_project_dir edit]
+  set project_env(dir_src)         [compute_project_dir src]
+  set project_env(dir_sdc)         [compute_project_dir edit]/[compute_project_name].sdc
+  set project_env(dir_bit)         [compute_project_dir edit]/[compute_project_name].bit
+  set project_env(dir_sdk)         [compute_project_dir edit]/[compute_project_name].sdk
+  set project_env(ip_repo)         [getenv FPGA_REPO_DIR]
+  set project_env(synth_name)      [getenv synth_name "anacleto_synth"]
+  set project_env(impl_name)       [getenv impl_name  "anacleto_impl"]
+  set project_env(SOURCES)         [getenv SOURCES]
+  set project_env(BD_SOURCES)      [getenv BD_SOURCES]
+  set project_env(IP_SOURCES)      [getenv IP_SOURCES]
+  set project_env(sources_list)    [split [getenv SOURCES] " "]
 }
+# set env by default when included
 reset_project_env
 
 

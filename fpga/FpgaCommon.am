@@ -2,7 +2,13 @@
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 current_dir := $(notdir $(patsubst %/,%,$(dir $(mkfile_path))))
 default_project_name := $(lastword $(patsubst _, ,$(current_dir)))
-NAME ?= $(if $(lastword $(vivado_PROJECTS)),$(lastword $(vivado_PROJECTS)),$(default_project_name))
+NAME ?= $(or $(if $(filter $(IP_TARGETS),$(MAKECMDGOALS)),$(lastword $(vivado_CORES))),\
+			 $(if $(filter $(PRJ_TARGETS),$(MAKECMDGOALS)),$(lastword $(vivado_PROJECTS))),\
+			 $(default_project_name))
+
+PRJ_TARGETS = write_project write_bitstream new_project open_project
+IP_TARGETS  = new_ip edit_ip
+
 
 # Vivado from Xilinx provides IP handling, FPGA compilation
 # hsi (hardware software interface) provides software integration
@@ -11,6 +17,12 @@ VIVADO       = vivado -nolog -journal $(NAME)_jou.tcl      -mode batch
 VIVADO_SHELL = vivado -nolog -journal vivado_shell_jou.tcl -mode tcl
 HSI          = hsi    -nolog -journal $(NAME)_hsi_jou.tcl  -mode batch
 HSI_SHELL    = hsi    -nolog -journal hsi_shell_jou.tcl    -mode tcl
+
+vivado       = $(VIVADO)       -source $(FPGA_DIR)/vivado_make.tcl $(if $1,-tclargs $1)
+vivado_shell = $(VIVADO_SHELL) -source $(FPGA_DIR)/vivado_make.tcl $(if $1,-tclargs $1)
+hsi          = $(HSI)       -source $(FPGA_DIR)/vivado_make.tcl $(if $1,-tclargs $1)
+hsi_shell    = $(HSI_SHELL) -source $(FPGA_DIR)/vivado_make.tcl $(if $1,-tclargs $1)
+
 
 FPGA_DIR        = $(abs_top_srcdir)/fpga
 FPGA_REPO_DIR   = $(abs_top_srcdir)/fpga/ip_repo
@@ -59,39 +71,51 @@ export VIVADO_SRCDIR = $(srcdir)/prj/$(BOARD)
 export VIVADO_PRJDIR = $(builddir)/edit/$(BOARD)
 export VIVADO_BITDIR = $(builddir)/edit/$(BOARD)/$(NAME).bit
 export VIVADO_SDKDIR = $(builddir)/edit/$(BOARD)/$(NAME).sdk
-export VIVADO_IPDIR  = ip/vivado
+export VIVADO_IPDIR  = $(builddir)/ip/vivado
 
 FPGA_BIT    = $(VIVADO_BITDIR)/$(NAME).bit
 FSBL_ELF    = $(VIVADO_SDKDIR)/fsbl/executable.elf
 DTS         = $(VIVADO_SDKDIR)/dts/devicetree.dts
 DTB         = $(VIVADO_SDKDIR)/dts/devicetree.dtb
 
-_c_ven  = $(firstword $(subst _, ,$(1)))
-_c_ver  = $(lastword $(subst _, ,$(1)))
-_c_name = $(subst $(call _c_ven,$(1))_,,$(subst _$(call _c_ver,$(1)),,$(1)))
-_c_set = $(if $1, NAME="$(call _c_name,$1)" \
-		  VENDOR="$(call _c_ven,$1)" \
-		  VERSION="$(call _c_ver,$1)" \
-		  SOURCES="$($(subst .,_,$1)_SOURCES)"      \
-		  BD_SOURCES="$($(subst .,_,$1)_BD_SOURCES)" \
-		  IP_SOURCES="$($(subst .,_,$1)_IP_SOURCES)"  \
-		  DRV_LINUX="$($(subst .,_,$1)_DRV_LINUX)" \
-		, $(if $2,$(call _c_set,$2)) )
+_flt = $(subst ' ',_,$(subst .,_,$1))
+_ven = $(or ${VENDOR}, ${$(call _flt,$1)_VENDOR})
+_ver = $(or $(filter-out ${PACKAGE_VERSION},${VERSION}),\
+		 ${$(call _ven,$1)_$(call _flt,$1)_VERSION},\
+		 ${$(call _flt,$1)_VERSION},\
+		 ${$(subst $(call _ven,$1)_,,$1)_VERSION},\
+		 $(shell echo $(lastword $(subst _, ,$1)) | $(SED) 's/[^0-9.]*\([0-9.]*\).*/\1/'),\
+		 ${VERSION})
+
+_nam = $(subst $(call _ven,$1)_,,$(subst _$(call _ver,$1),,$1))
+_var = $(or $($(call _flt,$(call _ven,$1)_$(call _nam,$1)_$(call _ver,$1)_$2)),\
+			$($(call _flt,$(call _nam,$1)_$(call _ver,$1)_$2)),\
+			$($(call _flt,$(call _ven,$1)_$(call _nam,$1)_$2)),\
+			$($(call _flt,$(call _nam,$1)_$2)))
+
+_p_set = $(if $1, NAME="$(call _nam,$1)" \
+				  VENDOR="$(call _ven,$1)" \
+				  VERSION="$(call _ver,$1)" \
+				  SOURCES="$(call _var,$1,SOURCES)" \
+				  BD_SOURCES="$(call _var,$1,BD_SOURCES)" \
+				  IP_SOURCES="$(call _var,$1,IP_SOURCES)" \
+				  DRV_LINUX="$(call _var,$1,DRV_LINUX)"   \
+				  , $(if $2,$(call _p_set,$2), NAME="$(default_project_name)") )
+
+print_name:
+	@ echo "$(call _p_set,${NAME})"
+
+autotest_name:
+	@ $(MAKE) -e print_name
+	@ NAME=$(lastword $(vivado_CORES)) $(MAKE) -e print_name
+	@ NAME=$(lastword $(vivado_PROJECTS)) $(MAKE) -e print_name
+	@ VENDOR=pven NAME=pnam VERSION=5.55 $(MAKE) -e print_name
+	@ VENDOR=pven NAME=pven_pnam         $(MAKE) -e print_name
+	@ VENDOR=pven NAME=pven_pnam_2.2     $(MAKE) -e print_name
 
 
-_p_set = $(if $1, NAME="$1" \
-		  SOURCES="$($(subst .,_,$1)_SOURCES)"      \
-		  BD_SOURCES="$($(subst .,_,$1)_BD_SOURCES)" \
-		  IP_SOURCES="$($(subst .,_,$1)_IP_SOURCES)"  \
-		  DRV_LINUX="$($(subst .,_,$1)_DRV_LINUX)" \
-		, $(if $2,$(call _p_set,$2), NAME="$(default_project_name)") )
-
-vivado       = $(VIVADO)       -source $(FPGA_DIR)/vivado_make.tcl -tclargs $1
-vivado_shell = $(VIVADO_SHELL) -source $(FPGA_DIR)/vivado_make.tcl -tclargs $1
 
 check_sources: $(SOURCES) $(BD_SOURCES) $(IP_SOURCES)
-
-
 
 
 ## ////////////////////////////////////////////////////////////////////////// ##
@@ -118,11 +142,18 @@ $(VIVADO_PRJDIR)/%: $(SOURCES) $(BD_SOURCES) $(IP_SOURCES)
 projects: $(vivado_PROJECTS)
 
 list_projects:
-	@ echo $(vivado_PROJECTS)
+	@ \
+	 $(call _p_set,${NAME}) \
+	 test -f $(VIVADO_SRCDIR)/$${VENDOR}_$${NAME}_$${VERSION}.tcl -o\
+		  -f $(VIVADO_PRJDIR)/$${VENDOR}_$${NAME}_$${VERSION}.xpr -o\
+		  -f $(VIVADO_SRCDIR)/$${NAME}_$${VERSION}.tcl -o\
+		  -f $(VIVADO_PRJDIR)/$${NAME}_$${VERSION}.xpr \
+			&& echo $${NAME}; \
+	 echo $(vivado_PROJECTS)
 
 
 $(vivado_CORES):
-	@ $(MAKE) $(srcdir)/$(VIVADO_IPDIR)/$@ BOARD="ip/vivado" $(call _c_set,$@)
+	@ $(MAKE) $(VIVADO_IPDIR)/$@ BOARD="vivado" $(call _p_set,$@)
 
 $(filter-out $(vivado_CORES),$(IP_SOURCES)):
 	@ $(MAKE) -C $(@D) $(@F)
@@ -130,11 +161,11 @@ $(filter-out $(vivado_CORES),$(IP_SOURCES)):
 # $(FPGA_REPO_DIR)/%/$(VIVADO_IPDIR)/%_edit:
 #	@ $(MAKE) -C $(@D) $(@F)
 
-$(srcdir)/$(VIVADO_IPDIR)/%: $(SOURCES) $(BD_SOURCES) $(IP_SOURCES)
+$(VIVADO_IPDIR)/%: $(SOURCES) $(BD_SOURCES) $(IP_SOURCES)
 	@ ${_envset}; \
 	  $(call vivado, new_ip)
 
-$(builddir)/$(VIVADO_IPDIR)/%_edit: $(srcdir)/$(VIVADO_IPDIR)/% $(SOURCES) $(BD_SOURCES) $(IP_SOURCES)
+$(VIVADO_IPDIR)/%_edit: $(VIVADO_IPDIR)/% $(SOURCES) $(BD_SOURCES) $(IP_SOURCES)
 	@ ${_envset}; \
 	  $(call vivado, edit_ip)
 
@@ -148,16 +179,12 @@ list_cores:
 ## ///  VIVADO SHELL    ///////////////////////////////////////////////////// ##
 ## ////////////////////////////////////////////////////////////////////////// ##
 
-.PHONY: vivado_shell
-vivado_shell: ##@vivado open a vivado shell with configured env
-	@ ${_envset}; \
-	$(VIVADO_SHELL) -source $(FPGA_DIR)/vivado_make.tcl
+.PHONY: vivado_shell hsi_shell
+vivado_shell:##@vivado open a vivado shell with configured env
+hsi_shell:   ##@vivado open hsi shell with configured env
 
-.PHONY: hsi_shell
-hsi_shell:  ##@vivado open hsi shell with configured env
-	@ ${_envset}; \
-	$(HSI_SHELL) -source $(FPGA_DIR)/vivado_make.tcl
-
+vivado hsi vivado_shell hsi_shell:
+	@ ${_envset}; $(call $@,${TCL_ARGS})
 
 
 ## ////////////////////////////////////////////////////////////////////////// ##
@@ -176,18 +203,18 @@ edit_ip:  ##@cores open all module pheripherals projects for edit.
 write_project write_bitstream:
 	@ ${_envset}; \
 	  $(call _p_set,$(NAME),$(lastword $(vivado_PROJECTS))) $(MAKE) check_sources; \
-	  $(call _p_set,$(NAME),$(lastword $(vivado_PROJECTS))) $(call vivado,$@)
+	  $(call _p_set,$(NAME),$(lastword $(vivado_PROJECTS))) $(MAKE) vivado TCL_ARGS=$@
 
 .PHONY: open_project edit_ip
 new_project open_project:
 	@ ${_envset}; \
 	  $(call _p_set,$(NAME),$(lastword $(vivado_PROJECTS))) $(MAKE) check_sources; \
-	  $(call _p_set,$(NAME),$(lastword $(vivado_PROJECTS))) $(call vivado_shell,$@)
+	  $(call _p_set,$(NAME),$(lastword $(vivado_PROJECTS))) $(MAKE) vivado_shell TCL_ARGS=$@
 
 new_ip edit_ip:
 	@ ${_envset}; \
-	  $(call _c_set,$(NAME),$(lastword $(vivado_CORES))) $(MAKE) check_sources; \
-	  $(call _c_set,$(NAME),$(lastword $(vivado_CORES))) $(call vivado_shell,$@)
+	  $(call _p_set,$(NAME),$(lastword $(vivado_CORES))) $(MAKE) check_sources; \
+	  $(call _p_set,$(NAME),$(lastword $(vivado_CORES))) $(MAKE) vivado_shell TCL_ARGS=$@
 
 
 ## TODO LINE:  -----------------------------------------------------------------
@@ -195,7 +222,7 @@ new_ip edit_ip:
 .PHONY: clean_project
 clean_project: ##@projects Clean all build project files from disk (make write_project before this)
 	@- ${_envset}; \
-	  rm -rf $(builddir)/$(VIVADO_IPDIR)/$(NAME)_edit \
+	  rm -rf $(VIVADO_IPDIR)/$(NAME)_edit \
 		 $(VIVADO_PRJDIR)/$(NAME).* \
 		 vivado.jou  vivado.log  \
 		 vivado_*.backup.jou  vivado_*.backup.log  vivado_pid*.str \

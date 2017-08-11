@@ -5,7 +5,7 @@ source $top_srcdir/fpga/write_project_tcl.tcl
 
 namespace eval ::tclapp::xilinx::projutils {
   variable make_env
-  variable project_set
+  variable project_env
   variable project_env
 
   namespace export make_import_file
@@ -135,7 +135,7 @@ proc wr_create_project { proj_dir name part_name } {
   variable l_script_data
   variable make_env
   variable project_env
-  variable project_set
+  variable project_env
 
 
   # ADD MAKE_ENV
@@ -147,7 +147,7 @@ proc wr_create_project { proj_dir name part_name } {
 
   lappend l_script_data "# Set the reference directory for source file relative paths (by default the value is script directory path)"
 ##  lappend l_script_data "set origin_dir \"$a_global_vars(s_relative_to)\""
-  lappend l_script_data "set origin_dir \"\$project_set(dir_src)\""
+  lappend l_script_data "set origin_dir \"\$project_env(dir_src)\""
 
   lappend l_script_data ""
   set var_name "origin_dir_loc"
@@ -380,7 +380,7 @@ proc write_files { proj_dir proj_name tcl_obj type } {
   variable l_script_data
   variable make_env
   variable project_env
-  variable project_set
+
 
   set l_local_file_list [list]
   set l_remote_file_list [list]
@@ -400,7 +400,7 @@ proc write_files { proj_dir proj_name tcl_obj type } {
     set begin [lsearch -exact $path_dirs "$proj_name.srcs"]
     set src_file [join [lrange $path_dirs $begin+1 end] "/"]
     set file_no_quotes [string trim $file "\""]
-    set src_file_path "$project_set(dir_src)/\${make_env(project_name)}.srcs/$src_file"
+	set src_file_path "$project_env(dir_src)/\${make_env(project_name)}.srcs/$src_file"
     set file_object [lindex [get_files -of_objects [get_filesets $fs_name] [list $file]] 0]
     set file_props [list_property $file_object]
     if { [lsearch $file_props "IMPORTED_FROM"] != -1 } {
@@ -545,7 +545,6 @@ proc write_constrs { proj_dir proj_name tcl_obj type } {
   variable l_script_data
   variable make_env
   variable project_env
-  variable project_set
 
 
   set fs_name [get_filesets $tcl_obj]
@@ -567,7 +566,7 @@ proc write_constrs { proj_dir proj_name tcl_obj type } {
     set src_file      [join [lrange $path_dirs $begin+1 end] "/"]
     set file_no_quotes [string trim $file "\""]
     # set src_file_path "\$origin_dir/$src_file"
-    set src_file_path "$project_set(dir_src)/\${make_env(project_name)}.srcs/$src_file"
+	set src_file_path "$project_env(dir_src)/\${make_env(project_name)}.srcs/$src_file"
     set file_object   [lindex [get_files -of_objects [get_filesets $fs_name] [list $file]] 0]
     set file_props    [list_property $file_object]
 
@@ -575,7 +574,7 @@ proc write_constrs { proj_dir proj_name tcl_obj type } {
     if { [lsearch $file_props "IMPORTED_FROM"] != -1 } {
       set imported_path  [get_property "imported_from" $file]
       set rel_file_path  [get_relative_file_path_for_source $file [get_script_execution_dir]]
-      set proj_file_path "$project_set(dir_src)/\${make_env(project_name)}.srcs/$rel_file_path"
+	  set proj_file_path "$project_env(dir_src)/\${make_env(project_name)}.srcs/$rel_file_path"
       set file           "\"[file normalize $proj_dir/${proj_name}.srcs/$src_file]\""
       # donot copy imported constrs in new project? set it as remote file in new project.
       if { $a_global_vars(b_arg_no_copy_srcs) } {

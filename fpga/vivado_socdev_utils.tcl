@@ -63,7 +63,7 @@ proc get_funid { {ns ""} {fun ""} } {
     if {[string equal $fi ::$fun] || [string equal $fi $fun] || [string equal $fs $fun]} {return $count}
     incr count
   }
-  send_msg_id AnacletoUtils-1 WARNING "function id not found"
+  # send_msg_id AnacletoUtils-1 WARNING "function id not found"
   return "unknown"
 }
 

@@ -93,9 +93,9 @@ proc write_anacleto_tcl {args} {
   set v::opts(b_arg_force)           0
   set v::opts(b_arg_all_props)       1
   set v::opts(b_arg_dump_proj_info)  1
-  set v::opts(s_srctcl)             $v::ps(dir_src)/$v::ps(project_name).tcl
-  set v::opts(s_srcdir)             $v::ps(dir_src)
-  set v::opts(s_project_name)       $v::ps(project_name)
+  set v::opts(s_srctcl)             $v::pe(dir_src)/$v::pe(project_name).tcl
+  set v::opts(s_srcdir)             $v::pe(dir_src)
+  set v::opts(s_project_name)       $v::pe(project_name)
 
   # process options
   for {set i 0} {$i < [llength $args]} {incr i} {
@@ -364,6 +364,17 @@ proc wr_proj_info {args} {}
 ## /// WRITE_FILESET  /////////////////////////////////////////////////////// ##
 ## ////////////////////////////////////////////////////////////////////////// ##
 
+proc test_is_makefile_repo { path } {
+  set path_list [list \
+	{*}[split $v::pe(IP_SOURCES) " "] \
+	{*}[split $v::pe(ip_repo) " "] \
+	{*}$v::me(builddir) ]
+  foreach repo $path_list {
+	if { [file normalize $path] eq [file normalize $repo] } { return true }
+	if { [file normalize $path] eq [file normalize [file dirname $repo]] } { return true }
+  }
+  return false
+}
 
 proc write_specified_fileset { proj_dir proj_name filesets } {}
 proc write_specified_fileset { proj_dir proj_name filesets } {
@@ -378,6 +389,8 @@ proc write_specified_fileset { proj_dir proj_name filesets } {
 
 	l::data " # /////////////////////////////////////////////////////////////  "
 	l::data " # // $tcl_obj                                                    "
+	l::data " # /////////////////////////////////////////////////////////////  "
+	l::data " # "
 
     # is this a IP block fileset? if yes, do not create block fileset, but
     # create for a pure HDL based fileset (no IP's)
@@ -390,38 +403,41 @@ proc write_specified_fileset { proj_dir proj_name filesets } {
 
       set fs_sw_type [get_fileset_type_switch $fs_type]
       l::data "   create_fileset $fs_sw_type $tcl_obj"
-      l::data " \}\n"
+	  l::data " \}"
+	  l::data " # "
     }
 
     set get_what_fs "get_filesets"
-
-    # //// REPO_PATHS //////
+	# //// REPO_PATHS /////////////////////////////////////////////////////// ##
 	# set IP REPO PATHS (if any) for filesets of type "DesignSrcs" or "BlockSrcs"
 	if { (({DesignSrcs} == $fs_type) || ({BlockSrcs} == $fs_type)) } {
 	  if { ({RTL} == [get_property design_mode [get_filesets $tcl_obj]]) } {
-		set repo_paths [get_ip_repo_paths $tcl_obj]
-		if { [llength $repo_paths] > 0 } {
-		  l::data " # Set IP repository paths"
+		set all_repo_paths [get_ip_repo_paths $tcl_obj]
+		set local_repo_paths [list]
+		foreach path $all_repo_paths {
+		 if { ![test_is_makefile_repo $path]} { lappend local_repo_paths $path }
+		}
+		l::data " # Set IP repository paths"
+		if { [llength $local_repo_paths] > 0 } {
 		  l::data " set obj \[get_filesets $tcl_obj\]"
 		  set path_list [list]
-		  foreach path $repo_paths {
-			lappend path_list "\"\$make_env[get_path_relative_to (srcdir) $path]\""
+		  foreach path $local_repo_paths {
+			 lappend path_list "\"\$make_env[get_path_relative_to (srcdir) $path]\""
 		  }
 		  #
-		  # string solution
-		  # set repo_path_str [join $path_list " "]
-		  # l::data " set_property \"ip_repo_paths\" \"${repo_path_str}\" \$obj"
-		  #
-		  # list solution
+		  # list addition
 		  l::data " set repo_path_str \[list \\"
-		  foreach repo_el $path_list { l::data "  $repo_el\\" }
+		  foreach repo_el $local_repo_paths { l::data "  $repo_el\\" }
 		  l::data " \]"
 		  l::data " set_property \"ip_repo_paths\" \${repo_path_str} \$obj"
 		  #
-		  l::data " "
+		  l::data " # "
 		  l::data " # Rebuild user ip_repo's index before adding any source files"
 		  l::data " update_ip_catalog -rebuild"
-		  l::data " "
+		  l::data " # "
+		} else {
+		  l::data " # No local ip repos found for $tcl_obj ... "
+		  l::data " # "
 		}
 	  }
 	}
@@ -458,8 +474,8 @@ proc write_specified_fileset { proj_dir proj_name filesets } {
 	#      l::data " set obj \[$get_what_fs $tcl_obj\]"
 	#      write_props $proj_dir $proj_name $get_what_fs $tcl_obj "fileset"
 	#    }
-	l::data ""
-	l::data ""
+	l::data " # "
+	l::data " # "
 	v::log  ""
   }
 }
@@ -544,21 +560,10 @@ proc write_files { proj_dir proj_name tcl_obj type } {
   ###
   ### COPY LOCALS
   if { [llength $copy_coln] > 0 } {
-	#	l::data " set files \[list \\"
-	#	foreach ifile $copy_coln { l::data "  \"\$project_env(dir_src)/$ifile\"\\" }
-	#	l::data " \]"
-	# l::data " file copy -force \$files \$project_env(dir_prj) "
 	foreach ifile $copy_coln {
 	 l::data " file mkdir \"\$project_env(dir_prj)/[file dirname $ifile]\""
 	 l::data " file copy -force \"\$project_env(dir_src)/$ifile\" \\\n    \"\$project_env(dir_prj)/$ifile\""
 	}
-	# is this a IP block fileset? if yes, import files into current source fileset
-	#	if { [is_ip_fileset $tcl_obj] } {
-	#	  l::data " set copied_files \[import_files -fileset [current_fileset -srcset] \$files\]"
-	#	} else {
-	#	  l::data " set copied_files \[import_files -fileset $tcl_obj \$files\]"
-	#	}
-	l::data ""
   }
   ###
   ### IMPORTS
@@ -572,7 +577,6 @@ proc write_files { proj_dir proj_name tcl_obj type } {
 	} else {
 	  l::data " set imported_files \[import_files -fileset $tcl_obj \$files\]"
 	}
-	l::data ""
   }
   ###
   ### ADD REMOTES
@@ -581,8 +585,8 @@ proc write_files { proj_dir proj_name tcl_obj type } {
 	foreach file $add_file_coln { l::data "  \"\[file normalize $file\]\"\\" }
 	l::data " \]"
 	l::data " add_files -norecurse -fileset \$obj \$files"
-	l::data " "
   }
+  l::data " # "
   ###
   ### PROPERTIES
   # write fileset file properties for remote files (added sources)
@@ -638,7 +642,7 @@ proc write_properties { prop_info_list get_what tcl_obj } {
 	  }
 	}
   }
-  l::data ""
+  l::data " # "
 }
 
 ## //// WRITE FILE PROPS ///////////////////////////////////////////////////////
@@ -686,7 +690,7 @@ proc write_fileset_file_properties { tcl_obj fs_name proj_dir l_file_list file_c
 
 	# write properties now
 	if { $prop_count>0 } {
-	  l::data "  # Properties for [file tail $file]"
+	  l::data " # Properties for [file tail $file]"
 	  if { {remote} == $file_category } {
 		  l::data "  set file \"\$project_env[get_path_relative_to (dir_src) $file]/[file tail $file]\""
 		  l::data "  set file \[file normalize \$file\]"
@@ -706,9 +710,8 @@ proc write_fileset_file_properties { tcl_obj fs_name proj_dir l_file_list file_c
   }
 
   if { $file_prop_count == 0 } {
-	l::data "  # No properties for [file tail $tcl_obj]"
+	l::data " # No properties for [file tail $tcl_obj]"
   }
-  l::data ""
 }
 
 
@@ -757,8 +760,8 @@ proc get_path_relative_to { relative_to filename } {
     "(top_srcdir)"       { set rto [top_srcdir] }
     "(builddir)"         { set rto [builddir] }
     "(top_builddir)"     { set rto [top_builddir] }
-    "(dir_prj)"          { set rto $v::ps(dir_prj) }
-    "(dir_src)"          { set rto $v::ps(dir_src) }
+	"(dir_prj)"          { set rto $v::pe(dir_prj) }
+	"(dir_src)"          { set rto $v::pe(dir_src) }
     default { set env_path false; set rto $relative_to }
   }
 

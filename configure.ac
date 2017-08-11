@@ -307,6 +307,8 @@ AC_CONFIG_FILES(
 		 def_prj(w7x_timing)
 		 def_prj(axi_rp)
 		 projects/core_pwm/Makefile
+		 projects/test1/Makefile
+		 projects/test2/Makefile
 		 .gitignore
                )
 AC_OUTPUT

@@ -138,7 +138,7 @@ namespace upvar ::tclapp::socdev::makeutils core_env    core_env
 ## /// CREATE PROJ ////////////////////////////////////////////////////////// ##
 ## ////////////////////////////////////////////////////////////////////////// ##
  
- create_project scc52460_axi4  "$make_env(builddir)/edit/red_pitaya"  -part xc7z010clg400-1
+ create_project rfx_pwm_1.0_0.1  "$make_env(builddir)/edit/red_pitaya"  -part xc7z010clg400-1
  
  # Set the directory path for the new project
  set proj_dir [get_property directory [current_project]]
@@ -164,54 +164,8 @@ namespace upvar ::tclapp::socdev::makeutils core_env    core_env
  # 
  # Set 'sources_1' fileset object
  set obj [get_filesets sources_1]
- file mkdir "$project_env(dir_prj)/scc52460_axi4.srcs/sources_1/bd/scc52460"
- file copy -force "$project_env(dir_src)/scc52460_axi4.srcs/sources_1/bd/scc52460/scc52460.bd" \
-    "$project_env(dir_prj)/scc52460_axi4.srcs/sources_1/bd/scc52460/scc52460.bd"
- file mkdir "$project_env(dir_prj)/scc52460_axi4.srcs/sources_1/bd/scc52460/hdl"
- file copy -force "$project_env(dir_src)/scc52460_axi4.srcs/sources_1/bd/scc52460/hdl/scc52460_wrapper.v" \
-    "$project_env(dir_prj)/scc52460_axi4.srcs/sources_1/bd/scc52460/hdl/scc52460_wrapper.v"
- set files [list \
-  "[file normalize $project_env(dir_prj)/scc52460_axi4.srcs/sources_1/bd/scc52460/scc52460.bd]"\
-  "[file normalize $project_env(dir_prj)/scc52460_axi4.srcs/sources_1/bd/scc52460/hdl/scc52460_wrapper.v]"\
- ]
- add_files -norecurse -fileset $obj $files
- # 
- # No properties for sources_1
- # Properties for scc52460.bd
-  set file "$project_env(dir_prj)/scc52460_axi4.srcs/sources_1/bd/scc52460/scc52460.bd"
-  set file_obj [get_files -of_objects [get_filesets sources_1] [list "$file"]]
-  set_property -quiet "exclude_debug_logic" "0" $file_obj
-  if { ![get_property "is_locked" $file_obj] } {
-    set_property -quiet "generate_synth_checkpoint" "0" $file_obj
-  }
-  set_property -quiet "is_enabled" "1" $file_obj
-  set_property -quiet "is_global_include" "0" $file_obj
-  if { ![get_property "is_locked" $file_obj] } {
-    set_property -quiet "is_locked" "0" $file_obj
-  }
-  set_property -quiet "library" "xil_defaultlib" $file_obj
-  set_property -quiet "path_mode" "RelativeFirst" $file_obj
-  if { ![get_property "is_locked" $file_obj] } {
-    set_property -quiet "synth_checkpoint_mode" "None" $file_obj
-  }
-  set_property -quiet "used_in" "synthesis implementation simulation" $file_obj
-  set_property -quiet "used_in_implementation" "1" $file_obj
-  set_property -quiet "used_in_simulation" "1" $file_obj
-  set_property -quiet "used_in_synthesis" "1" $file_obj
- # 
- # Properties for scc52460_wrapper.v
-  set file "$project_env(dir_prj)/scc52460_axi4.srcs/sources_1/bd/scc52460/hdl/scc52460_wrapper.v"
-  set file_obj [get_files -of_objects [get_filesets sources_1] [list "$file"]]
-  set_property -quiet "file_type" "Verilog" $file_obj
-  set_property -quiet "is_enabled" "1" $file_obj
-  set_property -quiet "is_global_include" "0" $file_obj
-  set_property -quiet "library" "xil_defaultlib" $file_obj
-  set_property -quiet "path_mode" "RelativeFirst" $file_obj
-  set_property -quiet "used_in" "synthesis implementation simulation" $file_obj
-  set_property -quiet "used_in_implementation" "1" $file_obj
-  set_property -quiet "used_in_simulation" "1" $file_obj
-  set_property -quiet "used_in_synthesis" "1" $file_obj
- # 
+ # Empty (no sources present)
+
  # 
  # 
  # /////////////////////////////////////////////////////////////  
@@ -225,30 +179,8 @@ namespace upvar ::tclapp::socdev::makeutils core_env    core_env
  # 
  # Set 'constrs_1' fileset object
  set obj [get_filesets constrs_1]
- file mkdir "$project_env(dir_prj)/scc52460_axi4.srcs/constrs_1/new"
- file copy -force "$project_env(dir_src)/scc52460_axi4.srcs/constrs_1/new/red_pitaya.xdc" \
-    "$project_env(dir_prj)/scc52460_axi4.srcs/constrs_1/new/red_pitaya.xdc"
- set files [list \
-  "[file normalize $project_env(dir_prj)/scc52460_axi4.srcs/constrs_1/new/red_pitaya.xdc]"\
- ]
- add_files -norecurse -fileset $obj $files
- # 
- # No properties for constrs_1
- # Properties for red_pitaya.xdc
-  set file "$project_env(dir_prj)/scc52460_axi4.srcs/constrs_1/new/red_pitaya.xdc"
-  set file_obj [get_files -of_objects [get_filesets constrs_1] [list "$file"]]
-  set_property -quiet "file_type" "XDC" $file_obj
-  set_property -quiet "is_enabled" "1" $file_obj
-  set_property -quiet "is_global_include" "0" $file_obj
-  set_property -quiet "library" "xil_defaultlib" $file_obj
-  set_property -quiet "path_mode" "RelativeFirst" $file_obj
-  set_property -quiet "processing_order" "NORMAL" $file_obj
-  set_property -quiet "scoped_to_cells" "" $file_obj
-  set_property -quiet "scoped_to_ref" "" $file_obj
-  set_property -quiet "used_in" "synthesis implementation" $file_obj
-  set_property -quiet "used_in_implementation" "1" $file_obj
-  set_property -quiet "used_in_synthesis" "1" $file_obj
- # 
+ # Empty (no sources present)
+
  # 
  # 
  # /////////////////////////////////////////////////////////////  

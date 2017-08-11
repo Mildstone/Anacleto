@@ -13827,6 +13827,8 @@ projects/rfx_pwmgen/src/rfx_pwmgen.c
 projects/rfx_pwmgen/src/rfx_pwmgen.h
 projects/rfx_pwmgen/src/rfx_pwmgen_test.c
 projects/rfx_pwmgen/src/rfx_pwmgen_test2.c
+projects/test1/Makefile.am
+projects/test2/Makefile.am
 projects/w7x_timing/deploy.sh
 projects/w7x_timing/doc/timing-board.pdf
 projects/w7x_timing/doc/timing-board.tex

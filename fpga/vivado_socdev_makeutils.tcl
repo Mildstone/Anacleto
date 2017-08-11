@@ -24,6 +24,7 @@ catch {
   source -notrace $top_srcdir/fpga/vivado_socdev_env.tcl
   source -notrace $top_srcdir/fpga/vivado_socdev_listutils.tcl
   source -notrace $top_srcdir/fpga/write_project_tcl_devel.tcl
+  source -notrace $top_srcdir/fpga/write_anacleto_prj.tcl
 }
 
 
@@ -37,7 +38,6 @@ namespace eval ::tclapp::socdev::makeutils {
 namespace eval v {
  upvar 1 make_env    me
  upvar 1 project_env pe
- upvar 1 project_set ps
  upvar 1 core_env    ce
  # debug get function id
  proc fid {} { get_funid [namespace parent] [lindex [info level 1] 0] }
@@ -49,7 +49,6 @@ namespace eval v {
 catch {
     array set ::tclapp::xilinx::projutils::make_env    [array get make_env]
     array set ::tclapp::xilinx::projutils::project_env [array get project_env]
-    array set ::tclapp::xilinx::projutils::project_set [array get project_set]
     array set ::tclapp::xilinx::projutils::core_env    [array get core_env]
   }
 
@@ -62,22 +61,33 @@ proc set_compatible_with { program } {
 }
 
 
+proc make_init_script {} {
+ set path_brd "$v::me(top_srcdir)/fpga/brd \
+			  $v::me(top_srcdir)/fpga/brd/redpitaya \
+			  $v::me(top_srcdir)/fpga/brd/redpitaya/1.1"
+ set_param board.repoPaths [list $path_brd]
+}
+
+
+## ////////////////////////////////////////////////////////////////////////// ##
+## /// SET REPO PATHS /////////////////////////////////////////////////////// ##
+## ////////////////////////////////////////////////////////////////////////// ##
+
 proc make_set_repo_path {} {
   set path_list [list]
-  foreach ip_name [split $v::me(IP_SOURCES) " "] {
+  foreach ip_name [split $v::pe(IP_SOURCES) " "] {
     send_msg_id [v::mid]-1 INFO "ip name: $ip_name"
-    set ip_path [file normalize [file dirname $v::ce(srcdir)]]
+	set ip_path [file dirname $ip_name]
     lappend path_list $ip_path
   }
-  foreach el [split $v::me(ip_repo) " "] { lappend path_list $el }
+  foreach el [split $v::pe(ip_repo) " "] { lappend path_list $el }
+  lappend path_list $v::me(builddir)
   if { [catch {current_project}] } {
-   send_msg_id [v::mid]-1 ERROR "project not defined"
+   send_msg_id [v::mid]-2 ERROR "project not defined"
   } else {
    set_property ip_repo_paths [lsort -unique $path_list] [current_project]
   }
 }
-
-
 
 
 
@@ -88,28 +98,20 @@ proc make_set_repo_path {} {
 proc make_new_project {} {
   set_compatible_with Vivado
 
-
-  set part    $v::me(VIVADO_SOC_PART)
+  set part    $v::pe(VIVADO_SOC_PART)
   set name    $v::pe(project_name)
   set dir_prj $v::pe(dir_prj)
-  set dir_src $v::pe(dir_src)
+
+  # init script
+  make_init_script
 
   # setup a project
   create_project -part $part -force $name $dir_prj
   if { [catch {current_project}] } { error "Could not start a new project" }
-  # reset_project_vars
-  reset_make_env
 
   # setup common ip catalog
   make_set_repo_path
   update_ip_catalog
-
-  # create flows
-  #  set vivado_major_num [lindex [split $v::me(VIVADO_VERSION) '.'] 0]
-  #  set flow "Vivado Synthesis $vivado_major_num"
-  #  create_run -flow $flow auto_synth_1
-  #  set flow "Vivado Implementation $vivado_major_num"
-  #  create_run auto_impl_1 -parent_run auto_synth_1 -flow $flow
 
   # load files
   make_load_sources
@@ -124,15 +126,18 @@ proc make_new_project {} {
 
 
 proc make_new_ip { } {
-
   set_compatible_with Vivado
-  set project_name $v::ce(core_name)_edit
+
+  set project_name $v::pe(project_name)
+  set dir_prj      $v::pe(dir_prj)
   set core_name    $v::ce(core_name)
-  set dir_src      $v::ce(srcdir)
-  set dir_bld      $v::ce(builddir)
+  set ipdir        $v::ce(ipdir)
+
+  # init script
+  make_init_script
 
   # setup a project
-  create_project -in_memory -part $v::me(VIVADO_SOC_PART) -force dummy
+  create_project -in_memory -part $v::pe(VIVADO_SOC_PART) -force dummy
   if { [catch {current_project}] } {
    send_msg_id [v::mid]-1 ERROR "Could not start a new project"
   }
@@ -143,15 +148,14 @@ proc make_new_ip { } {
   make_load_sources
 
   set files_no [llength [get_files -quiet]]
-
   if { $files_no > 0 } {
-   ipx::package_project -import_files -root_dir $dir_src
+   ipx::package_project -import_files -root_dir $ipdir
    set core [ipx::current_core]
-   set_property VERSION $v::ce(VERSION) $core
-   set_property NAME $v::ce(core_name) $core
+   set_property VERSION      $v::ce(VERSION) $core
+   set_property NAME         $v::ce(core_name) $core
    set_property DISPLAY_NAME $v::ce(core_fullname) $core
-   set_property LIBRARY $v::ce(VENDOR) $core
-   set_property VENDOR $v::ce(VENDOR) $core
+   set_property LIBRARY      $v::ce(VENDOR) $core
+   set_property VENDOR       $v::ce(VENDOR) $core
    #  set_property DESCRIPTION $v::ce(DESCRIPTION) $core
 
    # synth design to make a first compile test
@@ -168,26 +172,25 @@ proc make_new_ip { } {
     ipx::add_file drivers/$file \
      [ipx::get_file_groups xilinx_softwaredriver -of_objects $core]
    }
+   ipx::save_core $core
   } else {
    ipx::create_core $v::ce(VENDOR) $v::ce(VENDOR) \
 		    $v::ce(core_name) $v::ce(VERSION)
    set core [ipx::current_core]
-   set_property ROOT_DIRECTORY $dir_src $core
+   set_property ROOT_DIRECTORY $ipdir $core
+   ipx::save_core $core
   }
-
-  ipx::save_core $core
-
-  if { $files_no == 0 } {
-    # reopen ip project for editing
-    ipx::edit_ip_in_project -upgrade true -name $project_name \
-      -directory ${dir_bld} $dir_src/component.xml
-  }
+  # reopen ip project for editing
+  ipx::edit_ip_in_project -upgrade true -name $project_name \
+   -directory $dir_prj $ipdir/component.xml
+  # write project
+  make_write_project
 
   # close dummy in memory project
   current_project dummy
   if { [get_projects dummy] != "" } {
-    current_project dummy
-    close_project -quiet
+	current_project dummy
+	close_project -quiet
   }
 }
 
@@ -200,17 +203,22 @@ proc make_new_ip { } {
 proc make_edit_ip { } {
   set_compatible_with Vivado
 
-  set project_name $v::ce(core_name)_edit
-  set core_name    $v::ce(core_name)
-  set dir_src      $v::ce(srcdir)
-  set dir_bld      $v::ce(builddir)
+  # init script
+  make_init_script
 
-  create_project -in_memory -part $v::me(VIVADO_SOC_PART) -force dummy
+  set project_name $v::pe(project_name)
+  set dir_prj      $v::pe(dir_prj)
+  set core_name    $v::ce(core_name)
+  set ipdir        $v::ce(ipdir)
+
+  puts "---> $project_name"
+
+  create_project -in_memory -part $v::pe(VIVADO_SOC_PART) -force dummy
   if { [catch {current_project}] } { send_msg_id [v::mid]-1 ERROR "dummy prj fail"}
 
-  if {![file exists $dir_src/component.xml]} { make_new_ip}
+  if {![file exists $ipdir/component.xml]} { make_new_ip}
   ipx::edit_ip_in_project -upgrade true -name $project_name \
-      -directory ${dir_bld} $dir_src/component.xml
+	  -directory ${dir_prj} $ipdir/component.xml
 
   # close dummy in memory project
   if { [get_projects dummy] != ""} {
@@ -220,56 +228,6 @@ proc make_edit_ip { } {
 }
 
 
-#proc discontinued_make_edit_ip { } {
-#  set_compatible_with Vivado
-#  set missing_components [list]
-
-#  if { [catch {current_project}] } {
-#    create_project -in_memory -part $v::me(VIVADO_SOC_PART) -force _dummy_edit_ip
-#  }
-#  foreach ip_name [split $v::me(IP_SOURCES) " "] {
-#    set ip_path [file dirname $ip_name]
-#    set ip_name [file tail $ip_name]
-#    if {![file exists $v::me(srcdir)/${ip_path}/$ip_name/component.xml]} {
-#	  #  set ip_name_seed    [join [lrange [split $ip_name "_"] 0 end-1] "_"]
-#	  #  set ip_name_version [lindex [split $ip_name "_"] end]
-#	  #  create_peripheral user.org user ${ip_name_seed} ${ip_name_version} \
-#	  #    -dir $v::me(srcdir)/${ip_path}
-#	  #  ipx::create_core user.org user ${ip_name_seed} ${ip_name_version}
-#	  #  add_peripheral_interface S00_AXI -interface_mode slave -axi_type lite \
-#	  #    [ipx::find_open_core user.org:user:${ip_name_seed}:${ip_name_version}]
-#	  #  generate_peripheral -force \
-#	  #    [ipx::find_open_core user.org:user:${ip_name_seed}:${ip_name_version}]
-#	  #  write_peripheral [ipx::find_open_core user.org:user:${ip_name_seed}:${ip_name_version}]
-#	  lappend missing_components $ip_name
-#	  create_project -part $v::me(VIVADO_SOC_PART) -force $ip_name \
-#	    $v::pe(dir_prj)/${ip_path}/${ip_name}_project
-#	} else {
-#	  ipx::edit_ip_in_project -upgrade true -name $ip_name \
-#	    -directory $v::pe(dir_prj)/${ip_path}/${ip_name}_project \
-#	    $v::me(srcdir)/${ip_path}/$ip_name/component.xml
-#	}
-#  }
-#  # Print warning message
-#  if { [llength $missing_components] > 0 } {
-#    puts " "
-#    puts "  ------------------------------------------------------------------------- "
-#    puts " | Valid IP definitions were not found in the specified source  directory.  "
-#    puts " | The script will continue creating a generic vivado project that must be  "
-#    puts " | packed manually to a new ip using \"Tools->Create and Package IP\""
-#    puts " |   list of missing ip:"
-#    foreach ip $missing_components {
-#      set ip_name_seed    [join [lrange [split $ip "_"] 0 end-1] "_"]
-#      set ip_name_version [lindex [split $ip "_"] end]
-#      puts " |                      $ip_name_seed $ip_name_version"
-#    }
-#    puts "  ------------------------------------------------------------------------- "
-#  }
-#  if { [get_projects _dummy_edit_ip] != "" } {
-#    current_project _dummy_edit_ip
-#    close_project -quiet
-#  }
-#}
 
 
 ## ////////////////////////////////////////////////////////////////////////// ##
@@ -312,8 +270,8 @@ proc make_load_sources { } {
   # refer to https://www.xilinx.com/itp/xilinx10/isehelp/ise_r_source_types.htm
   # import all remote sources
 
-  if {!($v::me(SOURCES) eq "")} {
-   foreach file [split $v::me(SOURCES) " "] {
+  if {!($v::pe(SOURCES) eq "")} {
+   foreach file [split $v::pe(SOURCES) " "] {
      set ftype [file extension $file]
      set path [make_find_path $file]
      if {$path eq ""} {continue}
@@ -334,23 +292,23 @@ proc make_load_sources { } {
    }
   }
   # import all remote BD from TCL scripts
-  if {!($v::me(BD_SOURCES) eq "")} {
-   foreach file [split $v::me(BD_SOURCES) " "] {
+  if {!($v::pe(BD_SOURCES) eq "")} {
+   foreach file [split $v::pe(BD_SOURCES) " "] {
      set ftype [file extension $file]
      set path [make_find_path $file]
      if {$path eq ""} {continue}
      switch -regexp $ftype {
        \.(tcl|Tcl)\$       { send_msg_id [v::mid]-3 INFO "reading design from TCL script..."
-			     set err [source -quiet $path]
-			     if { !($err eq "")  } {
-				  send_msg_id [v::mid]-3 INFO \
-				  "the tcl design $design_name has priority over bd binary \
-				   removed $design_name in project, replacing with $path"				   
-				  make_remove_bd_design ${design_name}
-				  set err [source -quiet $path]
-				  if { !($err eq "") } { error $errMsg }
-				}
-			   }
+							 set err [source -quiet $path]
+							 if { !($err eq "")  } {
+							  send_msg_id [v::mid]-3 INFO \
+							  "the tcl design $design_name has priority over bd binary \
+							  removed $design_name in project, replacing with $path"
+							  make_remove_bd_design ${design_name}
+							  set err [source -quiet $path]
+							  if { !($err eq "") } { error $errMsg }
+							 }
+							}
        \.(bd)\$            { add_files $path }
      }
    }
@@ -369,17 +327,16 @@ proc load_sources { src_list type fset } {
 
 
 
-
-
-
-
 proc make_open_project {} {
   set_compatible_with Vivado
 
-  set part $v::me(VIVADO_SOC_PART)
-  set name $v::ps(project_name)
-  set dir_prj $v::ps(dir_prj)
-  set dir_src $v::ps(dir_src)
+  # init script
+  make_init_script
+
+  set part $v::pe(VIVADO_SOC_PART)
+  set name $v::pe(project_name)
+  set dir_prj $v::pe(dir_prj)
+  set dir_src $v::pe(dir_src)
 
   catch {::open_project -part $part $dir_prj/$name.xpr}
   ## restore project from tcl script ##
@@ -393,6 +350,10 @@ proc make_open_project {} {
   if { [catch {current_project}] } { error "Could not open project" } \
   else { puts "PROJECT LOADED..."}
 
+  # setup common ip catalog
+  make_set_repo_path
+  update_ip_catalog
+
   ## load remote sources
   make_load_sources
 }
@@ -405,12 +366,13 @@ proc make_open_project {} {
 proc make_write_project {} {
   set_compatible_with Vivado
 
-  set dir_src $v::ps(dir_src)
+  set dir_src $v::pe(dir_src)
   set ::origin_dir $dir_src
 
   if { [catch {current_project}] } { make_open_project }
   file mkdir $v::pe(dir_src)
-  write_project_tcl \
+  #   write_project_tcl
+  write_anacleto_tcl \
     -force -target_proj_dir $v::pe(dir_prj) \
     $v::pe(dir_src)/$v::pe(project_name).tcl
 }
@@ -438,11 +400,11 @@ proc make_write_bitstream {} {
   proc get_major { code } { return [lindex [split $code '.'] 0] }
 
   if { [lsearch -exact [get_runs] $synth] == -1 } {
-    set flow "Vivado Synthesis [get_major $v::me(VIVADO_VERSION)]"
+	set flow "Vivado Synthesis [get_major $v::pe(VIVADO_VERSION)]"
     create_run -flow $flow $synth
   }
   if { [lsearch -exact [get_runs] $impl] == -1 } {
-    set flow "Vivado Implementation [get_major $v::me(VIVADO_VERSION)]"
+	set flow "Vivado Implementation [get_major $v::pe(VIVADO_VERSION)]"
     create_run $impl -parent_run $synth -flow $flow
   }
 
@@ -539,7 +501,7 @@ proc make_write_linux_bsp {} {
   open_hw_design $path_sdk/$prj_name.sysdef
 
   set_repo_path  $v::me(top_srcdir)/fpga/hsi/linux-bsp
-  foreach ip_name [split $v::me(IP_SOURCES)] {
+  foreach ip_name [split $v::pe(IP_SOURCES)] {
     set_repo_path $v::me(srcdir)/$ip_name
   }
 
