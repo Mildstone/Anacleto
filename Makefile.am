@@ -47,7 +47,7 @@ linux-init-s: $(LINUX_SRCDIR) $(LINUX_BUILDDIR) print-env
 	cd $(LINUX_BUILDDIR); \
 	export LS=$$(ls); \
 	export KERNELVERSION=$$($(MAKE) -s -C $< kernelversion); \
-	export DEFCONFIG=${abs_top_srcdir}/conf/linux/$${KERNELVERSION}/${SOC_BOARD}.def; \
+	export DEFCONFIG=${abs_top_srcdir}/conf/linux/$${KERNELVERSION}/${BOARD}.def; \
 	export SRCARCH=${ARCH}; \
 	export srctree=$(LINUX_SRCDIR); \
 	$(LINUX_BUILDDIR)/scripts/kconfig/conf --defconfig=$${DEFCONFIG} Kconfig
@@ -77,7 +77,7 @@ linux-updateconfig: ##@linux update the soc defconf in /conf/linux/...
 linux-updateconfig: $(LINUX_SRCDIR) $(LINUX_BUILDDIR) $(LINUX_BUILDDIR)/.config
 	$(_set_export); \
 	KERNELVERSION=$$($(MAKE) -s -C $< kernelversion); \
-	DEFCONFIG=${abs_top_srcdir}/conf/linux/$${KERNELVERSION}/${SOC_BOARD}.def; \
+	DEFCONFIG=${abs_top_srcdir}/conf/linux/$${KERNELVERSION}/${BOARD}.def; \
 	$(MAKE) linux-savedefconfig && cp $(LINUX_BUILDDIR)/defconfig $${DEFCONFIG}
 
 linux-%: $(LINUX_SRCDIR) $(LINUX_BUILDDIR)

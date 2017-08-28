@@ -115,6 +115,7 @@ proc make_new_project {} {
 
   # load files
   make_load_sources
+  set_property source_mgmt_mode All [current_project]
 
   # write project
   make_write_project
@@ -146,6 +147,9 @@ proc make_new_ip { } {
 
   # load files
   make_load_sources
+
+  set_property source_mgmt_mode All [current_project]
+
 
   set files_no [llength [get_files -quiet]]
   if { $files_no > 0 } {
@@ -313,6 +317,7 @@ proc make_load_sources { } {
      }
    }
   }
+
 }
 
 proc load_sources { src_list type fset } {
@@ -356,6 +361,7 @@ proc make_open_project {} {
 
   ## load remote sources
   make_load_sources
+  set_property source_mgmt_mode All [current_project]
 }
 
 
@@ -386,10 +392,11 @@ proc make_write_project {} {
 proc make_write_bitstream {} {
   set_compatible_with Vivado
 
-  make_open_project
   set prj_name $v::pe(project_name)
   set path_bit $v::pe(dir_bit)
   set path_sdk $v::pe(dir_sdk)
+
+  make_open_project
 
   # set name of run
   set synth $v::pe(synth_name)
@@ -418,7 +425,6 @@ proc make_write_bitstream {} {
   ## START SYNTH ##
   reset_run $impl
   reset_run $synth
-
 
   launch_runs $impl -to_step write_bitstream -jobs $v::me(maxThreads)
   wait_on_run $synth

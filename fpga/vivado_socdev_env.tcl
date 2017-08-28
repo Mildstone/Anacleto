@@ -97,6 +97,7 @@ proc reset_project_env { } {
   set project_env(SOURCES)         [getenv SOURCES]
   set project_env(BD_SOURCES)      [getenv BD_SOURCES]
   set project_env(IP_SOURCES)      [getenv IP_SOURCES]
+  set project_env(COMPILE_ORDER)   [getenv COMPILE_ORDER]
   set project_env(sources_list)    [split [getenv SOURCES] " "]
 }
 # set env by default when included

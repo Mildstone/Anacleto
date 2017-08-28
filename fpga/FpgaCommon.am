@@ -28,7 +28,10 @@ FPGA_DIR        = $(abs_top_srcdir)/fpga
 FPGA_REPO_DIR   = $(abs_top_srcdir)/fpga/ip_repo
 DTREE_DIR      ?= $(abs_top_builddir)/fpga/device-tree-xlnx-${VIVADO_VERSION}
 VIVADO_VERSION ?= 2015.4
+maxThreads     ?= 6
 
+## NOT USED YET
+COMPILE_ORDER  ?= auto
 
 define _envset
  . $(VIVADO_SETUP_SCRIPT); \
@@ -38,16 +41,16 @@ endef
 export srcdir \
        top_srcdir \
        builddir \
-       top_builddir
-
-export maxThreads=1
+	   top_builddir \
+	   maxThreads
 
 export FPGA_DIR \
        FPGA_BIT \
        DTREE_DIR \
        VIVADO_VERSION \
        VIVADO_SOC_PART \
-       FPGA_REPO_DIR
+	   FPGA_REPO_DIR \
+	   COMPILE_ORDER
 
 export NAME \
        BOARD \
@@ -81,11 +84,11 @@ DTB         = $(VIVADO_SDKDIR)/dts/devicetree.dtb
 _flt = $(subst ' ',_,$(subst .,_,$1))
 _ven = $(or ${VENDOR}, ${$(call _flt,$1)_VENDOR})
 _ver = $(or $(filter-out ${PACKAGE_VERSION},${VERSION}),\
-		 ${$(call _ven,$1)_$(call _flt,$1)_VERSION},\
-		 ${$(call _flt,$1)_VERSION},\
-		 ${$(subst $(call _ven,$1)_,,$1)_VERSION},\
-		 $(shell echo $(lastword $(subst _, ,$1)) | $(SED) 's/[^0-9.]*\([0-9.]*\).*/\1/'),\
-		 ${VERSION})
+			${$(call _ven,$1)_$(call _flt,$1)_VERSION},\
+			${$(call _flt,$1)_VERSION},\
+			${$(subst $(call _ven,$1)_,,$1)_VERSION},\
+			$(shell echo $(lastword $(subst _, ,$1)) | $(SED) 's/[^0-9.]*\([0-9.]*\).*/\1/'),\
+			${VERSION})
 
 _nam = $(subst $(call _ven,$1)_,,$(subst _$(call _ver,$1),,$1))
 _var = $(or $($(call _flt,$(call _ven,$1)_$(call _nam,$1)_$(call _ver,$1)_$2)),\
@@ -100,22 +103,23 @@ _p_set = $(if $1, NAME="$(call _nam,$1)" \
 				  BD_SOURCES="$(call _var,$1,BD_SOURCES)" \
 				  IP_SOURCES="$(call _var,$1,IP_SOURCES)" \
 				  DRV_LINUX="$(call _var,$1,DRV_LINUX)"   \
+				  CMPILE_ORDER="$(call _var,$1,COMPILE_ORDER)"  \
 				  , $(if $2,$(call _p_set,$2), NAME="$(default_project_name)") )
 
+
+## ////// TEST NAMES //////////////////////////////////////////////////////// ##
 print_name:
-	@ echo "$(call _p_set,${NAME})"
+	@ echo "$(call _p_set,${NAME})"; echo ""
 
 autotest_name:
-	@ $(MAKE) -e print_name
-	@ NAME=$(lastword $(vivado_CORES)) $(MAKE) -e print_name
-	@ NAME=$(lastword $(vivado_PROJECTS)) $(MAKE) -e print_name
-	@ VENDOR=pven NAME=pnam VERSION=5.55 $(MAKE) -e print_name
-	@ VENDOR=pven NAME=pven_pnam         $(MAKE) -e print_name
-	@ VENDOR=pven NAME=pven_pnam_2.2     $(MAKE) -e print_name
-
-
-
-check_sources: $(SOURCES) $(BD_SOURCES) $(IP_SOURCES)
+	$(MAKE) -e print_name
+	NAME=$(lastword $(vivado_CORES)) $(MAKE) -e print_name
+	NAME=$(lastword $(vivado_PROJECTS)) $(MAKE) -e print_name
+	VENDOR=pven NAME=pnam VERSION=5.55 $(MAKE) -e print_name
+	VENDOR=pven NAME=pnam pnam_VERSION=5.55 $(MAKE) -e print_name
+	VENDOR=pven NAME=pnam pven_pnam_VERSION=5.55 $(MAKE) -e print_name
+	VENDOR=pven NAME=pven_pnam       $(MAKE) -e print_name
+	VENDOR=pven NAME=pven_pnam_5.55  $(MAKE) -e print_name
 
 
 ## ////////////////////////////////////////////////////////////////////////// ##
@@ -158,9 +162,6 @@ $(vivado_CORES):
 $(filter-out $(vivado_CORES),$(IP_SOURCES)):
 	@ $(MAKE) -C $(@D) $(@F)
 
-# $(FPGA_REPO_DIR)/%/$(VIVADO_IPDIR)/%_edit:
-#	@ $(MAKE) -C $(@D) $(@F)
-
 $(VIVADO_IPDIR)/%: $(SOURCES) $(BD_SOURCES) $(IP_SOURCES)
 	@ ${_envset}; \
 	  $(call vivado, new_ip)
@@ -193,42 +194,24 @@ vivado hsi vivado_shell hsi_shell:
 
 new_project:   ##@projects Create a new vivado project in vivado_project folder named as the currently selected board.
 open_project:  ##@projects Open the current project in vivado_project folder  or generate it using previously stored tcl script.
-write_project: ##@projects Store the current  project saving all related local sources in vivado_src folder.
+write_project: ##@projects Store the current project saving all related local sources in vivado_src folder.
 write_bitstream:  ##@projects generate bitstream using auto_synth and auto_impl runs.
 
 new_ip:   ##@cores create a new pheripheral project for edit.
 edit_ip:  ##@cores open all module pheripherals projects for edit.
 
-# .PHONY: new_project new_ip write_project write_bitstream
+.PHONY: open_project edit_ip
+
+
+check_sources: $(SOURCES) $(BD_SOURCES) $(IP_SOURCES)
+
 write_project write_bitstream:
 	@ ${_envset}; \
-	  $(call _p_set,$(NAME),$(lastword $(vivado_PROJECTS))) $(MAKE) check_sources; \
-	  $(call _p_set,$(NAME),$(lastword $(vivado_PROJECTS))) $(MAKE) vivado TCL_ARGS=$@
+	  $(MAKE) check_sources vivado TCL_ARGS=$@ $(call _p_set,$(NAME))
 
-.PHONY: open_project edit_ip
-new_project open_project:
+new_project open_project new_ip edit_ip:
 	@ ${_envset}; \
-	  $(call _p_set,$(NAME),$(lastword $(vivado_PROJECTS))) $(MAKE) check_sources; \
-	  $(call _p_set,$(NAME),$(lastword $(vivado_PROJECTS))) $(MAKE) vivado_shell TCL_ARGS=$@
-
-new_ip edit_ip:
-	@ ${_envset}; \
-	  $(call _p_set,$(NAME),$(lastword $(vivado_CORES))) $(MAKE) check_sources; \
-	  $(call _p_set,$(NAME),$(lastword $(vivado_CORES))) $(MAKE) vivado_shell TCL_ARGS=$@
-
-
-## TODO LINE:  -----------------------------------------------------------------
-
-.PHONY: clean_project
-clean_project: ##@projects Clean all build project files from disk (make write_project before this)
-	@- ${_envset}; \
-	  rm -rf $(VIVADO_IPDIR)/$(NAME)_edit \
-		 $(VIVADO_PRJDIR)/$(NAME).* \
-		 vivado.jou  vivado.log  \
-		 vivado_*.backup.jou  vivado_*.backup.log  vivado_pid*.str \
-		 webtalk.jou  webtalk.log  \
-		 webtalk_*.backup.jou  webtalk_*.backup.log
-
+	  $(MAKE) check_sources vivado_shell TCL_ARGS=$@ $(call _p_set,$(NAME))
 
 
 ## ////////////////////////////////////////////////////////////////////////// ##
@@ -238,8 +221,8 @@ clean_project: ##@projects Clean all build project files from disk (make write_p
 .PHONY: fpga bit
 fpga bit: $(FPGA_BIT)
 
-$(FPGA_BIT):
-	@ $(MAKE) write_bitstream
+$(FPGA_BIT): write_bitstream
+
 
 
 ## ////////////////////////////////////////////////////////////////////////// ##
@@ -260,13 +243,11 @@ $(FSBL_ELF):  $(FPGA_BIT)
 ## ///  DEVICE TREEE  /////////////////////////////////////////////////////// ##
 ## ////////////////////////////////////////////////////////////////////////// ##
 
-
-
 .PHONY: dts dtb
 dts: ##@hsi compile device tree source file
-	$(call _p_set,$(NAME),$(lastword $(vivado_PROJECTS))) $(MAKE) $(DTS)
+	$(MAKE) $(DTS) $(call _p_set,$(NAME))
 dtb: ##@hsi compile device tree binary
-	$(call _p_set,$(NAME),$(lastword $(vivado_PROJECTS))) $(MAKE) $(DTB)
+	$(MAKE) $(DTB) $(call _p_set,$(NAME))
 
 
 $(VIVADO_SDKDIR)/dts/system.dts:  $(FPGA_BIT)
@@ -281,6 +262,22 @@ $(DTB):  $(DTS) $(LINUX_IMAGE)
 	$(LINUX_BUILDDIR)/scripts/dtc/dtc -I dts -O dtb -o $@ -i sdk/dts/ $<
 
 
+
+
+## ////////////////////////////////////////////////////////////////////////// ##
+## ///  CLEAN  ////////////////////////////////////////////////////////////// ##
+## ////////////////////////////////////////////////////////////////////////// ##
+
+.PHONY: clean_project
+clean_project: ##@projects Clean all build project files from disk (make write_project before this)
+	@- ${_envset}; \
+	  $(call _p_set,$(NAME)) \
+	  rm -rf $(VIVADO_IPDIR)/${NAME} $(VIVADO_IPDIR)/${NAME}_edit \
+		 $(VIVADO_PRJDIR)/$(NAME).* \
+		 vivado.jou  vivado.log  \
+		 vivado_*.backup.jou  vivado_*.backup.log  vivado_pid*.str \
+		 webtalk.jou  webtalk.log  \
+		 webtalk_*.backup.jou  webtalk_*.backup.log
 
 
 ## ////////////////////////////////////////////////////////////////////////// ##
