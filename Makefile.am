@@ -1,4 +1,4 @@
-include Common.am
+include Common.mk
 
 AM_MAKEFLAGS = -j$(MAKE_PROCESS)
 

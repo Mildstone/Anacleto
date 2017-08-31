@@ -65,7 +65,8 @@ proc make_init_script {} {
  set path_brd "$v::me(top_srcdir)/fpga/brd \
 			  $v::me(top_srcdir)/fpga/brd/redpitaya \
 			  $v::me(top_srcdir)/fpga/brd/redpitaya/1.1"
- set_param board.repoPaths [list $path_brd]
+ # set_param board.repoPaths [list $path_brd]
+ set_param board.repoPaths $path_brd
 }
 
 
@@ -125,8 +126,7 @@ proc make_new_project {} {
 ## /// CREATE PERIPHERAL //////////////////////////////////////////////////// ##
 ## ////////////////////////////////////////////////////////////////////////// ##
 
-
-proc make_new_ip { } {
+proc make_package_ip { } {
   set_compatible_with Vivado
 
   set project_name $v::pe(project_name)
@@ -138,22 +138,23 @@ proc make_new_ip { } {
   make_init_script
 
   # setup a project
-  create_project -in_memory -part $v::pe(VIVADO_SOC_PART) -force dummy
+  if { [file exists $dir_prj/$project_name.xpr] } {
+	 make_open_project
+  } else {
+#	 create_project -in_memory -part $v::pe(VIVADO_SOC_PART) -force dummy
+#	 if { [catch {current_project}] } { send_msg_id [v::mid]-1 ERROR "dummy prj fail"}
+#	 make_load_sources
+#	 set_property source_mgmt_mode All [current_project]
+	 make_new_project
+  }
   if { [catch {current_project}] } {
    send_msg_id [v::mid]-1 ERROR "Could not start a new project"
   }
-  # reset_project_vars
-  reset_make_env
-
-  # load files
-  make_load_sources
-
-  set_property source_mgmt_mode All [current_project]
-
 
   set files_no [llength [get_files -quiet]]
   if { $files_no > 0 } {
    ipx::package_project -import_files -root_dir $ipdir
+   # ipx::package_project -root_dir $ipdir
    set core [ipx::current_core]
    set_property VERSION      $v::ce(VERSION) $core
    set_property NAME         $v::ce(core_name) $core
@@ -168,7 +169,6 @@ proc make_new_ip { } {
    ipx::create_xgui_files $core
    ipx::update_checksums $core
    ipx::save_core $core
-
    ipx::add_file_group -type software_driver {} $core
    foreach file [split $v::ce(DRV_LINUX) " "] {
     add_files -force -norecurse \
@@ -184,18 +184,26 @@ proc make_new_ip { } {
    set_property ROOT_DIRECTORY $ipdir $core
    ipx::save_core $core
   }
-  # reopen ip project for editing
-  ipx::edit_ip_in_project -upgrade true -name $project_name \
-   -directory $dir_prj $ipdir/component.xml
-  # write project
-  make_write_project
+#  # reopen ip project for editing
+#  if { [get_projects dummy] == "" } {
+#   close_project -quiet
+#   create_project -in_memory -part $v::pe(VIVADO_SOC_PART) -force dummy
+#   if { [catch {current_project dummy}] } { send_msg_id [v::mid]-1 ERROR "dummy prj fail"}
+#   current_project dummy
+#  }
+#  ipx::edit_ip_in_project -force true -upgrade true -name ${project_name}_ip2 \
+#	-directory $dir_prj $ipdir/component.xml
+#  current_project $project_name
+#  # write project
+#  ipx::create_xgui_files $core
+#  ipx::update_checksums $core
+#  ipx::save_core $core
 
-  # close dummy in memory project
-  current_project dummy
-  if { [get_projects dummy] != "" } {
-	current_project dummy
-	close_project -quiet
-  }
+#  # close dummy in memory project
+#  if { [get_projects dummy] != "" } {
+#	current_project dummy
+#	close_project -quiet
+#  }
 }
 
 
@@ -215,20 +223,13 @@ proc make_edit_ip { } {
   set core_name    $v::ce(core_name)
   set ipdir        $v::ce(ipdir)
 
-  puts "---> $project_name"
-
-  create_project -in_memory -part $v::pe(VIVADO_SOC_PART) -force dummy
-  if { [catch {current_project}] } { send_msg_id [v::mid]-1 ERROR "dummy prj fail"}
-
-  if {![file exists $ipdir/component.xml]} { make_new_ip}
-  ipx::edit_ip_in_project -upgrade true -name $project_name \
-	  -directory ${dir_prj} $ipdir/component.xml
-
-  # close dummy in memory project
-  if { [get_projects dummy] != ""} {
-    current_project dummy
-    close_project -quiet
+  make_open_project
+  if { ![file exists $v::ce(ipdir)/component.xml] } {
+   make_package_ip
   }
+  add_files $v::ce(ipdir)/component.xml
+  ipx::open_core $ipdir/component.xml
+
 }
 
 
@@ -284,7 +285,7 @@ proc make_load_sources { } {
        \.(sv|SV)\$               { read_verilog -sv $path }
        \.(vhd|Vhd|vhdl|Vhdl)\$   { read_vhdl $path }
        \.(xdc|Xdc)\$             { read_xdc $path }
-       \.(bd)\$                  { add_files $path }
+	   \.(bd)\$                  { add_files $path }
        \.(tcl|Tcl)\$             { send_msg_id [v::mid]-1 INFO \
 				   "executing TCL script from SOURCES ..."
 				   set err [source -notrace $path]
@@ -349,11 +350,15 @@ proc make_open_project {} {
       set  ::origin_dir_loc    $dir_src
       set  ::orig_proj_dir_loc $dir_prj
       puts "RESTORING PROJECT FROM: $dir_src/$name.tcl"
-      source -notrace $dir_src/$name.tcl
+	  catch {source -notrace $dir_src/$name.tcl}
   }
   ## no chance to open project ##
-  if { [catch {current_project}] } { error "Could not open project" } \
-  else { puts "PROJECT LOADED..."}
+  if { [catch {current_project}] } {
+   puts "Could not open project, creating new"
+   make_new_project
+  } else {
+   puts "PROJECT LOADED..."
+  }
 
   # setup common ip catalog
   make_set_repo_path
@@ -379,8 +384,8 @@ proc make_write_project {} {
   file mkdir $v::pe(dir_src)
   #   write_project_tcl
   write_anacleto_tcl \
-    -force -target_proj_dir $v::pe(dir_prj) \
-    $v::pe(dir_src)/$v::pe(project_name).tcl
+	-force -target_proj_dir $v::pe(dir_prj) \
+	$v::pe(dir_src)/$v::pe(project_name).tcl
 }
 
 

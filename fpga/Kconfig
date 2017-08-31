@@ -17,7 +17,6 @@ if ENABLE_FPGA
        bool "parallella"
   endchoice
 
-
   choice VIVADO_VERSION
 	prompt "Vivado version yyyy.v "
 	config VIVADO_VERSION_2015_4
@@ -32,6 +31,21 @@ if ENABLE_FPGA
 	 bool  "2017.2"
   endchoice
 
+  choice VIVADO_SETUP_METHOD
+	prompt "Select Vivado setup method"
+	config VIVADO_SETUP_METHOD_BASEPATH
+	 bool "Xilinx base path"
+	config VIVADO_SETUP_METHOD_SCRIPTS
+	 bool "Setup scripts"
+  endchoice
+
+  if VIVADO_SETUP_METHOD_BASEPATH
+  config XILINX_BASE_PATHDIR
+	string "Setup the base Xilinx path directory"
+	default "/opt/Xilinx"
+  endif # BASEPATH
+
+  if VIVADO_SETUP_METHOD_SCRIPTS
   config VIVADO_SETUP_SCRIPT
 	string "Setup script to set vivado environments"
 	default "/opt/Xilinx/Vivado/2015.4/settings64.sh" if VIVADO_VERSION_2015_4
@@ -49,7 +63,7 @@ if ENABLE_FPGA
 	default "/opt/Xilinx/SDK/2016.4/settings64.sh" if VIVADO_VERSION_2016_4
 	default "/opt/Xilinx/SDK/2017.1/settings64.sh" if VIVADO_VERSION_2017_1
 	default "/opt/Xilinx/SDK/2017.2/settings64.sh" if VIVADO_VERSION_2017_2
-
+  endif # SCRIPTS
 
   config DEVICETREE_BASEFILES_TAR
 	string "Device tree base files"

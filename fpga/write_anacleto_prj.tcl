@@ -504,7 +504,9 @@ proc write_files { proj_dir proj_name tcl_obj type } {
   foreach file [get_files -norecurse -of_objects [get_filesets $tcl_obj]] {
     if { [file extension $file] == ".xcix" } { continue }
     set file_object [lindex [get_files -of_objects [get_filesets $fs_name] [list $file]] 0]
+	set file_type   [get_property "FILE_TYPE" $file_object]
 	set file_props  [list_property $file_object]
+	if { $file_type eq "IP-XACT" } { continue }
     if { [lsearch $file_props "IMPORTED_FROM"] != -1 } {
 	  ###          ###
 	  ### IMPORTED ###
@@ -530,7 +532,7 @@ proc write_files { proj_dir proj_name tcl_obj type } {
 		v::log "-> local: file copy -force $file $srcdir"
 		file mkdir $srcdir
 		file copy -force $file $srcdir
-		if { [get_property "FILE_TYPE" $file_object] eq "Block Designs" } {
+		if { $file_type eq "Block Designs" } {
 		 set bdtcl $srcdir/[file tail $file]_$v::pe(VIVADO_VERSION).tcl
 		 v::log "-> local: writing tcl script [file tail $bdtcl]"
 		 open_bd_design $file

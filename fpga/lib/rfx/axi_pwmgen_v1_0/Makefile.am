@@ -1,5 +1,5 @@
-include $(top_srcdir)/Common.am
-include $(top_srcdir)/fpga/FpgaCommon.am
+include $(top_srcdir)/Common.mk
+include $(top_srcdir)/fpga/FpgaCommon.mk
 
 SOC_BOARD       ?= red_pitaya
 VIVADO_VERSION  ?= 2015.4
@@ -19,6 +19,4 @@ pwm_DRV_LINUX  = linux/src/pwm.c
 
 
 all: cores
-clean:
-	-rm -rf core
 

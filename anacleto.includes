@@ -85,3 +85,11 @@ build/linux/arch/arm/include
 fpga/lib/rfx/scc_52460/mdsplus
 projects/test1
 projects/test2
+projects/rfx_pwmgen
+m4
+docs
+fpga/lib/rfx
+projects/prova
+projects
+tmp
+projects/w7x_timing
