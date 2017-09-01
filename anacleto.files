@@ -1,3 +1,9 @@
+fpga/Makefile.am
+fpga/lib/red-pitaya-notes/Makefile.am
+fpga/lib/rfx/Makefile.am
+fpga/make_vivado_hls.tcl
+projects/prova/example.cpp
+tmp/Makefile.am
 COPYING
 Common.mk
 Dockerfile

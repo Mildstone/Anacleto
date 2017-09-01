@@ -13,7 +13,35 @@ project_DEFAULT := $(lastword $(patsubst _, ,$(current_dir)))
 
 @PROJECT_VARIABLES@
 
-
+# NAME := $(or $(foreach x,$(project_LISTS),\
+#					   $(if $(filter $($x_TARGETS),\
+#									 $(MAKECMDGOALS)),\
+#									 $(lastword $(value $x)),)),\
+#			 $(project_DEFAULT))
+#
+# _flt = $(subst ' ',_,$(subst .,_,$1))
+#
+# _ven = $(or ${VENDOR},\
+#			${$(call _flt,$1)_VENDOR})
+#
+# _ver = $(or $(filter-out ${PACKAGE_VERSION},${VERSION}),\
+#			${$(call _ven,$1)_$(call _flt,$1)_VERSION},\
+#			${$(call _flt,$1)_VERSION},\
+#			${$(subst $(call _ven,$1)_,,$1)_VERSION},\
+#			$(shell echo $1 | $(SED) -n 's/.*_\([0-9\.]\{1,\}\)/\1/p'),\
+#			${VERSION})
+#
+# _nam = $(subst $(call _ven,$1)_,,$(subst _$(call _ver,$1),,$1))
+# _var = $(or $($(call _flt,$(VENDOR)_$(NAME)_$(VERSION)_$1)),\
+#			$($(call _flt,$(NAME)_$(VERSION)_$1)),\
+#			$($(call _flt,$(VENDOR)_$(NAME)_$1)),\
+#			$($(call _flt,$(NAME)_$1)))
+#
+# $(eval override VERSION :=$(strip $(call _ver,$(NAME))))
+# $(eval override VENDOR  :=$(strip $(call _ven,$(NAME))))
+# $(eval override NAME    :=$(strip $(call _nam,$(NAME))))
+# $(foreach x,$(project_VARIABLES),$(eval override $x:=$(call _var,$x)))
+#
 
 
 project_LISTS = vivado_CORES \

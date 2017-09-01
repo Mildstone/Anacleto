@@ -17,6 +17,7 @@ namespace eval ::tclapp::socdev::makeutils {
   namespace export make_write_devicetree
   namespace export make_write_linux_bsp
   namespace export make_write_fsbl
+  namespace export make_package_hls_ip
 }
 
 ## INCLUDES ##
@@ -125,6 +126,53 @@ proc make_new_project {} {
 ## ////////////////////////////////////////////////////////////////////////// ##
 ## /// CREATE PERIPHERAL //////////////////////////////////////////////////// ##
 ## ////////////////////////////////////////////////////////////////////////// ##
+
+
+proc make_package_hls_ip {} {
+  #
+  ## set_compatible_with Hls
+  set project_name $v::pe(project_name)
+  set dir_prj      $v::pe(dir_prj)
+  set core_name    $v::ce(core_name)
+  set ipdir        $v::ce(ipdir)
+  set solution     solution1
+
+  set current_dir [pwd]
+  file mkdir $dir_prj
+  cd $dir_prj
+  open_project $project_name
+  cd $current_dir
+  foreach file [split $v::pe(SOURCES) " "] {
+	set ftype [file extension $file]
+	set path [make_find_path $file]
+	if {$path eq ""} {continue}
+	add_files $path
+  }
+  set_top $core_name
+
+  open_solution -reset $solution
+  set_part $v::pe(VIVADO_SOC_PART)
+
+  create_clock -period "100MHz"
+  csynth_design
+  export_design -format ip_catalog
+
+  close_project
+
+  # TODO: This is very ugly man !
+  #  file mkdir $ipdir/$project_name
+  #  foreach file [glob -directory $dir_prj/$project_name/$solution/impl/ip *] {
+  #   if {[file exists $file]} { file delete -force $ipdir/$file }
+  #   file copy -force $file $ipdir
+  #  }
+  #  file delete -force $dir_prj/$project_name/$solution/impl/ip
+  file mkdir $ipdir
+  file delete -force $ipdir
+  file copy -force $dir_prj/$project_name/$solution/impl/ip $ipdir
+  file delete -force $dir_prj/$project_name/$solution/impl/ip
+
+}
+
 
 proc make_package_ip { } {
   set_compatible_with Vivado
@@ -248,10 +296,10 @@ proc make_find_path {file} {
   if {[file exists $src_relative]} { set file $src_relative }
   set full_path [string trim [file normalize $file]]
   foreach f [get_files] {
-    if { [string trim [file normalize [string map {\\ /} $f]]] eq $full_path } {
-      return
-    }
- }
+	if { [string trim [file normalize [string map {\\ /} $f]]] eq $full_path } {
+	  return
+	}
+  }
  return $file
 }
 

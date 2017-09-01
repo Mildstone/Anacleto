@@ -2,7 +2,7 @@ global env
 set srcdir       $env(srcdir)
 set top_srcdir   $env(top_srcdir)
 
-package require Vivado 1.2014.1
+# package require Vivado 1.2014.1
 
 namespace eval ::tclapp::socdev::listutils {
   namespace export is_local_to_project

@@ -39,7 +39,7 @@ AS_VAR_IF([CONFIG_ENABLE_DOCKER_BUILD],[y],[
 
 AX_KCONFIG_VAR([DOCKER_SHARES])
 AC_SUBST([DOCKER_SHARES])
-AX_DOCKER_BUILD
+AX_DOCKER_BUILD([bootstrap])
 
 dnl AUTOMAKE ///////////////////////////////////////////////////////////////////
 AM_INIT_AUTOMAKE([no-define foreign subdir-objects])
@@ -249,7 +249,6 @@ AX_CONFIG_SUBDIRS(
 		fpga/lib/rfx
 		projects
 )
-
 
 AX_CONFIG_FILES(
 		 Makefile

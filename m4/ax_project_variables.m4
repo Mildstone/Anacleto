@@ -30,6 +30,7 @@
 # $(eval override NAME    :=$(strip $(call _nam,$(NAME))))
 # $(foreach x,$(project_VARIABLES),$(eval override $x:=$(call _var,$x)))
 
+.*_(\\\\d*\\\\.\\\\d*.*)
 
 AC_DEFUN([AX_PROJECT_VARIABLES],[
  AX_PUSH_LOCAL([ax_project_variables])
@@ -48,8 +49,8 @@ _ver = \$(or \$(filter-out \${PACKAGE_VERSION},\${VERSION}),\\\\
 			\${\$(call _ven,\$[]1)_\$(call _flt,\$[]1)_VERSION},\\\\
 			\${\$(call _flt,\$[]1)_VERSION},\\\\
 			\${\$(subst \$(call _ven,\$[]1)_,,\$[]1)_VERSION},\\\\
-			\$(shell echo \$(lastword \$(subst _, ,\$[]1)) | \\\\
-			  \$(SED) 's/[[^0-9.]]*\\\\([[0-9.]]*\\\\).*/\\\\1/'),\\\\
+			\$(shell echo \$[]1 | \\\\
+			  \$(SED) -n 's/.*_\\\\([[0-9\\\\.]]\\\\{1,\\\\}\\\\)/\\\\1/p'),\\\\
 			\${VERSION})
 _nam = \$(subst \$(call _ven,\$[]1)_,,\$(subst _\$(call _ver,\$[]1),,\$[]1))
 _var = \$(or \$(\$(call _flt,\$(VENDOR)_\$(NAME)_\$(VERSION)_\$[]1)),\\\\

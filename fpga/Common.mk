@@ -33,8 +33,8 @@ vivado       = ${_envset}; $(VIVADO)       -source $(FPGA_DIR)/vivado_make.tcl $
 vivado_shell = ${_envset}; $(VIVADO_SHELL) -source $(FPGA_DIR)/vivado_make.tcl $(if $1,-tclargs $1)
 hsi          = ${_envset}; $(HSI)       -source $(FPGA_DIR)/vivado_make.tcl $(if $1,-tclargs $1)
 hsi_shell    = ${_envset}; $(HSI_SHELL) -source $(FPGA_DIR)/vivado_make.tcl $(if $1,-tclargs $1)
-hls          = ${_envset}; $(HLS)       -f $(FPGA_DIR)/vivado_make.tcl  $(if $1,-tclargs $1)
-hls_shell    = ${_envset}; $(HLS_SHELL) -f $(FPGA_DIR)/vivado_make.tcl  $(if $1,-tclargs $1)
+hls          = ${_envset}; $(HLS)       -f $(FPGA_DIR)/make_vivado_hls.tcl
+hls_shell    = ${_envset}; $(HLS_SHELL) -f $(FPGA_DIR)/vivado_make.tcl
 
 FPGA_DIR        = $(abs_top_srcdir)/fpga
 FPGA_REPO_DIR   = $(abs_top_srcdir)/fpga/ip_repo
@@ -159,9 +159,8 @@ list_projects:
 			&& echo ${NAME}; \
 	 echo $(vivado_PROJECTS)
 
-
 core:
-	@ echo "ALL NAMES: $(ALL_NAMES)"; \
+	@ \
 	  $(MAKE) $(VIVADO_IPDIR)/$(FULL_NAME)/component.xml BOARD="vivado"
 
 cores: $(vivado_CORES)
@@ -172,7 +171,9 @@ $(filter-out $(vivado_CORES),$(IP_SOURCES)):
 	@ $(MAKE) -C $(@D) $(@F)
 
 $(VIVADO_IPDIR)/%/component.xml: $(check_sources)
-	@ $(call vivado, package_ip)
+	@ $(if $(filter %.cpp,${SOURCES}),\
+		   $(call hls, package_hls_ip),\
+		   $(call vivado, package_ip))
 
 list_cores:
 	@ echo $(vivado_CORES)
@@ -207,8 +208,13 @@ new_project write_project write_bitstream package_ip: $(check_sources)
 	@ $(call vivado,$@)
 
 .PHONY: open_project edit_ip
-open_project edit_ip: $(check_sources)
+open_project: $(check_sources)
 	@ $(call vivado_shell,$@)
+
+edit_ip: $(check_sources)
+	@ $(if $(filter %.cpp,${SOURCES}),\
+		   ${_envset}; $(HLS) -p $(VIVADO_PRJDIR)/$(FULL_NAME),\
+		   $(call vivado_shell,$@))
 
 
 ## ////////////////////////////////////////////////////////////////////////// ##

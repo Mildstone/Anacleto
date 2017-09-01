@@ -1,4 +1,9 @@
 
+## ////////////////////////////////////////////////////////////////////////// ##
+## /// MAKE ENV  //////////////////////////////////////////////////////////// ##
+## ////////////////////////////////////////////////////////////////////////// ##
+
+
 ################################################################################
 # define paths
 ################################################################################
@@ -124,3 +129,90 @@ set_socdev_env
 
 }
 
+
+namespace upvar ::tclapp::socdev::makeutils make_env    make_env
+namespace upvar ::tclapp::socdev::makeutils project_env project_env
+namespace upvar ::tclapp::socdev::makeutils core_env    core_env
+
+
+## ////////////////////////////////////////////////////////////////////////// ##
+## /// CREATE PROJ ////////////////////////////////////////////////////////// ##
+## ////////////////////////////////////////////////////////////////////////// ##
+ 
+ create_project rfx_pwm_1.0  "$make_env(builddir)/edit/red_pitaya"  -part xc7z010clg400-1
+ 
+ # Set the directory path for the new project
+ set proj_dir [get_property directory [current_project]]
+ 
+ # Reconstruct message rules
+ # None
+ 
+## ////////////////////////////////////////////////////////////////////////// ##
+## /// FILESETS    ////////////////////////////////////////////////////////// ##
+## ////////////////////////////////////////////////////////////////////////// ##
+
+ # /////////////////////////////////////////////////////////////  
+ # // sources_1                                                    
+ # /////////////////////////////////////////////////////////////  
+ # 
+ # Create 'sources_1' fileset (if not found)
+ if {[string equal [get_filesets -quiet sources_1] ""]} {
+   create_fileset -srcset sources_1
+ }
+ # 
+ # Set IP repository paths
+ # No local ip repos found for sources_1 ... 
+ # 
+ # Set 'sources_1' fileset object
+ set obj [get_filesets sources_1]
+ set files [list \
+  "[file normalize $make_env(srcdir)/./pwm.vhd]"\
+ ]
+ add_files -norecurse -fileset $obj $files
+ # 
+ # Properties for pwm.vhd
+  set file "$project_env(dir_src)/../../pwm.vhd"
+  set file [file normalize $file]
+  set file_obj [get_files -of_objects [get_filesets sources_1] [list "$file"]]
+  set_property -quiet "file_type" "VHDL" $file_obj
+  set_property -quiet "is_enabled" "1" $file_obj
+  set_property -quiet "is_global_include" "0" $file_obj
+  set_property -quiet "library" "xil_defaultlib" $file_obj
+  set_property -quiet "path_mode" "RelativeFirst" $file_obj
+  set_property -quiet "used_in" "synthesis simulation" $file_obj
+  set_property -quiet "used_in_simulation" "1" $file_obj
+  set_property -quiet "used_in_synthesis" "1" $file_obj
+ # 
+ # No properties for sources_1
+ # 
+ # 
+ # /////////////////////////////////////////////////////////////  
+ # // constrs_1                                                    
+ # /////////////////////////////////////////////////////////////  
+ # 
+ # Create 'constrs_1' fileset (if not found)
+ if {[string equal [get_filesets -quiet constrs_1] ""]} {
+   create_fileset -constrset constrs_1
+ }
+ # 
+ # Set 'constrs_1' fileset object
+ set obj [get_filesets constrs_1]
+ # Empty (no sources present)
+
+ # 
+ # 
+ # /////////////////////////////////////////////////////////////  
+ # // sim_1                                                    
+ # /////////////////////////////////////////////////////////////  
+ # 
+ # Create 'sim_1' fileset (if not found)
+ if {[string equal [get_filesets -quiet sim_1] ""]} {
+   create_fileset -simset sim_1
+ }
+ # 
+ # Set 'sim_1' fileset object
+ set obj [get_filesets sim_1]
+ # Empty (no sources present)
+
+ # 
+ # 
