@@ -30,7 +30,7 @@
 # $(eval override NAME    :=$(strip $(call _nam,$(NAME))))
 # $(foreach x,$(project_VARIABLES),$(eval override $x:=$(call _var,$x)))
 
-.*_(\\\\d*\\\\.\\\\d*.*)
+# .*_(\\\\d*\\\\.\\\\d*.*)
 
 AC_DEFUN([AX_PROJECT_VARIABLES],[
  AX_PUSH_LOCAL([ax_project_variables])

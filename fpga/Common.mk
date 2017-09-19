@@ -1,12 +1,11 @@
 
-mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
-current_dir := $(notdir $(patsubst %/,%,$(dir $(mkfile_path))))
-project_DEFAULT := $(lastword $(patsubst _, ,$(current_dir)))
+## ////////////////////////////////////////////////////////////////////////// ##
+## ///  PROJECT HANDLE  ///////////////////////////////////////////////////// ##
+## ////////////////////////////////////////////////////////////////////////// ##
 
 @PROJECT_VARIABLES@
-
-FULL_NAME = $(if $(VENDOR),$(VENDOR)_)$(NAME)_$(VERSION)
-ALL_NAMES = $(NAME) $(VENDOR)_$(NAME) $(NAME)_$(VERSION) $(FULL_NAME)
+mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
+current_dir := $(notdir $(patsubst %/,%,$(dir $(mkfile_path))))
 
 project_LISTS = vivado_CORES \
 				vivado_PROJECTS
@@ -16,12 +15,28 @@ project_VARIABLES = SOURCES \
 					BD_SOURCES \
 					COMPILE_ORDER
 
+project_DEFAULT := $(lastword $(patsubst _, ,$(current_dir)))
+
 vivado_PROJECTS_TARGETS = project write_project write_bitstream new_project open_project bitstream
 vivado_CORES_TARGETS    = core new_ip edit_ip
 
-# Vivado from Xilinx provides IP handling, FPGA compilation
-# hsi (hardware software interface) provides software integration
-# both tools are run in batch mode with an option to avoid log/journal files
+FULL_NAME = $(if $(VENDOR),$(VENDOR)_)$(NAME)_$(VERSION)
+ALL_NAMES = $(NAME) $(VENDOR)_$(NAME) $(NAME)_$(VERSION) $(FULL_NAME)
+
+
+
+## ////////////////////////////////////////////////////////////////////////// ##
+## ///  CONFIGURATION   ///////////////////////////////////////////////////// ##
+## ////////////////////////////////////////////////////////////////////////// ##
+
+define _envset
+ . $(VIVADO_SETUP_SCRIPT); \
+ . $(VIVADO_SDK_SETUP_SCRIPT)
+endef
+
+# Vivado from Xilinx provides IP handling, FPGA compilation hsi (hardware
+# software interface) provides software integration both tools are run in batch
+# mode with an option to save journal files
 VIVADO       = vivado -nolog -journal $(NAME)_jou.tcl      -mode batch
 VIVADO_SHELL = vivado -nolog -journal vivado_shell_jou.tcl -mode tcl
 HSI          = hsi    -nolog -journal $(NAME)_hsi_jou.tcl  -mode batch
@@ -43,11 +58,19 @@ VIVADO_VERSION ?= 2015.4
 maxThreads     ?= 6
 COMPILE_ORDER  ?= auto
 
+VIVADO_SRCDIR ?= $(srcdir)/prj/$(BOARD)
+VIVADO_PRJDIR ?= $(builddir)/edit/$(BOARD)
+VIVADO_BITDIR ?= $(builddir)/edit/$(BOARD)/$(FULL_NAME).bit
+VIVADO_SDKDIR ?= $(builddir)/edit/$(BOARD)/$(FULL_NAME).sdk
+VIVADO_IPDIR  ?= $(builddir)/ip/vivado
 
-define _envset
- . $(VIVADO_SETUP_SCRIPT); \
- . $(VIVADO_SDK_SETUP_SCRIPT)
-endef
+FPGA_BIT    = $(VIVADO_BITDIR)/$(FULL_NAME).bit
+FSBL_ELF    = $(VIVADO_SDKDIR)/fsbl/executable.elf
+DTS         = $(VIVADO_SDKDIR)/dts/devicetree.dts
+DTB         = $(VIVADO_SDKDIR)/dts/devicetree.dtb
+
+export XILINX_TCLAPP_REPO = $(abs_top_builddir)/fpga/tclapp
+export XILINX_LOCAL_USER_DATA = NO
 
 export srcdir \
 	   top_srcdir \
@@ -72,66 +95,29 @@ export NAME \
 	   BD_SOURCES \
 	   IP_SOURCES
 
-bash:
-	@ ${_envset}; \
-	  /bin/bash
-
-
-## ////////////////////////////////////////////////////////////////////////// ##
-## ///  CORE BUILD      ///////////////////////////////////////////////////// ##
-## ////////////////////////////////////////////////////////////////////////// ##
-
-VIVADO_SRCDIR ?= $(srcdir)/prj/$(BOARD)
-VIVADO_PRJDIR ?= $(builddir)/edit/$(BOARD)
-VIVADO_BITDIR ?= $(builddir)/edit/$(BOARD)/$(FULL_NAME).bit
-VIVADO_SDKDIR ?= $(builddir)/edit/$(BOARD)/$(FULL_NAME).sdk
-VIVADO_IPDIR  ?= $(builddir)/ip/vivado
-
 export VIVADO_SRCDIR \
 	   VIVADO_PRJDIR \
 	   VIVADO_BITDIR \
 	   VIVADO_SDKDIR \
 	   VIVADO_IPDIR
 
-FPGA_BIT    = $(VIVADO_BITDIR)/$(FULL_NAME).bit
-FSBL_ELF    = $(VIVADO_SDKDIR)/fsbl/executable.elf
-DTS         = $(VIVADO_SDKDIR)/dts/devicetree.dts
-DTB         = $(VIVADO_SDKDIR)/dts/devicetree.dtb
-
-
 
 ## ////////////////////////////////////////////////////////////////////////// ##
-## ///  TEST     //////////////////////////////////////////////////////////// ##
+## ///  CORE BUILD      ///////////////////////////////////////////////////// ##
 ## ////////////////////////////////////////////////////////////////////////// ##
-print_name:
-	@ echo "nam=$(NAME) ven=$(VENDOR) ver=$(VERSION) ful=$(FULL_NAME)"; echo ""
 
-autotest_name:
-	$(MAKE) print_name
-	NAME=$(lastword $(vivado_CORES))    $(MAKE) print_name
-	NAME=$(lastword $(vivado_PROJECTS)) $(MAKE) print_name
-	VENDOR=pven NAME=pnam VERSION=5.55  $(MAKE) print_name
-	VENDOR=pven NAME=pnam pnam_VERSION=5.55      $(MAKE) print_name
-	VENDOR=pven NAME=pnam pven_pnam_VERSION=5.55 $(MAKE) print_name
-	VENDOR=pven NAME=pven_pnam       $(MAKE) print_name
-	VENDOR=pven NAME=pven_pnam_5.55  $(MAKE) print_name
-
-
-
-## ////////////////////////////////////////////////////////////////////////// ##
-## ///  TARGET DIRECTORIES  ///////////////////////////////////////////////// ##
-## ////////////////////////////////////////////////////////////////////////// ##
 
 all-local: $(vivado_CORES) $(vivado_PROJECTS)
 
-clean-local:
-	-rm -rf .Xil .srcs webtalk_* *jou*.tcl
+
+
+## ////////////////////////////////////////////////////////////////////////// ##
+## ///  PROJECT DIRECTORIES  //////////////////////////////////////////////// ##
+## ////////////////////////////////////////////////////////////////////////// ##
 
 ## HELP
 projects:      ##@projects build all projects defined in vivado_PROJECTS variable
 cores:         ##@cores build all cores defined in vivado_CORES variable
-list_projects: ##@projects list all projects defined in vivado_PROJECTS variable
-list_cores:    ##@cores list all projects defined in vivado_PROJECTS variable
 
 check_sources = $(SOURCES) \
 				$(BD_SOURCES) \
@@ -141,6 +127,7 @@ project:
 	@ $(MAKE) $(VIVADO_PRJDIR)/$(FULL_NAME).xpr
 
 projects: $(vivado_PROJECTS)
+
 $(vivado_PROJECTS):
 	@ $(MAKE) project NAME=$@
 
@@ -150,20 +137,13 @@ $(VIVADO_SRCDIR)/%: $(VIVADO_PRJDIR)/% $(check_sources)
 $(VIVADO_PRJDIR)/%.xpr: $(check_sources)
 	@ $(call vivado, open_project)
 
-list_projects:
-	@ \
-	 test -f $(VIVADO_SRCDIR)/$(FULL_NAME).tcl -o\
-		  -f $(VIVADO_PRJDIR)/$(FULL_NAME).xpr -o\
-		  -f $(VIVADO_SRCDIR)/${NAME}_${VERSION}.tcl -o\
-		  -f $(VIVADO_PRJDIR)/${NAME}_${VERSION}.xpr \
-			&& echo ${NAME}; \
-	 echo $(vivado_PROJECTS)
 
 core:
 	@ \
 	  $(MAKE) $(VIVADO_IPDIR)/$(FULL_NAME)/component.xml BOARD="vivado"
 
 cores: $(vivado_CORES)
+
 $(vivado_CORES):
 	@ $(MAKE) core NAME=$@
 
@@ -175,8 +155,41 @@ $(VIVADO_IPDIR)/%/component.xml: $(check_sources)
 		   $(call hls, package_hls_ip),\
 		   $(call vivado, package_ip))
 
+
+## ////////////////////////////////////////////////////////////////////////// ##
+## ///  PROJECT LIST  /////////////////////////////////////////////////////// ##
+## ////////////////////////////////////////////////////////////////////////// ##
+
 list_cores:
-	@ echo $(vivado_CORES)
+	@ for i in $(vivado_CORES); do \
+		echo "|     $$i"; \
+	  done
+
+list_projects:
+	@ \
+	 test -f $(VIVADO_SRCDIR)/$(FULL_NAME).tcl -o\
+		  -f $(VIVADO_PRJDIR)/$(FULL_NAME).xpr -o\
+		  -f $(VIVADO_SRCDIR)/${NAME}_${VERSION}.tcl -o\
+		  -f $(VIVADO_PRJDIR)/${NAME}_${VERSION}.xpr \
+			&& echo ${NAME}; \
+	 for i in $(vivado_PROJECTS); do \
+		echo "|     $$i"; \
+	 done
+
+list: ##@projects list all projects defined in vivado_PROJECTS variable
+list: ##@cores list all projects defined in vivado_PROJECTS variable
+list: print_banner
+	@ \
+	echo ",-----------------------------------------------------------------"; \
+	echo "| projects and cores defined "; \
+	echo "|"; \
+	echo "| CORES: "; \
+	$(MAKE) -s list_cores 2>/dev/null; \
+	echo "|";\
+	echo "| PROJECTS: "; \
+	$(MAKE) -s list_projects 2>/dev/null; \
+	echo "|";\
+	echo "\`-----------------------------------------------------------------";
 
 
 ## ////////////////////////////////////////////////////////////////////////// ##
@@ -196,10 +209,10 @@ vivado vivado_shell hsi hsi_shell hls hls_shell:
 ## ///  VIVADO PROJECT  ///////////////////////////////////////////////////// ##
 ## ////////////////////////////////////////////////////////////////////////// ##
 
-new_project:   ##@projects Create a new vivado project
-open_project:  ##@projects Open the current project
-write_project: ##@projects Store the current project
-write_bitstream:  ##@projects generate bitstream
+new_project:   print_banner ##@projects Create a new vivado project
+open_project:  print_banner ##@projects Open the current project
+write_project:   print_banner ##@projects Store the current project
+write_bitstream: print_banner ##@projects generate bitstream
 
 package_ip:   ##@cores create a new pheripheral project for edit.
 edit_ip:  ##@cores open all module pheripherals projects for edit.
@@ -261,13 +274,37 @@ $(DTB):  $(DTS) $(LINUX_IMAGE)
 
 
 
+## ////////////////////////////////////////////////////////////////////////// ##
+## ///  TEST     //////////////////////////////////////////////////////////// ##
+## ////////////////////////////////////////////////////////////////////////// ##
+
+print_name:
+	@ echo "nam=$(NAME) ven=$(VENDOR) ver=$(VERSION) ful=$(FULL_NAME)"; echo ""
+
+autotest_name:
+	$(MAKE) print_name
+	NAME=$(lastword $(vivado_CORES))    $(MAKE) print_name
+	NAME=$(lastword $(vivado_PROJECTS)) $(MAKE) print_name
+	VENDOR=pven NAME=pnam VERSION=5.55  $(MAKE) print_name
+	VENDOR=pven NAME=pnam pnam_VERSION=5.55      $(MAKE) print_name
+	VENDOR=pven NAME=pnam pven_pnam_VERSION=5.55 $(MAKE) print_name
+	VENDOR=pven NAME=pven_pnam       $(MAKE) print_name
+	VENDOR=pven NAME=pven_pnam_5.55  $(MAKE) print_name
+
+bash:
+	@ ${_envset}; \
+	  /bin/bash
+
 
 ## ////////////////////////////////////////////////////////////////////////// ##
 ## ///  CLEAN  ////////////////////////////////////////////////////////////// ##
 ## ////////////////////////////////////////////////////////////////////////// ##
 
+clean-local:
+	-rm -rf .Xil .srcs webtalk_* *jou*.tcl
+
 .PHONY: clean_project
-clean_project: ##@projects Clean all build project files from disk (make write_project before this)
+clean_project: ##@projects Clean all build project files from disk
 	@- rm -rf $(VIVADO_IPDIR)/${NAME} \
 			 $(VIVADO_PRJDIR)/$(NAME).* \
 			 vivado.jou  vivado.log  \

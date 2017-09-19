@@ -48,3 +48,13 @@ AC_SUBST([SYSTEM_DTS])
 
 AX_KCONFIG_VAR([DEVICETREE_BASEFILES_TAR])
 AC_SUBST([DEVICETREE_BASEFILES_TAR])
+
+
+
+
+
+## /////// CONFIG FILES ////////////////
+
+AX_CONFIG_FILES( tclapp/Makefile )
+
+## /////////////////////////////////////
