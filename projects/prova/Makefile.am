@@ -7,7 +7,6 @@ FPGA_REPO_DIR   += $(top_builddir)/fpga/lib/rfx
 VENDOR = rfx
 
 ## CORES ##
-
 vivado_CORES    = pwm_1.0 example
 rfx_pwm_SOURCES = pwm.vhd
 example_SOURCES = example.cpp
@@ -20,5 +19,5 @@ pwmtest_IP_SOURCES = pwm_1.0
 
 example_test_IP_SOURCES = example
 
-hls_test_IP_SOURCES = axi_lite/proj_axi_lite/solution1/impl/ip
+
 

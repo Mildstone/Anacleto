@@ -55,7 +55,7 @@ FULL_NAME = $(if $(VENDOR),$(VENDOR)_)$(NAME)_$(VERSION)
 vivado_CORES    = c1 c2_2.2 rfx_c3 rfx_c4_4.4
 vivado_PROJECTS = p1 p2_2.2 rfx_p3 rfx_p4_4.4
 
-vivado_CORES_TARGETS  = test_core
+vivado_CORES_TARGETS    = test_core
 vivado_PROJECTS_TARGETS = test_project prova
 
 p_SOURCES = ciao.c

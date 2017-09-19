@@ -90,7 +90,9 @@ ALL TIMES.
 *******************************************************************************/
 
 #include <stdio.h>
+#include <math.h>
 
+float test_f();
 
 void example(char *a, char *b, char *c)
 {
@@ -99,9 +101,17 @@ void example(char *a, char *b, char *c)
 #pragma HLS INTERFACE s_axilite port=c register bundle=BUS_A
 #pragma HLS INTERFACE s_axilite port=return bundle=BUS_A
 
-  *c += *a + *b;
+    //    *c -= *a + *b;
+    *c = test_f() * *a + *b;
 }
   
+
+float test_f () {
+    static float f=M_PI;
+    return sin(f+1E-3);
+}
+
+
 
 
 // XSIP watermark, do not delete 67d7842dbbe25473c3c32b93c0da8047785f30d78e8a024de1b57352245f9689
