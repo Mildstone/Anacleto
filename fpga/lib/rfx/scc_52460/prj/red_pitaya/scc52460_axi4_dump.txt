@@ -1,0 +1,4 @@
+project_name=scc52460_axi4
+$PSRCDIR//home/andrea/devel/rfx/anacleto/build/fpga/lib/rfx/scc_52460/edit/red_pitaya/scc52460_axi4.srcs/sources_1/bd/scc52460/scc52460.bd
+$PSRCDIR//home/andrea/devel/rfx/anacleto/build/fpga/lib/rfx/scc_52460/edit/red_pitaya/scc52460_axi4.srcs/sources_1/bd/scc52460/hdl/scc52460_wrapper.v
+$PSRCDIR//home/andrea/devel/rfx/anacleto/build/fpga/lib/rfx/scc_52460/edit/red_pitaya/scc52460_axi4.srcs/constrs_1/new/red_pitaya.xdc

@@ -1,4 +1,4 @@
-include Common.am
+include Common.mk
 
 AM_MAKEFLAGS = -j$(MAKE_PROCESS)
 
@@ -47,7 +47,7 @@ linux-init-s: $(LINUX_SRCDIR) $(LINUX_BUILDDIR) print-env
 	cd $(LINUX_BUILDDIR); \
 	export LS=$$(ls); \
 	export KERNELVERSION=$$($(MAKE) -s -C $< kernelversion); \
-	export DEFCONFIG=${abs_top_srcdir}/conf/linux/$${KERNELVERSION}/${SOC_BOARD}.def; \
+	export DEFCONFIG=${abs_top_srcdir}/conf/linux/$${KERNELVERSION}/${BOARD}.def; \
 	export SRCARCH=${ARCH}; \
 	export srctree=$(LINUX_SRCDIR); \
 	$(LINUX_BUILDDIR)/scripts/kconfig/conf --defconfig=$${DEFCONFIG} Kconfig
@@ -77,7 +77,7 @@ linux-updateconfig: ##@linux update the soc defconf in /conf/linux/...
 linux-updateconfig: $(LINUX_SRCDIR) $(LINUX_BUILDDIR) $(LINUX_BUILDDIR)/.config
 	$(_set_export); \
 	KERNELVERSION=$$($(MAKE) -s -C $< kernelversion); \
-	DEFCONFIG=${abs_top_srcdir}/conf/linux/$${KERNELVERSION}/${SOC_BOARD}.def; \
+	DEFCONFIG=${abs_top_srcdir}/conf/linux/$${KERNELVERSION}/${BOARD}.def; \
 	$(MAKE) linux-savedefconfig && cp $(LINUX_BUILDDIR)/defconfig $${DEFCONFIG}
 
 linux-%: $(LINUX_SRCDIR) $(LINUX_BUILDDIR)
@@ -105,6 +105,30 @@ $(LINUX_IMAGE): $(LINUX_SRCDIR) $(LINUX_BUILDDIR) $(LINUX_BUILDDIR)/.config
 linux: ##@linux build linux image
 linux: $(LINUX_IMAGE)
 
+## /////////////////////////////////////////////////////////////////////////////
+## // DUMPS  ///////////////////////////////////////////////////////////////////
+## /////////////////////////////////////////////////////////////////////////////
+
+print-env: ##@micellaneous print environment used for crosscompiling linux
+	@\
+	$(_set_export); \
+	echo ""; \
+	echo "---[KERNEL BUILD]----------------------------------------------------------"; \
+	echo " compiler: $${CROSS_COMPILE}${CC}"; \
+	echo " arch    : ${ARCH}"; \
+	echo " flags   : ${LINUX_CFLAGS}"; \
+	echo " TOOLCH  : ${TOOLCHAIN_PATH}"; \
+	echo " PATH    : $${PATH}"; \
+	echo " builddir: $${O}"; \
+	echo " "; \
+	echo " LINUX_IMAGE    : ${LINUX_IMAGE}"; \
+	echo " LINUX_DIR      : ${LINUX_DIR}"; \
+	echo " LINUX_SRCDIR   : ${LINUX_SRCDIR}"; \
+	echo " LINUX_BUILDDIR : ${LINUX_BUILDDIR}"; \
+	echo " LINUX_GIT      : ${LINUX_GIT}"; \
+	echo " "; \
+	echo "---------------------------------------------------------------------------"; \
+	echo ""
 
 
 

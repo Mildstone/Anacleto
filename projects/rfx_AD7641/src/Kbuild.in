@@ -1,5 +1,0 @@
-
-obj = $(builddir)
-src = $(srcdir)
-
-# obj-m += rfx_ad7641.o

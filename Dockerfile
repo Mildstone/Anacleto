@@ -1,4 +1,5 @@
-FROM ubuntu:14.04
+# FROM ubuntu:14.04
+FROM ubuntu:16.04
 
 # Update Ubuntu
 RUN dpkg --add-architecture i386
@@ -9,11 +10,12 @@ RUN apt-get -y install libx11-6 libglib2.0-0 libsm6 libxi6 libxrender1 libxrandr
 
 # These two dependencies are needed by Vivado
 RUN apt-get -y install libxext6 libxtst6 libswt-gtk-3-java firefox
+# RUN apt-get -y install firefox
 
 # needed by docnav
-RUN apt-get -y install libc6:i386 libncurses5:i386 libstdc++6:i386 libstdc++6:i386 libfontconfig1:i386 libXext6:i386 libxext6:i386 libice6:i386 libXrender1:i386  libglib2.0-0:i386 libsm6:i386 libsm6:i386
+# RUN apt-get -y install libc6:i386 libncurses5:i386 libstdc++6:i386 libstdc++6:i386 libfontconfig1:i386 libXext6:i386 libxext6:i386 libice6:i386 libXrender1:i386  libglib2.0-0:i386 libsm6:i386 libsm6:i386
+RUN apt-get -y install libc6:i386 libncurses5:i386 libstdc++6:i386 libstdc++6:i386 libfontconfig1:i386 libxext6:i386 libice6:i386 libglib2.0-0:i386 libsm6:i386 libsm6:i386
 
-# todo .. add linaro
 RUN apt-get -y install \
 	make \
 	curl \
@@ -39,20 +41,18 @@ RUN apt-get -y install \
 # chown $USER:$USER /opt/linaro; \
 # curl -SL ${TOOLCHAIN} | tar -xJv -C /opt/linaro
 
+RUN  apt-get -y install automake pkg-config sshpass tk diffstat gawk  chrpath texinfo p7zip
 
-RUN  apt-get -y install automake sshpass tk diffstat gawk  chrpath texinfo p7zip 
-
-
+# PoC
+RUN apt-get -y install python3 python3-pip
+RUN pip3 install colorama py-flags
 
 # yocto 
-RUN apt-get -y install qemu-system-arm qemu
-
+RUN apt-get -y install python qemu-system-arm qemu
 RUN ln -s /usr/bin/make /usr/bin/gmake
 
-
-
 # LOCALE
-RUN locale-gen "en_US.UTF-8";
+RUN apt-get install locales && locale-gen "en_US.UTF-8";
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8

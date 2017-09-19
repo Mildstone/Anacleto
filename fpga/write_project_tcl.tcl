@@ -1262,7 +1262,6 @@ proc write_files { proj_dir proj_name tcl_obj type } {
   }
 
   set fs_name [get_filesets $tcl_obj]
-
   set import_coln [list]
   set add_file_coln [list]
 

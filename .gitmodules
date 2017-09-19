@@ -13,3 +13,6 @@
 [submodule "fpga/hsi/device-tree-xlnx"]
 	path = fpga/hsi/device-tree-xlnx
 	url = https://github.com/andrearigoni/device-tree-xlnx.git
+[submodule "fpga/lib/red-pitaya-notes"]
+	path = fpga/lib/red-pitaya-notes
+	url = https://github.com/andrearigoni/red-pitaya-notes

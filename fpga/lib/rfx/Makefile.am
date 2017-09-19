@@ -1,0 +1,5 @@
+
+LIBITEMS = $(shell ls)
+
+
+

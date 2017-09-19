@@ -1,17 +1,14 @@
 dnl Process this file with autoconf to produce a configure script.
 
-
 dnl AUTOCONF ///////////////////////////////////////////////////////////////////
 AC_PREREQ([2.69])
-AC_INIT([autoconf-bootstrap], [0.1], [andrea.rgn@gmail.com])
+AC_INIT([Anacleto], [0.1], [andrea.rgn@gmail.com])
 AC_CONFIG_MACRO_DIRS([m4])
 AC_CONFIG_AUX_DIR([conf])
 dnl AC_CONFIG_SRCDIR([...])
 AC_CANONICAL_TARGET
 
-dnl AUTOMAKE ///////////////////////////////////////////////////////////////////
-AM_INIT_AUTOMAKE([1.14 foreign subdir-objects])
-
+dnl AX_ANACLETO_BANNER
 
 dnl update submodules at first ... (must be cleaned out)
 AS_IF([${srcdir}/conf/update_submodules.sh],
@@ -42,7 +39,11 @@ AS_VAR_IF([CONFIG_ENABLE_DOCKER_BUILD],[y],[
 
 AX_KCONFIG_VAR([DOCKER_SHARES])
 AC_SUBST([DOCKER_SHARES])
-AX_DOCKER_BUILD
+AX_DOCKER_BUILD([bootstrap])
+
+dnl AUTOMAKE ///////////////////////////////////////////////////////////////////
+AM_INIT_AUTOMAKE([no-define foreign subdir-objects])
+dnl ([1.14 foreign subdir-objects])
 
 
 AC_CONFIG_HEADERS([config.h])
@@ -57,6 +58,7 @@ AC_PROG_AWK
 AC_PROG_MKDIR_P
 AC_PROG_SED
 AC_PROG_CC
+AC_PROG_RANLIB
 
 AC_CHECK_PROGS([CURL],[curl])
 AC_CHECK_PROGS([TAR],[gtar tar])
@@ -67,6 +69,7 @@ AC_CHECK_PROGS([WC],[wc])
 # //////////////////////////////////////////////////////////////////////////// #
 # //  BUILD COMMON  ////////////////////////////////////////////////////////// #
 # //////////////////////////////////////////////////////////////////////////// #
+
 
 AX_KCONFIG_VAR_WITH([DOWNLOAD_DIR],["Default download directory path"])
 AC_SUBST([DOWNLOAD_DIR])
@@ -99,8 +102,6 @@ AX_GITIGNORE_ADD([${TOOLCHAIN_DIR}])
 
 AX_KCONFIG_VAR_WITH([CROSS_COMPILE],["Set crosscompile command"])
 AC_SUBST([CROSS_COMPILE])
-
-
 
 dnl AS_IF([test -f ${WITH_TOOLCHAIN_DIR}/${WITH_CROSS_COMPILE}${CC} ],,
 dnl      [AS_VAR_IF([TOOLCHAIN_VENDOR],[linaro_web],
@@ -162,41 +163,6 @@ AC_SUBST([DEVICE_ACCESS])
 AC_SUBST([DEVICE_USER])
 AC_SUBST([DEVICE_PASSWD])
 AC_SUBST([DEVICE_SSHKEY])
-
-
-# //////////////////////////////////////////////////////////////////////////// #
-# //  FPGA  ////////////////////////////////////////////////////////////////// #
-# //////////////////////////////////////////////////////////////////////////// #
-
-
-dnl AX_KCONFIG_CONDITIONAL([VIVADO_VERSION_2015_4])
-dnl AX_KCONFIG_CONDITIONAL([VIVADO_VERSION_2016_2])
-dnl AS_VAR_IF([VIVADO_VERSION_2015_4],[yes], AS_VAR_SET([VIVADO_VERSION],["2015.4"]))
-dnl AS_VAR_IF([VIVADO_VERSION_2016_2],[yes], AS_VAR_SET([VIVADO_VERSION],["2016.2"]))
-
-AX_KCONFIG_WITH_CHOICE([VIVADO_VERSION],["Vivado version to use"],
-		       [VIVADO_VERSION_2015_4],["2015.4"],
-		       [VIVADO_VERSION_2016_2],["2016.2"],
-		       [VIVADO_VERSION_2016_4],["2016.4"]
-		      )
-AC_SUBST([VIVADO_VERSION])
-
-AX_KCONFIG_VAR([VIVADO_SETUP_SCRIPT])
-AC_SUBST([VIVADO_SETUP_SCRIPT])
-
-AX_KCONFIG_VAR([VIVADO_SDK_SETUP_SCRIPT])
-AC_SUBST([VIVADO_SDK_SETUP_SCRIPT])
-
-AX_KCONFIG_WITH_CHOICE([SOC_BOARD],["Select SoC board to use"],
-		       [WITH_SOC_RED_PITAYA],["red_pitaya"],
-		       [WITH_SOC_PARALLELLA],["parallella"])
-AC_SUBST([SOC_BOARD])
-
-AX_KCONFIG_VAR_ENABLE([ENABLE_FPGA])
-AM_CONDITIONAL([ENABLE_FPGA],[test -n "${ENABLE_FPGA}" -a -f "${VIVADO_SETUP_SCRIPT}"])
-
-AX_KCONFIG_VAR([DEVICETREE_BASEFILES_TAR])
-AC_SUBST([DEVICETREE_BASEFILES_TAR])
 
 
 # //////////////////////////////////////////////////////////////////////////// #
@@ -271,23 +237,27 @@ AC_SUBST([YOCTO_XILINX_TAR])
 # // GIT IGNORE // #
 AX_GITIGNORE_SUBST
 
-AC_DEFUN([def_prj],[
- projects/$1/Makefile
- projects/$1/logic/Makefile
- projects/$1/src/Kbuild
- projects/$1/src/Makefile
-])
 
+dnl forward declaration for fpga configure.ac
+AX_COMPARE_VERSION([],[eq],[])
 
-AC_CONFIG_FILES( 
-                 Makefile
+AX_PROJECT_VARIABLES
+
+# // include configure.ac in subdirectories // #
+AX_CONFIG_SUBDIRS(
+		fpga
+		fpga/lib/rfx
+		projects
+)
+
+AX_CONFIG_FILES(
+		 Makefile
 		 fpga/Makefile
-		 def_prj(rfx_dmatests)
-		 def_prj(rfx_prova)
-		 def_prj(rfx_pwmgen)
-		 def_prj(rfx_AD7641)
-		 def_prj(rfx_RPHctl)
-		 def_prj(w7x_timing)
+		 tmp/Makefile
+		 fpga/lib/red-pitaya-notes/Makefile
 		 .gitignore
-               )
+		 )
+
 AC_OUTPUT
+
+

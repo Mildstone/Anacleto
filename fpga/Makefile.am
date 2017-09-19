@@ -1,6 +1,9 @@
+SUBDIRS = lib/red-pitaya-notes \
+		  lib/rfx
+
 
 .ONESHELL:
-include $(top_srcdir)/Common.am
+include $(top_srcdir)/Common.mk
 
 
 ################################################################################
@@ -23,5 +26,9 @@ $(DTREE_TAR): | $(DL)
 $(DTREE_DIR): $(DTREE_TAR)
 	mkdir -p $@
 	tar -zxf $< --strip-components=1 --directory=$@
+
+
+
+
 
 

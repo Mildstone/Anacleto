@@ -1,6 +1,5 @@
-SUBDIRS = logic src
 
-include $(top_srcdir)/Common.am
+include $(top_srcdir)/Common.mk
 
 
 

@@ -5,7 +5,7 @@ source $top_srcdir/fpga/write_project_tcl.tcl
 
 namespace eval ::tclapp::xilinx::projutils {
   variable make_env
-  variable project_set
+  variable project_env
   variable project_env
 
   namespace export make_import_file
@@ -135,7 +135,7 @@ proc wr_create_project { proj_dir name part_name } {
   variable l_script_data
   variable make_env
   variable project_env
-  variable project_set
+  variable project_env
 
 
   # ADD MAKE_ENV
@@ -147,7 +147,7 @@ proc wr_create_project { proj_dir name part_name } {
 
   lappend l_script_data "# Set the reference directory for source file relative paths (by default the value is script directory path)"
 ##  lappend l_script_data "set origin_dir \"$a_global_vars(s_relative_to)\""
-  lappend l_script_data "set origin_dir \"\$project_set(dir_src)\""
+  lappend l_script_data "set origin_dir \"\$project_env(dir_src)\""
 
   lappend l_script_data ""
   set var_name "origin_dir_loc"
@@ -348,6 +348,7 @@ proc write_specified_fileset { proj_dir proj_name filesets } {
       write_files $proj_dir $proj_name $tcl_obj $type
     }
 
+
     # is this a IP block fileset? if yes, do not write block fileset properties (block fileset doesnot exist in new project)
     if { [is_ip_fileset $tcl_obj] } {
       # do not write ip fileset properties
@@ -357,6 +358,7 @@ proc write_specified_fileset { proj_dir proj_name filesets } {
       write_props $proj_dir $proj_name $get_what_fs $tcl_obj "fileset"
     }
   }
+
 }
 
 
@@ -378,7 +380,7 @@ proc write_files { proj_dir proj_name tcl_obj type } {
   variable l_script_data
   variable make_env
   variable project_env
-  variable project_set
+
 
   set l_local_file_list [list]
   set l_remote_file_list [list]
@@ -398,7 +400,7 @@ proc write_files { proj_dir proj_name tcl_obj type } {
     set begin [lsearch -exact $path_dirs "$proj_name.srcs"]
     set src_file [join [lrange $path_dirs $begin+1 end] "/"]
     set file_no_quotes [string trim $file "\""]
-    set src_file_path "$project_set(dir_src)/\${make_env(project_name)}.srcs/$src_file"
+	set src_file_path "$project_env(dir_src)/\${make_env(project_name)}.srcs/$src_file"
     set file_object [lindex [get_files -of_objects [get_filesets $fs_name] [list $file]] 0]
     set file_props [list_property $file_object]
     if { [lsearch $file_props "IMPORTED_FROM"] != -1 } {
@@ -446,10 +448,10 @@ proc write_files { proj_dir proj_name tcl_obj type } {
 	file mkdir [file dirname [subst $src_file_path]]
 	file copy -force $file_no_quotes [subst $src_file_path]
 	if { [get_property "FILE_TYPE" $file_object] eq "Block Designs" } {
-	  puts "WRITING BD in TCL"
-	  open_bd_design $file_no_quotes
-	  validate_bd_design
-	  write_bd_tcl -force [file root [subst $src_file_path]]_$project_env(VIVADO_VERSION).tcl
+	   puts "WRITING BD in TCL"
+	   open_bd_design $file_no_quotes
+	   validate_bd_design
+	   write_bd_tcl -force [file root [subst $src_file_path]]_$project_env(VIVADO_VERSION).tcl
 	}
 	# set src_file_path [copy_file_to_srcdir $file_no_quotes $fs_name]
 	# add to the import collection
@@ -470,6 +472,7 @@ proc write_files { proj_dir proj_name tcl_obj type } {
     }
   }
   ## end foreach file
+
 
   ###
   ### IMPORT LOCALS
@@ -526,6 +529,7 @@ proc write_files { proj_dir proj_name tcl_obj type } {
 
 
 
+
 ## ////////////////////////////////////////////////////////////////////////// ##
 ## ///  WRITE CONSTRAINTS  ////////////////////////////////////////////////// ##
 ## ////////////////////////////////////////////////////////////////////////// ##
@@ -541,10 +545,10 @@ proc write_constrs { proj_dir proj_name tcl_obj type } {
   variable l_script_data
   variable make_env
   variable project_env
-  variable project_set
 
 
   set fs_name [get_filesets $tcl_obj]
+
 
   # return if empty fileset
   if {[llength [get_files -quiet -of_objects [get_filesets $tcl_obj]]] == 0 } {
@@ -561,7 +565,8 @@ proc write_constrs { proj_dir proj_name tcl_obj type } {
     set begin         [lsearch -exact $path_dirs "$proj_name.srcs"]
     set src_file      [join [lrange $path_dirs $begin+1 end] "/"]
     set file_no_quotes [string trim $file "\""]
-    set src_file_path "\$origin_dir/$src_file"
+    # set src_file_path "\$origin_dir/$src_file"
+	set src_file_path "$project_env(dir_src)/\${make_env(project_name)}.srcs/$src_file"
     set file_object   [lindex [get_files -of_objects [get_filesets $fs_name] [list $file]] 0]
     set file_props    [list_property $file_object]
 
@@ -569,7 +574,7 @@ proc write_constrs { proj_dir proj_name tcl_obj type } {
     if { [lsearch $file_props "IMPORTED_FROM"] != -1 } {
       set imported_path  [get_property "imported_from" $file]
       set rel_file_path  [get_relative_file_path_for_source $file [get_script_execution_dir]]
-      set proj_file_path "$project_set(dir_src)/\${make_env(project_name)}.srcs/$rel_file_path"
+	  set proj_file_path "$project_env(dir_src)/\${make_env(project_name)}.srcs/$rel_file_path"
       set file           "\"[file normalize $proj_dir/${proj_name}.srcs/$src_file]\""
       # donot copy imported constrs in new project? set it as remote file in new project.
       if { $a_global_vars(b_arg_no_copy_srcs) } {
@@ -600,7 +605,8 @@ proc write_constrs { proj_dir proj_name tcl_obj type } {
       #      set file "\"$file\""
       set constrs_file $file
 
-      # is added constrs local to the project? import it in the new project and set it as local in the new project
+      # is added constrs local to the project? import it in the new project and
+      # set it as local in the new project
       if { !$a_global_vars(b_arg_no_copy_srcs) && [is_local_to_project $file] } {
 	# file is added from within project, so set it as local in the new project
 	set file_category "local"
@@ -682,6 +688,8 @@ proc write_props { proj_dir proj_name get_what tcl_obj type } {
   # Return Value:
   # none
 
+
+
   variable a_global_vars
   variable l_script_data
   variable b_project_board_set
@@ -696,17 +704,19 @@ proc write_props { proj_dir proj_name get_what tcl_obj type } {
 
     # skip read-only properties
     if { [lsearch $read_only_props $prop] != -1 } { continue }
-
     set prop_type "unknown"
     if { [string equal $type "run"] } {
       if { [regexp "STEPS" $prop] } {
 	# skip step properties
       } else {
 	set attr_names [rdi::get_attr_specs -class [get_property class [get_runs $tcl_obj] ]]
-	set prop_type [get_property type [lindex $attr_names [lsearch $attr_names $prop]]]
+	if { [lsearch $attr_names $prop] != -1 } {
+	 set prop_type [get_property type [lindex $attr_names [lsearch $attr_names $prop]]]
+	}
       }
     } else {
       set attr_spec [rdi::get_attr_specs -quiet $prop -object [$get_what $tcl_obj]]
+
       if { {} == $attr_spec } {
 	set prop_lower [string tolower $prop]
 	set attr_spec [rdi::get_attr_specs -quiet $prop_lower -object [$get_what $tcl_obj]]
