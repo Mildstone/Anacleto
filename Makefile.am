@@ -126,6 +126,7 @@ print-env: ##@micellaneous print environment used for crosscompiling linux
 	echo " LINUX_SRCDIR   : ${LINUX_SRCDIR}"; \
 	echo " LINUX_BUILDDIR : ${LINUX_BUILDDIR}"; \
 	echo " LINUX_GIT      : ${LINUX_GIT}"; \
+	echo " MAKE           : $${MAKE}"; \
 	echo " "; \
 	echo "---------------------------------------------------------------------------"; \
 	echo ""
