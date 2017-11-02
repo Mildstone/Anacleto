@@ -21,7 +21,7 @@ proc ::tclapp::socdev::makeutils::my_command1 { args } {
 
   # Categories: xilinxtclstore, template
 
-  #  uplevel [concat ::tclapp::socdev::makeutils::my_command1::my_command1 $args]
+  uplevel [concat ::tclapp::socdev::makeutils::my_command1::my_command1 $args]
 }
 
 # Trick to silence the linter

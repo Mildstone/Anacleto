@@ -2,13 +2,13 @@
 ## This file is meant to be sourced to update the catalog file for the template app
 ##
 
-set NAME {makeutils}
+set NAME    {makeutils}
 set DISPLAY {Scripts to handle Automake project sync}
 set COMPANY {socdev}
-set COMPANY_DISPLAY {socdev}
-set SUMMARY {Summary of app's intent. This can be a multi-line description}
+set COMPANY_DISPLAY {Mildstone}
+set SUMMARY {Mildstone Anacleto - vivado project managenment}
 set AUTHOR {'Andrea Rigoni'}
-set REVISION 1.0
+set REVISION 0.1
 set REVISION_HISTORY {}
 # set VIVADO_VERSION {2014.1}
 set VIVADO_VERSION [version -short]

@@ -2,9 +2,13 @@
 <catalog>
   <apps>
     <app>
-      <revision_history>&#32;</revision_history>
-      <name>template</name>
-      <company>mycompany</company>
+      <name>makeutils</name>
+      <pkg_require>Vivado 2017.2</pkg_require>
+      <author>&apos;Andrea Rigoni&apos;</author>
+      <company>socdev</company>
+      <company_display>Mildstone</company_display>
+      <summary>Mildstone Anacleto - vivado project managenment</summary>
+      <display>Scripts to handle Automake project sync</display>
       <procs>
         <proc>
           <name>my_command1</name>
