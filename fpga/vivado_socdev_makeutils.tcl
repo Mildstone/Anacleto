@@ -220,7 +220,7 @@ proc make_package_ip { } {
    ipx::add_file_group -type software_driver {} $core
    foreach file [split $v::ce(DRV_LINUX) " "] {
     add_files -force -norecurse \
-     -copy_to ${src_dir}/drivers/[file dirname $file] $v::me(srcdir)/$file
+	 -copy_to ${dir_prj}/drivers/[file dirname $file] $v::me(srcdir)/$file
     ipx::add_file drivers/$file \
      [ipx::get_file_groups xilinx_softwaredriver -of_objects $core]
    }
