@@ -17,12 +17,11 @@ project_VARIABLES = SOURCES \
 
 project_DEFAULT := $(lastword $(patsubst _, ,$(current_dir)))
 
-vivado_PROJECTS_TARGETS = project write_project write_bitstream new_project open_project bitstream
-vivado_CORES_TARGETS    = core new_ip edit_ip
+vivado_PROJECTS_TARGETS = project write_project write_bitstream new_project open_project bitstream clean_project
+vivado_CORES_TARGETS    = core new_ip edit_ip clean_ip
 
 FULL_NAME = $(if $(VENDOR),$(VENDOR)_)$(NAME)_$(VERSION)
 ALL_NAMES = $(NAME) $(VENDOR)_$(NAME) $(NAME)_$(VERSION) $(FULL_NAME)
-
 
 
 ## ////////////////////////////////////////////////////////////////////////// ##
@@ -301,16 +300,19 @@ bash:
 ## ////////////////////////////////////////////////////////////////////////// ##
 
 clean-local:
-	-rm -rf .Xil .srcs webtalk_* *jou*.tcl
+	-rm -rf .Xil .srcs webtalk_* *jou*.tcl \
+	 vivado.jou  vivado.log  \
+	 vivado_*.backup.jou  vivado_*.backup.log  vivado_pid*.str \
+	 webtalk.jou  webtalk.log  \
+	 webtalk_*.backup.jou  webtalk_*.backup.log
 
 .PHONY: clean_project
 clean_project: ##@projects Clean all build project files from disk
-	@- rm -rf $(VIVADO_IPDIR)/${NAME} \
-			 $(VIVADO_PRJDIR)/$(NAME).* \
-			 vivado.jou  vivado.log  \
-			 vivado_*.backup.jou  vivado_*.backup.log  vivado_pid*.str \
-			 webtalk.jou  webtalk.log  \
-			 webtalk_*.backup.jou  webtalk_*.backup.log
+	@- rm -rf $(VIVADO_PRJDIR)/$(FULL_NAME).*
+
+.PHONY: clean_ip
+clean_ip: ##@cores Clean all built core files from disk
+	@- rm -rf $(VIVADO_IPDIR)/${FULL_NAME} $(VIVADO_PRJDIR)/$(FULL_NAME).*
 
 
 ## ////////////////////////////////////////////////////////////////////////// ##
