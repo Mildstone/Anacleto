@@ -36,11 +36,11 @@ AC_DEFUN([AX_PROJECT_VARIABLES],[
  AX_PUSH_LOCAL([ax_project_variables])
  AS_VAR_READ([PROJECT_VARIABLES],[
 
-NAME = \$(or \$(foreach x,\$(project_LISTS),\\\\
-					   \$(if \$(filter \$(\$x_TARGETS),\\\\
-									 \$(MAKECMDGOALS)),\\\\
-									 \$(lastword \$(value \$x)),)),\\\\
-									 \$(project_DEFAULT))
+NAME = \$(or \$(strip \$(foreach x,\$(project_LISTS),\\\\
+			   \$(if \$(filter \$(\$x_TARGETS),\$(MAKECMDGOALS)),\$(lastword \$(value \$x))))),\\\\
+			  \$(lastword \$(value \$(lastword \$(project_LISTS)))),\\\\
+			  \$(project_DEFAULT))
+
 
 _flt = \$(strip \$(subst ' ',_,\$(subst .,_,\$[]1)))
 _ven = \$(or \${VENDOR},\\\\

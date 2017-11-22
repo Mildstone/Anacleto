@@ -17,7 +17,7 @@ project_VARIABLES = SOURCES \
 
 project_DEFAULT := $(lastword $(patsubst _, ,$(current_dir)))
 
-vivado_PROJECTS_TARGETS = project write_project write_bitstream new_project open_project bitstream clean_project
+vivado_PROJECTS_TARGETS = project write_project write_bitstream new_project open_project bitstream clean_project dts dtb
 vivado_CORES_TARGETS    = core new_ip edit_ip clean_ip
 
 FULL_NAME = $(if $(VENDOR),$(VENDOR)_)$(NAME)_$(VERSION)
@@ -159,6 +159,8 @@ $(VIVADO_IPDIR)/%/component.xml: $(check_sources)
 ## ///  PROJECT LIST  /////////////////////////////////////////////////////// ##
 ## ////////////////////////////////////////////////////////////////////////// ##
 
+NODOCKERBUILD += list_cores list_projects list
+
 list_cores:
 	@ for i in $(vivado_CORES); do \
 		echo "|     $$i"; \
@@ -170,8 +172,8 @@ list_projects:
 		  -f $(VIVADO_PRJDIR)/$(FULL_NAME).xpr -o\
 		  -f $(VIVADO_SRCDIR)/${NAME}_${VERSION}.tcl -o\
 		  -f $(VIVADO_PRJDIR)/${NAME}_${VERSION}.xpr \
-			&& echo ${NAME}; \
-	 for i in $(vivado_PROJECTS); do \
+			&& echo "|     ${NAME}"; \
+	 for i in $(filter-out $(NAME),$(vivado_PROJECTS)); do \
 		echo "|     $$i"; \
 	 done
 
