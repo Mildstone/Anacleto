@@ -279,7 +279,7 @@ proc make_edit_ip { } {
    make_package_ip
   }
   puts "FILE_IP: $ipdir/component.xml"
-  #  add_files $ipdir/component.xml
+  add_files $ipdir/component.xml
   ipx::open_core $ipdir/component.xml
 }
 
