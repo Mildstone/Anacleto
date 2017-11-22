@@ -120,11 +120,9 @@ cores:         ##@cores build all cores defined in vivado_CORES variable
 
 check_sources = $(SOURCES) \
 				$(BD_SOURCES) \
-				$(filter-out $(ALL_NAMES),$(IP_SOURCES))
+				$(foreach x,$(filter-out $(ALL_NAMES),$(IP_SOURCES)),$(VIVADO_IPDIR)/$x/component.xml)
 
-project:
-	@ $(MAKE) $(VIVADO_PRJDIR)/$(FULL_NAME).xpr
-
+project: $(VIVADO_PRJDIR)/$(FULL_NAME).xpr
 projects: $(vivado_PROJECTS)
 
 $(vivado_PROJECTS):
@@ -137,22 +135,21 @@ $(VIVADO_PRJDIR)/%.xpr: $(check_sources)
 	@ $(call vivado, open_project)
 
 
-core:
-	@ \
-	  $(MAKE) $(VIVADO_IPDIR)/$(FULL_NAME)/component.xml BOARD="vivado"
-
 cores: $(vivado_CORES)
 
-$(vivado_CORES):
-	@ $(MAKE) core NAME=$@
+define _gen_core =
+$(1): NAME=$1 BOARD=vivado
+$(1): $(VIVADO_IPDIR)/$1/component.xml
+$(VIVADO_IPDIR)/$1/component.xml: NAME=$1 BOARD=vivado
+$(VIVADO_IPDIR)/$1/component.xml: $($(call _flt,$1)_SOURCES) $($(call _flt,$1)_BD_SOURCES)
+	@ $(if $(filter %.cpp,${SOURCES}),\
+	  $(call hls, package_hls_ip),\
+	  $(call vivado, package_ip));
+endef
+$(foreach core,$(vivado_CORES),$(eval $(call _gen_core,$(core))))
 
 $(filter-out $(vivado_CORES),$(IP_SOURCES)):
 	@ $(MAKE) -C $(@D) $(@F)
-
-$(VIVADO_IPDIR)/%/component.xml: $(check_sources)
-	@ $(if $(filter %.cpp,${SOURCES}),\
-		   $(call hls, package_hls_ip),\
-		   $(call vivado, package_ip))
 
 
 ## ////////////////////////////////////////////////////////////////////////// ##
@@ -168,14 +165,15 @@ list_cores:
 
 list_projects:
 	@ \
-	 test -f $(VIVADO_SRCDIR)/$(FULL_NAME).tcl -o\
-		  -f $(VIVADO_PRJDIR)/$(FULL_NAME).xpr -o\
-		  -f $(VIVADO_SRCDIR)/${NAME}_${VERSION}.tcl -o\
-		  -f $(VIVADO_PRJDIR)/${NAME}_${VERSION}.xpr \
-			&& echo "|     ${NAME}"; \
-	 for i in $(filter-out $(NAME),$(vivado_PROJECTS)); do \
-		echo "|     $$i"; \
-	 done
+	for i in $(vivado_PROJECTS); do \
+	   echo "|     $$i"; \
+	done
+
+#	 test -f $(VIVADO_SRCDIR)/$(FULL_NAME).tcl -o\
+#		  -f $(VIVADO_PRJDIR)/$(FULL_NAME).xpr -o\
+#		  -f $(VIVADO_SRCDIR)/${NAME}_${VERSION}.tcl -o\
+#		  -f $(VIVADO_PRJDIR)/${NAME}_${VERSION}.xpr \
+#			&& echo "|     ${NAME}";
 
 list: ##@projects list all projects defined in vivado_PROJECTS variable
 list: ##@cores list all projects defined in vivado_PROJECTS variable
@@ -237,7 +235,7 @@ edit_ip: $(check_sources)
 
 bitstream: $(FPGA_BIT)
 
-$(FPGA_BIT): $(NAME) $(check_sources)
+$(FPGA_BIT): $(check_sources)
 	$(MAKE) write_bitstream
 
 
