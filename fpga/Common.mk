@@ -37,9 +37,9 @@ endef
 # software interface) provides software integration both tools are run in batch
 # mode with an option to save journal files
 VIVADO       = vivado -nolog -journal $(NAME)_jou.tcl      -mode batch
-VIVADO_SHELL = vivado -nolog -journal vivado_shell_jou.tcl -mode tcl
+VIVADO_SHELL = vivado -nolog -journal vivado_shell_jou.tcl $(if $(MODE),-mode $(MODE))
 HSI          = hsi    -nolog -journal $(NAME)_hsi_jou.tcl  -mode batch
-HSI_SHELL    = hsi    -nolog -journal hsi_shell_jou.tcl    -mode tcl
+HSI_SHELL    = hsi    -nolog -journal hsi_shell_jou.tcl    $(if $(MODE),-mode $(MODE))
 HLS          = vivado_hls -nosplash
 HLS_SHELL    = vivado_hls -nosplash -i
 
@@ -214,7 +214,7 @@ write_project:   print_banner ##@projects Store the current project
 write_bitstream: print_banner ##@projects generate bitstream
 
 package_ip:   ##@cores create a new pheripheral project for edit.
-edit_ip:  ##@cores open all module pheripherals projects for edit.
+edit_ip:  ##@cores open project ip or edit existing project as a new ip.
 
 new_project write_project write_bitstream package_ip: $(check_sources)
 	@ $(call vivado,$@)
@@ -304,16 +304,22 @@ clean-local:
 	 vivado.jou  vivado.log  \
 	 vivado_*.backup.jou  vivado_*.backup.log  vivado_pid*.str \
 	 webtalk.jou  webtalk.log  \
-	 webtalk_*.backup.jou  webtalk_*.backup.log
+	 webtalk_*.backup.jou  webtalk_*.backup.log vivado_hls.log
 
 .PHONY: clean_project
 clean_project: ##@projects Clean all build project files from disk
-	@- rm -rf $(VIVADO_PRJDIR)/$(FULL_NAME).*
+	@- rm -rf $(VIVADO_PRJDIR)/$(FULL_NAME){.,_}*
 
 .PHONY: clean_ip
 clean_ip: ##@cores Clean all built core files from disk
-	@- rm -rf $(VIVADO_IPDIR)/${FULL_NAME} $(VIVADO_PRJDIR)/$(FULL_NAME).*
+	@- rm -rf $(VIVADO_IPDIR)/${FULL_NAME} \
+			  $(VIVADO_PRJDIR)/$(FULL_NAME){.,_}*
 
+
+clean-all: ##@miscellaneous perform all clean operations (ip, project, general)
+clean-all: clean-local clean_project clean_ip
+	@- $(foreach x,$(vivado_PROJECTS),$(info clean in project: $x)$(MAKE) clean_project NAME=$x;)
+	@- $(foreach x,$(vivado_CORES),$(info clean in core: $x)$(MAKE) clean_ip NAME=$x;)
 
 ## ////////////////////////////////////////////////////////////////////////// ##
 ## ///  DEPLOY  ///////////////////////////////////////////////////////////// ##

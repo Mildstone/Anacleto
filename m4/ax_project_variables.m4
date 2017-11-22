@@ -36,13 +36,13 @@ AC_DEFUN([AX_PROJECT_VARIABLES],[
  AX_PUSH_LOCAL([ax_project_variables])
  AS_VAR_READ([PROJECT_VARIABLES],[
 
-NAME := \$(or \$(foreach x,\$(project_LISTS),\\\\
+NAME = \$(or \$(foreach x,\$(project_LISTS),\\\\
 					   \$(if \$(filter \$(\$x_TARGETS),\\\\
 									 \$(MAKECMDGOALS)),\\\\
-									 \$(lastword \$(value \$x)),)),\
-			 \$(project_DEFAULT))
+									 \$(lastword \$(value \$x)),)),\\\\
+									 \$(project_DEFAULT))
 
-_flt = \$(subst ' ',_,\$(subst .,_,\$[]1))
+_flt = \$(strip \$(subst ' ',_,\$(subst .,_,\$[]1)))
 _ven = \$(or \${VENDOR},\\\\
 			\${\$(call _flt,\$[]1)_VENDOR})
 _ver = \$(or \$(filter-out \${PACKAGE_VERSION},\${VERSION}),\\\\
@@ -58,9 +58,9 @@ _var = \$(or \$(\$(call _flt,\$(VENDOR)_\$(NAME)_\$(VERSION)_\$[]1)),\\\\
 			\$(\$(call _flt,\$(VENDOR)_\$(NAME)_\$[]1)),\\\\
 			\$(\$(call _flt,\$(NAME)_\$[]1)))
 
-\$(eval override VERSION :=\$(strip \$(call _ver,\$(NAME))))
-\$(eval override VENDOR  :=\$(strip \$(call _ven,\$(NAME))))
-\$(eval override NAME    :=\$(strip \$(call _nam,\$(NAME))))
+\$(eval override VERSION =\$(strip \$(call _ver,\$(NAME))))
+\$(eval override VENDOR  =\$(strip \$(call _ven,\$(NAME))))
+\$(eval override NAME    =\$(strip \$(call _nam,\$(NAME))))
 \$(foreach x,\$(project_VARIABLES),\$(eval override \$x:=\$(call _var,\$x)))
 
  ])

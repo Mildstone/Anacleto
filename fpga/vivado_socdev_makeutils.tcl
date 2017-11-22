@@ -189,10 +189,10 @@ proc make_package_ip { } {
   if { [file exists $dir_prj/$project_name.xpr] } {
 	 make_open_project
   } else {
-#	 create_project -in_memory -part $v::pe(VIVADO_SOC_PART) -force dummy
-#	 if { [catch {current_project}] } { send_msg_id [v::mid]-1 ERROR "dummy prj fail"}
-#	 make_load_sources
-#	 set_property source_mgmt_mode All [current_project]
+  #	 create_project -in_memory -part $v::pe(VIVADO_SOC_PART) -force dummy
+  #	 if { [catch {current_project}] } { send_msg_id [v::mid]-1 ERROR "dummy prj fail"}
+  #	 make_load_sources
+  #	 set_property source_mgmt_mode All [current_project]
 	 make_new_project
   }
   if { [catch {current_project}] } {
@@ -226,11 +226,13 @@ proc make_package_ip { } {
    }
    ipx::save_core $core
   } else {
+   file mkdir $ipdir
    ipx::create_core $v::ce(VENDOR) $v::ce(VENDOR) \
 		    $v::ce(core_name) $v::ce(VERSION)
    set core [ipx::current_core]
    set_property ROOT_DIRECTORY $ipdir $core
    ipx::save_core $core
+
   }
 #  # reopen ip project for editing
 #  if { [get_projects dummy] == "" } {
@@ -271,13 +273,14 @@ proc make_edit_ip { } {
   set core_name    $v::ce(core_name)
   set ipdir        $v::ce(ipdir)
 
+
   make_open_project
-  if { ![file exists $v::ce(ipdir)/component.xml] } {
+  if { ![file exists $ipdir/component.xml] } {
    make_package_ip
   }
-  add_files $v::ce(ipdir)/component.xml
+  puts "FILE_IP: $ipdir/component.xml"
+  #  add_files $ipdir/component.xml
   ipx::open_core $ipdir/component.xml
-
 }
 
 
