@@ -120,7 +120,8 @@ cores:         ##@cores build all cores defined in vivado_CORES variable
 
 check_sources = $(SOURCES) \
 				$(BD_SOURCES) \
-				$(foreach x,$(filter-out $(ALL_NAMES),$(IP_SOURCES)),$(VIVADO_IPDIR)/$x/component.xml)
+				| $(filter-out $(ALL_NAMES),$(IP_SOURCES))
+
 
 project: $(VIVADO_PRJDIR)/$(FULL_NAME).xpr
 projects: $(vivado_PROJECTS)
@@ -135,21 +136,22 @@ $(VIVADO_PRJDIR)/%.xpr: $(check_sources)
 	@ $(call vivado, open_project)
 
 
+core:
+	$(MAKE) $(VIVADO_IPDIR)/$(FULL_NAME)/component.xml BOARD="vivado"
+
 cores: $(vivado_CORES)
 
-define _gen_core =
-$(1): NAME=$1 BOARD=vivado
-$(1): $(VIVADO_IPDIR)/$1/component.xml
-$(VIVADO_IPDIR)/$1/component.xml: NAME=$1 BOARD=vivado
-$(VIVADO_IPDIR)/$1/component.xml: $($(call _flt,$1)_SOURCES) $($(call _flt,$1)_BD_SOURCES)
-	@ $(if $(filter %.cpp,${SOURCES}),\
-	  $(call hls, package_hls_ip),\
-	  $(call vivado, package_ip));
-endef
-$(foreach core,$(vivado_CORES),$(eval $(call _gen_core,$(core))))
+$(vivado_CORES):
+	@ $(MAKE) core NAME=$@
 
 $(filter-out $(vivado_CORES),$(IP_SOURCES)):
 	@ $(MAKE) -C $(@D) $(@F)
+
+$(VIVADO_IPDIR)/%/component.xml: $(check_sources)
+	@ $(if $(filter %.cpp,${SOURCES}),\
+		   $(call hls, package_hls_ip),\
+		   $(call vivado, package_ip))
+
 
 
 ## ////////////////////////////////////////////////////////////////////////// ##
