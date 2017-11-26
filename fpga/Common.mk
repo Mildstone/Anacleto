@@ -17,7 +17,9 @@ project_VARIABLES = SOURCES \
 
 project_DEFAULT := $(lastword $(patsubst _, ,$(current_dir)))
 
-vivado_PROJECTS_TARGETS = project write_project write_bitstream new_project open_project bitstream clean_project dts dtb
+vivado_PROJECTS_TARGETS = project write_project write_bitstream \
+						  new_project open_project bitstream clean_project \
+						  dts dtb
 vivado_CORES_TARGETS    = core new_ip edit_ip clean_ip
 
 FULL_NAME = $(if $(VENDOR),$(VENDOR)_)$(NAME)_$(VERSION)
@@ -120,8 +122,8 @@ cores:         ##@cores build all cores defined in vivado_CORES variable
 
 check_sources = $(SOURCES) \
 				$(BD_SOURCES) \
+				$(foreach x,$(IP_SOURCES),$(VIVADO_IPDIR)/$x/component.xml) \
 				| $(filter-out $(ALL_NAMES),$(IP_SOURCES))
-
 
 project: $(VIVADO_PRJDIR)/$(FULL_NAME).xpr
 projects: $(vivado_PROJECTS)
