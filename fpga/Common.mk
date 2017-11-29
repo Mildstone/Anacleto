@@ -126,8 +126,13 @@ cores:         ##@cores build all cores defined in vivado_CORES variable
 
 check_sources = $(SOURCES) \
 				$(BD_SOURCES) \
-				$(foreach x,$(IP_SOURCES),$(VIVADO_IPDIR)/$x/component.xml) \
 				| $(filter-out $(ALL_NAMES),$(IP_SOURCES))
+
+check_ip_componenents = $(foreach x,$(filter-out $(ALL_NAMES),$(IP_SOURCES)),$(VIVADO_IPDIR)/$x/component.xml)
+
+check_prj_sources = $(shell $(FIND) $(VIVADO_SRCDIR)/$(FULL_NAME).{srcs,tcl} -printf "%p " 2>/dev/null || echo "") \
+					$(shell $(FIND) $(VIVADO_PRJDIR)/$(FULL_NAME).srcs -printf "%p " 2>/dev/null || echo "")
+
 
 project: $(VIVADO_PRJDIR)/$(FULL_NAME).xpr
 projects: $(vivado_PROJECTS)
@@ -135,10 +140,10 @@ projects: $(vivado_PROJECTS)
 $(vivado_PROJECTS):
 	@ $(MAKE) project NAME=$@
 
-$(VIVADO_SRCDIR)/%: $(VIVADO_PRJDIR)/% $(check_sources)
-	@ $(call vivado, write_project)
+#$(VIVADO_SRCDIR)/%: $(VIVADO_PRJDIR)/% $(check_sources)
+#	@ $(call vivado, write_project)
 
-$(VIVADO_PRJDIR)/%.xpr: $(check_sources)
+$(VIVADO_PRJDIR)/%.xpr: $(check_ip_componenents) $(check_sources)
 	@ $(call vivado, open_project)
 
 
@@ -243,7 +248,7 @@ edit_ip: $(check_sources)
 
 bitstream: $(FPGA_BIT)
 
-$(FPGA_BIT): $(check_sources)
+$(FPGA_BIT): $(check_prj_sources) $(check_sources)
 	$(MAKE) write_bitstream
 
 
