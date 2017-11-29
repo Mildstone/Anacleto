@@ -255,6 +255,7 @@ AX_CONFIG_FILES(
 		 fpga/Makefile
 		 tmp/Makefile
 		 fpga/lib/red-pitaya-notes/Makefile
+		 fpga/lib/rfx/Makefile
 		 .gitignore
 		 )
 

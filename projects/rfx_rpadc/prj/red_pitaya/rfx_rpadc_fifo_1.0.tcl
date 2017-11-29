@@ -141,7 +141,7 @@ namespace upvar ::tclapp::socdev::makeutils core_env    core_env
 ## /// CREATE PROJ ////////////////////////////////////////////////////////// ##
 ## ////////////////////////////////////////////////////////////////////////// ##
  
- create_project rfx_pwmgen_1.0  "$make_env(builddir)/edit/red_pitaya"  -part xc7z010clg400-1
+ create_project rfx_rpadc_fifo_1.0  "$make_env(builddir)/edit/red_pitaya"  -part xc7z010clg400-1
  
  # Set the directory path for the new project
  set proj_dir [get_property directory [current_project]]
@@ -167,25 +167,25 @@ namespace upvar ::tclapp::socdev::makeutils core_env    core_env
  # 
  # Set 'sources_1' fileset object
  set obj [get_filesets sources_1]
- file mkdir "$project_env(dir_prj)/rfx_pwmgen_1.0.srcs/sources_1/bd/pwmgen_1"
- file copy -force "$project_env(dir_src)/rfx_pwmgen_1.0.srcs/sources_1/bd/pwmgen_1/pwmgen_1.bd" \
-    "$project_env(dir_prj)/rfx_pwmgen_1.0.srcs/sources_1/bd/pwmgen_1/pwmgen_1.bd"
- file mkdir "$project_env(dir_prj)/rfx_pwmgen_1.0.srcs/sources_1/bd/pwmgen_1/hdl"
- file copy -force "$project_env(dir_src)/rfx_pwmgen_1.0.srcs/sources_1/bd/pwmgen_1/hdl/pwmgen_1_wrapper.v" \
-    "$project_env(dir_prj)/rfx_pwmgen_1.0.srcs/sources_1/bd/pwmgen_1/hdl/pwmgen_1_wrapper.v"
+ file mkdir "$project_env(dir_prj)/rfx_rpadc_fifo_1.0.srcs/sources_1/bd/rpadc_1"
+ file copy -force "$project_env(dir_src)/rfx_rpadc_fifo_1.0.srcs/sources_1/bd/rpadc_1/rpadc_1.bd" \
+    "$project_env(dir_prj)/rfx_rpadc_fifo_1.0.srcs/sources_1/bd/rpadc_1/rpadc_1.bd"
+ file mkdir "$project_env(dir_prj)/rfx_rpadc_fifo_1.0.srcs/sources_1/bd/rpadc_1/hdl"
+ file copy -force "$project_env(dir_src)/rfx_rpadc_fifo_1.0.srcs/sources_1/bd/rpadc_1/hdl/rpadc_1_wrapper.v" \
+    "$project_env(dir_prj)/rfx_rpadc_fifo_1.0.srcs/sources_1/bd/rpadc_1/hdl/rpadc_1_wrapper.v"
  set files [list \
-  "[file normalize $project_env(dir_prj)/rfx_pwmgen_1.0.srcs/sources_1/bd/pwmgen_1/pwmgen_1.bd]"\
-  "[file normalize $project_env(dir_prj)/rfx_pwmgen_1.0.srcs/sources_1/bd/pwmgen_1/hdl/pwmgen_1_wrapper.v]"\
+  "[file normalize $project_env(dir_prj)/rfx_rpadc_fifo_1.0.srcs/sources_1/bd/rpadc_1/rpadc_1.bd]"\
+  "[file normalize $project_env(dir_prj)/rfx_rpadc_fifo_1.0.srcs/sources_1/bd/rpadc_1/hdl/rpadc_1_wrapper.v]"\
  ]
  add_files -norecurse -fileset $obj $files
  # 
  # No properties for sources_1
- # Properties for pwmgen_1.bd
-  set file "$project_env(dir_prj)/rfx_pwmgen_1.0.srcs/sources_1/bd/pwmgen_1/pwmgen_1.bd"
+ # Properties for rpadc_1.bd
+  set file "$project_env(dir_prj)/rfx_rpadc_fifo_1.0.srcs/sources_1/bd/rpadc_1/rpadc_1.bd"
   set file_obj [get_files -of_objects [get_filesets sources_1] [list "$file"]]
   set_property -quiet "exclude_debug_logic" "0" $file_obj
   if { ![get_property "is_locked" $file_obj] } {
-    set_property -quiet "generate_synth_checkpoint" "1" $file_obj
+    set_property -quiet "generate_synth_checkpoint" "0" $file_obj
   }
   set_property -quiet "is_enabled" "1" $file_obj
   set_property -quiet "is_global_include" "0" $file_obj
@@ -195,15 +195,15 @@ namespace upvar ::tclapp::socdev::makeutils core_env    core_env
   set_property -quiet "library" "xil_defaultlib" $file_obj
   set_property -quiet "path_mode" "RelativeFirst" $file_obj
   if { ![get_property "is_locked" $file_obj] } {
-    set_property -quiet "synth_checkpoint_mode" "Hierarchical" $file_obj
+    set_property -quiet "synth_checkpoint_mode" "None" $file_obj
   }
   set_property -quiet "used_in" "synthesis implementation simulation" $file_obj
   set_property -quiet "used_in_implementation" "1" $file_obj
   set_property -quiet "used_in_simulation" "1" $file_obj
   set_property -quiet "used_in_synthesis" "1" $file_obj
  # 
- # Properties for pwmgen_1_wrapper.v
-  set file "$project_env(dir_prj)/rfx_pwmgen_1.0.srcs/sources_1/bd/pwmgen_1/hdl/pwmgen_1_wrapper.v"
+ # Properties for rpadc_1_wrapper.v
+  set file "$project_env(dir_prj)/rfx_rpadc_fifo_1.0.srcs/sources_1/bd/rpadc_1/hdl/rpadc_1_wrapper.v"
   set file_obj [get_files -of_objects [get_filesets sources_1] [list "$file"]]
   set_property -quiet "file_type" "Verilog" $file_obj
   set_property -quiet "is_enabled" "1" $file_obj

@@ -12,7 +12,7 @@ global env
 set srcdir       $env(srcdir)
 set top_srcdir   $env(top_srcdir)
 
-set_param general.maxThreads $env(maxThreads)
+## set_param general.maxThreads $env(maxThreads)
 
 namespace eval ::tclapp::socdev::makeutils {
 
@@ -100,6 +100,8 @@ proc reset_project_env { } {
   set project_env(synth_name)      [getenv synth_name "anacleto_synth"]
   set project_env(impl_name)       [getenv impl_name  "anacleto_impl"]
   set project_env(SOURCES)         [getenv SOURCES]
+  set project_env(PRJCFG)          [getenv PRJCFG]
+  set project_env(IPCFG)           [getenv IPCFG]
   set project_env(BD_SOURCES)      [getenv BD_SOURCES]
   set project_env(IP_SOURCES)      [getenv IP_SOURCES]
   set project_env(COMPILE_ORDER)   [getenv COMPILE_ORDER]

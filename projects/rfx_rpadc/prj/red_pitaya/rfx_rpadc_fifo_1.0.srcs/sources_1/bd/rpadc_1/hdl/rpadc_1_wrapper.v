@@ -1,15 +1,15 @@
 //Copyright 1986-2017 Xilinx, Inc. All Rights Reserved.
 //--------------------------------------------------------------------------------
 //Tool Version: Vivado v.2017.2 (lin64) Build 1909853 Thu Jun 15 18:39:10 MDT 2017
-//Date        : Wed Aug 30 13:51:37 2017
-//Host        : fb1ed67ca14c running 64-bit Ubuntu 14.04.5 LTS
-//Command     : generate_target design_1_wrapper.bd
-//Design      : design_1_wrapper
+//Date        : Tue Nov 28 16:57:17 2017
+//Host        : 819d9e66e61d running 64-bit Ubuntu 14.04.5 LTS
+//Command     : generate_target rpadc_1_wrapper.bd
+//Design      : rpadc_1_wrapper
 //Purpose     : IP block netlist
 //--------------------------------------------------------------------------------
 `timescale 1 ps / 1 ps
 
-module design_1_wrapper
+module rpadc_1_wrapper
    (DDR_addr,
     DDR_ba,
     DDR_cas_n,
@@ -31,9 +31,8 @@ module design_1_wrapper
     FIXED_IO_ps_clk,
     FIXED_IO_ps_porb,
     FIXED_IO_ps_srstb,
-    led_o,
-    pwm_n_out,
-    pwm_out);
+    adc_dat_a,
+    adc_dat_b);
   inout [14:0]DDR_addr;
   inout [2:0]DDR_ba;
   inout DDR_cas_n;
@@ -55,9 +54,8 @@ module design_1_wrapper
   inout FIXED_IO_ps_clk;
   inout FIXED_IO_ps_porb;
   inout FIXED_IO_ps_srstb;
-  output led_o;
-  output [0:0]pwm_n_out;
-  output [0:0]pwm_out;
+  input [13:0]adc_dat_a;
+  input [13:0]adc_dat_b;
 
   wire [14:0]DDR_addr;
   wire [2:0]DDR_ba;
@@ -80,11 +78,10 @@ module design_1_wrapper
   wire FIXED_IO_ps_clk;
   wire FIXED_IO_ps_porb;
   wire FIXED_IO_ps_srstb;
-  wire led_o;
-  wire [0:0]pwm_n_out;
-  wire [0:0]pwm_out;
+  wire [13:0]adc_dat_a;
+  wire [13:0]adc_dat_b;
 
-  design_1 design_1_i
+  rpadc_1 rpadc_1_i
        (.DDR_addr(DDR_addr),
         .DDR_ba(DDR_ba),
         .DDR_cas_n(DDR_cas_n),
@@ -106,7 +103,6 @@ module design_1_wrapper
         .FIXED_IO_ps_clk(FIXED_IO_ps_clk),
         .FIXED_IO_ps_porb(FIXED_IO_ps_porb),
         .FIXED_IO_ps_srstb(FIXED_IO_ps_srstb),
-        .led_o(led_o),
-        .pwm_n_out(pwm_n_out),
-        .pwm_out(pwm_out));
+        .adc_dat_a(adc_dat_a),
+        .adc_dat_b(adc_dat_b));
 endmodule

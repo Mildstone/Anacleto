@@ -183,7 +183,7 @@ namespace upvar ::tclapp::socdev::makeutils core_env    core_env
   set file_obj [get_files -of_objects [get_filesets sources_1] [list "$file"]]
   set_property -quiet "exclude_debug_logic" "0" $file_obj
   if { ![get_property "is_locked" $file_obj] } {
-    set_property -quiet "generate_synth_checkpoint" "1" $file_obj
+    set_property -quiet "generate_synth_checkpoint" "0" $file_obj
   }
   set_property -quiet "is_enabled" "1" $file_obj
   set_property -quiet "is_global_include" "0" $file_obj
@@ -193,7 +193,7 @@ namespace upvar ::tclapp::socdev::makeutils core_env    core_env
   set_property -quiet "library" "xil_defaultlib" $file_obj
   set_property -quiet "path_mode" "RelativeFirst" $file_obj
   if { ![get_property "is_locked" $file_obj] } {
-    set_property -quiet "synth_checkpoint_mode" "Hierarchical" $file_obj
+    set_property -quiet "synth_checkpoint_mode" "None" $file_obj
   }
   set_property -quiet "used_in" "synthesis implementation simulation" $file_obj
   set_property -quiet "used_in_implementation" "1" $file_obj

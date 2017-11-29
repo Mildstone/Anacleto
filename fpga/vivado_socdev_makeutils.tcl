@@ -119,6 +119,9 @@ proc make_new_project {} {
   make_load_sources
   set_property source_mgmt_mode All [current_project]
 
+  # execute post scritps
+  make_exec_scripts PRJCFG
+
   # write project
   make_write_project
 }
@@ -234,6 +237,10 @@ proc make_package_ip { } {
    ipx::save_core $core
 
   }
+
+  # execute post scritps
+  make_exec_scripts IPCFG
+
 #  # reopen ip project for editing
 #  if { [get_projects dummy] == "" } {
 #   close_project -quiet
@@ -383,6 +390,29 @@ proc load_sources { src_list type fset } {
 }
 
 
+proc make_exec_scripts { var } {
+
+if {!($v::pe($var) eq "")} {
+ foreach file [split $v::pe($var) " "] {
+   puts " ----------------------------------------------------------"
+   puts "  executing: $file "
+   puts " ----------------------------------------------------------"
+   set ftype [file extension $file]
+   set path [make_find_path $file]
+   if {$path eq ""} {continue}
+   switch -regexp $ftype {
+	 \.(tcl|Tcl)\$             { send_msg_id [v::mid]-1 INFO \
+								 "executing TCL script from SCRIPTS ..."
+								 set err [source -notrace $path]
+								 if { !($err eq "") } {
+								 send_msg_id [v::mid]-2 ERROR \
+								 "some error occurred executing TCL script.."}
+								}
+   }
+ }
+}
+}
+
 
 proc make_open_project {} {
   set_compatible_with Vivado
@@ -418,6 +448,9 @@ proc make_open_project {} {
   ## load remote sources
   make_load_sources
   set_property source_mgmt_mode All [current_project]
+
+  # execute post scritps
+  make_exec_scripts PRJCFG
 }
 
 

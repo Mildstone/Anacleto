@@ -2,41 +2,6 @@ global env
 set srcdir       $env(srcdir)
 set top_srcdir   $env(top_srcdir)
 
-## lremove ?-all? list pattern
-##
-## Removes matching elements from a list, and returns a new list.
-#proc lremove {args} {
-#	if {[llength $args] < 2} {
-#	   puts stderr {Wrong # args: should be "lremove ?-all? list pattern"}
-#	}
-#	set list [lindex $args end-1]
-#	set elements [lindex $args end]
-#	if [string match -all [lindex $args 0]] {
-#	   foreach element $elements {
-#		   set list [lsearch -all -inline -not -exact $list $element]
-#	   }
-#	} else {
-#	   # Using lreplace to truncate the list saves having to calculate
-#	   # ranges or offsets from the indexed element. The trimming is
-#	   # necessary in cases where the first or last element is the
-#	   # indexed element.
-#	   foreach element $elements {
-#		   set idx [lsearch $list $element]
-#		   set list [string trim \
-#			   "[lreplace $list $idx end] [lreplace $list 0 $idx]"]
-#	   }
-#	}
-#	return $list
-#}
-#rename ::source ::theRealSource
-#proc ::source args {
-#	set new_args [list]
-#	foreach el [split $args " "] {
-#	  if { $el eq "-notrace" } { continue }
-#	  lappend new_args $el
-#	 }
-#	uplevel 1 ::theRealSource $new_args
-#}
 
 source -notrace $top_srcdir/fpga/vivado_socdev_utils.tcl
 source -notrace $top_srcdir/fpga/vivado_socdev_env.tcl

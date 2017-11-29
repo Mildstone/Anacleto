@@ -13,6 +13,8 @@ project_LISTS = vivado_CORES \
 project_VARIABLES = SOURCES \
 					IP_SOURCES \
 					BD_SOURCES \
+					PRJCFG \
+					IPCFG \
 					COMPILE_ORDER
 
 project_DEFAULT := $(lastword $(patsubst _, ,$(current_dir)))
@@ -94,7 +96,9 @@ export NAME \
 	   VERSION \
 	   SOURCES \
 	   BD_SOURCES \
-	   IP_SOURCES
+	   IP_SOURCES \
+	   PRJCFG \
+	   IPCFG
 
 export VIVADO_SRCDIR \
 	   VIVADO_PRJDIR \

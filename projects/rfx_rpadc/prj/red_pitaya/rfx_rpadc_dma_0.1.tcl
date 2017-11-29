@@ -100,6 +100,8 @@ proc reset_project_env { } {
   set project_env(synth_name)      [getenv synth_name "anacleto_synth"]
   set project_env(impl_name)       [getenv impl_name  "anacleto_impl"]
   set project_env(SOURCES)         [getenv SOURCES]
+  set project_env(PRJCFG)          [getenv PRJCFG]
+  set project_env(IPCFG)           [getenv IPCFG]
   set project_env(BD_SOURCES)      [getenv BD_SOURCES]
   set project_env(IP_SOURCES)      [getenv IP_SOURCES]
   set project_env(COMPILE_ORDER)   [getenv COMPILE_ORDER]
@@ -139,7 +141,7 @@ namespace upvar ::tclapp::socdev::makeutils core_env    core_env
 ## /// CREATE PROJ ////////////////////////////////////////////////////////// ##
 ## ////////////////////////////////////////////////////////////////////////// ##
  
- create_project rfx_rpadc_0.1  "$make_env(builddir)/edit/red_pitaya"  -part xc7z010clg400-1
+ create_project rfx_rpadc_dma_0.1  "$make_env(builddir)/edit/red_pitaya"  -part xc7z010clg400-1
  
  # Set the directory path for the new project
  set proj_dir [get_property directory [current_project]]
@@ -165,37 +167,8 @@ namespace upvar ::tclapp::socdev::makeutils core_env    core_env
  # 
  # Set 'sources_1' fileset object
  set obj [get_filesets sources_1]
- file mkdir "$project_env(dir_prj)/rfx_rpadc_0.1.srcs/sources_1/bd/rpadc"
- file copy -force "$project_env(dir_src)/rfx_rpadc_0.1.srcs/sources_1/bd/rpadc/rpadc.bd" \
-    "$project_env(dir_prj)/rfx_rpadc_0.1.srcs/sources_1/bd/rpadc/rpadc.bd"
- set files [list \
-  "[file normalize $project_env(dir_prj)/rfx_rpadc_0.1.srcs/sources_1/bd/rpadc/rpadc.bd]"\
- ]
- add_files -norecurse -fileset $obj $files
- # 
- # No properties for sources_1
- # Properties for rpadc.bd
-  set file "$project_env(dir_prj)/rfx_rpadc_0.1.srcs/sources_1/bd/rpadc/rpadc.bd"
-  set file_obj [get_files -of_objects [get_filesets sources_1] [list "$file"]]
-  set_property -quiet "exclude_debug_logic" "0" $file_obj
-  if { ![get_property "is_locked" $file_obj] } {
-    set_property -quiet "generate_synth_checkpoint" "1" $file_obj
-  }
-  set_property -quiet "is_enabled" "1" $file_obj
-  set_property -quiet "is_global_include" "0" $file_obj
-  if { ![get_property "is_locked" $file_obj] } {
-    set_property -quiet "is_locked" "0" $file_obj
-  }
-  set_property -quiet "library" "xil_defaultlib" $file_obj
-  set_property -quiet "path_mode" "RelativeFirst" $file_obj
-  if { ![get_property "is_locked" $file_obj] } {
-    set_property -quiet "synth_checkpoint_mode" "Hierarchical" $file_obj
-  }
-  set_property -quiet "used_in" "synthesis implementation simulation" $file_obj
-  set_property -quiet "used_in_implementation" "1" $file_obj
-  set_property -quiet "used_in_simulation" "1" $file_obj
-  set_property -quiet "used_in_synthesis" "1" $file_obj
- # 
+ # Empty (no sources present)
+
  # 
  # 
  # /////////////////////////////////////////////////////////////  

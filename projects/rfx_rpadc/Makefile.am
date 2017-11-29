@@ -7,8 +7,12 @@ FPGA_REPO_DIR   += $(top_builddir)/fpga/lib/rfx
 VENDOR = rfx
 
 ## PROJECTS ##
-vivado_PROJECTS = rpadc
-rpadc_VERSION   = 1.0
+vivado_PROJECTS = rpadc_dma rpadc_fifo
+rpadc_fifo_VERSION   = 1.0
+rpadc_fifo_SOURCES   = red_pitaya.xdc
+
+
+
 
 
 
