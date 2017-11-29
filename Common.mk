@@ -75,7 +75,11 @@ export DOCKER_ENTRYPOINT ?=
 ## // RECONFIGURE  /////////////////////////////////////////////////////////////
 ## /////////////////////////////////////////////////////////////////////////////
 
+$(top_srcdir)/configure.ac: $(foreach x,$(CONFIG_SUBDIRS), $(top_srcdir)/$x/configure.ac)
+	@ touch $@
+
 .PHONY: reconfigure
+reconfigure: $(top_srcdir)/configure.ac
 reconfigure: ##@miscellaneous re-run configure with last passed arguments
 	@ \
 	echo " -- Reconfiguring build with following parameters: -----------"; \

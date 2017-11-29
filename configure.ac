@@ -65,6 +65,9 @@ AC_CHECK_PROGS([TAR],[gtar tar])
 AC_CHECK_PROGS([UNIQ],[uniq])
 AC_CHECK_PROGS([WC],[wc])
 
+# needed to scan all subdirectories files timestamp for make deps
+AC_CHECK_PROGS([FIND],[find])
+AC_SUBST([FIND])
 
 # //////////////////////////////////////////////////////////////////////////// #
 # //  BUILD COMMON  ////////////////////////////////////////////////////////// #
