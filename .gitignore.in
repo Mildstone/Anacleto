@@ -16,6 +16,8 @@ Makefile.in
 /missing
 /stamp-h1
 
+/build*
+
 vivado_project/
 .cache/
 .hw/
