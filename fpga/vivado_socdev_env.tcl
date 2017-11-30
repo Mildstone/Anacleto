@@ -86,6 +86,8 @@ proc reset_project_env { } {
   set project_env(VIVADO_VERSION)  [getenv VIVADO_VERSION]
   set project_env(VIVADO_SOC_PART) [getenv VIVADO_SOC_PART]
   set project_env(BOARD)           [getenv BOARD]
+  set project_env(BOARD_PART)      [getenv BOARD_PART]
+  set project_env(BOARD_PRESET)    [getenv BOARD_PRESET]
   set project_env(dir_prj)         [compute_project_dir edit]
   set project_env(dir_src)         [compute_project_dir src]
   set project_env(dir_sdc)         [compute_project_dir edit]/[compute_project_name].sdc

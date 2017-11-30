@@ -54,9 +54,10 @@ _ver = \$(or \$(filter-out \${PACKAGE_VERSION},\${VERSION}),\\\\
 			\${VERSION})
 _nam = \$(subst \$(call _ven,\$[]1)_,,\$(subst _\$(call _ver,\$[]1),,\$[]1))
 _var = \$(or \$(\$(call _flt,\$(VENDOR)_\$(NAME)_\$(VERSION)_\$[]1)),\\\\
-			\$(\$(call _flt,\$(NAME)_\$(VERSION)_\$[]1)),\\\\
-			\$(\$(call _flt,\$(VENDOR)_\$(NAME)_\$[]1)),\\\\
-			\$(\$(call _flt,\$(NAME)_\$[]1)))
+			 \$(\$(call _flt,\$(NAME)_\$(VERSION)_\$[]1)),\\\\
+			 \$(\$(call _flt,\$(VENDOR)_\$(NAME)_\$[]1)),\\\\
+			 \$(\$(call _flt,\$(NAME)_\$[]1)),\\\\
+			 \$(\$(call _flt,\$[]1)))
 
 \$(eval override VERSION =\$(strip \$(call _ver,\$(NAME))))
 \$(eval override VENDOR  =\$(strip \$(call _ven,\$(NAME))))

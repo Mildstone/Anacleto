@@ -17,6 +17,14 @@ if ENABLE_FPGA
        bool "parallella"
   endchoice
 
+  config BOARD_PART
+	string "Board part id"
+	default "redpitaya.com:redpitaya:part0:1.1" if WITH_SOC_RED_PITAYA
+
+  config BOARD_PRESET
+	string "Board preset init template"
+	default "${srcdir}/fpga/brd/red_pitaya/presets/zynq_rp1.1.tcl" if WITH_SOC_RED_PITAYA
+
   choice VIVADO_VERSION
 	prompt "Vivado version yyyy.v "
 	config VIVADO_VERSION_2015_4

@@ -64,10 +64,10 @@ proc set_compatible_with { program } {
 
 proc make_init_script {} {
  set path_brd "$v::me(top_srcdir)/fpga/brd \
-			  $v::me(top_srcdir)/fpga/brd/redpitaya \
-			  $v::me(top_srcdir)/fpga/brd/redpitaya/1.1"
- # set_param board.repoPaths [list $path_brd]
+			   $v::me(top_srcdir)/fpga/brd/red_pitaya \
+			   $v::me(top_srcdir)/fpga/brd/red_pitaya/1.1 "
  set_param board.repoPaths $path_brd
+
 }
 
 
@@ -111,6 +111,9 @@ proc make_new_project {} {
   create_project -part $part -force $name $dir_prj
   if { [catch {current_project}] } { error "Could not start a new project" }
 
+  puts $v::pe(BOARD_PART)
+  set_property BOARD_PART $v::pe(BOARD_PART) [current_project]
+
   # setup common ip catalog
   make_set_repo_path
   update_ip_catalog
@@ -120,7 +123,12 @@ proc make_new_project {} {
   set_property source_mgmt_mode All [current_project]
 
   # execute post scritps
-  make_exec_scripts PRJCFG
+  if { $v::pe(PRJCFG) eq "" } {
+	source -notrace $v::pe(BOARD_PRESET)
+	board_init
+  } else {
+	make_exec_scripts PRJCFG
+  }
 
   # write project
   make_write_project
@@ -560,8 +568,8 @@ proc make_write_devicetree {} {
   set_repo_path $v::me(DTREE_DIR)
   create_sw_design device-tree -os device_tree -proc ps7_cortexa9_0
 
-  set_property CONFIG.kernel_version {2016.2} [get_os]
-  #set_property CONFIG.bootargs $boot_args [get_os]
+  # set_property CONFIG.kernel_version {2016.2} [get_os]
+  # set_property CONFIG.bootargs $boot_args [get_os]
 
   generate_target -dir $path_sdk/dts
 }

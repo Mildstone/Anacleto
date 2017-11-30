@@ -1,5 +1,6 @@
 
 AX_CONFIG_FILES(
+ Makefile
  rfx_pwmgen/Makefile
  rfx_pwmgen/linux/src/Makefile
  rfx_pwmgen/linux/src/Kbuild

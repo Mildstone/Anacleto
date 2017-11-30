@@ -15,6 +15,8 @@ project_VARIABLES = SOURCES \
 					BD_SOURCES \
 					PRJCFG \
 					IPCFG \
+					BOARD_PART \
+					BOARD_PRESET \
 					COMPILE_ORDER
 
 project_DEFAULT := $(lastword $(patsubst _, ,$(current_dir)))
@@ -91,6 +93,8 @@ export FPGA_DIR \
 
 export NAME \
 	   BOARD \
+	   BOARD_PART \
+	   BOARD_PRESET \
 	   VENDOR \
 	   LIBRARY \
 	   VERSION \
@@ -136,6 +140,10 @@ check_prj_sources = $(shell $(FIND) $(VIVADO_SRCDIR)/$(FULL_NAME).{srcs,tcl} -pr
 
 project: $(VIVADO_PRJDIR)/$(FULL_NAME).xpr
 projects: $(vivado_PROJECTS)
+
+
+print:
+	@ echo $(BOARD_PRESET) $(BOARD_PART)
 
 $(vivado_PROJECTS):
 	@ $(MAKE) project NAME=$@
@@ -224,7 +232,7 @@ vivado vivado_shell hsi hsi_shell hls hls_shell:
 new_project:   print_banner ##@projects Create a new vivado project
 open_project:  print_banner ##@projects Open the current project
 write_project:   print_banner ##@projects Store the current project
-write_bitstream: print_banner ##@projects generate bitstream
+bitstream: print_banner ##@projects generate bitstream
 
 package_ip:   ##@cores create a new pheripheral project for edit.
 edit_ip:  ##@cores open project ip or edit existing project as a new ip.
