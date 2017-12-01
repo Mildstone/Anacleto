@@ -604,9 +604,10 @@ proc make_write_linux_bsp {} {
   open_hw_design $path_sdk/$prj_name.sysdef
 
   set_repo_path  $v::me(top_srcdir)/fpga/hsi/linux-bsp
-  foreach ip_name [split $v::pe(IP_SOURCES)] {
-    set_repo_path $v::me(srcdir)/$ip_name
-  }
+  #  foreach ip_name [split $v::pe(IP_SOURCES)] {
+  #    set_repo_path $v::me(srcdir)/$ip_name
+  #  }
+
 
   create_sw_design ll -os linux -proc ps7_cortexa9_0 -verbose
   generate_bsp -dir $path_sdk/bsp

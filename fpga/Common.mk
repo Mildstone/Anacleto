@@ -23,7 +23,7 @@ project_DEFAULT := $(lastword $(patsubst _, ,$(current_dir)))
 
 vivado_PROJECTS_TARGETS = project write_project write_bitstream \
 						  new_project open_project bitstream clean_project \
-						  dts dtb
+						  dts dtb bsp
 vivado_CORES_TARGETS    = core new_ip edit_ip clean_ip
 
 FULL_NAME = $(if $(VENDOR),$(VENDOR)_)$(NAME)_$(VERSION)
@@ -231,8 +231,8 @@ vivado vivado_shell hsi hsi_shell hls hls_shell:
 
 new_project:   print_banner ##@projects Create a new vivado project
 open_project:  print_banner ##@projects Open the current project
-write_project:   print_banner ##@projects Store the current project
-bitstream: print_banner ##@projects generate bitstream
+write_project: print_banner ##@projects Store the current project
+bitstream:     print_banner ##@projects generate bitstream
 
 package_ip:   ##@cores create a new pheripheral project for edit.
 edit_ip:  ##@cores open project ip or edit existing project as a new ip.
@@ -292,7 +292,9 @@ $(DTS): $(VIVADO_SDKDIR)/dts/$(SYSTEM_DTS) $(LINUX_IMAGE)
 $(DTB):  $(DTS) $(LINUX_IMAGE)
 	$(LINUX_BUILDDIR)/scripts/dtc/dtc -I dts -O dtb -o $@ -i sdk/dts/ $<
 
-
+bsp: ##@hsi write linux drivers template (MEN AT WORK HERE !!)
+bsp: dts
+	@ $(call hsi,write_linux_bsp)
 
 ## ////////////////////////////////////////////////////////////////////////// ##
 ## ///  TEST     //////////////////////////////////////////////////////////// ##
