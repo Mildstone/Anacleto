@@ -58,7 +58,7 @@ int main(int argc, char **argv) {
     const char *file_out_name = "rpadc_data";
 
     if(argc<3) {
-        printf("usage: %s dev samples [file_out] \n",argv[0]);
+        printf("usage: %s dev dec samples \n",argv[0]);
         return 1;
     }
 
@@ -69,21 +69,21 @@ int main(int argc, char **argv) {
         printf(" ERROR: failed to open device file %s error: %d\n",argv[1],fd);
         return 1;
     }
-    if(argc>=4) { file_out_name = argv[3]; }
+    if(argc>=4) { file_out_name = argv[4]; }
 
     // PLOT TO SCREEN //
     // set decimation register //
     axi_reg_Init();
-    dec_reg = axi_reg_Map(sizeof(struct decimator_reg_t),CFG_REG_ADDR);
-    dec_reg->dec = 4E6;
-    if(dec_reg->dec != 4E6) {
-        perror("I was not able to set decimation\n");
-        exit(1);
-    }
+    dec_reg = axi_reg_Map(sizeof(struct decimator_reg_t),CFG_REG_ADDR);    
+    dec_reg->dec = atoi(argv[2]);
+    //    if(dec_reg->dec != 2E3) {
+    //        perror("I was not able to set decimation\n");
+    //        exit(1);
+    //    }
 
     status = ioctl(fd, RFX_RPADC_RESET, 0);
-    // usleep(10);
-    int i, size = atoi(argv[2]);
+    usleep(10);
+    int i, size = atoi(argv[3]);
     size = MIN((size)*sizeof(u_int32_t),BUF_SIZE);
     if (size <= 0) { return size; }
 
@@ -91,6 +91,7 @@ int main(int argc, char **argv) {
     if (!data) { perror("malloc\n"); exit (1); }
 
     status = ioctl(fd, RFX_RPADC_CLEAR, 0);
+    sleep(3);
     for(i=0;i<size;) {
         int rb = read(fd,&data[0], size );
         for(int j=0; j<rb; j+=sizeof(u_int32_t)) {

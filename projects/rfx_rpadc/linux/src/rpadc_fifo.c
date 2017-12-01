@@ -53,8 +53,10 @@ struct rpadc_fifo_dev {
     struct platform_device *pdev;
     struct cdev *cdev;
     int busy;
+    int irq;
     void * iomap;
     void * iomap1;
+    void * buffer;
     struct semaphore sem;     /* mutual exclusion semaphore     */
 };
 
@@ -78,7 +80,15 @@ u32 Read(void *addr, enum AxiStreamFifo_Register op ) {
 //  FOPS  //////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-
+// interrupt handler //
+irqreturn_t IRQ_cb(int irq, void *dev_id, struct pt_regs *regs) {
+    struct rpadc_fifo_dev *rpadc = dev_id;
+    printk(KERN_DEBUG "IRQ: iomap = %0x \n",rpadc->iomap);
+    Write(rpadc->iomap,IER,0x00);
+    printk(KERN_DEBUG "rpadc_fifo: irq %d received with value %0x \n",irq,Read(rpadc->iomap,ISR));
+    Write(rpadc->iomap,ISR,0xFFFFFFFF);
+    return IRQ_HANDLED;
+}
 
 // OPEN //
 static int device_open(struct inode *inode, struct file *file)
@@ -88,6 +98,8 @@ static int device_open(struct inode *inode, struct file *file)
         u32 off;
         struct resource *r_mem =  platform_get_resource(s_pdev, IORESOURCE_MEM, 0);
         dev = file->private_data = kmalloc(sizeof(struct rpadc_fifo_dev),GFP_KERNEL);
+
+        // IOMAP //
         // dev->cdev = container_of(inode->i_cdev, struct rpadc_fifo_dev, cdev);
         dev->pdev = s_pdev;
         off = r_mem->start & ~PAGE_MASK;
@@ -95,7 +107,15 @@ static int device_open(struct inode *inode, struct file *file)
         r_mem =  platform_get_resource(s_pdev, IORESOURCE_MEM, 1);
         off = r_mem->start & ~PAGE_MASK;
         dev->iomap1 = devm_ioremap(&s_pdev->dev,r_mem->start+off,0xffff);
-        dev->busy=0;
+
+        // IRQ //        
+        dev->irq = platform_get_irq(dev->pdev,0);
+        printk(KERN_DEBUG "OPEN: iomap = %0x \n",dev->iomap);
+        int res = request_irq( dev->irq, IRQ_cb, IRQF_TRIGGER_RISING ,"rpadc_fifo",dev);
+        if(res) printk(KERN_INFO "rpadc_fifo: can't get IRQ %dassigned\n",dev->irq);
+
+
+        dev->busy=0;        
     }
     dev = file->private_data;
     if(!dev) return -EFAULT;
@@ -111,7 +131,10 @@ static int device_release(struct inode *inode, struct file *file)
    struct rpadc_fifo_dev *dev = file->private_data;
    if(!dev) return -EFAULT;
    if(--dev->busy == 0)
-   {
+   {       
+       printk(KERN_DEBUG "CLOSE: iomap = %0x \n",dev->iomap);
+       Write(dev->iomap,IER,0x0);
+       free_irq(dev->irq,dev);
        devm_iounmap(&dev->pdev->dev,dev->iomap);
        devm_iounmap(&dev->pdev->dev,dev->iomap1);
        kfree(dev);
@@ -267,6 +290,7 @@ static long device_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
     case RFX_RPADC_CLEAR:
         printk(KERN_DEBUG "<%s> ioctl: rfx_rpadc_fifo_CLEAR\n", MODULE_NAME);
         Write(dev,RDFR,0xa5);
+        Write(dev,IER,0x04000000);
         return 0;
         break;
 
@@ -329,7 +353,7 @@ static int rfx_rpadc_fifo_probe(struct platform_device *pdev)
       return 1;
     }
 
-    //    int irq = platform_get_irq(pdev,0);
+    // int irq = platform_get_irq(pdev,0);
     //    request_irq(irq,)
 
     printk(KERN_DEBUG"mem start: %x\n",r_mem->start);
