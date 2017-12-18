@@ -36,7 +36,7 @@ AC_DEFUN([AX_PROJECT_VARIABLES],[
  AX_PUSH_LOCAL([ax_project_variables])
  AS_VAR_READ([PROJECT_VARIABLES],[
 
-NAME = \$(or \$(strip \$(foreach x,\$(project_LISTS),\\\\
+NAME ?= \$(or \$(strip \$(foreach x,\$(project_LISTS),\\\\
 			   \$(if \$(filter \$(\$x_TARGETS),\$(MAKECMDGOALS)),\$(lastword \$(value \$x))))),\\\\
 			  \$(lastword \$(value \$(lastword \$(project_LISTS)))),\\\\
 			  \$(project_DEFAULT))
