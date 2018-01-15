@@ -64,47 +64,30 @@ AC_CHECK_PROGS([UNIQ],[uniq])
 AC_CHECK_PROGS([WC],[wc])
 
 
-# //////////////////////////////////////////////////////////////////////////// #
-# //  BUILD COMMON  ////////////////////////////////////////////////////////// #
-# //////////////////////////////////////////////////////////////////////////// #
 
-AX_KCONFIG_VAR_WITH([DOWNLOAD_DIR],["Default download directory path"])
-AC_SUBST([DOWNLOAD_DIR])
-AX_GITIGNORE_ADD([${DOWNLOAD_DIR}])
+## /////////////////////////////////////////////////////////////////////////////
+## //  KSCRIPTS  ///////////////////////////////////////////////////////////////
+## /////////////////////////////////////////////////////////////////////////////
 
-AX_KCONFIG_VAR_WITH([MAKE_PROCESS],
-		    ["Number of parallel process (aka -j option, 0=auto)"])
-AS_VAR_IF([MAKE_PROCESS],[0],
-	  [AS_VAR_SET([MAKE_PROCESS],[$(grep -c ^processor /proc/cpuinfo)])])
-AC_MSG_NOTICE([build make process -j${MAKE_PROCESS}])
-AC_SUBST([MAKE_PROCESS])
+## BUILD_COMMON ##
+m4_sinclude(conf/kscripts/build_common.ac)
 
+## TOOLCHAIN ##
+m4_sinclude(conf/kscripts/toolchain.ac)
 
-# //////////////////////////////////////////////////////////////////////////// #
-# //  TOOLCHAIN  ///////////////////////////////////////////////////////////// #
-# //////////////////////////////////////////////////////////////////////////// #
+## CODAC ##
+# m4_sinclude(conf/kscripts/iter_codac.ac)
 
-AX_KCONFIG_VAR_ENABLE([ENABLE_CUSTOM_TOOLCHAIN],["Enable external toolchain"])
+## QT ##
+m4_sinclude(conf/kscripts/qtdesktop.ac)
 
-AX_KCONFIG_CHOICE([TOOLCHAIN_RETRIEVE],
-		  [TOOLCHAIN_RETRIEVE_TAR],["tar"],
-		  [TOOLCHAIN_RETRIEVE_DIR],["dir"])
-
-AX_KCONFIG_VAR_WITH([TOOLCHAIN_TAR],["url path for Linaro toolchain binaries"])
-AC_SUBST([TOOLCHAIN_TAR])
-
-AX_KCONFIG_VAR_WITH([TOOLCHAIN_DIR],["Set toolchain base dir"])
-AC_SUBST([TOOLCHAIN_DIR])
-AX_GITIGNORE_ADD([${TOOLCHAIN_DIR}])
-
-AX_KCONFIG_VAR_WITH([CROSS_COMPILE],["Set crosscompile command"])
-AC_SUBST([CROSS_COMPILE])
+## // GIT IGNORE // ##
+AX_GITIGNORE_SUBST
 
 
 # //////////////////////////////////////////////////////////////////////////// #
 # //  EXAMPLES /////////////////////////////////////////////////////////////// #
 # //////////////////////////////////////////////////////////////////////////// #
-
 
 AX_KCONFIG_VAR_ENABLE([EXAMPLE_BOOL_VAR],["Set example bool var"])
 AC_SUBST([EXAMPLE_BOOL_VAR])
@@ -149,12 +132,8 @@ AS_ECHO()
 
 
 
-
-# // GIT IGNORE // #
-AX_GITIGNORE_SUBST
-
 AC_CONFIG_FILES( 
                  Makefile
-		 .gitignore
+				 .gitignore
                )
 AC_OUTPUT

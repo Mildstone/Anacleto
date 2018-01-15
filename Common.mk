@@ -1,6 +1,6 @@
 
-include $(top_srcdir)/conf/kscripts/build_common.am
-include $(top_srcdir)/conf/kscripts/toolchain.am
+include $(top_srcdir)/conf/kscripts/build_common.mk
+include $(top_srcdir)/conf/kscripts/toolchain.mk
 
 ## ////////////////////////////////////////////////////////////////////////// ##
 ## /// ACTIVATE HELP TARGET ///////////////////////////////////////////////// ##
