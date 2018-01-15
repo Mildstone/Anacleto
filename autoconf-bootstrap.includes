@@ -1,1 +1,4 @@
 conf/kscripts
+src
+src/qt_example
+.

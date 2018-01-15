@@ -57,6 +57,7 @@ AC_PROG_AWK
 AC_PROG_MKDIR_P
 AC_PROG_SED
 AC_PROG_CC
+AC_PROG_CXX
 
 AC_CHECK_PROGS([CURL],[curl])
 AC_CHECK_PROGS([TAR],[gtar tar])
@@ -135,5 +136,7 @@ AS_ECHO()
 AC_CONFIG_FILES( 
                  Makefile
 				 .gitignore
+				 src/Makefile
+				 src/qt_example/Makefile
                )
 AC_OUTPUT
