@@ -9,7 +9,7 @@ if [ -d conf/kconfig ]; then
  popd
 fi
 
-aclocal -I ./m4 
+aclocal -I ./conf/m4 
 
 autoheader
 

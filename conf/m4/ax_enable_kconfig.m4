@@ -1,0 +1,1 @@
+../kconfig/m4/ax_enable_kconfig.m4
