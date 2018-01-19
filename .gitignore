@@ -6,4 +6,6 @@ Makefile.in
 /config.h.in~
 /configure
 
-
+/build/download
+/build/conf/node_modules
+/build

@@ -2,3 +2,6 @@ conf/kscripts
 src
 src/qt_example
 .
+conf/kconfig/scripts
+doc/wiki
+conf/autoconf-archive/m4

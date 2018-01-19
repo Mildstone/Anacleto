@@ -59,11 +59,14 @@ AC_PROG_SED
 AC_PROG_CC
 AC_PROG_CXX
 
+
 AC_CHECK_PROGS([CURL],[curl])
 AC_CHECK_PROGS([TAR],[gtar tar])
 AC_CHECK_PROGS([UNIQ],[uniq])
 AC_CHECK_PROGS([WC],[wc])
 
+# needed for sh_envsubst
+AC_CHECK_PROGS([PERL],[perl])
 
 
 ## /////////////////////////////////////////////////////////////////////////////
@@ -82,7 +85,14 @@ m4_sinclude(conf/kscripts/toolchain.ac)
 ## QT ##
 m4_sinclude(conf/kscripts/qtdesktop.ac)
 
+## NODEJS ##
+m4_sinclude(conf/kscripts/nodejs.ac)
+
+## DOXYGEN ##
+m4_sinclude(conf/autoconf-doxygen/doxygen.ac)
+
 ## // GIT IGNORE // ##
+AX_GITIGNORE_ADD_PATH([${builddir}])
 AX_GITIGNORE_SUBST
 
 
@@ -138,5 +148,7 @@ AC_CONFIG_FILES(
 				 .gitignore
 				 src/Makefile
 				 src/qt_example/Makefile
+				 src/sh_template/Makefile
+				 doc/wiki/Makefile
                )
 AC_OUTPUT
