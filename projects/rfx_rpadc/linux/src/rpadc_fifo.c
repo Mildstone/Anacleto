@@ -353,6 +353,10 @@ static int rfx_rpadc_fifo_probe(struct platform_device *pdev)
       return 1;
     }
 
+
+
+
+
     // int irq = platform_get_irq(pdev,0);
     //    request_irq(irq,)
 

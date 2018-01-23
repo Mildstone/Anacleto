@@ -29,6 +29,8 @@ HSI          = hsi    -nolog -journal $(NAME)_hsi_jou.tcl  -mode batch
 HSI_SHELL    = hsi    -nolog -journal hsi_shell_jou.tcl    -mode tcl
 HLS          = vivado_hls -nosplash
 HLS_SHELL    = vivado_hls -nosplash -i
+XSDK         = xsdk
+XSDK_SHELL   = xsdk -batch
 
 vivado       = $(VIVADO)       -source $(FPGA_DIR)/vivado_make.tcl $(if $1,-tclargs $1)
 vivado_shell = $(VIVADO_SHELL) -source $(FPGA_DIR)/vivado_make.tcl $(if $1,-tclargs $1)
@@ -36,6 +38,8 @@ hsi          = $(HSI)       -source $(FPGA_DIR)/vivado_make.tcl $(if $1,-tclargs
 hsi_shell    = $(HSI_SHELL) -source $(FPGA_DIR)/vivado_make.tcl $(if $1,-tclargs $1)
 hls          = $(HLS)       -f $(FPGA_DIR)/vivado_make.tcl  $(if $1,-tclargs $1)
 hls_shell    = $(HLS_SHELL) -f $(FPGA_DIR)/vivado_make.tcl  $(if $1,-tclargs $1)
+xsdk         = $(XSDK)       $(if $1,-tclargs $1)
+xsdk_shell   = $(XSDK_SHELL) -batch $(if $1,-tclargs $1)
 
 FPGA_DIR        = $(abs_top_srcdir)/fpga
 FPGA_REPO_DIR   = $(abs_top_srcdir)/fpga/ip_repo
@@ -206,9 +210,10 @@ list_cores:
 ## ////////////////////////////////////////////////////////////////////////// ##
 
 .PHONY: vivado_shell hsi_shell
-vivado_shell:##@vivado open a vivado shell with configured env
-hsi_shell:   ##@vivado open hsi shell with configured env
-hls_shell:   ##@vivado open hls shell with configured env
+vivado_shell:##@xilinx open a vivado shell with configured env
+hsi_shell:   ##@xilinx open hsi shell with configured env
+hls_shell:   ##@xilinx open hls shell with configured env
+xsdk_shell:  ##@xilinx open xsdk shell with configured env
 
 vivado hsi vivado_shell hsi_shell hls hls_shell:
 	@ ${_envset}; $(call $@,${TCL_ARGS})

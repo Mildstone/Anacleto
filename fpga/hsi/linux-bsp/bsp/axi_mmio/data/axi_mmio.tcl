@@ -15,6 +15,7 @@ proc source_core_tcl { sw_core tcl_script } {
 
 
 proc generate { drv_handle } {
+  puts "-- GENERATE MMIO --"
   set os_core_v    [string map {. _} [get_property "VERSION" [get_os]]]
   set os_core_name "[get_os]_v${os_core_v}"
   source_core_tcl  $os_core_name "dt_common_proc.tcl"

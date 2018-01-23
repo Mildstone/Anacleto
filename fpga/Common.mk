@@ -17,7 +17,9 @@ project_VARIABLES = SOURCES \
 					IPCFG \
 					BOARD_PART \
 					BOARD_PRESET \
-					COMPILE_ORDER
+					COMPILE_ORDER \
+					DRV_LINUX \
+					BSPDIR
 
 project_DEFAULT := $(lastword $(patsubst _, ,$(current_dir)))
 
@@ -48,6 +50,9 @@ HSI          = hsi    -nolog -journal $(NAME)_hsi_jou.tcl  -mode batch
 HSI_SHELL    = hsi    -nolog -journal hsi_shell_jou.tcl    $(if $(MODE),-mode $(MODE))
 HLS          = vivado_hls -nosplash
 HLS_SHELL    = vivado_hls -nosplash -i
+XSDK         = xsdk
+XSDK_SHELL   = xsdk -batch
+SDK_SHELL    = xsdk
 
 vivado       = ${_envset}; $(VIVADO)       -source $(FPGA_DIR)/vivado_make.tcl $(if $1,-tclargs $1)
 vivado_shell = ${_envset}; $(VIVADO_SHELL) -source $(FPGA_DIR)/vivado_make.tcl $(if $1,-tclargs $1)
@@ -55,6 +60,9 @@ hsi          = ${_envset}; $(HSI)       -source $(FPGA_DIR)/vivado_make.tcl $(if
 hsi_shell    = ${_envset}; $(HSI_SHELL) -source $(FPGA_DIR)/vivado_make.tcl $(if $1,-tclargs $1)
 hls          = ${_envset}; $(HLS)       -f $(FPGA_DIR)/make_vivado_hls.tcl
 hls_shell    = ${_envset}; $(HLS_SHELL) -f $(FPGA_DIR)/vivado_make.tcl
+xsdk         = ${_envset}; $(XSDK)       $1
+xsdk_shell   = ${_envset}; $(XSDK_SHELL) $1
+sdk_shell    = ${_envset}; $(SDK_SHELL)
 
 FPGA_DIR        = $(abs_top_srcdir)/fpga
 FPGA_REPO_DIR   = $(abs_top_srcdir)/fpga/ip_repo
@@ -102,7 +110,9 @@ export NAME \
 	   BD_SOURCES \
 	   IP_SOURCES \
 	   PRJCFG \
-	   IPCFG
+	   IPCFG \
+	   DRV_LINUX \
+	   BSPDIR
 
 export VIVADO_SRCDIR \
 	   VIVADO_PRJDIR \
@@ -209,6 +219,8 @@ list: print_banner
 	echo "| PROJECTS: "; \
 	$(MAKE) -s list_projects 2>/dev/null; \
 	echo "|";\
+	echo "| CURRENT: $(NAME)";\
+	echo "|";\
 	echo "\`-----------------------------------------------------------------";
 
 
@@ -216,12 +228,14 @@ list: print_banner
 ## ///  VIVADO SHELL    ///////////////////////////////////////////////////// ##
 ## ////////////////////////////////////////////////////////////////////////// ##
 
-.PHONY: vivado_shell hsi_shell
-vivado_shell:##@vivado open a vivado shell with configured env
-hsi_shell:   ##@vivado open hsi shell with configured env
-hls_shell:   ##@vivado open hls shell with configured env
+.PHONY: vivado_shell hsi_shell xsdk_shell
+vivado_shell:##@xilinx open a vivado shell with configured env
+hsi_shell:   ##@xilinx open hsi shell with configured env
+hls_shell:   ##@xilinx open hls shell with configured env
+xsdk_shell:  ##@xilinx open xsdk shell with configured env
+sdk_shell:   ##@xilinx open sdk shell with configured env
 
-vivado vivado_shell hsi hsi_shell hls hls_shell:
+vivado vivado_shell hsi hsi_shell hls hls_shell xsdk_shell sdk_shell:
 	@ $(call $@,${TCL_ARGS})
 
 

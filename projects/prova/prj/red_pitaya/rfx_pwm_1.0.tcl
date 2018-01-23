@@ -79,6 +79,7 @@ proc reset_core_env {} {
   set    core_env(VENDOR)           [getenv VENDOR]
   set    core_env(VERSION)          [getenv VERSION]
   set    core_env(DRV_LINUX)        [getenv DRV_LINUX]
+  set    core_env(BSPDIR)           [getenv BSPDIR]
 }
 # set env by default when included
 reset_core_env
@@ -91,6 +92,8 @@ proc reset_project_env { } {
   set project_env(VIVADO_VERSION)  [getenv VIVADO_VERSION]
   set project_env(VIVADO_SOC_PART) [getenv VIVADO_SOC_PART]
   set project_env(BOARD)           [getenv BOARD]
+  set project_env(BOARD_PART)      [getenv BOARD_PART]
+  set project_env(BOARD_PRESET)    [getenv BOARD_PRESET]
   set project_env(dir_prj)         [compute_project_dir edit]
   set project_env(dir_src)         [compute_project_dir src]
   set project_env(dir_sdc)         [compute_project_dir edit]/[compute_project_name].sdc
@@ -100,6 +103,8 @@ proc reset_project_env { } {
   set project_env(synth_name)      [getenv synth_name "anacleto_synth"]
   set project_env(impl_name)       [getenv impl_name  "anacleto_impl"]
   set project_env(SOURCES)         [getenv SOURCES]
+  set project_env(PRJCFG)          [getenv PRJCFG]
+  set project_env(IPCFG)           [getenv IPCFG]
   set project_env(BD_SOURCES)      [getenv BD_SOURCES]
   set project_env(IP_SOURCES)      [getenv IP_SOURCES]
   set project_env(COMPILE_ORDER)   [getenv COMPILE_ORDER]
@@ -165,8 +170,12 @@ namespace upvar ::tclapp::socdev::makeutils core_env    core_env
  # 
  # Set 'sources_1' fileset object
  set obj [get_filesets sources_1]
+ file mkdir "$project_env(dir_prj)/rfx_pwm_1.0.srcs/sources_1/bd/red_pitaya_ps_1"
+ file copy -force "$project_env(dir_src)/rfx_pwm_1.0.srcs/sources_1/bd/red_pitaya_ps_1/red_pitaya_ps_1.bd" \
+    "$project_env(dir_prj)/rfx_pwm_1.0.srcs/sources_1/bd/red_pitaya_ps_1/red_pitaya_ps_1.bd"
  set files [list \
   "[file normalize $make_env(srcdir)/./pwm.vhd]"\
+  "[file normalize $project_env(dir_prj)/rfx_pwm_1.0.srcs/sources_1/bd/red_pitaya_ps_1/red_pitaya_ps_1.bd]"\
  ]
  add_files -norecurse -fileset $obj $files
  # 
@@ -183,7 +192,28 @@ namespace upvar ::tclapp::socdev::makeutils core_env    core_env
   set_property -quiet "used_in_simulation" "1" $file_obj
   set_property -quiet "used_in_synthesis" "1" $file_obj
  # 
- # No properties for sources_1
+ # Properties for red_pitaya_ps_1.bd
+  set file "$project_env(dir_prj)/rfx_pwm_1.0.srcs/sources_1/bd/red_pitaya_ps_1/red_pitaya_ps_1.bd"
+  set file_obj [get_files -of_objects [get_filesets sources_1] [list "$file"]]
+  set_property -quiet "exclude_debug_logic" "0" $file_obj
+  if { ![get_property "is_locked" $file_obj] } {
+    set_property -quiet "generate_synth_checkpoint" "1" $file_obj
+  }
+  set_property -quiet "is_enabled" "1" $file_obj
+  set_property -quiet "is_global_include" "0" $file_obj
+  if { ![get_property "is_locked" $file_obj] } {
+    set_property -quiet "is_locked" "0" $file_obj
+  }
+  set_property -quiet "library" "xil_defaultlib" $file_obj
+  set_property -quiet "path_mode" "RelativeFirst" $file_obj
+  if { ![get_property "is_locked" $file_obj] } {
+    set_property -quiet "synth_checkpoint_mode" "Hierarchical" $file_obj
+  }
+  set_property -quiet "used_in" "synthesis implementation simulation" $file_obj
+  set_property -quiet "used_in_implementation" "1" $file_obj
+  set_property -quiet "used_in_simulation" "1" $file_obj
+  set_property -quiet "used_in_synthesis" "1" $file_obj
+ # 
  # 
  # 
  # /////////////////////////////////////////////////////////////  

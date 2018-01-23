@@ -1,6 +1,0 @@
-set_property IOSTANDARD LVCMOS33 [get_ports {pwm_n_out[0]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {pwm_out[0]}]
-set_property PACKAGE_PIN H16 [get_ports {pwm_n_out[0]}]
-set_property PACKAGE_PIN H17 [get_ports {pwm_out[0]}]
-set_property IOSTANDARD LVCMOS33 [get_ports led_o]
-set_property PACKAGE_PIN H18 [get_ports led_o]

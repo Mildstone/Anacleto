@@ -97,7 +97,7 @@ proc make_set_repo_path {} {
 ## /// CREATE PROJECT /////////////////////////////////////////////////////// ##
 ## ////////////////////////////////////////////////////////////////////////// ##
 
-proc make_new_project {} {
+proc make_new_project {{exec_preset 1}} {
   set_compatible_with Vivado
 
   set part    $v::pe(VIVADO_SOC_PART)
@@ -123,7 +123,7 @@ proc make_new_project {} {
   set_property source_mgmt_mode All [current_project]
 
   # execute post scritps
-  if { $v::pe(PRJCFG) eq "" } {
+  if { $v::pe(PRJCFG) eq "" && $exec_preset eq 1 } {
 	source -notrace $v::pe(BOARD_PRESET)
 	board_init
   } else {
@@ -181,7 +181,6 @@ proc make_package_hls_ip {} {
   file delete -force $ipdir
   file copy -force $dir_prj/$project_name/$solution/impl/ip $ipdir
   file delete -force $dir_prj/$project_name/$solution/impl/ip
-
 }
 
 
@@ -204,7 +203,7 @@ proc make_package_ip { } {
   #	 if { [catch {current_project}] } { send_msg_id [v::mid]-1 ERROR "dummy prj fail"}
   #	 make_load_sources
   #	 set_property source_mgmt_mode All [current_project]
-	 make_new_project
+	 make_new_project 0
   }
   if { [catch {current_project}] } {
    send_msg_id [v::mid]-1 ERROR "Could not start a new project"
@@ -230,10 +229,10 @@ proc make_package_ip { } {
    ipx::save_core $core
    ipx::add_file_group -type software_driver {} $core
    foreach file [split $v::ce(DRV_LINUX) " "] {
-    add_files -force -norecurse \
-	 -copy_to ${dir_prj}/drivers/[file dirname $file] $v::me(srcdir)/$file
-    ipx::add_file drivers/$file \
-     [ipx::get_file_groups xilinx_softwaredriver -of_objects $core]
+	add_files -force -norecurse \
+	 -copy_to ${ipdir}/bsp/[file dirname $file] $v::me(srcdir)/$file
+	ipx::add_file bsp/$file \
+	 [ipx::get_file_groups xilinx_softwaredriver -of_objects $core]
    }
    ipx::save_core $core
   } else {
@@ -245,6 +244,16 @@ proc make_package_ip { } {
    ipx::save_core $core
 
   }
+
+#  foreach file [split $v::ce(DRV_LINUX) " "] {
+#   add_files -force -norecurse \
+#	 -copy_to ${dir_prj}/bsp/[file dirname $file] $v::me(srcdir)/$file
+#   ipx::add_file bsp/$file \
+#	 [ipx::get_file_groups xilinx_softwaredriver -of_objects $core]
+#  }
+#  ipx::save_core $core
+
+
 
   # execute post scritps
   make_exec_scripts IPCFG
@@ -289,10 +298,12 @@ proc make_edit_ip { } {
   set ipdir        $v::ce(ipdir)
 
 
-  make_open_project
   if { ![file exists $ipdir/component.xml] } {
    make_package_ip
+  } else {
+   make_open_project
   }
+
   puts "FILE_IP: $ipdir/component.xml"
   add_files $ipdir/component.xml
   ipx::open_core $ipdir/component.xml
@@ -540,11 +551,11 @@ proc make_write_bitstream {} {
   file  copy -force  $impl_dir/${top_name}.bit   $path_bit/$prj_name.bit
 
   write_sysdef    -force   -hwdef   $path_sdk/$prj_name.hwdef \
-			   -bitfile $path_sdk/$prj_name.bit \
-			   -file    $path_sdk/$prj_name.sysdef
+				  -bitfile $path_sdk/$prj_name.bit \
+				  -file    $path_sdk/$prj_name.sysdef
 
-  # Export Hardware for petalinux inclusion #
-  # write_hwdef     -force   -file    $path_sdk/$prj_name.hdf
+  # Export Hardware for SDK inclusion #
+  write_hwdef     -force   -file    $path_sdk/$prj_name.hdf
 }
 
 
@@ -575,6 +586,10 @@ proc make_write_devicetree {} {
 }
 
 
+## ////////////////////////////////////////////////////////////////////////// ##
+## /// FSBL ///////////////////////////////////////////////////////////////// ##
+## ////////////////////////////////////////////////////////////////////////// ##
+
 proc make_write_fsbl {} {
   set_compatible_with Hsi
 
@@ -593,6 +608,11 @@ proc make_write_fsbl {} {
   generate_app  -os standalone -proc ps7_cortexa9_0 -app zynq_fsbl \
       -compile -sw fsbl -dir $path_sdk/fsbl
 }
+
+
+## ////////////////////////////////////////////////////////////////////////// ##
+## /// BSP ////////////////////////////////////////////////////////////////// ##
+## ////////////////////////////////////////////////////////////////////////// ##
 
 proc make_write_linux_bsp {} {
   set_compatible_with Hsi
@@ -605,31 +625,13 @@ proc make_write_linux_bsp {} {
 
   set_repo_path  $v::me(top_srcdir)/fpga/hsi/linux-bsp
   #  foreach ip_name [split $v::pe(IP_SOURCES)] {
-  #    set_repo_path $v::me(srcdir)/$ip_name
+  #	set_repo_path $v::me(srcdir)/$ip_name
   #  }
-
+  # set_repo_path  $path_sdk
 
   create_sw_design ll -os linux -proc ps7_cortexa9_0 -verbose
-  generate_bsp -dir $path_sdk/bsp
-}
-
-proc make_write_fsbl {} {
-  set_compatible_with Hsi
-
-  set prj_name $v::pe(project_name)
-  set path_bit $v::pe(dir_bit)
-  set path_sdk $v::pe(dir_sdk)
-
-  #  set boot_args { console=ttyPS0,115200n8 root=/dev/ram rw \
-  #		  initrd=0x00800000,16M earlyprintk \
-  #		  mtdparts=physmap-flash.0:512K(nor-fsbl),512K(nor-u-boot),\
-  #		  5M(nor-linux),9M(nor-user),1M(nor-scratch),-(nor-rootfs) }
-
-  open_hw_design $path_sdk/$prj_name.sysdef
-  set_repo_path $v::me(DTREE_DIR)
-
-  generate_app  -os standalone -proc ps7_cortexa9_0 -app zynq_fsbl \
-      -compile -sw fsbl -dir $path_sdk/fsbl
+  generate_target -dir $path_sdk/bsp bsp
+  generate_target -dir $path_sdk/app app
 }
 
 
