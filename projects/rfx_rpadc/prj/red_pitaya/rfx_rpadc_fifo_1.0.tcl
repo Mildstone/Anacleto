@@ -79,6 +79,7 @@ proc reset_core_env {} {
   set    core_env(VENDOR)           [getenv VENDOR]
   set    core_env(VERSION)          [getenv VERSION]
   set    core_env(DRV_LINUX)        [getenv DRV_LINUX]
+  set    core_env(BSPDIR)           [getenv BSPDIR]
 }
 # set env by default when included
 reset_core_env
