@@ -626,6 +626,7 @@ conf/autoconf-doxygen/doxygen.ac
 conf/autoconf-doxygen/doxygen.kconfig
 conf/autoconf-doxygen/doxygen.mk
 conf/autoconf-doxygen/m4/ax_doxygen_docs.m4
+conf/autoconf-doxygen/m4/ax_prog_doxygen.m4
 conf/compile
 conf/config.guess
 conf/config.sub

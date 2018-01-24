@@ -11,4 +11,38 @@ AX_KCONFIG_WITH_EXEC([DOXYGEN_BINARY],["set with DOXYGEN_BINARY"],,[
 AC_SUBST([DOXYGEN_BINARY])
 
 
+AX_KCONFIG_MODULES([DOXYGEN],
+			  [doc], [output],
+			  [dot], [output],
+			  [man], [output],
+			  [html],[output],
+			  [chm], [output],
+			  [chi], [output],
+			  [rtf], [output],
+			  [xml], [output],
+			  [pdf], [output],
+			  [ps],  [output])
+AC_SUBST(DOXYGEN_MODULES)
+# AC_SUBST(DOXYGEN_MODULES_AVAILABLE)
+AC_SUBST(DOXYGEN_MODULES_ENABLED)
+AC_SUBST(DOXYGEN_MODULES_DISABLED)
+
+DX_MY_INIT_DOXYGEN([autoconf-bootstrap],[conf/autoconf-doxygen/config/doxygen.cfg])
+
+
+AC_SUBST([DOXYGEN_DOC])
+AC_SUBST([DOXYGEN_DOT])
+AC_SUBST([DOXYGEN_MAN])
+AC_SUBST([DOXYGEN_HTML])
+AC_SUBST([DOXYGEN_CHM])
+AC_SUBST([DOXYGEN_CHI])
+AC_SUBST([DOXYGEN_RTF])
+AC_SUBST([DOXYGEN_XML])
+AC_SUBST([DOXYGEN_PDF])
+AC_SUBST([DOXYGEN_PS])
+
+
 AM_CONDITIONAL([ENABLE_DOXYGEN],[test x${ENABLE_DOXYGEN} = xyes])
+
+
+

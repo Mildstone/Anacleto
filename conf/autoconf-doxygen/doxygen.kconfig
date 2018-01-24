@@ -16,4 +16,38 @@ config DOXYGEN_BINARY
   --- help ---
 	help on DOXYGEN_BINARY
 
+menu DOXYGEN_MODULES
+	config DOXYGEN_DOC
+	 bool "Enable doc output feature"
+	 default y
+	config DOXYGEN_DOT
+	 bool "Enable dot output feature"
+	 default n
+	config DOXYGEN_MAN
+	 bool "Enable man output feature"
+	 default n
+	config DOXYGEN_HTML
+	 bool "Enable html output feature"
+	 default y
+	config DOXYGEN_CHM
+	 bool "Enable chm output feature"
+	 default n
+	config DOXYGEN_CHI
+	 bool "Enable chi output feature"
+	 default n
+	config DOXYGEN_RTF
+	 bool "Enable rtf output feature"
+	 default n
+	config DOXYGEN_XML
+	 bool "Enable xml output feature"
+	 default n
+	config DOXYGEN_PDF
+	 bool "Enable pdf output feature"
+	 default y
+	config DOXYGEN_PS
+	 bool "Enable ps output feature"
+	 default n
+endmenu
+
+
 endif # ENABLE_DOXYGEN
