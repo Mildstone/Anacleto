@@ -140,6 +140,7 @@ AS_ECHO(["MODULES_ENABLED ---------> ${MODULES_ENABLED}"])
 AS_ECHO(["MODULES_DISABLED --------> ${MODULES_DISABLED}"])
 AS_ECHO(["MODULES -----------------> ${MODULES}"])
 AS_ECHO()
+AS_ECHO(["ENABLE_DOXYGEN ------------------> ${ENABLE_DOXYGEN}"])
 AS_ECHO(["DOXYGEN_MODULES_AVAILABLE -------> ${DOXYGEN_MODULES_AVAILABLE}"])
 AS_ECHO(["DOXYGEN_MODULES_ENABLED ---------> ${DOXYGEN_MODULES_ENABLED}"])
 AS_ECHO(["DOXYGEN_MODULES_DISABLED --------> ${DOXYGEN_MODULES_DISABLED}"])
@@ -154,6 +155,7 @@ AC_CONFIG_FILES(
 				 src/Makefile
 				 src/qt_example/Makefile
 				 src/sh_template/Makefile
+				 doc/Makefile
 				 doc/wiki/Makefile
                )
 AC_OUTPUT

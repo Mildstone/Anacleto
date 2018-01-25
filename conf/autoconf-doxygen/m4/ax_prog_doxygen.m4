@@ -7,11 +7,13 @@ AS_VAR_IF([DX_CURRENT_FEATURE],[yes],[
   AC_PATH_TOOL([$1], [$2], [:])
   AS_VAR_IF([$1],[:],[
 	AC_MSG_WARN([$2 not found - doxygen will not DX_CURRENT_DESCRIPTION])
-	AS_VAR_SET([DX_CURRENT_FEATURE],[no])
-	AX_KCONFIG_UPDATE(DX_CURRENT_FEATURE)
+	AS_VAR_IF(DX_CURRENT_FEATURE,[yes],[
+	 AS_VAR_SET(DX_CURRENT_FEATURE,[no])
+	 AX_KCONFIG_UPDATE(DX_CURRENT_FEATURE)])
   ])
 ])
 ])
+
 
 AC_DEFUN([DX_ARG_ABLE],[
   AC_DEFUN([DX_CURRENT_FEATURE],[DOXYGEN_[]m4_toupper($1)])
@@ -19,6 +21,9 @@ AC_DEFUN([DX_ARG_ABLE],[
   $3
   AS_VAR_IF([DX_CURRENT_FEATURE],[yes], $4, $5)
 ])
+
+AC_DEFUN([DX_TEST_FEATURE],[test x"${DOXYGEN_[]m4_toupper($1)}" = x"yes"])
+
 
 # DX_INIT_DOXYGEN(PROJECT, [CONFIG-FILE], [OUTPUT-DOC-DIR])
 # ---------------------------------------------------------
@@ -33,9 +38,13 @@ AC_DEFUN([DX_MY_INIT_DOXYGEN], [
   #
   #
   # Doxygen itself:
-  DX_ARG_ABLE(doc, [generate any documentation],
-			[DX_CHECK_PROG([DX_PERL], perl)],
-			[AC_SUBST([PERL_PATH], ${DX_PERL})])
+  AC_DEFUN([DX_CURRENT_FEATURE],[ENABLE_DOXYGEN])
+  #AC_DEFUN([DX_CURRENT_DESCRIPTION],[generate any documentation])
+  DX_CHECK_PROG([DX_PERL], perl)
+  AC_SUBST([PERL_PATH], ${DX_PERL})
+  #DX_ARG_ABLE(doc, [generate any documentation],
+			#[DX_CHECK_PROG([DX_PERL], perl)],
+			#[AC_SUBST([PERL_PATH], ${DX_PERL})])
   #
   # Dot for graphics:
   DX_ARG_ABLE(dot, [generate graphics],
@@ -89,26 +98,26 @@ AC_DEFUN([DX_MY_INIT_DOXYGEN], [
 			 DX_CHECK_PROG([DX_MAKEINDEX], makeindex)
 			 DX_CHECK_PROG([DX_EGREP], egrep)])
   # LaTeX generation for PS and/or PDF:
-  #if DX_TEST_FEATURE(ps) || DX_TEST_FEATURE(pdf); then
-	#AC_SUBST(GENERATE_LATEX, YES)
-  #else
-	#AC_SUBST(GENERATE_LATEX, NO)
-  #fi
+  if DX_TEST_FEATURE(ps) || DX_TEST_FEATURE(pdf); then
+	AC_SUBST(GENERATE_LATEX, YES)
+  else
+	AC_SUBST(GENERATE_LATEX, NO)
+  fi
 
 # Paper size for PS and/or PDF:
-#AC_ARG_VAR(DOXYGEN_PAPER_SIZE,
-		   #[a4wide (default), a4, letter, legal or executive])
-#case "$DOXYGEN_PAPER_SIZE" in
-##(
-#"")
-	#AC_SUBST(DOXYGEN_PAPER_SIZE, "")
-#;; #(
-#a4wide|a4|letter|legal|executive)
-	#AC_SUBST(PAPER_SIZE, $DOXYGEN_PAPER_SIZE)
-#;; #(
-#*)
-	#AC_MSG_ERROR([unknown DOXYGEN_PAPER_SIZE='$DOXYGEN_PAPER_SIZE'])
-#;;
-#esac
+AC_ARG_VAR(DOXYGEN_PAPER_SIZE,
+		   [a4wide (default), a4, letter, legal or executive])
+case "$DOXYGEN_PAPER_SIZE" in
+#(
+"")
+	AC_SUBST(DOXYGEN_PAPER_SIZE, "")
+;; #(
+a4wide|a4|letter|legal|executive)
+	AC_SUBST(PAPER_SIZE, $DOXYGEN_PAPER_SIZE)
+;; #(
+*)
+	AC_MSG_ERROR([unknown DOXYGEN_PAPER_SIZE='$DOXYGEN_PAPER_SIZE'])
+;;
+esac
 
 ])

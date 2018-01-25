@@ -611,7 +611,6 @@ conf/autoconf-archive/rename-macro.pl
 conf/autoconf-archive/set-serial.sh
 conf/autoconf-doxygen/config/doxygen.am
 conf/autoconf-doxygen/config/doxygen.cfg
-conf/autoconf-doxygen/config/doxygen_cpp.cfg
 conf/autoconf-doxygen/config/general_layout.xml
 conf/autoconf-doxygen/config/style/Navigation.js
 conf/autoconf-doxygen/config/style/footer.html
@@ -4084,6 +4083,8 @@ conf/update_submodules.sh
 config.h.in
 configure
 configure.ac
+doc/Makefile.am
+doc/main_page.md
 doc/wiki/Makefile.am
 src/Makefile.am
 src/main.cpp

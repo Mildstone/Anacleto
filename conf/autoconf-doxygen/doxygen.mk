@@ -4,12 +4,12 @@
 
 # PROJECT_NAME           = $(DX_TITLE)
 # PROJECT_BRIEF          = $(DX_BRIEF)
+
 # PROJECT_LOGO           = $(DX_LOGO)
-# OUTPUT_DIRECTORY       = $(DX_DESTDIR)
+# IMAGE_PATH             = $(DX_IMGDIR)
 # LAYOUT_FILE            = $(DX_LAYOUT)
 # INPUT                  = $(DX_INPUT)
 # EXCLUDE                = $(DX_EXCLUDE_PAGES)
-# IMAGE_PATH             = $(DX_IMAGE_PATH)
 # HTML_HEADER            = $(DX_HTML_HEADER)
 # HTML_FOOTER            = $(DX_HTML_FOOTER)
 # HTML_EXTRA_STYLESHEET  = $(DX_HTML_STYLESHEET)
@@ -21,23 +21,68 @@
 
 # project
 DX_TITLE  ?= Project title
-DX_BRIEF  ?= brief description
+DX_BRIEF  ?= project code documentation reference
+
+DX_PACKAGE_NAME ?= maindoc
 
 # directories
-DX_DESTDIR     ?= ${builddir}/docs
-DX_TAGDIR      ?= ${DX_DESTDIR}/dtags
+DX_DESTDIR     ?= $(builddir)
+DX_TAGDIR      ?= $(top_builddir)/conf/dxtags
 DX_DESTTAG     ?= ${DX_TAGDIR}/${DX_PACKAGE_NAME}.tag
 DX_SEARCHFILE  ?= ${DX_TAGDIR}/${DX_PACKAGE_NAME}.xml
 DX_CHMFILE     ?= ${DX_TAGDIR}/${DX_PACKAGE_NAME}.chm
 
+DX_CFG         ?= $(top_srcdir)/conf/autoconf-doxygen/config/doxygen.cfg
+
 # style
-DX_LOGO        ?= ${top_srcdir}/docs/config/style/logo.jpg
-DX_LAYOUT      ?= ${top_srcdir}/docs/config/general_layout.xml
+DX_LOGO        ?= $(top_srcdir)/conf/autoconf-doxygen/config/style/logo.jpg
+DX_LAYOUT      ?= $(top_srcdir)/conf/autoconf-doxygen/config/general_layout.xml
 DX_IMGDIR      ?= img
 
 # input default
 DX_INPUT         ?=
 DX_EXCLUDE_PAGES ?=
+
+export DX_TITLE DX_BRIEF DX_LOGO DX_DESTDIR DX_LAYOUT DX_INPUT \
+	   DX_INPUT DX_EXCLUDE_PAGES DX_IMAGE_PATH DX_HTML_HEADER  \
+	   DX_HTML_FOOTER DX_HTML_STYLESHEET DX_CHMFILE DX_SEARCHFILE \
+	   DX_TAGFILES DX_DESTTAG DOXYGEN_PAPER_SIZE
+
+export DX_PERL HAVE_DOT DOT_PATH DX_HHC HHC_PATH DX_LATEX DX_MAKEINDEX \
+	   DX_DVIPS DX_EGREP
+
+export GENERATE_MAN GENERATE_RTF GENERATE_XML GENERATE_HTML GENERATE_HTMLHELP \
+	   GENERATE_CHI GENERATE_LATEX
+
+
+DX_OUTPUT_DIRS = $(DX_TAGDIR)
+
+$(DX_OUTPUT_DIRS):
+	@ $(MKDIR_P) $@
+
+doxygen-%: DX_INPUT:="$(addprefix $(srcdir)/,$(DX_INPUT))"
+doxygen-%: $(DX_TAGDIR)
+	@ $(info generating doxygen documentation) \
+	  $(DOXYGEN_BINARY) $(DX_CFG); \
+	  echo $${DX_INPUT}
+
+$(DX_DESTDIR)/latex: doxygen-latex
+$(DX_DESTDIR)/html: doxygen-html
+
+
+$(DX_DESTDIR)/latex/refman.pdf: $(DX_DESTDIR)/latex
+	$(MAKE) -C $(DX_DESTDIR)/latex refman.pdf
+
+${DX_DESTDIR}/${DX_PACKAGE_NAME}.pdf: $(DX_DESTDIR)/latex/refman.pdf
+	cp $< $@
+
+html: $(DX_DESTDIR)/html
+latex: $(DX_DESTDIR)/latex
+pdf: $(DX_DESTDIR)/${DX_PACKAGE_NAME}.pdf
+
+clean-local:
+	@ rm -rf doxygen.stamp html latex \
+	  $(DX_DESTDIR)/${DX_PACKAGE_NAME}.pdf
 
 
 

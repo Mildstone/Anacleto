@@ -6,3 +6,4 @@ conf/kconfig/scripts
 doc/wiki
 conf/autoconf-archive/m4
 conf/autoconf-doxygen/m4
+doc

@@ -10,6 +10,12 @@ menuconfig   ENABLE_DOXYGEN
 
 if ENABLE_DOXYGEN
 
+config DX_TITLE
+  string "Doxy project title"
+  default "Code Documentation"
+  --- help ---
+	help on DX_TITLE
+
 config DOXYGEN_BINARY
   string "DOXYGEN_BINARY selection"
   default "/usr/sbin/doxygen"
@@ -45,6 +51,25 @@ menu DOXYGEN_MODULES
 	 bool "Enable ps output feature"
 	 default n
 endmenu
+
+# PAPER SIZE
+# a4wide|a4|letter|legal|executive
+choice DOXYGEN_PAPERSIZE
+  prompt "Select Doxygen paper size"
+  depends on DOXYGEN_PS || DOXYGEN_PDF
+  config DOXYGEN_PAPERSIZE_A4
+   bool "a4"
+  config DOXYGEN_PAPERSIZE_A4WIDE
+   bool "a4wide"
+  config DOXYGEN_PAPERSIZE_LETTER
+   bool "letter"
+  config DOXYGEN_PAPERSIZE_LEGAL
+   bool "legal"
+  config DOXYGEN_PAPERSIZE_EXECUTIVE
+   bool "executive"
+endchoice
+
+
 
 
 endif # ENABLE_DOXYGEN

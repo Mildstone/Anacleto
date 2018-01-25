@@ -5,13 +5,18 @@
 AX_KCONFIG_VAR_ENABLE([ENABLE_DOXYGEN],["set with ENABLE_DOXYGEN"])
 
 AX_KCONFIG_WITH_EXEC([DOXYGEN_BINARY],["set with DOXYGEN_BINARY"],,[
-					  AC_MSG_WARN(["unable to find doxygen"])
-					  AS_VAR_SET([ENABLE_DOXYGEN],[no])
-					  AS_VAR_SET([DOXYGEN_BINARY],[:])])
+					  AC_MSG_WARN(["unable to find doxygen"])					  
+					  # Why if? remember: any variable could be undefined!
+					  AS_VAR_IF([ENABLE_DOXYGEN],[yes],[
+					   AS_VAR_SET([ENABLE_DOXYGEN],[no])
+					   AX_KCONFIG_UPDATE(ENABLE_DOXYGEN)])
+					  AS_VAR_SET([DOXYGEN_BINARY],[:])
+					  ])
 AC_SUBST([DOXYGEN_BINARY])
 
-
-AX_KCONFIG_MODULES([DOXYGEN],
+# MODULES
+AS_VAR_IF([ENABLE_DOXYGEN],[yes],[
+  AX_KCONFIG_MODULES([DOXYGEN],
 			  [dot], [output],
 			  [man], [output],
 			  [html],[output],
@@ -21,13 +26,13 @@ AX_KCONFIG_MODULES([DOXYGEN],
 			  [xml], [output],
 			  [pdf], [output],
 			  [ps],  [output])
+DX_MY_INIT_DOXYGEN([autoconf-bootstrap],
+				   [conf/autoconf-doxygen/config/doxygen.cfg])
+			  ])
 AC_SUBST(DOXYGEN_MODULES)
-# AC_SUBST(DOXYGEN_MODULES_AVAILABLE)
+AC_SUBST(DOXYGEN_MODULES_AVAILABLE)
 AC_SUBST(DOXYGEN_MODULES_ENABLED)
 AC_SUBST(DOXYGEN_MODULES_DISABLED)
-
-DX_MY_INIT_DOXYGEN([autoconf-bootstrap],[conf/autoconf-doxygen/config/doxygen.cfg])
-
 AC_SUBST([DOXYGEN_DOT])
 AC_SUBST([DOXYGEN_MAN])
 AC_SUBST([DOXYGEN_HTML])
@@ -38,8 +43,17 @@ AC_SUBST([DOXYGEN_XML])
 AC_SUBST([DOXYGEN_PDF])
 AC_SUBST([DOXYGEN_PS])
 
-AM_CONDITIONAL([ENABLE_DOXYGEN],[test x${ENABLE_DOXYGEN} = xyes])
+# PAPER SIZE
+AX_KCONFIG_WITH_CHOICE([DOXYGEN_PAPER_SIZE],[set doxygen paper size],
+  [DOXYGEN_PAPERSIZE_A4],["a4"],
+  [DOXYGEN_PAPERSIZE_A4WIDE],["a4wide"],
+  [DOXYGEN_PAPERSIZE_LETTER],["letter"],
+  [DOXYGEN_PAPERSIZE_LEGAL],["legal"],
+  [DOXYGEN_PAPERSIZE_EXECUTIVE],["executive"])
+AC_SUBST([DOXYGEN_PAPER_SIZE])
 
+# EVALUATE CONDITIONAL ON DOXYGEN
+AM_CONDITIONAL([ENABLE_DOXYGEN],[test x${ENABLE_DOXYGEN} = xyes])
 
 
 
