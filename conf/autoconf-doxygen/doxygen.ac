@@ -12,7 +12,6 @@ AC_SUBST([DOXYGEN_BINARY])
 
 
 AX_KCONFIG_MODULES([DOXYGEN],
-			  [doc], [output],
 			  [dot], [output],
 			  [man], [output],
 			  [html],[output],
@@ -29,8 +28,6 @@ AC_SUBST(DOXYGEN_MODULES_DISABLED)
 
 DX_MY_INIT_DOXYGEN([autoconf-bootstrap],[conf/autoconf-doxygen/config/doxygen.cfg])
 
-
-AC_SUBST([DOXYGEN_DOC])
 AC_SUBST([DOXYGEN_DOT])
 AC_SUBST([DOXYGEN_MAN])
 AC_SUBST([DOXYGEN_HTML])
@@ -41,8 +38,8 @@ AC_SUBST([DOXYGEN_XML])
 AC_SUBST([DOXYGEN_PDF])
 AC_SUBST([DOXYGEN_PS])
 
-
 AM_CONDITIONAL([ENABLE_DOXYGEN],[test x${ENABLE_DOXYGEN} = xyes])
+
 
 
 

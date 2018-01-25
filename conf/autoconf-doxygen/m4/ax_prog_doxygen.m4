@@ -1,8 +1,4 @@
 
-
-
-
-
 # DX_REQUIRE_PROG(VARIABLE, PROGRAM)
 # ----------------------------------
 # Require the specified program to be found for the DX_CURRENT_FEATURE to work.
@@ -89,7 +85,7 @@ AC_DEFUN([DX_MY_INIT_DOXYGEN], [
 			 DX_CHECK_PROG([DX_EGREP], egrep)])
   # PDF file generation:
   DX_ARG_ABLE(pdf, [generate PDF documentation],
-			[DX_CHECK_PROG([DX_PDFLATEX], pdfcaccalatex)
+			[DX_CHECK_PROG([DX_PDFLATEX], pdflatex)
 			 DX_CHECK_PROG([DX_MAKEINDEX], makeindex)
 			 DX_CHECK_PROG([DX_EGREP], egrep)])
   # LaTeX generation for PS and/or PDF:
