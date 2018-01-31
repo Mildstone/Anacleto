@@ -13,7 +13,7 @@ aclocal -I ./conf/m4
 
 autoheader
 
-# libtoolize
+libtoolize
 
 automake --add-missing --copy
 
