@@ -59,7 +59,6 @@ AC_PROG_SED
 AC_PROG_CC
 AC_PROG_CXX
 
-
 AC_CHECK_PROGS([CURL],[curl])
 AC_CHECK_PROGS([TAR],[gtar tar])
 AC_CHECK_PROGS([UNIQ],[uniq])
@@ -68,6 +67,8 @@ AC_CHECK_PROGS([WC],[wc])
 # needed for sh_envsubst
 AC_CHECK_PROGS([PERL],[perl])
 
+## LIBTOOL
+LT_INIT()
 
 ## /////////////////////////////////////////////////////////////////////////////
 ## //  KSCRIPTS  ///////////////////////////////////////////////////////////////
@@ -90,6 +91,18 @@ m4_sinclude(conf/kscripts/nodejs.ac)
 
 ## DOXYGEN ##
 m4_sinclude(conf/autoconf-doxygen/doxygen.ac)
+
+## EXT_LIBJIT ##
+m4_sinclude(conf/kscripts/ext_libjit.ac)
+
+## EXT_LLVM ##
+m4_sinclude(conf/kscripts/ext_llvm.ac)
+
+## EXT ##
+AX_KCONFIG_MODULES([EXT],
+		  [libjit],[libjit external sources],
+		  [llvm],[llvm external sources])
+AC_SUBST([EXT_MODULES])
 
 ## // GIT IGNORE // ##
 AX_GITIGNORE_ADD_PATH([${builddir}])
@@ -148,6 +161,10 @@ AS_ECHO(["DOXYGEN_MODULES -----------------> ${DOXYGEN_MODULES}"])
 AS_ECHO()
 
 
+# ////////////////////////////////////////////////////////////////////////////////
+# //  LIBJIT  ////////////////////////////////////////////////////////////////////
+# ////////////////////////////////////////////////////////////////////////////////
+
 
 AC_CONFIG_FILES( 
                  Makefile
@@ -155,7 +172,9 @@ AC_CONFIG_FILES(
 				 src/Makefile
 				 src/qt_example/Makefile
 				 src/sh_template/Makefile
+dnl				 src/libjit_examples/Makefile
 				 doc/Makefile
 				 doc/wiki/Makefile
+				 ext/Makefile
                )
 AC_OUTPUT

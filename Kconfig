@@ -88,3 +88,39 @@ comment "Build Options"
 # //////////////////////////////////////////////////////////////////////////// #
 
   source conf/autoconf-doxygen/doxygen.kconfig
+
+
+# //////////////////////////////////////////////////////////////////////////// #
+# //  EXT  /////////////////////////////////////////////////////////////////// #
+# //////////////////////////////////////////////////////////////////////////// #
+
+menuconfig  ENABLE_EXTSRC
+	 bool "ext sources"
+	 default y
+	 ---help---
+	  Enable optional external software sources to be embedded in project
+
+if ENABLE_EXTSRC
+
+  # //  LIBJIT  //
+  source conf/kscripts/ext_libjit.kconfig
+
+  # //  LLVM  //
+  source conf/kscripts/ext_llvm.kconfig
+
+endif # ENABLE_EXTSRC
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
