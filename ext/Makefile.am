@@ -58,7 +58,7 @@ list:
 DOWNLOADS  = $(EXT_MODULES)
 
 ccStickers: ##@ext download ccStickers sources
-ccStickers_URL = $(ccStickers_URL)
+ccStickers_URL = $(CCSTICKERS_URL)
 $(call _ext_bootstrap,ccStickers)
 $(call _ext_configure,ccStickers)
 
