@@ -3,7 +3,6 @@ include $(top_srcdir)/Common.mk
 # include $(top_srcdir)/conf/kscripts/ext_libjit.mk
 # include $(top_srcdir)/conf/kscripts/ext_llvm.mk
 
-
 define _ext_bootstrap
 $(eval
 $1/configure: $1
@@ -30,6 +29,25 @@ all: ext-libjit
 
 clean: TARGET = clean
 clean: ext-libjit
+
+
+list_%:
+	@ for i in $($(subst list_,,$@)); do \
+		echo "|     $$i"; \
+	  done
+
+list: ##@ext list defined ext modules
+list:
+	@ \
+	echo ",-----------------------------------------------------------------"; \
+	echo "| ext modules defined "; \
+	echo "|"; \
+	echo "| MODULES: "; \
+	$(MAKE) -s list_EXT_MODULES 2>/dev/null; \
+	echo "|";\
+	echo "|";\
+	echo "\`-----------------------------------------------------------------";
+
 
 
 

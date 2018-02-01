@@ -109,7 +109,9 @@ m4_sinclude(conf/kscripts/ext_ccStickers.ac)
 ## EXT ##
 AX_KCONFIG_MODULES([EXT],
 		  [libjit],[libjit external sources],
-		  [llvm],[llvm external sources])
+		  [llvm],[llvm external sources],
+		  [ccStickers],[ccStickers external sources]
+		  )
 AC_SUBST([EXT_MODULES])
 
 ## // GIT IGNORE // ##
