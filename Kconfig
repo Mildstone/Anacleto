@@ -108,6 +108,9 @@ if ENABLE_EXTSRC
   # //  LLVM  //
   source conf/kscripts/ext_llvm.kconfig
 
+  # //  LLVM  //
+  source conf/kscripts/ext_ccStickers.kconfig
+
 endif # ENABLE_EXTSRC
 
 

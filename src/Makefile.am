@@ -1,9 +1,11 @@
 include $(top_srcdir)/Common.mk
 
+SUBDIRS = sh_template
+
 if ENABLE_QT
-SUBDIRS = qt_example
+SUBDIRS += qt_example
 endif
 
-bin_PROGRAMS = main
 
+bin_PROGRAMS = main
 main_SOURCES = main.cpp

@@ -55,6 +55,7 @@ AX_CHECK_ENABLE_DEBUG([no],,,,[-g -O2])
 # Checks for programs.
 AC_PROG_AWK
 AC_PROG_MKDIR_P
+AC_PROG_LN_S
 AC_PROG_SED
 AC_PROG_CC
 AC_PROG_CXX
@@ -63,6 +64,10 @@ AC_CHECK_PROGS([CURL],[curl])
 AC_CHECK_PROGS([TAR],[gtar tar])
 AC_CHECK_PROGS([UNIQ],[uniq])
 AC_CHECK_PROGS([WC],[wc])
+
+AC_PROG_LEX
+AC_PROG_YACC
+
 
 # needed for sh_envsubst
 AC_CHECK_PROGS([PERL],[perl])
@@ -97,6 +102,9 @@ m4_sinclude(conf/kscripts/ext_libjit.ac)
 
 ## EXT_LLVM ##
 m4_sinclude(conf/kscripts/ext_llvm.ac)
+
+## EXT_CCSTICKERS ##
+m4_sinclude(conf/kscripts/ext_ccStickers.ac)
 
 ## EXT ##
 AX_KCONFIG_MODULES([EXT],
@@ -173,6 +181,7 @@ AC_CONFIG_FILES(
 				 src/qt_example/Makefile
 				 src/sh_template/Makefile
 dnl				 src/libjit_examples/Makefile
+				 src/parse_examples/Makefile
 				 doc/Makefile
 				 doc/wiki/Makefile
 				 ext/Makefile
