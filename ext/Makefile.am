@@ -31,22 +31,17 @@ clean: TARGET = clean
 clean: ext-libjit
 
 
-list_%:
-	@ for i in $($(subst list_,,$@)); do \
-		echo "|     $$i"; \
-	  done
-
 list: ##@ext list defined ext modules
+list : _item = $(info | $1: ) $(foreach x,$($1),$(info |  - $x))
 list:
 	@ \
-	echo ",-----------------------------------------------------------------"; \
-	echo "| ext modules defined "; \
-	echo "|"; \
-	echo "| MODULES: "; \
-	$(MAKE) -s list_EXT_MODULES 2>/dev/null; \
-	echo "|";\
-	echo "|";\
-	echo "\`-----------------------------------------------------------------";
+	$(info ,-----------------------------------------------------------------) \
+	$(info | ext modules defined ) \
+	$(info |) \
+	$(call _item,EXT_MODULES) \
+	$(info |) \
+	$(info |) \
+	$(info `-----------------------------------------------------------------) :
 
 
 
