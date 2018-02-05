@@ -481,14 +481,25 @@ proc make_write_project {} {
   set_compatible_with Vivado
 
   set dir_src $v::pe(dir_src)
+  set archive $v::pe(ARCHIVE)
+
   set ::origin_dir $dir_src
 
   if { [catch {current_project}] } { make_open_project }
   file mkdir $v::pe(dir_src)
-  #   write_project_tcl
+
+  # achive project
+  if { $archive != "" } {
+	set archive_file [file tail $archive]
+	archive_project $dir_src/$archive_file \
+	  -force -exclude_run_results -include_config_settings
+  }
+
+  # save to srcdir data and tcl script
   write_anacleto_tcl \
 	-force -target_proj_dir $v::pe(dir_prj) \
 	$v::pe(dir_src)/$v::pe(project_name).tcl
+
 }
 
 
@@ -631,7 +642,7 @@ proc make_write_linux_bsp {} {
 
   create_sw_design ll -os linux -proc ps7_cortexa9_0 -verbose
   generate_target -dir $path_sdk/bsp bsp
-  generate_target -dir $path_sdk/app app
+  # generate_target -dir $path_sdk/app app
 }
 
 

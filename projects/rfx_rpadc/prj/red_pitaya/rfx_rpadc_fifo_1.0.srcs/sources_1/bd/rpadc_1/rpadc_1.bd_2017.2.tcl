@@ -201,11 +201,6 @@ CONFIG.CFG_DATA_WIDTH {32} \
 CONFIG.CFG_DATA_WIDTH {16} \
  ] $packetsize_cfg
 
-  set_property -dict [ list \
-CONFIG.NUM_READ_OUTSTANDING {1} \
-CONFIG.NUM_WRITE_OUTSTANDING {1} \
- ] [get_bd_intf_pins /fifo_adcin/packetsize_cfg/S_AXI]
-
   # Create instance: ps7_0_axi_periph, and set properties
   set ps7_0_axi_periph [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 ps7_0_axi_periph ]
   set_property -dict [ list \
@@ -277,6 +272,7 @@ proc create_root_design { parentCell } {
   # Create ports
   set adc_dat_a [ create_bd_port -dir I -from 13 -to 0 adc_dat_a ]
   set adc_dat_b [ create_bd_port -dir I -from 13 -to 0 adc_dat_b ]
+  set led_o [ create_bd_port -dir O -from 0 -to 0 led_o ]
 
   # Create instance: axis_red_pitaya_adc_0, and set properties
   set axis_red_pitaya_adc_0 [ create_bd_cell -type ip -vlnv pavel-demin:user:axis_red_pitaya_adc:2.0 axis_red_pitaya_adc_0 ]
@@ -513,6 +509,12 @@ CONFIG.PCW_USB_RESET_SELECT {Share reset pin} \
 CONFIG.PCW_USE_FABRIC_INTERRUPT {1} \
  ] $processing_system7_0
 
+  # Create instance: util_led_o_buf, and set properties
+  set util_led_o_buf [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_ds_buf:2.1 util_led_o_buf ]
+  set_property -dict [ list \
+CONFIG.C_BUF_TYPE {BUFH} \
+ ] $util_led_o_buf
+
   # Create interface connections
   connect_bd_intf_net -intf_net axis_red_pitaya_adc_0_M_AXIS [get_bd_intf_pins axis_red_pitaya_adc_0/M_AXIS] [get_bd_intf_pins fifo_adcin/S_AXIS]
   connect_bd_intf_net -intf_net processing_system7_0_DDR [get_bd_intf_ports DDR] [get_bd_intf_pins processing_system7_0/DDR]
@@ -522,9 +524,10 @@ CONFIG.PCW_USE_FABRIC_INTERRUPT {1} \
   # Create port connections
   connect_bd_net -net adc_dat_a_1 [get_bd_ports adc_dat_a] [get_bd_pins axis_red_pitaya_adc_0/adc_dat_a]
   connect_bd_net -net adc_dat_b_1 [get_bd_ports adc_dat_b] [get_bd_pins axis_red_pitaya_adc_0/adc_dat_b]
-  connect_bd_net -net axi_fifo_mm_s_0_interrupt [get_bd_pins fifo_adcin/interrupt] [get_bd_pins processing_system7_0/IRQ_F2P]
+  connect_bd_net -net axi_fifo_mm_s_0_interrupt [get_bd_pins fifo_adcin/interrupt] [get_bd_pins processing_system7_0/IRQ_F2P] [get_bd_pins util_led_o_buf/BUFH_I]
   connect_bd_net -net processing_system7_0_FCLK_CLK0 [get_bd_pins axis_red_pitaya_adc_0/aclk] [get_bd_pins fifo_adcin/slowest_sync_clk] [get_bd_pins processing_system7_0/FCLK_CLK0] [get_bd_pins processing_system7_0/M_AXI_GP0_ACLK]
   connect_bd_net -net processing_system7_0_FCLK_RESET0_N [get_bd_pins fifo_adcin/ext_reset_in] [get_bd_pins processing_system7_0/FCLK_RESET0_N]
+  connect_bd_net -net util_ds_buf_0_BUFH_O [get_bd_ports led_o] [get_bd_pins util_led_o_buf/BUFH_O]
 
   # Create address segments
   create_bd_addr_seg -range 0x00010000 -offset 0x43C20000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs fifo_adcin/decimation_cfg/s_axi/reg0] SEG_axi_cfg_register_0_reg0

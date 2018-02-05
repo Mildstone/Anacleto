@@ -15,6 +15,7 @@ set_property DRIVE 4 [get_ports led_o]
 
 ### LED PINS
 set_property PACKAGE_PIN F16 [get_ports led_o]
+set_property PULLDOWN true [get_ports led_o]
 # set_property PACKAGE_PIN F17 [get_ports {pwm_out[0]}]
 # set_property PACKAGE_PIN G15 [get_ports {pwm_n_out[0]}]
 # set_property PACKAGE_PIN H15     [get_ports {led_o[3]}]
@@ -70,4 +71,4 @@ set_input_delay -clock [get_clocks clk_fpga_0] -max -add_delay 4.000 [get_ports 
 set_input_delay -clock [get_clocks clk_fpga_0] -min -add_delay 4.000 [get_ports {adc_dat_b[*]}]
 set_input_delay -clock [get_clocks clk_fpga_0] -max -add_delay 4.000 [get_ports {adc_dat_b[*]}]
 
-set_property PULLDOWN true [get_ports led_o]
+

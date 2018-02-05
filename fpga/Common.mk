@@ -19,7 +19,8 @@ project_VARIABLES = SOURCES \
 					BOARD_PRESET \
 					COMPILE_ORDER \
 					DRV_LINUX \
-					BSPDIR
+					BSPDIR \
+					ARCHIVE
 
 project_DEFAULT := $(lastword $(patsubst _, ,$(current_dir)))
 
@@ -49,7 +50,7 @@ VIVADO_SHELL = vivado -nolog -journal vivado_shell_jou.tcl $(if $(MODE),-mode $(
 HSI          = hsi    -nolog -journal $(NAME)_hsi_jou.tcl  -mode batch
 HSI_SHELL    = hsi    -nolog -journal hsi_shell_jou.tcl    $(if $(MODE),-mode $(MODE))
 HLS          = vivado_hls -nosplash
-HLS_SHELL    = vivado_hls -nosplash -i
+HLS_SHELL    = vivado_hls -nosplash
 XSDK         = xsdk
 XSDK_SHELL   = xsdk -batch
 SDK_SHELL    = xsdk
@@ -59,7 +60,7 @@ vivado_shell = ${_envset}; $(VIVADO_SHELL) -source $(FPGA_DIR)/vivado_make.tcl $
 hsi          = ${_envset}; $(HSI)       -source $(FPGA_DIR)/vivado_make.tcl $(if $1,-tclargs $1)
 hsi_shell    = ${_envset}; $(HSI_SHELL) -source $(FPGA_DIR)/vivado_make.tcl $(if $1,-tclargs $1)
 hls          = ${_envset}; $(HLS)       -f $(FPGA_DIR)/make_vivado_hls.tcl
-hls_shell    = ${_envset}; $(HLS_SHELL) -f $(FPGA_DIR)/vivado_make.tcl
+hls_shell    = ${_envset}; $(HLS_SHELL)
 xsdk         = ${_envset}; $(XSDK)       $1
 xsdk_shell   = ${_envset}; $(XSDK_SHELL) $1
 sdk_shell    = ${_envset}; $(SDK_SHELL)
@@ -112,7 +113,8 @@ export NAME \
 	   PRJCFG \
 	   IPCFG \
 	   DRV_LINUX \
-	   BSPDIR
+	   BSPDIR \
+	   ARCHIVE
 
 export VIVADO_SRCDIR \
 	   VIVADO_PRJDIR \
@@ -125,10 +127,7 @@ export VIVADO_SRCDIR \
 ## ///  CORE BUILD      ///////////////////////////////////////////////////// ##
 ## ////////////////////////////////////////////////////////////////////////// ##
 
-
 all-local: $(vivado_CORES) $(vivado_PROJECTS)
-
-
 
 ## ////////////////////////////////////////////////////////////////////////// ##
 ## ///  PROJECT DIRECTORIES  //////////////////////////////////////////////// ##
@@ -187,41 +186,25 @@ $(VIVADO_IPDIR)/%/component.xml: $(check_sources)
 ## ///  PROJECT LIST  /////////////////////////////////////////////////////// ##
 ## ////////////////////////////////////////////////////////////////////////// ##
 
-NODOCKERBUILD += list_cores list_projects list
-
-list_cores:
-	@ for i in $(vivado_CORES); do \
-		echo "|     $$i"; \
-	  done
-
-list_projects:
-	@ \
-	for i in $(vivado_PROJECTS); do \
-	   echo "|     $$i"; \
-	done
-
-#	 test -f $(VIVADO_SRCDIR)/$(FULL_NAME).tcl -o\
-#		  -f $(VIVADO_PRJDIR)/$(FULL_NAME).xpr -o\
-#		  -f $(VIVADO_SRCDIR)/${NAME}_${VERSION}.tcl -o\
-#		  -f $(VIVADO_PRJDIR)/${NAME}_${VERSION}.xpr \
-#			&& echo "|     ${NAME}";
+NODOCKERBUILD += list
 
 list: ##@projects list all projects defined in vivado_PROJECTS variable
 list: ##@cores list all projects defined in vivado_PROJECTS variable
+list : _item = $(foreach x,$($1),$(info |  - $x))
 list: print_banner
 	@ \
-	echo ",-----------------------------------------------------------------"; \
-	echo "| projects and cores defined "; \
-	echo "|"; \
-	echo "| CORES: "; \
-	$(MAKE) -s list_cores 2>/dev/null; \
-	echo "|";\
-	echo "| PROJECTS: "; \
-	$(MAKE) -s list_projects 2>/dev/null; \
-	echo "|";\
-	echo "| CURRENT: $(NAME)";\
-	echo "|";\
-	echo "\`-----------------------------------------------------------------";
+	$(info ,-----------------------------------------------------------------) \
+	$(info | projects and cores defined ) \
+	$(info |) \
+	$(info | CORES: ) \
+	$(call _item,vivado_CORES) \
+	$(info |) \
+	$(info | PROJECTS: ) \
+	$(call _item,vivado_PROJECTS) \
+	$(info |) \
+	$(info | CURRENT: $(NAME)) \
+	$(info |) \
+	$(info `-----------------------------------------------------------------) :
 
 
 ## ////////////////////////////////////////////////////////////////////////// ##

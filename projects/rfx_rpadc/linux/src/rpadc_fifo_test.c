@@ -10,7 +10,8 @@
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define MAX(a,b) (((a)>(b))?(a):(b))
 
-#define CFG_REG_ADDR 0x43c20000
+#define DECIMATION_CFG_REG 0x43c20000
+#define PACKETSIZE_CFG_REG 0x60000000
 
 void plot_ascii_a(u_int32_t data, FILE *f) {
     int j;
@@ -50,15 +51,19 @@ struct decimator_reg_t {
     int dec;
 };
 
+struct packetsize_reg_t {
+    int size;
+};
 
 int main(int argc, char **argv) {
 
     struct decimator_reg_t *dec_reg;
+    struct packetsize_reg_t *pkt_reg;
     printf("rpadc test \n");
     const char *file_out_name = "rpadc_data";
 
     if(argc<3) {
-        printf("usage: %s dev dec samples \n",argv[0]);
+        printf("usage: %s dev dec pktsize samples \n",argv[0]);
         return 1;
     }
 
@@ -69,13 +74,17 @@ int main(int argc, char **argv) {
         printf(" ERROR: failed to open device file %s error: %d\n",argv[1],fd);
         return 1;
     }
-    if(argc>=4) { file_out_name = argv[4]; }
+    // if(argc>=4) { file_out_name = argv[4]; }
 
     // PLOT TO SCREEN //
     // set decimation register //
     axi_reg_Init();
-    dec_reg = axi_reg_Map(sizeof(struct decimator_reg_t),CFG_REG_ADDR);    
+    dec_reg = axi_reg_Map(sizeof(struct decimator_reg_t),DECIMATION_CFG_REG);
     dec_reg->dec = atoi(argv[2]);
+    pkt_reg = axi_reg_Map(sizeof(struct decimator_reg_t),PACKETSIZE_CFG_REG);
+    pkt_reg->size = atoi(argv[3]);
+
+
     //    if(dec_reg->dec != 2E3) {
     //        perror("I was not able to set decimation\n");
     //        exit(1);
@@ -83,7 +92,7 @@ int main(int argc, char **argv) {
 
     status = ioctl(fd, RFX_RPADC_RESET, 0);
     usleep(10);
-    int i, size = atoi(argv[3]);
+    int i, size = atoi(argv[4]);
     size = MIN((size)*sizeof(u_int32_t),BUF_SIZE);
     if (size <= 0) { return size; }
 

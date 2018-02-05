@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<bd:repository xmlns:bd="http://www.xilinx.com/bd" bd:BoundaryCRC="0x1178FB9C7829E9A1" bd:device="xc7z010clg400-1" bd:isValidated="true" bd:synthFlowMode="None" bd:tool_version="2017.2" bd:top="rpadc_1" bd:version="1.00.a">
+<bd:repository xmlns:bd="http://www.xilinx.com/bd" bd:BoundaryCRC="0xDB950AD0019F9AB9" bd:device="xc7z010clg400-1" bd:isValidated="true" bd:synthFlowMode="None" bd:tool_version="2017.2" bd:top="rpadc_1" bd:version="1.00.a">
 
   <spirit:component xmlns:spirit="http://www.spiritconsortium.org/XMLSchema/SPIRIT/1685-2009">
     <spirit:vendor>xilinx.com</spirit:vendor>
@@ -172,6 +172,16 @@
             <spirit:direction>in</spirit:direction>
             <spirit:vector>
               <spirit:left>13</spirit:left>
+              <spirit:right>0</spirit:right>
+            </spirit:vector>
+          </spirit:wire>
+        </spirit:port>
+        <spirit:port>
+          <spirit:name>led_o</spirit:name>
+          <spirit:wire>
+            <spirit:direction>out</spirit:direction>
+            <spirit:vector>
+              <spirit:left>0</spirit:left>
               <spirit:right>0</spirit:right>
             </spirit:vector>
           </spirit:wire>
@@ -428,6 +438,14 @@
         <spirit:instanceName>fifo_adcin</spirit:instanceName>
         <spirit:componentRef spirit:library="BlockDiagram/rpadc_1_imp" spirit:name="fifo_adcin" spirit:vendor="xilinx.com" spirit:version="1.00.a"/>
       </spirit:componentInstance>
+      <spirit:componentInstance>
+        <spirit:instanceName>util_led_o_buf</spirit:instanceName>
+        <spirit:componentRef spirit:library="ip" spirit:name="util_ds_buf" spirit:vendor="xilinx.com" spirit:version="2.1"/>
+        <spirit:configurableElementValues>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">rpadc_1_util_ds_buf_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="C_BUF_TYPE">BUFH</spirit:configurableElementValue>
+        </spirit:configurableElementValues>
+      </spirit:componentInstance>
     </spirit:componentInstances>
     <spirit:interconnections>
       <spirit:interconnection>
@@ -468,6 +486,12 @@
         <spirit:name>axi_fifo_mm_s_0_interrupt</spirit:name>
         <spirit:internalPortReference spirit:componentRef="fifo_adcin" spirit:portRef="interrupt"/>
         <spirit:internalPortReference spirit:componentRef="processing_system7_0" spirit:portRef="IRQ_F2P"/>
+        <spirit:internalPortReference spirit:componentRef="util_led_o_buf" spirit:portRef="BUFH_I"/>
+      </spirit:adHocConnection>
+      <spirit:adHocConnection>
+        <spirit:name>util_ds_buf_0_BUFH_O</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="util_led_o_buf" spirit:portRef="BUFH_O"/>
+        <spirit:externalPortReference spirit:portRef="led_o"/>
       </spirit:adHocConnection>
     </spirit:adHocConnections>
     <spirit:hierConnections>
@@ -692,15 +716,15 @@
         <spirit:name>rst_ps7_0_125M_peripheral_aresetn</spirit:name>
         <spirit:internalPortReference spirit:componentRef="rst_ps7_0_125M" spirit:portRef="peripheral_aresetn"/>
         <spirit:internalPortReference spirit:componentRef="axi_fifo_mm_s_0" spirit:portRef="s_axi_aresetn"/>
-        <spirit:internalPortReference spirit:componentRef="ps7_0_axi_periph" spirit:portRef="M03_ARESETN"/>
         <spirit:internalPortReference spirit:componentRef="packetsize_cfg" spirit:portRef="aresetn"/>
+        <spirit:internalPortReference spirit:componentRef="decimation_cfg" spirit:portRef="aresetn"/>
+        <spirit:internalPortReference spirit:componentRef="axis_packetizer_0" spirit:portRef="aresetn"/>
+        <spirit:internalPortReference spirit:componentRef="axis_decimator_0" spirit:portRef="aresetn"/>
+        <spirit:internalPortReference spirit:componentRef="ps7_0_axi_periph" spirit:portRef="M03_ARESETN"/>
         <spirit:internalPortReference spirit:componentRef="ps7_0_axi_periph" spirit:portRef="M02_ARESETN"/>
         <spirit:internalPortReference spirit:componentRef="ps7_0_axi_periph" spirit:portRef="M01_ARESETN"/>
         <spirit:internalPortReference spirit:componentRef="ps7_0_axi_periph" spirit:portRef="S00_ARESETN"/>
         <spirit:internalPortReference spirit:componentRef="ps7_0_axi_periph" spirit:portRef="M00_ARESETN"/>
-        <spirit:internalPortReference spirit:componentRef="decimation_cfg" spirit:portRef="aresetn"/>
-        <spirit:internalPortReference spirit:componentRef="axis_packetizer_0" spirit:portRef="aresetn"/>
-        <spirit:internalPortReference spirit:componentRef="axis_decimator_0" spirit:portRef="aresetn"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>axi_cfg_register_0_cfg_data</spirit:name>
@@ -726,17 +750,17 @@
         <spirit:name>processing_system7_0_FCLK_CLK0</spirit:name>
         <spirit:externalPortReference spirit:portRef="slowest_sync_clk"/>
         <spirit:internalPortReference spirit:componentRef="rst_ps7_0_125M" spirit:portRef="slowest_sync_clk"/>
-        <spirit:internalPortReference spirit:componentRef="ps7_0_axi_periph" spirit:portRef="M03_ACLK"/>
         <spirit:internalPortReference spirit:componentRef="packetsize_cfg" spirit:portRef="aclk"/>
+        <spirit:internalPortReference spirit:componentRef="decimation_cfg" spirit:portRef="aclk"/>
+        <spirit:internalPortReference spirit:componentRef="axis_packetizer_0" spirit:portRef="aclk"/>
+        <spirit:internalPortReference spirit:componentRef="axis_decimator_0" spirit:portRef="aclk"/>
+        <spirit:internalPortReference spirit:componentRef="axi_fifo_mm_s_0" spirit:portRef="s_axi_aclk"/>
+        <spirit:internalPortReference spirit:componentRef="ps7_0_axi_periph" spirit:portRef="M03_ACLK"/>
         <spirit:internalPortReference spirit:componentRef="ps7_0_axi_periph" spirit:portRef="M02_ACLK"/>
         <spirit:internalPortReference spirit:componentRef="ps7_0_axi_periph" spirit:portRef="M01_ACLK"/>
         <spirit:internalPortReference spirit:componentRef="ps7_0_axi_periph" spirit:portRef="ACLK"/>
         <spirit:internalPortReference spirit:componentRef="ps7_0_axi_periph" spirit:portRef="S00_ACLK"/>
         <spirit:internalPortReference spirit:componentRef="ps7_0_axi_periph" spirit:portRef="M00_ACLK"/>
-        <spirit:internalPortReference spirit:componentRef="decimation_cfg" spirit:portRef="aclk"/>
-        <spirit:internalPortReference spirit:componentRef="axis_packetizer_0" spirit:portRef="aclk"/>
-        <spirit:internalPortReference spirit:componentRef="axis_decimator_0" spirit:portRef="aclk"/>
-        <spirit:internalPortReference spirit:componentRef="axi_fifo_mm_s_0" spirit:portRef="s_axi_aclk"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>processing_system7_0_FCLK_RESET0_N</spirit:name>

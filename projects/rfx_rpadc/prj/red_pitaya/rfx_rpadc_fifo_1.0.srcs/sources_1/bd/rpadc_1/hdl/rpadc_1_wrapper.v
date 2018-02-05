@@ -1,8 +1,8 @@
 //Copyright 1986-2017 Xilinx, Inc. All Rights Reserved.
 //--------------------------------------------------------------------------------
 //Tool Version: Vivado v.2017.2 (lin64) Build 1909853 Thu Jun 15 18:39:10 MDT 2017
-//Date        : Tue Jan 23 08:31:49 2018
-//Host        : c27b585c3ff6 running 64-bit Ubuntu 14.04.5 LTS
+//Date        : Mon Feb  5 08:38:32 2018
+//Host        : 34fcae395940 running 64-bit Ubuntu 14.04.5 LTS
 //Command     : generate_target rpadc_1_wrapper.bd
 //Design      : rpadc_1_wrapper
 //Purpose     : IP block netlist
@@ -32,7 +32,8 @@ module rpadc_1_wrapper
     FIXED_IO_ps_porb,
     FIXED_IO_ps_srstb,
     adc_dat_a,
-    adc_dat_b);
+    adc_dat_b,
+    led_o);
   inout [14:0]DDR_addr;
   inout [2:0]DDR_ba;
   inout DDR_cas_n;
@@ -56,6 +57,7 @@ module rpadc_1_wrapper
   inout FIXED_IO_ps_srstb;
   input [13:0]adc_dat_a;
   input [13:0]adc_dat_b;
+  output [0:0]led_o;
 
   wire [14:0]DDR_addr;
   wire [2:0]DDR_ba;
@@ -80,6 +82,7 @@ module rpadc_1_wrapper
   wire FIXED_IO_ps_srstb;
   wire [13:0]adc_dat_a;
   wire [13:0]adc_dat_b;
+  wire [0:0]led_o;
 
   rpadc_1 rpadc_1_i
        (.DDR_addr(DDR_addr),
@@ -104,5 +107,6 @@ module rpadc_1_wrapper
         .FIXED_IO_ps_porb(FIXED_IO_ps_porb),
         .FIXED_IO_ps_srstb(FIXED_IO_ps_srstb),
         .adc_dat_a(adc_dat_a),
-        .adc_dat_b(adc_dat_b));
+        .adc_dat_b(adc_dat_b),
+        .led_o(led_o));
 endmodule

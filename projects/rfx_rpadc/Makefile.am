@@ -18,8 +18,7 @@ vivado_PROJECTS += rpadc_fifo
 rpadc_fifo_VERSION   = 1.0
 rpadc_fifo_SOURCES   = red_pitaya.xdc
 
-
-
+rpadc_fifo_ARCHIVE   = $(NAME)_archive.zip
 
 
 
