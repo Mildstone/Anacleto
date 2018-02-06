@@ -5,7 +5,7 @@
 AX_KCONFIG_VAR_ENABLE([ENABLE_DOXYGEN],["set with ENABLE_DOXYGEN"])
 
 AX_KCONFIG_WITH_EXEC([DOXYGEN_BINARY],["set with DOXYGEN_BINARY"],,[
-					  AC_MSG_WARN(["unable to find doxygen"])					  
+					  AC_MSG_WARN(["unable to find doxygen"])
 					  # Why if? remember: any variable could be undefined!
 					  AS_VAR_IF([ENABLE_DOXYGEN],[yes],[
 					   AS_VAR_SET([ENABLE_DOXYGEN],[no])

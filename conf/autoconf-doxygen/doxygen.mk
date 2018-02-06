@@ -22,8 +22,8 @@
 # project
 DX_TITLE  ?= Project title
 DX_BRIEF  ?= project code documentation reference
-
 DX_PACKAGE_NAME ?= maindoc
+DX_CFG         ?= $(top_srcdir)/conf/autoconf-doxygen/config/doxygen.cfg
 
 # directories
 DX_DESTDIR     ?= $(builddir)
@@ -32,7 +32,6 @@ DX_DESTTAG     ?= ${DX_TAGDIR}/${DX_PACKAGE_NAME}.tag
 DX_SEARCHFILE  ?= ${DX_TAGDIR}/${DX_PACKAGE_NAME}.xml
 DX_CHMFILE     ?= ${DX_TAGDIR}/${DX_PACKAGE_NAME}.chm
 
-DX_CFG         ?= $(top_srcdir)/conf/autoconf-doxygen/config/doxygen.cfg
 
 # style
 DX_LOGO        ?= $(top_srcdir)/conf/autoconf-doxygen/config/style/logo.jpg
@@ -54,9 +53,7 @@ export DX_PERL HAVE_DOT DOT_PATH DX_HHC HHC_PATH DX_LATEX DX_MAKEINDEX \
 export GENERATE_MAN GENERATE_RTF GENERATE_XML GENERATE_HTML GENERATE_HTMLHELP \
 	   GENERATE_CHI GENERATE_LATEX
 
-
 DX_OUTPUT_DIRS = $(DX_TAGDIR)
-
 $(DX_OUTPUT_DIRS):
 	@ $(MKDIR_P) $@
 
@@ -69,16 +66,18 @@ doxygen-%: $(DX_TAGDIR)
 $(DX_DESTDIR)/latex: doxygen-latex
 $(DX_DESTDIR)/html: doxygen-html
 
-
 $(DX_DESTDIR)/latex/refman.pdf: $(DX_DESTDIR)/latex
 	$(MAKE) -C $(DX_DESTDIR)/latex refman.pdf
 
 ${DX_DESTDIR}/${DX_PACKAGE_NAME}.pdf: $(DX_DESTDIR)/latex/refman.pdf
 	cp $< $@
 
-html: $(DX_DESTDIR)/html
+html:  ##@docs generate html documentation
+html:  $(DX_DESTDIR)/html
+latex: ##@docs generate latex documentation
 latex: $(DX_DESTDIR)/latex
-pdf: $(DX_DESTDIR)/${DX_PACKAGE_NAME}.pdf
+pdf:   ##@docs generate pdf manual
+pdf:   $(DX_DESTDIR)/${DX_PACKAGE_NAME}.pdf
 
 clean-local:
 	@ rm -rf doxygen.stamp html latex \
