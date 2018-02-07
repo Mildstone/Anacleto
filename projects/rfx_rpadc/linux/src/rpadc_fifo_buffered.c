@@ -17,13 +17,11 @@
 #include <linux/platform_device.h>
 
 #include <linux/interrupt.h>
-#include <linux/poll.h>
 
 #include "rpadc_fifo.h"
 
 #include <asm/io.h>
 #include <linux/semaphore.h>
-#include <linux/spinlock.h>
 #include <linux/slab.h>
 #include <linux/cdev.h>
 
@@ -41,7 +39,6 @@ static ssize_t device_write(struct file *, const char *, size_t, loff_t *);
 static int device_mmap(struct file *filp, struct vm_area_struct *vma);
 static loff_t memory_lseek(struct file *file, loff_t offset, int orig);
 static long device_ioctl(struct file *file, unsigned int cmd, unsigned long arg);
-static unsigned int device_poll(struct file *file, struct poll_table_struct *p);
 
 static struct file_operations fops = {
     .read = device_read,
@@ -54,7 +51,7 @@ static struct file_operations fops = {
     .poll = device_poll,
 };
 
-#define BUFSIZE 512
+#define BUFSIZE 256
 
 struct rpadc_fifo_dev {
     struct platform_device *pdev;
@@ -65,9 +62,8 @@ struct rpadc_fifo_dev {
     void * iomap1;
     void * buffer;
     struct semaphore sem;     /* mutual exclusion semaphore     */
-    spinlock_t spinLock;     /* spinlock     */
-    u32 fifoBuffer[BUFSIZE];
-    u32 rIdx, wIdx, bufCount;
+    uint32 fifoBuffer[BUFSIZE];
+    int rIdx, bufCount;
     wait_queue_head_t readq;  /* read queue */
 };
 
@@ -75,37 +71,34 @@ struct rpadc_fifo_dev {
 //Buffer management support routines
 void writeBuf(struct rpadc_fifo_dev *info, u32 sample)
 {
- //   printk(KERN_DEBUG "rpadc_fifo: %d \n",sample&0xffff);
-    spin_lock_irq(&info->spinLock);
-    if(info->bufCount >= BUFSIZE)
+    uint32 wIdx;
+    down(&info->sem);
+    if(bufCount >= BUFSIZE)
     {
 	printk(KERN_DEBUG "ADC FIFO BUFFER OVERFLOW!\n");
     }
     else
     {
-	info->fifoBuffer[info->wIdx] = sample;
-	info->wIdx = (info->wIdx + 1) % BUFSIZE;
-	info->bufCount++;
+	wIdx = (info->rIdx + info->bufCount) % BUFSIZE;
+	info->fifoBuffer[wIdx] = sample;
+	bufCount++;
     }
-    spin_unlock_irq(&info->spinLock);
 } 
 
-u32 readBuf(struct rpadc_fifo_dev *info)
+uint32 readBuf(struct rpadc_fifo_dev *info)
 {
-    u32 data;
-    spin_lock_irq(&info->spinLock);
-    if(info->bufCount <= 0)
+    uint32 data;
+    if(bufCount <= 0)
     {
 	printk(KERN_DEBUG "ADC FIFO BUFFER UNDERFLOW!\n");  //Should never happen 
 	data = 0;
     }
     else
     {
-	data = info->fifoBuffer[info->rIdx];
-	info->rIdx = (info->rIdx+1) % BUFSIZE;
-	info->bufCount--;
+	data = info->buffer[info->rIdx];
+	rIdx = (rIdx+1) % BUFSIZE;
+	bufCount--;
     }
-    spin_unlock_irq(&info->spinLock);
     return data;
 }
 
@@ -124,7 +117,6 @@ u32 Read(void *addr, enum AxiStreamFifo_Register op ) {
 }
 
 
-
 ////////////////////////////////////////////////////////////////////////////////
 //  FOPS  //////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -132,41 +124,18 @@ u32 Read(void *addr, enum AxiStreamFifo_Register op ) {
 // interrupt handler //
 irqreturn_t IRQ_cb(int irq, void *dev_id, struct pt_regs *regs) {
     struct rpadc_fifo_dev *rpadc = dev_id;
-    static int isFirst = 1;
+    printk(KERN_DEBUG "IRQ: iomap = %0x \n",rpadc->iomap);
+    Write(rpadc->iomap,IER,0x00);
+    printk(KERN_DEBUG "rpadc_fifo: irq %d received with value %0x \n",irq,Read(rpadc->iomap,ISR));
     Write(rpadc->iomap,ISR,0xFFFFFFFF);
-    Write(rpadc->iomap,IER,0x00000000);
 
     void* dev  = rpadc->iomap;
     void* dev1 = rpadc->iomap1;
-
-    static u32 prev1, prev2;
-
     u32 occ = Read(dev,RDFO);
-  //  if(isFirst)
+    for(int i = 0; i < occ; i++)
     {
-    //	printk(KERN_DEBUG "IRQ: iomap = %0x \n",rpadc->iomap);
-     //	printk(KERN_DEBUG "rpadc_fifo: irq %d received with value %0x \n",irq,Read(rpadc->iomap,ISR));
-    //	printk(KERN_DEBUG "rpadc_fifo: %d samples in FIFO \n",occ);
-	isFirst = 0;
+	writeBuf(rpadc, Read(dev1,RDFD4));
     }
-    int i;
-
-/*    while(occ > 0)
-    {
-	u32 currSample = Read(dev1,RDFD4);
-	writeBuf(rpadc, currSample);
-	occ = Read(dev,RDFO);
-    }
-*/
-
-    for(i = 0; i < occ; i++)
-    {
-	u32 currSample = Read(dev1,RDFD4);
-	writeBuf(rpadc, currSample);
-    }
-    wake_up(&rpadc->readq);
-
-    Write(rpadc->iomap,IER,0x04000000);
     return IRQ_HANDLED;
 }
 
@@ -252,21 +221,12 @@ static ssize_t device_read(struct file *filp, char *buffer, size_t length,
     u32 *b32 = (u32*)buffer;
 
     u32 i = 0;
-    //spin_lock(&rpadc->spinLock);
-    while(rpadc->bufCount == 0)
-    {
-	if(filp->f_flags & O_NONBLOCK)
-	    return -EAGAIN;
-	if(wait_event_interruptible(rpadc->readq, rpadc->bufCount > 0))
-	    return -ERESTARTSYS;
-    }
-
-    u32 occ = rpadc->bufCount;
+    down(&rpadc->sem);
+    u32 occ = rpadc->bufSize;
     for(i=0; i < min(length/sizeof(u32), occ); ++i) {
-	u32 curr = readBuf(rpadc);
-        put_user(curr, b32++);
+        put_user(readBuf(rpadc), b32++);
     }
-    //spin_unlock(&rpadc->spinLock);
+    up(&rpadc->sem);
 
     return i*sizeof(u32);
 }
@@ -420,19 +380,6 @@ static long device_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 }
 
 
-static unsigned int device_poll(struct file *file, struct poll_table_struct *p) 
-{
-    unsigned int mask=0;
-    struct rpadc_fifo_dev *privateInfo =  (struct rpadc_fifo_dev *)file->private_data;   
-
-    down(&privateInfo->sem);
-    poll_wait(file,&privateInfo->readq,p);
-    if(privateInfo->bufCount > 0)
-	mask |= POLLIN | POLLRDNORM;
-    up(&privateInfo->sem);
-    return mask;
-}
-
 
 
 
@@ -501,14 +448,9 @@ static int rfx_rpadc_fifo_probe(struct platform_device *pdev)
     printk(KERN_DEBUG"mem end: %x\n",r_mem->end);
     printk(KERN_DEBUG"mem offset: %x\n",r_mem->start & ~PAGE_MASK);
 
-    // Initialize semaphores and queues
+    // Initialize semaphore
     sema_init(&staticPrivateInfo.sem, 1);
-    spin_lock_init(&staticPrivateInfo.spinLock);
-    init_waitqueue_head(&staticPrivateInfo.readq);
-    staticPrivateInfo.bufCount = 0;
-    staticPrivateInfo.rIdx = 0;	
-    staticPrivateInfo.wIdx = 0;	
-
+	
     return 0;
 }
 

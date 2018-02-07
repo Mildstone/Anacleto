@@ -20,10 +20,3 @@ rpadc_fifo_SOURCES   = red_pitaya.xdc
 
 rpadc_fifo_ARCHIVE   = $(NAME)_archive.zip
 
-
-
-
-
-
-
-
