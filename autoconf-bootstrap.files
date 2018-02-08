@@ -5,6 +5,9 @@ Kconfig
 README.md
 aclocal.m4
 bootstrap
+conf/kscripts/yocto.ac
+conf/kscripts/yocto.kconfig
+conf/kscripts/yocto.mk
 config.h.in
 configure
 configure.ac

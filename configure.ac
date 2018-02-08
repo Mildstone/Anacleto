@@ -136,6 +136,9 @@ AX_KCONFIG_MODULES([EXT],
 		  )
 AC_SUBST([EXT_MODULES])
 
+## YOCTO ##
+m4_sinclude(conf/kscripts/yocto.ac)
+
 ## // GIT IGNORE // ##
 AX_GITIGNORE_ADD_PATH([${builddir}])
 AX_GITIGNORE_SUBST
