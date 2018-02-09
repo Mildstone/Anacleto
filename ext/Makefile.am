@@ -25,7 +25,7 @@ ext-%: %/Makefile
 	@ $(MAKE) $(AM_MAKEFLAGS) -C $(subst ext-,,$@) $(TARGET)
 
 all: TARGET = all
-all: ext-libjit
+all: $(EXT_MODULES)
 
 clean: TARGET = clean
 clean: ext-libjit
