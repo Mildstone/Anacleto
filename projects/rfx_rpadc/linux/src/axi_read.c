@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
  int *addr = axi_reg_Map(map_size, map_addr);
 
  printf("read:  |");
- for(i=0; i<argc-2; ++i) {
+ for(i=0; i<map_size; ++i) {
      printf("%6d | ",*(addr+i));
  }
  printf("\n");

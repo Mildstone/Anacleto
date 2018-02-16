@@ -227,6 +227,8 @@
           <spirit:configurableElementValue spirit:referenceId="PCW_SDIO_PERIPHERAL_VALID">1</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="PCW_SPI_PERIPHERAL_VALID">1</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="PCW_UART_PERIPHERAL_VALID">1</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="PCW_USE_S_AXI_ACP">0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="PCW_USE_S_AXI_HP0">0</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="PCW_USE_FABRIC_INTERRUPT">1</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="PCW_EN_QSPI">1</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="PCW_EN_ENET0">1</spirit:configurableElementValue>
@@ -439,11 +441,10 @@
         <spirit:componentRef spirit:library="BlockDiagram/rpadc_1_imp" spirit:name="fifo_adcin" spirit:vendor="xilinx.com" spirit:version="1.00.a"/>
       </spirit:componentInstance>
       <spirit:componentInstance>
-        <spirit:instanceName>util_led_o_buf</spirit:instanceName>
-        <spirit:componentRef spirit:library="ip" spirit:name="util_ds_buf" spirit:vendor="xilinx.com" spirit:version="2.1"/>
+        <spirit:instanceName>xlconstant_0</spirit:instanceName>
+        <spirit:componentRef spirit:library="ip" spirit:name="xlconstant" spirit:vendor="xilinx.com" spirit:version="1.1"/>
         <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">rpadc_1_util_ds_buf_0_0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="C_BUF_TYPE">BUFH</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">rpadc_1_xlconstant_0_0</spirit:configurableElementValue>
         </spirit:configurableElementValues>
       </spirit:componentInstance>
     </spirit:componentInstances>
@@ -486,11 +487,10 @@
         <spirit:name>axi_fifo_mm_s_0_interrupt</spirit:name>
         <spirit:internalPortReference spirit:componentRef="fifo_adcin" spirit:portRef="interrupt"/>
         <spirit:internalPortReference spirit:componentRef="processing_system7_0" spirit:portRef="IRQ_F2P"/>
-        <spirit:internalPortReference spirit:componentRef="util_led_o_buf" spirit:portRef="BUFH_I"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
-        <spirit:name>util_ds_buf_0_BUFH_O</spirit:name>
-        <spirit:internalPortReference spirit:componentRef="util_led_o_buf" spirit:portRef="BUFH_O"/>
+        <spirit:name>xlconstant_0_dout</spirit:name>
+        <spirit:internalPortReference spirit:componentRef="xlconstant_0" spirit:portRef="dout"/>
         <spirit:externalPortReference spirit:portRef="led_o"/>
       </spirit:adHocConnection>
     </spirit:adHocConnections>
@@ -632,7 +632,7 @@
         <spirit:instanceName>decimation_cfg</spirit:instanceName>
         <spirit:componentRef spirit:library="user" spirit:name="axi_cfg_register" spirit:vendor="pavel-demin" spirit:version="1.0"/>
         <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">rpadc_1_axi_cfg_register_0_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">rpadc_1_decimation_cfg_0</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="CFG_DATA_WIDTH">32</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="AXI_ADDR_WIDTH">32</spirit:configurableElementValue>
         </spirit:configurableElementValues>
@@ -642,7 +642,7 @@
         <spirit:componentRef spirit:library="user" spirit:name="axis_packetizer" spirit:vendor="pavel-demin" spirit:version="1.0"/>
         <spirit:configurableElementValues>
           <spirit:configurableElementValue spirit:referenceId="bd:xciName">rpadc_1_axis_packetizer_0_0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="CNTR_WIDTH">16</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="CNTR_WIDTH">32</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="CONTINUOUS">TRUE</spirit:configurableElementValue>
         </spirit:configurableElementValues>
       </spirit:componentInstance>
@@ -665,8 +665,8 @@
         <spirit:instanceName>packetsize_cfg</spirit:instanceName>
         <spirit:componentRef spirit:library="user" spirit:name="axi_cfg_register" spirit:vendor="pavel-demin" spirit:version="1.0"/>
         <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">rpadc_1_axi_cfg_register_1_0</spirit:configurableElementValue>
-          <spirit:configurableElementValue spirit:referenceId="CFG_DATA_WIDTH">16</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">rpadc_1_packetsize_cfg_0</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="CFG_DATA_WIDTH">32</spirit:configurableElementValue>
         </spirit:configurableElementValues>
       </spirit:componentInstance>
       <spirit:componentInstance>
@@ -691,11 +691,6 @@
         <spirit:activeInterface spirit:busRef="AXI_STR_RXD" spirit:componentRef="axi_fifo_mm_s_0"/>
       </spirit:interconnection>
       <spirit:interconnection>
-        <spirit:name>ps7_0_axi_periph_M01_AXI</spirit:name>
-        <spirit:activeInterface spirit:busRef="M01_AXI" spirit:componentRef="ps7_0_axi_periph"/>
-        <spirit:activeInterface spirit:busRef="S_AXI_FULL" spirit:componentRef="axi_fifo_mm_s_0"/>
-      </spirit:interconnection>
-      <spirit:interconnection>
         <spirit:name>ps7_0_axi_periph_M02_AXI</spirit:name>
         <spirit:activeInterface spirit:busRef="M02_AXI" spirit:componentRef="ps7_0_axi_periph"/>
         <spirit:activeInterface spirit:busRef="S_AXI" spirit:componentRef="decimation_cfg"/>
@@ -709,6 +704,11 @@
         <spirit:name>ps7_0_axi_periph_M03_AXI</spirit:name>
         <spirit:activeInterface spirit:busRef="M03_AXI" spirit:componentRef="ps7_0_axi_periph"/>
         <spirit:activeInterface spirit:busRef="S_AXI" spirit:componentRef="packetsize_cfg"/>
+      </spirit:interconnection>
+      <spirit:interconnection>
+        <spirit:name>ps7_0_axi_periph_M01_AXI</spirit:name>
+        <spirit:activeInterface spirit:busRef="M01_AXI" spirit:componentRef="ps7_0_axi_periph"/>
+        <spirit:activeInterface spirit:busRef="S_AXI_FULL" spirit:componentRef="axi_fifo_mm_s_0"/>
       </spirit:interconnection>
     </spirit:interconnections>
     <spirit:adHocConnections>
@@ -2412,7 +2412,7 @@
           <spirit:segment>
             <spirit:name>SEG_axi_cfg_register_1_reg0</spirit:name>
             <spirit:displayName>/fifo_adcin/packetsize_cfg/s_axi/reg0</spirit:displayName>
-            <spirit:addressOffset>0x60000000</spirit:addressOffset>
+            <spirit:addressOffset>0x43C30000</spirit:addressOffset>
             <spirit:range>64K</spirit:range>
           </spirit:segment>
           <spirit:segment>

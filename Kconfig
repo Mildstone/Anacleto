@@ -64,12 +64,12 @@ menu YOCTO
   config YOCTO_GIT
 	string  "Yocto git repository"
 	depends on WITH_YOCTO_GIT
-	default "https://git.yoctoproject.org/poky.git"
+	default "git://git.yoctoproject.org/poky.git"
 
   config YOCTO_VERSION
 	string  "Yocto version"
 	depends on WITH_YOCTO_GIT
-	default "morty"
+	default "rocko"
 
   config ENABLE_YOCTO_XILINX
 	bool  "Enable Yocto meta-xilinx build"

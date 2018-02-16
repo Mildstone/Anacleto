@@ -117,3 +117,16 @@ projects/ext1
 fpga/hsi/linux-bsp/bsp/axi_stream_fifo
 fpga/hsi/linux-bsp/bsp/axi_stream_fifo/data
 fpga/hsi/linux-bsp/bsp/axi_stream_fifo/src
+projects/hls_examples
+projects/hls_examples/examples/axi_lite
+projects/hls_examples/examples/axi_master
+projects/hls_examples/examples/axi_stream_no_side_channel_data
+projects/hls_examples/examples/hls_stream
+
+
+/mnt/data0/Xilinx/Vivado_HLS/2017.2/include
+projects/rfx_dischr
+projects/rfx_dischr/src
+projects/hls_examples/examples/axi_stream_side_channel_data
+projects/rfx_dischr/prj/red_pitaya
+projects/rfx_rpadc/prj/red_pitaya

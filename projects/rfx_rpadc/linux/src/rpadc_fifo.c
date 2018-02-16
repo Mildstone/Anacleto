@@ -28,7 +28,7 @@
 #include <linux/cdev.h>
 
 #define SUCCESS 0
-
+#define FIFO_LEN 2048
 
 //static struct platform_device *s_pdev = 0;
 // static int s_device_open = 0;
@@ -54,7 +54,7 @@ static struct file_operations fops = {
     .poll = device_poll,
 };
 
-#define BUFSIZE 512
+#define BUFSIZE 1024
 
 struct rpadc_fifo_dev {
     struct platform_device *pdev;
@@ -69,23 +69,24 @@ struct rpadc_fifo_dev {
     u32 fifoBuffer[BUFSIZE];
     u32 rIdx, wIdx, bufCount;
     wait_queue_head_t readq;  /* read queue */
+    int fifoHalfInterrupt;
+    int fifoOverflow;
 };
 
 
-//Buffer management support routines
 void writeBuf(struct rpadc_fifo_dev *info, u32 sample)
 {
- //   printk(KERN_DEBUG "rpadc_fifo: %d \n",sample&0xffff);
+    //   printk(KERN_DEBUG "rpadc_fifo: %d \n",sample&0xffff);
     spin_lock_irq(&info->spinLock);
     if(info->bufCount >= BUFSIZE)
     {
-	printk(KERN_DEBUG "ADC FIFO BUFFER OVERFLOW!\n");
+        printk(KERN_DEBUG "ADC FIFO BUFFER OVERFLOW!\n");
     }
     else
     {
-	info->fifoBuffer[info->wIdx] = sample;
-	info->wIdx = (info->wIdx + 1) % BUFSIZE;
-	info->bufCount++;
+        info->fifoBuffer[info->wIdx] = sample;
+        info->wIdx = (info->wIdx + 1) % BUFSIZE;
+        info->bufCount++;
     }
     spin_unlock_irq(&info->spinLock);
 } 
@@ -96,20 +97,20 @@ u32 readBuf(struct rpadc_fifo_dev *info)
     spin_lock_irq(&info->spinLock);
     if(info->bufCount <= 0)
     {
-	printk(KERN_DEBUG "ADC FIFO BUFFER UNDERFLOW!\n");  //Should never happen 
-	data = 0;
+        printk(KERN_DEBUG "ADC FIFO BUFFER UNDERFLOW!\n");  //Should never happen
+        data = 0;
     }
     else
     {
-	data = info->fifoBuffer[info->rIdx];
-	info->rIdx = (info->rIdx+1) % BUFSIZE;
-	info->bufCount--;
+        data = info->fifoBuffer[info->rIdx];
+        info->rIdx = (info->rIdx+1) % BUFSIZE;
+        info->bufCount--;
     }
     spin_unlock_irq(&info->spinLock);
     return data;
 }
 
-    
+
 
 ////////////////////////////////////////////////////////////////////////////////
 //  FIFO IO  ///////////////////////////////////////////////////////////////////
@@ -133,6 +134,7 @@ u32 Read(void *addr, enum AxiStreamFifo_Register op ) {
 irqreturn_t IRQ_cb(int irq, void *dev_id, struct pt_regs *regs) {
     struct rpadc_fifo_dev *rpadc = dev_id;
     static int isFirst = 1;
+    //Check whether he cause of interrupt has been reveive overrun
     Write(rpadc->iomap,ISR,0xFFFFFFFF);
     Write(rpadc->iomap,IER,0x00000000);
 
@@ -142,31 +144,30 @@ irqreturn_t IRQ_cb(int irq, void *dev_id, struct pt_regs *regs) {
     static u32 prev1, prev2;
 
     u32 occ = Read(dev,RDFO);
-  //  if(isFirst)
     {
-    //	printk(KERN_DEBUG "IRQ: iomap = %0x \n",rpadc->iomap);
-     //	printk(KERN_DEBUG "rpadc_fifo: irq %d received with value %0x \n",irq,Read(rpadc->iomap,ISR));
-    //	printk(KERN_DEBUG "rpadc_fifo: %d samples in FIFO \n",occ);
-	isFirst = 0;
+        isFirst = 0;
     }
+
+    if(occ >= FIFO_LEN)
+    {
+        rpadc->fifoOverflow = 1;
+        wake_up(&rpadc->readq);
+        //When oveflow is detected, disable interrupts
+    }
+
     int i;
-
-/*    while(occ > 0)
-    {
-	u32 currSample = Read(dev1,RDFD4);
-	writeBuf(rpadc, currSample);
-	occ = Read(dev,RDFO);
-    }
-*/
-
     for(i = 0; i < occ; i++)
     {
-	u32 currSample = Read(dev1,RDFD4);
-	writeBuf(rpadc, currSample);
+        u32 currSample = Read(dev1,RDFD4);
+        writeBuf(rpadc, currSample);
     }
     wake_up(&rpadc->readq);
 
-    Write(rpadc->iomap,IER,0x04000000);
+    if(rpadc->fifoHalfInterrupt)
+        Write(rpadc->iomap,IER,0x00100000);
+    else
+        Write(rpadc->iomap,IER,0x04000000);
+
     return IRQ_HANDLED;
 }
 
@@ -176,13 +177,11 @@ static int device_open(struct inode *inode, struct file *file)
     if(!file->private_data) {
         u32 off;
 
-	struct rpadc_fifo_dev *privateInfo = container_of(inode->i_cdev, struct rpadc_fifo_dev, cdev);
+        struct rpadc_fifo_dev *privateInfo = container_of(inode->i_cdev, struct rpadc_fifo_dev, cdev);
 
-	printk(KERN_DEBUG "OPEN: privateInfo = %0x \n",privateInfo);
+        printk(KERN_DEBUG "OPEN: privateInfo = %0x \n",privateInfo);
         //struct resource *r_mem =  platform_get_resource(s_pdev, IORESOURCE_MEM, 0);
         struct resource *r_mem =  platform_get_resource(privateInfo->pdev, IORESOURCE_MEM, 0);
-
-
         file->private_data = privateInfo;
 
         // IOMAP //
@@ -192,15 +191,17 @@ static int device_open(struct inode *inode, struct file *file)
         off = r_mem->start & ~PAGE_MASK;
         privateInfo->iomap1 = devm_ioremap(&privateInfo->pdev->dev,r_mem->start+off,0xffff);
 
-        // IRQ //        
-       privateInfo->irq = platform_get_irq(privateInfo->pdev,0);
-       printk(KERN_DEBUG "OPEN: iomap = %0x IRQ: %X\n",privateInfo->iomap, privateInfo->irq);
-       int res = request_irq( privateInfo->irq, IRQ_cb, IRQF_TRIGGER_RISING ,"rpadc_fifo",privateInfo);
-       if(res) printk(KERN_INFO "rpadc_fifo: can't get IRQ %d assigned\n",privateInfo->irq);
-       else printk(KERN_INFO "rpadc_fifo: got IRQ %d assigned\n",privateInfo->irq);
+        // IRQ //
+        privateInfo->irq = platform_get_irq(privateInfo->pdev,0);
+        printk(KERN_DEBUG "OPEN: iomap = %0x IRQ: %X\n",privateInfo->iomap, privateInfo->irq);
+        int res = request_irq( privateInfo->irq, IRQ_cb, IRQF_TRIGGER_RISING ,"rpadc_fifo",privateInfo);
+        if(res) printk(KERN_INFO "rpadc_fifo: can't get IRQ %d assigned\n",privateInfo->irq);
+        else printk(KERN_INFO "rpadc_fifo: got IRQ %d assigned\n",privateInfo->irq);
 
-
-        privateInfo->busy=0;        
+        privateInfo->busy = 0;
+        privateInfo->wIdx = 0;
+        privateInfo->rIdx = 0;
+        privateInfo->bufCount = 0;
     }
     struct rpadc_fifo_dev *privateInfo = (struct rpadc_fifo_dev *)file->private_data;
     if(!privateInfo) return -EFAULT;
@@ -213,24 +214,24 @@ static int device_open(struct inode *inode, struct file *file)
 // CLOSE //
 static int device_release(struct inode *inode, struct file *file)
 {
-   struct rpadc_fifo_dev *dev = file->private_data;
-   if(!dev) return -EFAULT;
-   if(--dev->busy == 0)
-   {       
-       printk(KERN_DEBUG "CLOSE: iomap = %0x \n",dev->iomap);
-       Write(dev->iomap,IER,0x0);
-       free_irq(dev->irq,dev);
-       devm_iounmap(&dev->pdev->dev,dev->iomap);
-       devm_iounmap(&dev->pdev->dev,dev->iomap1);
-   }
-   return 0;
+    struct rpadc_fifo_dev *dev = file->private_data;
+    if(!dev) return -EFAULT;
+    if(--dev->busy == 0)
+    {
+        printk(KERN_DEBUG "CLOSE: iomap = %0x \n",dev->iomap);
+        Write(dev->iomap,IER,0x0);
+        free_irq(dev->irq,dev);
+        devm_iounmap(&dev->pdev->dev,dev->iomap);
+        devm_iounmap(&dev->pdev->dev,dev->iomap1);
+    }
+    return 0;
 }
 
 
 
 // READ //
 static ssize_t device_readOLD(struct file *filp, char *buffer, size_t length,
-                           loff_t *offset)
+                              loff_t *offset)
 {    
     struct rpadc_fifo_dev *scc_dev = (struct rpadc_fifo_dev *)filp->private_data;
     void* dev  = scc_dev->iomap;
@@ -251,19 +252,22 @@ static ssize_t device_read(struct file *filp, char *buffer, size_t length,
     struct rpadc_fifo_dev *rpadc = (struct rpadc_fifo_dev *)filp->private_data;
     u32 *b32 = (u32*)buffer;
 
+    if(rpadc->fifoOverflow)
+        return -1;
+
     u32 i = 0;
     //spin_lock(&rpadc->spinLock);
     while(rpadc->bufCount == 0)
     {
-	if(filp->f_flags & O_NONBLOCK)
-	    return -EAGAIN;
-	if(wait_event_interruptible(rpadc->readq, rpadc->bufCount > 0))
-	    return -ERESTARTSYS;
+        if(filp->f_flags & O_NONBLOCK)
+            return -EAGAIN;
+        if(wait_event_interruptible(rpadc->readq, rpadc->bufCount > 0))
+            return -ERESTARTSYS;
     }
 
     u32 occ = rpadc->bufCount;
     for(i=0; i < min(length/sizeof(u32), occ); ++i) {
-	u32 curr = readBuf(rpadc);
+        u32 curr = readBuf(rpadc);
         put_user(curr, b32++);
     }
     //spin_unlock(&rpadc->spinLock);
@@ -276,8 +280,8 @@ static ssize_t device_read(struct file *filp, char *buffer, size_t length,
 static ssize_t device_write(struct file *filp, const char *buff, size_t len,
                             loff_t *off)
 {
-   printk ("<1>Sorry, this operation isn't supported yet.\n");
-   return -EINVAL;
+    printk ("<1>Sorry, this operation isn't supported yet.\n");
+    return -EINVAL;
 }
 
 
@@ -297,7 +301,7 @@ static const struct vm_operations_struct mmap_mem_ops = {
 };
 
 pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
-                  unsigned long size, pgprot_t vma_prot)
+                              unsigned long size, pgprot_t vma_prot)
 {
     if (!pfn_valid(pfn))
         return pgprot_noncached(vma_prot);
@@ -309,7 +313,7 @@ pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
 static int device_mmap(struct file *filp, struct vm_area_struct *vma)
 {
     int status = 0;
-    struct rpadc_fifo_dev *privateInfo =  (struct rpadc_fifo_dev *)filp->private_data;   
+    struct rpadc_fifo_dev *privateInfo =  (struct rpadc_fifo_dev *)filp->private_data;
     struct resource *r_mem = platform_get_resource(privateInfo->pdev, IORESOURCE_MEM, 0);
     //struct resource *r_mem = platform_get_resource(s_pdev, IORESOURCE_MEM, 0);
 
@@ -331,8 +335,8 @@ static int device_mmap(struct file *filp, struct vm_area_struct *vma)
            MODULE_NAME, vma->vm_start, vsize);
 
     vma->vm_page_prot = phys_mem_access_prot(filp, vma->vm_pgoff,
-                         vsize,
-                         vma->vm_page_prot);
+                                             vsize,
+                                             vma->vm_page_prot);
 
     if (vsize > psize)
         return -EINVAL; /* spans too high */
@@ -345,7 +349,7 @@ static int device_mmap(struct file *filp, struct vm_area_struct *vma)
                MODULE_NAME, status);
         return -EAGAIN;
     }
-        return status;
+    return status;
 }
 
 
@@ -396,19 +400,36 @@ static long device_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
         printk(KERN_DEBUG "<%s> ioctl: rfx_rpadc_fifo_RESET\n", MODULE_NAME);
         Write(dev,ISR,0xFFFFFFFF);
         Write(dev,RDFR,0xa5);
+        scc_dev->fifoOverflow = 0;
         return 0;
         break;
 
     case RFX_RPADC_CLEAR:
         printk(KERN_DEBUG "<%s> ioctl: rfx_rpadc_fifo_CLEAR\n", MODULE_NAME);
         Write(dev,RDFR,0xa5);
-        Write(dev,IER,0x04000000);
+        if(scc_dev->fifoHalfInterrupt)
+            Write(dev,IER,0x00100000);
+        else
+            Write(dev,IER,0x04000000);
         return 0;
         break;
 
     case RFX_RPADC_GETSR:
         printk(KERN_DEBUG "<%s> ioctl: rfx_rpadc_fifo_GETSR\n", MODULE_NAME);
         Write(dev,ISR,0xFFFFFFFF);
+        return 0;
+        break;
+
+    case RFX_RPADC_OVERFLOW:
+        printk(KERN_DEBUG "<%s> ioctl: rfx_rpadc_fifo_OVERFLOW\n", MODULE_NAME);
+        return scc_dev->fifoOverflow;
+        break;
+    case RFX_RPADC_FIFO_INT_HALF_SIZE:
+        scc_dev->fifoHalfInterrupt = 1;
+        return 0;
+        break;
+    case RFX_RPADC_FIFO_INT_FIRST_SAMPLE:
+        scc_dev->fifoHalfInterrupt = 0;
         return 0;
         break;
 
@@ -423,12 +444,12 @@ static long device_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 static unsigned int device_poll(struct file *file, struct poll_table_struct *p) 
 {
     unsigned int mask=0;
-    struct rpadc_fifo_dev *privateInfo =  (struct rpadc_fifo_dev *)file->private_data;   
+    struct rpadc_fifo_dev *privateInfo =  (struct rpadc_fifo_dev *)file->private_data;
 
     down(&privateInfo->sem);
     poll_wait(file,&privateInfo->readq,p);
     if(privateInfo->bufCount > 0)
-	mask |= POLLIN | POLLRDNORM;
+        mask |= POLLIN | POLLRDNORM;
     up(&privateInfo->sem);
     return mask;
 }
@@ -460,8 +481,8 @@ static int rfx_rpadc_fifo_probe(struct platform_device *pdev)
     dev_t newDev;
     err = alloc_chrdev_region(&newDev, 0, 1, DEVICE_NAME);
     id_major = MAJOR(newDev);
-    printk("MAJOR ID...%d\n", id_major);	
-    if(err < 0) 
+    printk("MAJOR ID...%d\n", id_major);
+    if(err < 0)
     {
         printk ("alloc_chrdev_region failed\n");
         return err;
@@ -471,7 +492,7 @@ static int rfx_rpadc_fifo_probe(struct platform_device *pdev)
     staticPrivateInfo.cdev.ops = &fops;
     devno = MKDEV(id_major, 0); //Minor Id is 0
     err = cdev_add(&staticPrivateInfo.cdev, devno, 1);
-    if(err < 0) 
+    if(err < 0)
     {
         printk ("cdev_add failed\n");
         return err;
@@ -492,10 +513,10 @@ static int rfx_rpadc_fifo_probe(struct platform_device *pdev)
     r_mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
     if (!r_mem)
     {
-      dev_err(dev, "Can't find device base address\n");
-      return 1;
+        dev_err(dev, "Can't find device base address\n");
+        return 1;
     }
-	
+
 
     printk(KERN_DEBUG"mem start: %x\n",r_mem->start);
     printk(KERN_DEBUG"mem end: %x\n",r_mem->end);
@@ -506,8 +527,10 @@ static int rfx_rpadc_fifo_probe(struct platform_device *pdev)
     spin_lock_init(&staticPrivateInfo.spinLock);
     init_waitqueue_head(&staticPrivateInfo.readq);
     staticPrivateInfo.bufCount = 0;
-    staticPrivateInfo.rIdx = 0;	
-    staticPrivateInfo.wIdx = 0;	
+    staticPrivateInfo.rIdx = 0;
+    staticPrivateInfo.wIdx = 0;
+    staticPrivateInfo.fifoHalfInterrupt = 0;
+    staticPrivateInfo.fifoOverflow = 0;
 
     return 0;
 }
@@ -525,8 +548,8 @@ static int rfx_rpadc_fifo_remove(struct platform_device *pdev)
 }
 
 static const struct of_device_id rfx_rpadc_fifo_of_ids[] = {
-    { .compatible = "xlnx,axi-fifo-mm-s-4.1",},
-    {}
+{ .compatible = "xlnx,axi-fifo-mm-s-4.1",},
+{}
 };
 
 static struct platform_driver rfx_rpadc_fifo_driver = {

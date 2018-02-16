@@ -82,6 +82,6 @@ AC_SUBST([DEVICETREE_BASEFILES_TAR])
 
 ## /////// CONFIG FILES ////////////////
 
-AX_CONFIG_FILES( tclapp/Makefile )
+# AX_CONFIG_FILES( tclapp/Makefile )
 
 ## /////////////////////////////////////
