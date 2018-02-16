@@ -1,6 +1,6 @@
 # ////////////////////////////////////////////////////////////////////////// //
 #
-# This file is part of the autoconf-bootstrap project.
+# This file is part of the anacleto project.
 # Copyright 2018 Andrea Rigoni Garola <andrea.rigoni@igi.cnr.it>.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -18,133 +18,171 @@
 #
 # ////////////////////////////////////////////////////////////////////////// //
 
-
-
 #
 # For a description of the syntax of this configuration file,
 # see Documentation/kbuild/kconfig-language.txt.
 #
-mainmenu "autoconf-bootstrap  Start new autoconf kconfig project"
 
-
-comment "Project Options (add here)"
+mainmenu "Anacleto - GNU Linux build system for FPGA SoC devices"
 
 # //////////////////////////////////////////////////////////////////////////// #
-# //  EXAMPLES  ////////////////////////////////////////////////////////////// #
+# //  BULD COMMON  /////////////////////////////////////////////////////////// #
 # //////////////////////////////////////////////////////////////////////////// #
 
-menu EXAMPLES
+source conf/kscripts/build_common.kconfig
 
-menu MDS_MODULES
-	config MDS_JAVA
-	bool "Enable java module"
-	default y
-
-	config MDS_LV
-	bool "Enable labview module"
-	default n
-
-	config MDS_NI
-	bool "Enable National Instruments module"
-	default n
-endmenu
-
-menu MODULES
-	config MOD1
-	 bool "Enable mod1 module"
-	config MOD2
-	 bool "Enable mod2 module"
-	config MOD3
-	 bool "Enable mod3 module"
-endmenu
-
-
-config EXAMPLE_BOOL_VAR
-	bool "Set a example bool variable"
-	---help---
-	      This is an example bool variable define within the kconfig
-	      autoconf addon.
-
-config EXAMPLE_STRING_VAR
-	string "get value for EXAMPLE_STRING_VAR"
-	---help---
-	      This is an example string variable define within the kconfig
-	      autoconf addon.
-
-endmenu
-
-comment "Build Options"
-
-# //////////////////////////////////////////////////////////////////////////// #
-# //  BUILD_COMMON  ////////////////////////////////////////////////////////// #
-# //////////////////////////////////////////////////////////////////////////// #
-
-  source conf/kscripts/build_common.kconfig
 
 # //////////////////////////////////////////////////////////////////////////// #
 # //  TOOLCHAIN  ///////////////////////////////////////////////////////////// #
 # //////////////////////////////////////////////////////////////////////////// #
 
-  source conf/kscripts/toolchain.kconfig
-
-# //////////////////////////////////////////////////////////////////////////// #
-# //  DOCKER  //////////////////////////////////////////////////////////////// #
-# //////////////////////////////////////////////////////////////////////////// #
-
-  source conf/kscripts/docker.kconfig
-
-# //////////////////////////////////////////////////////////////////////////// #
-# //  QT  //////////////////////////////////////////////////////////////////// #
-# //////////////////////////////////////////////////////////////////////////// #
-
-  source conf/kscripts/qtdesktop.kconfig
-
-# //////////////////////////////////////////////////////////////////////////// #
-# //  NODEJS  //////////////////////////////////////////////////////////////// #
-# //////////////////////////////////////////////////////////////////////////// #
-
-  source conf/kscripts/nodejs.kconfig
-
-# //////////////////////////////////////////////////////////////////////////// #
-# //  DOXYGEN  /////////////////////////////////////////////////////////////// #
-# //////////////////////////////////////////////////////////////////////////// #
-
-  source conf/autoconf-doxygen/doxygen.kconfig
+source conf/kscripts/toolchain.kconfig
 
 
 # //////////////////////////////////////////////////////////////////////////// #
-# //  EXT  /////////////////////////////////////////////////////////////////// #
+# //  FPGA  ////////////////////////////////////////////////////////////////// #
 # //////////////////////////////////////////////////////////////////////////// #
 
-menuconfig  ENABLE_EXTSRC
-	 bool "ext sources"
-	 default y
-	 ---help---
-	  Enable optional external software sources to be embedded in project
+source fpga/Kconfig
 
-if ENABLE_EXTSRC
 
-  # //  LIBJIT  //
-  source conf/kscripts/ext_libjit.kconfig
+# //////////////////////////////////////////////////////////////////////////// #
+# //  LINUX  ///////////////////////////////////////////////////////////////// #
+# //////////////////////////////////////////////////////////////////////////// #
 
-  # //  LLVM  //
-  source conf/kscripts/ext_llvm.kconfig
-
-  # //  LLVM  //
-  source conf/kscripts/ext_ccStickers.kconfig
-
-endif # ENABLE_EXTSRC
+source conf/kscripts/linux.kconfig
 
 
 # //////////////////////////////////////////////////////////////////////////// #
 # //  YOCTO  ///////////////////////////////////////////////////////////////// #
 # //////////////////////////////////////////////////////////////////////////// #
 
-  source conf/kscripts/yocto.kconfig
+menu YOCTO
+  config ENABLE_YOCTO
+	bool  "Enable Yocto build"
+	default "no"
+
+  config YOCTO_DIR
+	string  "Yocto src directory"
+	depends on ENABLE_YOCTO
+	default "yocto"
+
+  choice YOCTO_DLMETHOD
+	prompt "Yocto sources download method"
+	config WITH_YOCTO_TAR
+	 bool "tar archive"
+	config WITH_YOCTO_GIT
+	 bool "git repository"
+  endchoice
+
+  config YOCTO_TAR
+	string  "Yocto tar repository"
+	depends on WITH_YOCTO_TAR
+	default "http://downloads.yoctoproject.org/releases/yocto/yocto-2.2/poky-morty-16.0.0.tar.bz2"
+
+  config YOCTO_GIT
+	string  "Yocto git repository"
+	depends on WITH_YOCTO_GIT
+	default "git://git.yoctoproject.org/poky.git"
+
+  config YOCTO_VERSION
+	string  "Yocto version"
+	depends on WITH_YOCTO_GIT
+	default "rocko"
+
+  config ENABLE_YOCTO_XILINX
+	bool  "Enable Yocto meta-xilinx build"
+	depends on ENABLE_YOCTO
+	default "no"
+
+  choice YOCTO_XILINX_DLMETHOD
+	prompt "Yocto meta-xilinx sources download method"
+	config WITH_YOCTO_XILINX_TAR
+	 bool "tar archive"
+	config WITH_YOCTO_XILINX_GIT
+	 bool "git repository"
+  endchoice
+
+  config YOCTO_XILINX_TAR
+	string  "Yocto meta-xilinx tar repository"
+	depends on WITH_YOCTO_XILINX_TAR
+	default ""
+
+  config YOCTO_XILINX_GIT
+	string  "Yocto meta-xilinx git repository"
+	depends on WITH_YOCTO_XILINX_GIT
+	default "https://github.com/Xilinx/meta-xilinx.git"
+
+  config YOCTO_LINARO_GIT
+	string  "Yocto meta-linaro-toolchain git repository"
+	depends on ENABLE_YOCTO_XILINX
+	default "https://github.com/Xilinx/meta-xilinx.git"
+
+
+
+endmenu # YOCTO
+
+# //////////////////////////////////////////////////////////////////////////// #
+# //  DOCKER  //////////////////////////////////////////////////////////////// #
+# //////////////////////////////////////////////////////////////////////////// #
+
+source conf/kscripts/docker.kconfig
+
+
+# //////////////////////////////////////////////////////////////////////////// #
+# //  TARGET_DEVICE  ///////////////////////////////////////////////////////// #
+# //////////////////////////////////////////////////////////////////////////// #
+
+menu TARGET_DEVICE
+
+	config DEVICE_NAME
+		  string  "Enter device name"
+
+	config DEVICE_IP
+		  string  "Enter device IP address"
+
+	config DEVICE_ACCESS
+		  string  "Enter device access method"
+		  default "sftp"
+
+	config DEVICE_USER
+		  string  "User to connect device with"
+		  default "root"
+
+	choice DEVICE_AUTHMETHOD
+		  prompt "Select device authentication method"
+		  config WITH_DEVICE_SSHPASSWD
+		   bool "Auth on device using password"
+		  config WITH_DEVICE_SSHKEY
+		   bool "Auth on device using ssh keyid"
+	endchoice
+
+	config DEVICE_PASSWD
+		  string  "User password to autenticate user"
+		  depends on WITH_DEVICE_SSHPASSWD
+		  default "root"
+
+	config DEVICE_SSHKEY
+		  string  "User rsa_key to autenticate"
+		  depends on WITH_DEVICE_SSHKEY
+		  default "$HOME/.ssh/id_rsa"
+
+	config DEVICE_MODULES_DIR
+		  string  "Target device modules directory"
+		  default "/lib/modules"
+
+	config DEVICE_BOOT_DIR
+	  string  "Target device boot directory"
+	  default "/boot"
+
+endmenu # TARGET_DEVICE
 
 
 
 
+# config TEST_VARIABLE
+#      string  "Test variable"
+#      default "prova"
 
 
 

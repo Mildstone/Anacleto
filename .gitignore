@@ -6,6 +6,23 @@ Makefile.in
 /config.h.in~
 /configure
 
-/build/download
-/build/conf/node_modules
-/build
+/autoscan.log
+/autoscan-*.log
+/compile
+/config.h.in
+/configure.scan
+/depcomp
+/install-sh
+/missing
+/stamp-h1
+
+/build*
+
+vivado_project/
+.cache/
+.hw/
+.xpr
+
+/home/andrea/devel/rfx/anacleto/build/download
+/home/andrea/devel/rfx/anacleto/build/toolchain
+/linux

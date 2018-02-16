@@ -1,0 +1,12 @@
+
+OPTION psf_version = 3.0;
+
+BEGIN driver axi_dma
+  OPTION driver_state = ACTIVE;
+  OPTION supported_peripherals = (axi_dma);
+  OPTION supported_os_types = (LINUX);
+  OPTION NAME = axi_dma;
+END driver
+
+
+

@@ -3,7 +3,13 @@
 	url = https://github.com/Xilinx/linux-xlnx.git
 [submodule "conf/kconfig"]
 	path = conf/kconfig
-	url = https://github.com/andrearigoni/autoconf-kconfig.git
+	url = https://github.com/AndreaRigoni/autoconf-kconfig.git
 [submodule "conf/autoconf-archive"]
 	path = conf/autoconf-archive
-	url = https://github.com/andrearigoni/autoconf-archive
+	url = https://github.com/andrearigoni/autoconf-archive.git
+[submodule "fpga/hsi/device-tree-xlnx"]
+	path = fpga/hsi/device-tree-xlnx
+	url = https://github.com/andrearigoni/device-tree-xlnx.git
+[submodule "fpga/lib/red-pitaya-notes"]
+	path = fpga/lib/red-pitaya-notes
+	url = https://github.com/andrearigoni/red-pitaya-notes

@@ -6,4 +6,21 @@ Makefile.in
 /config.h.in~
 /configure
 
+/autoscan.log
+/autoscan-*.log
+/compile
+/config.h.in
+/configure.scan
+/depcomp
+/install-sh
+/missing
+/stamp-h1
+
+/build*
+
+vivado_project/
+.cache/
+.hw/
+.xpr
+
 @CONFIG_GIT_IGNORE@

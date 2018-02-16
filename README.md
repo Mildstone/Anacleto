@@ -1,19 +1,18 @@
-# autoconf-bootstrap
-Base setup for autoconf distribution
+# Anacleto
 
 
-This is a autoconf/automake minimal setup to start a new project. It uses Kconfig integration 
-provided by https://github.com/AndreaRigoni/autoconf-kconfig as a submodule in conf/kconfig
 
-In the following a easy setup procedure:
+A basic project automation to build logic and embedded software tools in soc devices.
 
-<pre>
-git clone https://github.com/andrearigoni/autoconf-bootstrap.git
-cd autoconf-bootstrap
-./bootstrap
-mkdir build
-cd build
-../configure --enable-kconfig
-# enjoy
-</pre>
+build:
+------
+
+>
+> cd anacleto <br>
+> ./bootstrap  <br>
+> ./configure --enable-kconfig  <br>
+> make all  <br>
+>
+
+This will prompt you a GUI based on the kconfig configuration tool producing a .config file in the root directory. The actual configuration is provided by autoconf reading the prompted arguments, the environment, and the set up written in .config file in this order. The bootstrap phase is requred to setup the autotools files and to update the project submodules. When the compilation is eventually launched the requred versions of toolchain and linux kernel are downloaded and decompressed in respective folders, then the linux kernel is compiled.
 

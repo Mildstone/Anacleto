@@ -1,0 +1,5 @@
+
+obj = $(builddir)
+src = $(srcdir)
+
+obj-m += w7x_timing.o

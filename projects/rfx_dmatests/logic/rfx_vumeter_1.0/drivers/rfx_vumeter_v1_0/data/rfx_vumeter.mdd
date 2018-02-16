@@ -1,0 +1,10 @@
+
+
+OPTION psf_version = 2.1;
+
+BEGIN DRIVER rfx_vumeter
+	OPTION supported_peripherals = (rfx_vumeter);
+	OPTION copyfiles = all;
+	OPTION VERSION = 1.0;
+	OPTION NAME = rfx_vumeter;
+END DRIVER

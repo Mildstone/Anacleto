@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# needed to force autoconf looking into subdirectories
+touch configure.ac
+
 UPDATE_SUBMODULES=conf/update_submodules.sh
 [ -f ${UPDATE_SUBMODULES} ] && . ${UPDATE_SUBMODULES} || exit 1
 
@@ -13,9 +16,9 @@ aclocal -I ./conf/m4
 
 autoheader
 
-libtoolize
+# libtoolize
 
-automake --add-missing --copy
+automake --add-missing --copy -W none
 
 autoconf
 
