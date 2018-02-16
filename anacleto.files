@@ -7338,6 +7338,18 @@ projects/Makefile.am
 projects/configure.ac
 projects/ext1/Makefile.am
 projects/ext1/configure.ac
+projects/hls_examples/Makefile.am
+projects/hls_examples/examples/axi_lite/example.cpp
+projects/hls_examples/examples/axi_master/example.cpp
+projects/hls_examples/examples/axi_stream_no_side_channel_data/example.cpp
+projects/hls_examples/examples/axi_stream_no_side_channel_data/example.cpp
+projects/hls_examples/examples/axi_stream_no_side_channel_data/example.cpp
+projects/hls_examples/examples/axi_stream_no_side_channel_data/example_test.cpp
+projects/hls_examples/examples/axi_stream_side_channel_data/example.cpp
+projects/hls_examples/examples/hls_stream/bytestrm_dwordproc.cpp
+projects/hls_examples/examples/hls_stream/bytestrm_dwordproc.h
+projects/hls_examples/examples/hls_stream/bytestrm_dwordproc_test.cpp
+projects/hls_examples/examples/hls_stream/bytestrm_util.h
 projects/prova/Makefile.am
 projects/prova/bsp/Makefile.am
 projects/prova/bsp/linux/data/pwm_1.0.mdd
@@ -7367,6 +7379,10 @@ projects/prova/prj/red_pitaya/rfx_pwmtest_0.1.srcs/sources_1/bd/design_1/hdl/des
 projects/prova/prj/red_pitaya/rfx_pwmtest_0.1.tcl
 projects/prova/prj/red_pitaya/rfx_pwmtest_1.0.tcl
 projects/prova/pwm.vhd
+projects/rfx_dischr/Makefile.am
+projects/rfx_dischr/prj/red_pitaya/rfx_dischr-prj_0.1.tcl
+projects/rfx_dischr/src/red_pitaya.xdc
+projects/rfx_dischr/src/trigger.cpp
 projects/rfx_dmatests/logic/rfx_vumeter_1.0/bd/bd.tcl
 projects/rfx_dmatests/logic/rfx_vumeter_1.0/component.xml
 projects/rfx_dmatests/logic/rfx_vumeter_1.0/drivers/rfx_vumeter_v1_0/data/rfx_vumeter.mdd
@@ -7433,6 +7449,7 @@ projects/rfx_rpadc/linux/src/axi_reg.h
 projects/rfx_rpadc/linux/src/axi_write.c
 projects/rfx_rpadc/linux/src/rpadc_fifo.c
 projects/rfx_rpadc/linux/src/rpadc_fifo.h
+projects/rfx_rpadc/linux/src/rpadc_fifo_buffered.c
 projects/rfx_rpadc/linux/src/rpadc_fifo_test.c
 projects/rfx_rpadc/prj/red_pitaya/rfx_core_0.1.tcl
 projects/rfx_rpadc/prj/red_pitaya/rfx_example_test_0.1.srcs/sources_1/bd/design_1/design_1.bd
@@ -7452,6 +7469,7 @@ projects/rfx_rpadc/prj/red_pitaya/rfx_pwmtest_0.1.srcs/sources_1/bd/design_1/hdl
 projects/rfx_rpadc/prj/red_pitaya/rfx_pwmtest_0.1.tcl
 projects/rfx_rpadc/prj/red_pitaya/rfx_pwmtest_1.0.tcl
 projects/rfx_rpadc/prj/red_pitaya/rfx_rpadc_0.1.tcl
+projects/rfx_rpadc/prj/red_pitaya/rfx_rpadc_fifo_1.0.tcl
 projects/rfx_rpadc/pwm.vhd
 projects/rfx_rpadc/red_pitaya.xdc
 projects/w7x_timing/Makefile.am

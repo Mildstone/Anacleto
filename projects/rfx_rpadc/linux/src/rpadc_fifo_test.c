@@ -11,7 +11,8 @@
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define MAX(a,b) (((a)>(b))?(a):(b))
 
-#define CFG_REG_ADDR 0x60000000
+#define DEC_REG_ADDR 0x43c20000
+#define PKT_REG_ADDR 0x43c30000
 
 void plot_ascii_a(u_int32_t data, FILE *f) {
     int j;
@@ -47,20 +48,22 @@ void plot_ascii_ab(u_int32_t data, FILE *f) {
     fprintf(f,"]\n");
 }
 
-struct decimator_reg_t {
-    int dec;
-};
+#pragma pack(push, 1)
+struct decimator_reg_t { int dec; };
+struct packetsize_reg_t { int size; };
+#pragma pack(pop)
 
 
 int main(int argc, char **argv) {
 
     struct decimator_reg_t *dec_reg;
+    struct packetsize_reg_t *pkt_reg;
     printf("rpadc test \n");
     const char *file_out_name = "rpadc_data";
     fd_set readset;
 
-    if(argc<3) {
-        printf("usage: %s dev dec samples \n",argv[0]);
+    if(argc<4) {
+        printf("usage: %s dev dec pkt samples \n",argv[0]);
         return 1;
     }
 
@@ -74,12 +77,21 @@ int main(int argc, char **argv) {
     // PLOT TO SCREEN //
     // set decimation register //
     axi_reg_Init();
-    dec_reg = axi_reg_Map(sizeof(struct decimator_reg_t),CFG_REG_ADDR);    
+    dec_reg = axi_reg_Map(sizeof(struct decimator_reg_t),DEC_REG_ADDR);
     dec_reg->dec = atoi(argv[2]);
+    if(!dec_reg) { printf("error pkt\n"); exit(1); }
+    pkt_reg = axi_reg_Map(sizeof(struct packetsize_reg_t),PKT_REG_ADDR);
+    if(!pkt_reg) { printf("error pkt\n"); exit(1); }
+    pkt_reg->size = atoi(argv[3]);
+
+    printf("reg: %p  dec: %d\n",dec_reg,dec_reg->dec);
+    printf("reg: %p  pkt: %d\n",pkt_reg,pkt_reg->size);
 
     status = ioctl(fd, RFX_RPADC_RESET, 0);
+    status = ioctl(fd, RFX_RPADC_FIFO_INT_HALF_SIZE, 0);
+    //status = ioctl(fd, RFX_RPADC_FIFO_INT_FIRST_SAMPLE, 0);
     usleep(10);
-    int i, size = atoi(argv[3]);
+    int i, size = atoi(argv[4]);
     size = MIN((size)*sizeof(u_int32_t),BUF_SIZE);
     if (size <= 0) { return size; }
 
@@ -87,7 +99,16 @@ int main(int argc, char **argv) {
     if (!data) { perror("malloc\n"); exit (1); }
 
     status = ioctl(fd, RFX_RPADC_CLEAR, 0);
-    sleep(3);
+
+//Test FIFO overflow
+//    for(i = 0; i < 10; i++)
+//    {
+//	sleep(1);
+//	printf("FIFO Overflow: %d\n",   ioctl(fd, RFX_RPADC_OVERFLOW, 0));
+//    }
+
+
+    //sleep(3);
     for(i=0;i<size;) {
 	do {
 	    FD_ZERO(&readset);
@@ -96,6 +117,11 @@ int main(int argc, char **argv) {
 	} while(result == -1 & errno == EINTR);
 
         int rb = read(fd,&data[0], size );
+	if(rb < 0)
+	{
+	    printf("ERROR IN READ!!\n");
+	    break;
+	}
         for(int j=0; j<rb; j+=sizeof(u_int32_t)) {
             plot_ascii_ab(*((u_int32_t *)&data[j]),stdout);
         }

@@ -35,12 +35,8 @@ int axi_reg_Release()
 
 void * axi_reg_Map(size_t size, size_t offset)
 {
-    static void* mapaddr = NULL;
     if(dev_mem_fd == -1) { return NULL; }
-    if(!mapaddr)
-        mapaddr = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, dev_mem_fd, offset);
-    if(!mapaddr) { return NULL; }
-    return mapaddr;
+    return mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, dev_mem_fd, offset);
 }
 
 

@@ -4,9 +4,6 @@
 [submodule "conf/kconfig"]
 	path = conf/kconfig
 	url = https://github.com/AndreaRigoni/autoconf-kconfig.git
-[submodule "fpga/lib/PoC"]
-	path = fpga/lib/PoC
-	url = https://github.com/VLSI-EDA/PoC.git
 [submodule "conf/autoconf-archive"]
 	path = conf/autoconf-archive
 	url = https://github.com/andrearigoni/autoconf-archive.git

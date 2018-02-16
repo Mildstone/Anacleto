@@ -198,10 +198,12 @@ $(ENVTOOLS_CFG): $(UBOOT_DIR)
 # Yocto download
 ################################################################################
 
+NODOCKERBUILD = yocto%
+
 YOCTO_DIR ?= yocto
 
 yocto: ##@yocto download and prepare yocto poky build environment
-yocto: $(YOCTO_DIR)
+# yocto: $(YOCTO_DIR)
 
 $(YOCTO_DIR):
 	@ echo "Download Yocto sources"; \
@@ -223,6 +225,36 @@ if WITH_YOCTO_TAR
 	  fi
 endif
 endif
+
+
+YOCTO_BUILD = $(YOCTO_DIR)/build
+YOCTO_PYBIN_PATH = $(YOCTO_BUILD)/python-bin
+
+$(YOCTO_PYBIN_PATH):
+	@ $(MKDIR_P) $@
+
+$(YOCTO_PYBIN_PATH)/python: |$(YOCTO_PYBIN_PATH)
+	@ $(LN_S) /usr/bin/python2 $@
+
+$(YOCTO_PYBIN_PATH)/python-config: |$(YOCTO_PYBIN_PATH)
+	@ $(LN_S) /usr/bin/python2-config $@
+
+YOCTO_PY2_LINKS =  \
+   $(YOCTO_PYBIN_PATH)/python \
+   $(YOCTO_PYBIN_PATH)/python-config
+
+
+yocto-py2-link: ##@yocto build links for python2
+yocto-py2-link: $(YOCTO_DIR) $(YOCTO_PY2_LINKS)
+
+
+yocto-shell: ##@yocto enter oe-init-build-env
+yocto-shell: PATH := $(abs_top_builddir)/$(YOCTO_PYBIN_PATH):$(PATH)
+yocto-shell: PS1  := \\u@\h:yocto \\W]\\$$
+yocto-shell: yocto-py2-link
+	@ cd $(YOCTO_DIR); source ./oe-init-build-env; \
+	  bash -l
+
 
 ################################################################################
 # Yocto meta-xilinx download

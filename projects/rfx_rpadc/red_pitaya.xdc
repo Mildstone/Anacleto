@@ -5,14 +5,6 @@ set_property IOSTANDARD LVCMOS33 [get_ports led_o]
 set_property SLEW FAST [get_ports led_o]
 set_property DRIVE 4 [get_ports led_o]
 
-# set_property IOSTANDARD LVCMOS33 [get_ports {pwm_out[0]}]
-# set_property SLEW FAST [get_ports {pwm_out[0]}]
-# set_property DRIVE 4 [get_ports {pwm_out[0]}]
-# set_property IOSTANDARD LVCMOS33 [get_ports {pwm_n_out[0]}]
-# set_property SLEW FAST [get_ports {pwm_n_out[0]}]
-# set_property DRIVE 4 [get_ports {pwm_n_out[0]}]
-
-
 ### LED PINS
 set_property PACKAGE_PIN F16 [get_ports led_o]
 set_property PULLDOWN true [get_ports led_o]
@@ -23,8 +15,6 @@ set_property PULLDOWN true [get_ports led_o]
 # set_property PACKAGE_PIN G14     [get_ports {led_o[5]}]
 # set_property PACKAGE_PIN J15     [get_ports {led_o[6]}]
 # set_property PACKAGE_PIN J14     [get_ports {led_o[7]}]
-
-
 
 ### ADC
 
@@ -66,9 +56,9 @@ set_property PACKAGE_PIN Y19 [get_ports {adc_dat_b[11]}]
 set_property PACKAGE_PIN W18 [get_ports {adc_dat_b[12]}]
 set_property PACKAGE_PIN Y18 [get_ports {adc_dat_b[13]}]
 
-set_input_delay -clock [get_clocks clk_fpga_0] -min -add_delay 4.000 [get_ports {adc_dat_a[*]}]
-set_input_delay -clock [get_clocks clk_fpga_0] -max -add_delay 4.000 [get_ports {adc_dat_a[*]}]
-set_input_delay -clock [get_clocks clk_fpga_0] -min -add_delay 4.000 [get_ports {adc_dat_b[*]}]
-set_input_delay -clock [get_clocks clk_fpga_0] -max -add_delay 4.000 [get_ports {adc_dat_b[*]}]
+# set_input_delay -clock [get_clocks clk_fpga_0] -min -add_delay 4.000 [get_ports {adc_dat_a[*]}]
+# set_input_delay -clock [get_clocks clk_fpga_0] -max -add_delay 4.000 [get_ports {adc_dat_a[*]}]
+# set_input_delay -clock [get_clocks clk_fpga_0] -min -add_delay 4.000 [get_ports {adc_dat_b[*]}]
+# set_input_delay -clock [get_clocks clk_fpga_0] -max -add_delay 4.000 [get_ports {adc_dat_b[*]}]
 
 

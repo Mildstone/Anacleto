@@ -41,8 +41,7 @@ NAME ?= \$(or \$(strip \$(foreach x,\$(project_LISTS),\\\\
 			  \$(lastword \$(value \$(lastword \$(project_LISTS)))),\\\\
 			  \$(project_DEFAULT))
 
-
-_flt = \$(strip \$(subst ' ',_,\$(subst .,_,\$[]1)))
+_flt = \$(strip \$(subst ' ',_,\$(subst .,_,\$(subst -,_,\$[]1))))
 _ven = \$(or \${VENDOR},\\\\
 			\${\$(call _flt,\$[]1)_VENDOR})
 _ver = \$(or \$(filter-out \${PACKAGE_VERSION},\${VERSION}),\\\\
@@ -53,14 +52,15 @@ _ver = \$(or \$(filter-out \${PACKAGE_VERSION},\${VERSION}),\\\\
 			  \$(SED) -n 's/.*_\\\\([[0-9\\\\.]]\\\\{1,\\\\}\\\\)/\\\\1/p'),\\\\
 			\${VERSION})
 _nam = \$(subst \$(call _ven,\$[]1)_,,\$(subst _\$(call _ver,\$[]1),,\$[]1))
-_var = \$(or \$(\$(call _flt,\$(VENDOR)_\$(NAME)_\$(VERSION)_\$[]1)),\\\\
-			 \$(\$(call _flt,\$(NAME)_\$(VERSION)_\$[]1)),\\\\
-			 \$(\$(call _flt,\$(VENDOR)_\$(NAME)_\$[]1)),\\\\
-			 \$(\$(call _flt,\$(NAME)_\$[]1)),\\\\
+_var = \$(or \$(\$(call _flt,\$(VENDOR)_\$(_FNAME)_\$(VERSION)_\$[]1)),\\\\
+			 \$(\$(call _flt,\$(_FNAME)_\$(VERSION)_\$[]1)),\\\\
+			 \$(\$(call _flt,\$(VENDOR)_\$(_FNAME)_\$[]1)),\\\\
+			 \$(\$(call _flt,\$(_FNAME)_\$[]1)),\\\\
 			 \$(\$(call _flt,\$[]1)))
 
-\$(eval override VERSION =\$(strip \$(call _ver,\$(NAME))))
-\$(eval override VENDOR  =\$(strip \$(call _ven,\$(NAME))))
+\$(eval override _FNAME    =\$(strip \$(call _nam,\$(call _flt,\$(NAME)))))
+\$(eval override VERSION =\$(strip \$(call _ver,\$(_FNAME))))
+\$(eval override VENDOR  =\$(strip \$(call _ven,\$(_FNAME))))
 \$(eval override NAME    =\$(strip \$(call _nam,\$(NAME))))
 \$(foreach x,\$(project_VARIABLES),\$(eval override \$x:=\$(call _var,\$x)))
 
