@@ -14,33 +14,33 @@ menu LINUX_BUILD
 
   choice LINUX_DLMETHOD
 	prompt "Linux sources download method"
-	config WITH_LINUX_TAR
+	config LINUX_DLMETHOD_TAR
 	 bool "tar archive"
-	config WITH_LINUX_GIT
+	config LINUX_DLMETHOD_GIT
 	 bool "git repository"
   endchoice
 
-  config LINUX_GIT
-	string  "Linux git repository"
-	depends on WITH_LINUX_GIT
-	default "https://github.com/Xilinx/linux-xlnx.git"
+  config LINUX_URL
+	string  "Linux url repository"
+	default "https://github.com/Xilinx/linux-xlnx.git" if LINUX_DLMETHOD_GIT
+	default "https://github.com/Xilinx/linux-xlnx/archive/xilinx-v2016.1.tar.gz" if LINUX_DLMETHOD_TAR
 
-  config LINUX_TAR
-	string  "Linux tar repository"
-	depends on WITH_LINUX_TAR
-	default "https://github.com/Xilinx/linux-xlnx/archive/xilinx-v2016.1.tar.gz"
+  config LINUX_GIT_BRANCH
+	string  "Linux git branch"
+	depends on LINUX_DLMETHOD_GIT
+	default "master"
 
   choice LINUX_PACKAGE
 	prompt  "Linux image type"
-	config LINUX_UIMAGE
+	config LINUX_PACKAGE_UIMAGE
 	 bool "uImage"
-	config LINUX_ZIMAGE
+	config LINUX_PACKAGE_ZIMAGE
 	 bool "zImage"
   endchoice
 
   config LINUX_UIMAGE_LOADADDR
 	string  "Linux uImage load address defined in u-boot"
-	depends on LINUX_UIMAGE
+	depends on LINUX_PACKAGE_UIMAGE
 	default "0x8000"
 
   config LINUX_DEF_CONFIG
@@ -49,7 +49,7 @@ menu LINUX_BUILD
 #	default "${srcdir}/conf/linux/${KERNELVERSION}/red_pitaya.def" if WITH_SOC_RED_PITAYA
 #	default "${srcdir}/conf/linux/${KERNELVERSION}/parallella.def" if WITH_SOC_PARALLELLA
 
-  config MAKE_PROCESS
+  config LINUX_MAKE_PROCESS
       int "Number of parallel process (aka -j option)"
       range 1 16
       default 8

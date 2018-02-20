@@ -19,111 +19,16 @@
 # ////////////////////////////////////////////////////////////////////////// //
 
 include Common.mk
+include $(top_srcdir)/conf/kscripts/linux.mk
+
+SUBDIRS = conf/kconfig
 
 AM_MAKEFLAGS = -j$(MAKE_PROCESS)
 ACLOCAL_AMFLAGS = -I conf/m4
 
 all: ##@all download and build the selected toolchain and the linux image
-all: $(top_builddir)/toolchain $(LINUX_IMAGE)
+all: toolchain $(LINUX_IMAGE)
 
-
-################################################################################
-# Linux build
-################################################################################
-
-# TODO: move this to configure step
-# TODO: identify file type
-$(LINUX_SRCDIR):
-	@ echo "Download linux sources"; \
-	  mkdir -p $@;
-if WITH_LINUX_GIT
-	@ echo "git clone ${LINUX_GIT} $@"; \
-	  git clone ${LINUX_GIT} $@;
-else
-if WITH_LINUX_TAR
-	@ \
-	  mkdir -p ${DL} $@; \
-	  echo " getting linux from tar:  ${LINUX_TAR}"; \
-	  _tar=${DL}/$$(echo $(LINUX_TAR) | sed -e 's|.*/||'); \
-	  test -f $$_tar || curl -SL $(LINUX_TAR) > $$_tar; \
-	  _wcl=$$(tar -tzf $$_tar | sed -e 's|/.*||' | uniq | wc -l); \
-	  if test $$_wcl = 1; then \
-	  tar -xzf $$_tar -C $@ --strip 1; \
-	  else \
-	  tar -xzf $$_tar -C $@; \
-	  fi
-endif
-endif
-
-if LINUX_DIR_IN_SRCTREE
-$(LINUX_BUILDDIR):
-	mkdir -p $@;
-endif
-
-
-.PHONY: linux-init linux-init-s
-linux-init-s: $(LINUX_SRCDIR) $(LINUX_BUILDDIR) print-env
-	$(_set_export); \
-	cd $(LINUX_BUILDDIR); \
-	export LS=$$(ls); \
-	export KERNELVERSION=$$($(MAKE) -s -C $< kernelversion); \
-	export DEFCONFIG=${abs_top_srcdir}/conf/linux/$${KERNELVERSION}/${BOARD}.def; \
-	export SRCARCH=${ARCH}; \
-	export srctree=$(LINUX_SRCDIR); \
-	$(LINUX_BUILDDIR)/scripts/kconfig/conf --defconfig=$${DEFCONFIG} Kconfig
-
-linux-init: ##@linux initialize linux sources applying the soc defconfig
-	$(MAKE) -s linux-init-s
-
-linux-:     ##@linux_target use: "make linux-<target>" to build target in linux directory
-linux-help: ##@linux_target get linux build help
-linux-menuconfig: ##@linux_target enter menuconfig inside linux sources
-linux-nconfig: ##@linux_target enter ncurses config inside linux sources
-linux-xconfig: ##@linux_target enter xlib config inside linux sources
-linux-gconfig: ##@linux_target enter gnome config inside linux sources
-linux-savedefconfig: ##@linux_target save default configuration in linux builddir defconfig file
-linux-kernelversion: ##@linux_target display the current kernel version
-linux-kernelrelease: ##@linux_target display the current kernel release
-
-.PHONY: linux-%
-linux-nconfig linux-menuconfig linux-xconfig linux-gconfig: \
- $(LINUX_SRCDIR) $(LINUX_BUILDDIR) $(LINUX_BUILDDIR)/.config
-	$(_set_export); \
-	_target=$@; \
-	$(MAKE) -C $< O=$$O $${_target//linux-/}
-
-
-linux-updateconfig: ##@linux update the soc defconf in /conf/linux/...
-linux-updateconfig: $(LINUX_SRCDIR) $(LINUX_BUILDDIR) $(LINUX_BUILDDIR)/.config
-	$(_set_export); \
-	KERNELVERSION=$$($(MAKE) -s -C $< kernelversion); \
-	DEFCONFIG=${abs_top_srcdir}/conf/linux/$${KERNELVERSION}/${BOARD}.def; \
-	$(MAKE) linux-savedefconfig && cp $(LINUX_BUILDDIR)/defconfig $${DEFCONFIG}
-
-linux-%: $(LINUX_SRCDIR) $(LINUX_BUILDDIR)
-	$(_set_export); \
-	_target=$@; \
-	$(MAKE) $(AM_MAKEFLAGS) -C $< O=$$O CFLAGS="$(LINUX_CFLAGS)" $${_target//linux-/}
-
-$(LINUX_BUILDDIR)/.config: $(LINUX_SRCDIR) $(LINUX_BUILDDIR)
-	$(_set_export); \
-	$(MAKE) $(AM_MAKEFLAGS) -C $< mrproper; \
-	$(MAKE) -s $(AM_MAKEFLAGS) -C $< O=$$O CFLAGS="$(LINUX_CFLAGS)" defconfig; \
-	$(MAKE) -s linux-init;
-
-$(LINUX_IMAGE): $(LINUX_SRCDIR) $(LINUX_BUILDDIR) $(LINUX_BUILDDIR)/.config
-	$(_set_export); \
-	$(MAKE) $(AM_MAKEFLAGS) -C $< O=$$O CFLAGS="$(LINUX_CFLAGS)" \
-		UIMAGE_LOADADDR=$(LINUX_UIMAGE_LOADADDR) $(LINUX_PACKAGE); \
-	$(MAKE) $(AM_MAKEFLAGS) -C $< O=$$O CFLAGS="$(LINUX_CFLAGS)" modules; \
-	mkdir -p $(TMP)/lib/modules; \
-	$(MAKE) $(AM_MAKEFLAGS) -C $< O=$$O CFLAGS="$(LINUX_CFLAGS)" \
-		INSTALL_MOD_PATH=$(TMP) modules_install; \
-	cp $(LINUX_BUILDDIR)/arch/arm/boot/uImage $@
-
-.PHONY: linux
-linux: ##@linux build linux image
-linux: $(LINUX_IMAGE)
 
 ## /////////////////////////////////////////////////////////////////////////////
 ## // DUMPS  ///////////////////////////////////////////////////////////////////
@@ -194,66 +99,6 @@ $(ENVTOOLS_CFG): $(UBOOT_DIR)
 
 
 
-################################################################################
-# Yocto download
-################################################################################
-
-NODOCKERBUILD += yocto%
-
-YOCTO_DIR ?= yocto
-
-yocto: ##@yocto download and prepare yocto poky build environment
-# yocto: $(YOCTO_DIR)
-
-$(YOCTO_DIR):
-	@ echo "Download Yocto sources"; \
-	  mkdir -p $@;
-if WITH_YOCTO_GIT
-	@ echo "git clone -b ${YOCTO_VERSION} ${YOCTO_GIT} $@"; \
-	  git clone -b ${YOCTO_VERSION} ${YOCTO_GIT} $@;
-else
-if WITH_YOCTO_TAR
-	@ \
-	  echo " getting Yocto from tar:  ${YOCTO_TAR}"; \
-	  _tar=${DL}/$$(echo $(YOCTO_TAR) | sed -e 's|.*/||'); \
-	  test -f $$_tar || curl -SL $(YOCTO_TAR) > $$_tar; \
-	  _wcl=$$(tar -tjf $$_tar | sed -e 's|/.*||' | uniq | wc -l); \
-	  if test $$_wcl = 1; then \
-	  tar -xjf $$_tar -C $@ --strip 1; \
-	  else \
-	  tar -xjf $$_tar -C $@; \
-	  fi
-endif
-endif
-
-
-YOCTO_BUILD = $(YOCTO_DIR)/build
-YOCTO_PYBIN_PATH = $(YOCTO_BUILD)/python-bin
-
-$(YOCTO_PYBIN_PATH):
-	@ $(MKDIR_P) $@
-
-$(YOCTO_PYBIN_PATH)/python: |$(YOCTO_PYBIN_PATH)
-	@ $(LN_S) /usr/bin/python2 $@
-
-$(YOCTO_PYBIN_PATH)/python-config: |$(YOCTO_PYBIN_PATH)
-	@ $(LN_S) /usr/bin/python2-config $@
-
-YOCTO_PY2_LINKS =  \
-   $(YOCTO_PYBIN_PATH)/python \
-   $(YOCTO_PYBIN_PATH)/python-config
-
-
-yocto-py2-link: ##@yocto build links for python2
-yocto-py2-link: $(YOCTO_DIR) $(YOCTO_PY2_LINKS)
-
-
-yocto-shell: ##@yocto enter oe-init-build-env
-yocto-shell: PATH := $(abs_top_builddir)/$(YOCTO_PYBIN_PATH):$(PATH)
-yocto-shell: PS1  := \\u@\h:yocto \\W]\\$$
-yocto-shell: yocto-py2-link
-	@ cd $(YOCTO_DIR); source ./oe-init-build-env; \
-	  bash -l
 
 
 ################################################################################

@@ -141,6 +141,9 @@ AC_SUBST([EXT_MODULES])
 ## YOCTO ##
 m4_sinclude(conf/kscripts/yocto.ac)
 
+## LINUX ##
+m4_sinclude(conf/kscripts/linux.ac)
+
 
 # COMPILER OPTIONS
 AX_KCONFIG_VAR([LINUX_CFLAGS])
@@ -183,40 +186,6 @@ AC_SUBST([DEVICE_PASSWD])
 AC_SUBST([DEVICE_SSHKEY])
 
 
-# //////////////////////////////////////////////////////////////////////////// #
-# //  LINUX  ///////////////////////////////////////////////////////////////// #
-# //////////////////////////////////////////////////////////////////////////// #
-
-AX_KCONFIG_VAR([LINUX_DIR])
-AC_SUBST([LINUX_DIR])
-AX_GITIGNORE_ADD([/${LINUX_DIR}])
-
-AS_IF([test x"${srcdir}" = x$(pwd) ],
-	  AS_VAR_SET([CONFIG_LINUX_DIR_IN_SRCTREE],[y]))
-AX_KCONFIG_CONDITIONAL([LINUX_DIR_IN_SRCTREE])
-
-AX_KCONFIG_CONDITIONAL([WITH_LINUX_GIT])
-AX_KCONFIG_CONDITIONAL([WITH_LINUX_TAR])
-
-AX_KCONFIG_VAR([LINUX_GIT])
-AC_SUBST([LINUX_GIT])
-AX_KCONFIG_VAR([LINUX_TAR])
-AC_SUBST([LINUX_TAR])
-
-AX_KCONFIG_CONDITIONAL([LINUX_UIMAGE])
-AX_KCONFIG_CONDITIONAL([LINUX_ZIMAGE])
-AS_VAR_IF([LINUX_UIMAGE],[yes], AS_VAR_SET([LINUX_PACKAGE],[uImage]))
-AS_VAR_IF([LINUX_ZIMAGE],[yes], AS_VAR_SET([LINUX_PACKAGE],[zImage]))
-AC_SUBST([LINUX_PACKAGE])
-
-AX_KCONFIG_VAR([LINUX_UIMAGE_LOADADDR])
-AC_SUBST([LINUX_UIMAGE_LOADADDR])
-AX_KCONFIG_VAR([LINUX_DEF_CONFIG])
-AC_SUBST([LINUX_DEF_CONFIG])
-
-dnl AS_VAR_IF([WITH_LINUX_TAR],[yes],
-dnl	  [AS_ECHO("---- DOWNLOAD LINUX ----")
-dnl	   AX_DOWNLOAD_TAR(${LINUX_TAR},${LINUX_DIR},[tmp])])
 
 # //////////////////////////////////////////////////////////////////////////// #
 # //  YOCTO  ///////////////////////////////////////////////////////////////// #

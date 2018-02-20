@@ -36,6 +36,8 @@ print_banner:
 ## // DIRECTORIES //////////////////////////////////////////////////////////////
 ## /////////////////////////////////////////////////////////////////////////////
 
+kscripts = $(top_srcdir)/conf/kscripts
+
 DL   ?= $(DOWNLOAD_DIR)
 TMP  ?= $(abs_top_builddir)
 
@@ -87,7 +89,7 @@ LINUX_DIR       ?= linux
 if LINUX_DIR_IN_SRCTREE
  LINUX_SRCDIR    = $(abs_top_srcdir)/$(LINUX_DIR)
  LINUX_BUILDDIR  = $(abs_top_builddir)/$(LINUX_DIR)
- LINUX_BUILD_O   = $(LINUX_BUILDDIR)
+ LINUX_BUILD_O   = $(filter-out $(LINUX_SRCDIR),$(LINUX_BUILDDIR))
 else
  LINUX_SRCDIR    = $(abs_top_builddir)/$(LINUX_DIR)
  LINUX_BUILDDIR  = $(abs_top_builddir)/$(LINUX_DIR)
@@ -97,6 +99,7 @@ ARCH                     = arm
 WITH_TOOLCHAIN_DIR      ?= ${abs_top_builddir}/toolchain
 TOOLCHAIN_PATH          ?= ${WITH_TOOLCHAIN_DIR}/bin
 CROSS_COMPILE           ?= arm-linux-gnueabihf-
+
 
 
 define _set_export

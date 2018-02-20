@@ -1,0 +1,40 @@
+# //////////////////////////////////////////////////////////////////////////// #
+# //  LINUX  ///////////////////////////////////////////////////////////////// #
+# //////////////////////////////////////////////////////////////////////////// #
+
+AX_KCONFIG_VAR([LINUX_DIR])
+AC_SUBST([LINUX_DIR])
+AX_GITIGNORE_ADD([/${LINUX_DIR}])
+
+AX_KCONFIG_CHOICE([LINUX_DLMETHOD],
+		  [LINUX_DLMETHOD_TAR],["tar"],
+		  [LINUX_DLMETHOD_GIT],["git"])
+AM_CONDITIONAL([LINUX_DLMETHOD_TAR],[ test x${LINUX_DLMETHOD_TAR} = xyes ])
+AM_CONDITIONAL([LINUX_DLMETHOD_GIT],[ test x${LINUX_DLMETHOD_GIT} = xyes ])
+
+AS_IF([test x"${srcdir}" = x$(pwd)],AS_VAR_SET([LINUX_DIR_IN_SRCTREE],[yes]))
+AX_KCONFIG_VAR_ENABLE([LINUX_DIR_IN_SRCTREE],[download linux sources in srcdir])
+AM_CONDITIONAL([LINUX_DIR_IN_SRCTREE],[test x${LINUX_DIR_IN_SRCTREE} = xyes])
+
+AX_KCONFIG_VAR_WITH([LINUX_URL])
+AC_SUBST([LINUX_URL])
+
+AX_KCONFIG_VAR_WITH([LINUX_GIT_BRANCH])
+AC_SUBST([LINUX_GIT_BRANCH])
+
+AX_KCONFIG_WITH_CHOICE([LINUX_PACKAGE],[linux image package format],
+		  [LINUX_PACKAGE_UIMAGE],["uImage"],
+		  [LINUX_PACKAGE_ZIMAGE],["zImage"])
+AC_SUBST([LINUX_PACKAGE])
+
+AX_KCONFIG_VAR_WITH([LINUX_UIMAGE_LOADADDR],[linux uImage loaddir])
+AC_SUBST([LINUX_UIMAGE_LOADADDR])
+
+AX_KCONFIG_VAR_WITH([LINUX_DEF_CONFIG],[linux config file])
+AC_SUBST([LINUX_DEF_CONFIG])
+
+AX_KCONFIG_VAR_WITH([LINUX_MAKE_PROCESS],["set with LINUX_MAKE_PROCESS"])
+AC_SUBST([LINUX_MAKE_PROCESS])
+
+AX_KCONFIG_VAR_WITH([LINUX_CFLAGS],["set with LINUX_CFLAGS"])
+AC_SUBST([LINUX_CFLAGS])
