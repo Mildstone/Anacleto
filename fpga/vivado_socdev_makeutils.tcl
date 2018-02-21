@@ -553,6 +553,11 @@ proc make_write_bitstream {} {
 
   make_open_project
 
+  set bd_files [ls_all_block_designs]
+  foreach bd $bd_files {
+	generate_target all [get_files $bd]
+  }
+
   # set name of run
   set synth $v::pe(synth_name)
   set impl  $v::pe(impl_name)

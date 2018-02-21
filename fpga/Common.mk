@@ -271,7 +271,7 @@ edit_ip: $(check_sources)
 
 bitstream: $(FPGA_BIT)
 
-$(FPGA_BIT): $(check_prj_sources) $(check_sources)
+$(FPGA_BIT): $(check_prj_sources) $(check_ip_componenents) $(check_sources)
 	$(MAKE) write_bitstream
 
 
@@ -300,6 +300,9 @@ dtb: ##@hsi compile device tree binary
 $(VIVADO_SDKDIR)/dts/$(SYSTEM_DTS):  $(FPGA_BIT)
 	@ $(MAKE) -C $(top_builddir)/fpga xlnx-devicetree; \
 	  $(call hsi,write_devicetree)
+
+$(LINUX_IMAGE):
+	$(MAKE) $(AM_MAKEFLAGS) -C $(top_builddir) $@
 
 $(DTS): $(VIVADO_SDKDIR)/dts/$(SYSTEM_DTS) $(LINUX_IMAGE)
 	$(LINUX_BUILDDIR)/scripts/dtc/dtc -I dts -O dts -o $@ -i sdk/dts/ $<
