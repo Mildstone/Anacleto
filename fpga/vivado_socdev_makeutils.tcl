@@ -417,6 +417,22 @@ proc make_load_sources { } {
    }
   }
 
+  if {!($v::pe(IP_SOURCES) eq "")} {
+	set bd_files [ls_all_block_designs]
+	foreach bd $bd_files {
+	open_bd_design $bd
+	 foreach ip [split $v::pe(IP_SOURCES) " "] {
+	  set nlvn [get_ipdefs -name $ip]
+	  foreach ip_i [get_ips] {
+		if { $nlvn eq [get_property IPDEF $ip_i] } {
+		  puts "UPDATING IP: ip_i ($nlvn)"
+		  upgrade_ip $ip_i
+		}
+	  }
+	 }
+	}
+  }
+
 }
 
 proc load_sources { src_list type fset } {
@@ -428,7 +444,6 @@ proc load_sources { src_list type fset } {
 # current_fileset -simset [ get_filesets sim_2 ]
 # update_compile_order -fileset sim_2
 }
-
 
 proc make_exec_scripts { var } {
 
