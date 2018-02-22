@@ -85,8 +85,7 @@ AC_SUBST([DEVICETREE_BASEFILES_TAR])
 
 AX_CONFIG_FILES(
   Makefile
-dnl  /lib/red-pitaya-notes/Makefile
-dnl  tclapp/Makefile
+  lib/red-pitaya-notes/Makefile
 )
 
 ## /////////////////////////////////////
