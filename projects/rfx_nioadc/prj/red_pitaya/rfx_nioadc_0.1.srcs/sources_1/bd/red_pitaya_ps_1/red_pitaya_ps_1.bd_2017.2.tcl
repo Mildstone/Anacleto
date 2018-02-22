@@ -165,6 +165,55 @@ proc create_root_design { parentCell } {
   set FIXED_IO [ create_bd_intf_port -mode Master -vlnv xilinx.com:display_processing_system7:fixedio_rtl:1.0 FIXED_IO ]
 
   # Create ports
+  set adc_dat_a [ create_bd_port -dir I -from 13 -to 0 adc_dat_a ]
+  set adc_dat_b [ create_bd_port -dir I -from 13 -to 0 adc_dat_b ]
+  set led_o [ create_bd_port -dir O led_o ]
+
+  # Create instance: axi_fifo_mm_s_0, and set properties
+  set axi_fifo_mm_s_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_fifo_mm_s:4.1 axi_fifo_mm_s_0 ]
+  set_property -dict [ list \
+CONFIG.C_DATA_INTERFACE_TYPE {1} \
+CONFIG.C_RX_FIFO_DEPTH {2048} \
+CONFIG.C_RX_FIFO_PE_THRESHOLD {2} \
+CONFIG.C_RX_FIFO_PF_THRESHOLD {1024} \
+CONFIG.C_USE_TX_CTRL {0} \
+CONFIG.C_USE_TX_DATA {0} \
+ ] $axi_fifo_mm_s_0
+
+  # Create instance: axis_decimator_0, and set properties
+  set axis_decimator_0 [ create_bd_cell -type ip -vlnv pavel-demin:user:axis_decimator:1.0 axis_decimator_0 ]
+
+  set_property -dict [ list \
+CONFIG.TDATA_NUM_BYTES {4} \
+ ] [get_bd_intf_pins /axis_decimator_0/M_AXIS]
+
+  # Create instance: axis_packetizer_0, and set properties
+  set axis_packetizer_0 [ create_bd_cell -type ip -vlnv pavel-demin:user:axis_packetizer:1.0 axis_packetizer_0 ]
+  set_property -dict [ list \
+CONFIG.CONTINUOUS {TRUE} \
+ ] $axis_packetizer_0
+
+  set_property -dict [ list \
+CONFIG.TDATA_NUM_BYTES {4} \
+ ] [get_bd_intf_pins /axis_packetizer_0/M_AXIS]
+
+  # Create instance: axis_red_pitaya_adc_0, and set properties
+  set axis_red_pitaya_adc_0 [ create_bd_cell -type ip -vlnv pavel-demin:user:axis_red_pitaya_adc:2.0 axis_red_pitaya_adc_0 ]
+
+  set_property -dict [ list \
+CONFIG.TDATA_NUM_BYTES {4} \
+ ] [get_bd_intf_pins /axis_red_pitaya_adc_0/M_AXIS]
+
+  # Create instance: decimator_register, and set properties
+  set decimator_register [ create_bd_cell -type ip -vlnv pavel-demin:user:axi_cfg_register:1.0 decimator_register ]
+  set_property -dict [ list \
+CONFIG.CFG_DATA_WIDTH {32} \
+ ] $decimator_register
+
+  set_property -dict [ list \
+CONFIG.NUM_READ_OUTSTANDING {1} \
+CONFIG.NUM_WRITE_OUTSTANDING {1} \
+ ] [get_bd_intf_pins /decimator_register/S_AXI]
 
   # Create instance: red_pitaya_ps, and set properties
   set red_pitaya_ps [ create_bd_cell -type ip -vlnv xilinx.com:ip:processing_system7:5.5 red_pitaya_ps ]
@@ -482,6 +531,15 @@ CONFIG.PCW_USE_FABRIC_INTERRUPT {1} \
 CONFIG.PCW_USE_M_AXI_GP0 {1} \
  ] $red_pitaya_ps
 
+  # Create instance: red_pitaya_ps_axi_periph, and set properties
+  set red_pitaya_ps_axi_periph [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 red_pitaya_ps_axi_periph ]
+  set_property -dict [ list \
+CONFIG.NUM_MI {3} \
+ ] $red_pitaya_ps_axi_periph
+
+  # Create instance: rst_red_pitaya_ps_125M, and set properties
+  set rst_red_pitaya_ps_125M [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset:5.0 rst_red_pitaya_ps_125M ]
+
   # Create instance: trarec_0, and set properties
   set block_name trarec
   set block_cell_name trarec_0
@@ -497,14 +555,41 @@ CONFIG.PCW_USE_M_AXI_GP0 {1} \
 CONFIG.TDATA_NUM_BYTES {4} \
  ] [get_bd_intf_pins /trarec_0/m_axis]
 
+  # Create instance: xlconstant_0, and set properties
+  set xlconstant_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 xlconstant_0 ]
+  set_property -dict [ list \
+CONFIG.CONST_VAL {1} \
+CONFIG.CONST_WIDTH {32} \
+ ] $xlconstant_0
+
   # Create interface connections
+  connect_bd_intf_net -intf_net axis_decimator_0_M_AXIS [get_bd_intf_pins axis_decimator_0/M_AXIS] [get_bd_intf_pins trarec_0/s_axis]
+  connect_bd_intf_net -intf_net axis_packetizer_0_M_AXIS [get_bd_intf_pins axi_fifo_mm_s_0/AXI_STR_RXD] [get_bd_intf_pins axis_packetizer_0/M_AXIS]
+  connect_bd_intf_net -intf_net axis_red_pitaya_adc_0_M_AXIS [get_bd_intf_pins axis_decimator_0/S_AXIS] [get_bd_intf_pins axis_red_pitaya_adc_0/M_AXIS]
   connect_bd_intf_net -intf_net red_pitaya_ps_DDR [get_bd_intf_ports DDR] [get_bd_intf_pins red_pitaya_ps/DDR]
   connect_bd_intf_net -intf_net red_pitaya_ps_FIXED_IO [get_bd_intf_ports FIXED_IO] [get_bd_intf_pins red_pitaya_ps/FIXED_IO]
+  connect_bd_intf_net -intf_net red_pitaya_ps_M_AXI_GP0 [get_bd_intf_pins red_pitaya_ps/M_AXI_GP0] [get_bd_intf_pins red_pitaya_ps_axi_periph/S00_AXI]
+  connect_bd_intf_net -intf_net red_pitaya_ps_axi_periph_M00_AXI [get_bd_intf_pins decimator_register/S_AXI] [get_bd_intf_pins red_pitaya_ps_axi_periph/M00_AXI]
+  connect_bd_intf_net -intf_net red_pitaya_ps_axi_periph_M01_AXI [get_bd_intf_pins axi_fifo_mm_s_0/S_AXI] [get_bd_intf_pins red_pitaya_ps_axi_periph/M01_AXI]
+  connect_bd_intf_net -intf_net red_pitaya_ps_axi_periph_M02_AXI [get_bd_intf_pins axi_fifo_mm_s_0/S_AXI_FULL] [get_bd_intf_pins red_pitaya_ps_axi_periph/M02_AXI]
+  connect_bd_intf_net -intf_net trarec_0_m_axis [get_bd_intf_pins axis_packetizer_0/S_AXIS] [get_bd_intf_pins trarec_0/m_axis]
 
   # Create port connections
-  connect_bd_net -net red_pitaya_ps_FCLK_CLK0 [get_bd_pins red_pitaya_ps/FCLK_CLK0] [get_bd_pins red_pitaya_ps/M_AXI_GP0_ACLK] [get_bd_pins trarec_0/aclk]
+  connect_bd_net -net adc_dat_a_1 [get_bd_ports adc_dat_a] [get_bd_pins axis_red_pitaya_adc_0/adc_dat_a]
+  connect_bd_net -net adc_dat_b_1 [get_bd_ports adc_dat_b] [get_bd_pins axis_red_pitaya_adc_0/adc_dat_b]
+  connect_bd_net -net axi_cfg_register_0_cfg_data [get_bd_pins axis_decimator_0/cfg_data] [get_bd_pins decimator_register/cfg_data]
+  connect_bd_net -net axi_fifo_mm_s_0_interrupt [get_bd_pins axi_fifo_mm_s_0/interrupt] [get_bd_pins red_pitaya_ps/IRQ_F2P]
+  connect_bd_net -net red_pitaya_ps_FCLK_CLK0 [get_bd_pins axi_fifo_mm_s_0/s_axi_aclk] [get_bd_pins axis_decimator_0/aclk] [get_bd_pins axis_packetizer_0/aclk] [get_bd_pins axis_red_pitaya_adc_0/aclk] [get_bd_pins decimator_register/aclk] [get_bd_pins red_pitaya_ps/FCLK_CLK0] [get_bd_pins red_pitaya_ps/M_AXI_GP0_ACLK] [get_bd_pins red_pitaya_ps_axi_periph/ACLK] [get_bd_pins red_pitaya_ps_axi_periph/M00_ACLK] [get_bd_pins red_pitaya_ps_axi_periph/M01_ACLK] [get_bd_pins red_pitaya_ps_axi_periph/M02_ACLK] [get_bd_pins red_pitaya_ps_axi_periph/S00_ACLK] [get_bd_pins rst_red_pitaya_ps_125M/slowest_sync_clk] [get_bd_pins trarec_0/aclk]
+  connect_bd_net -net red_pitaya_ps_FCLK_RESET0_N [get_bd_pins red_pitaya_ps/FCLK_RESET0_N] [get_bd_pins rst_red_pitaya_ps_125M/ext_reset_in]
+  connect_bd_net -net rst_red_pitaya_ps_125M_interconnect_aresetn [get_bd_pins red_pitaya_ps_axi_periph/ARESETN] [get_bd_pins rst_red_pitaya_ps_125M/interconnect_aresetn]
+  connect_bd_net -net rst_red_pitaya_ps_125M_peripheral_aresetn [get_bd_pins axi_fifo_mm_s_0/s_axi_aresetn] [get_bd_pins axis_decimator_0/aresetn] [get_bd_pins axis_packetizer_0/aresetn] [get_bd_pins decimator_register/aresetn] [get_bd_pins red_pitaya_ps_axi_periph/M00_ARESETN] [get_bd_pins red_pitaya_ps_axi_periph/M01_ARESETN] [get_bd_pins red_pitaya_ps_axi_periph/M02_ARESETN] [get_bd_pins red_pitaya_ps_axi_periph/S00_ARESETN] [get_bd_pins rst_red_pitaya_ps_125M/peripheral_aresetn] [get_bd_pins trarec_0/aresetn]
+  connect_bd_net -net trarec_0_led_o [get_bd_ports led_o] [get_bd_pins trarec_0/led_o]
+  connect_bd_net -net xlconstant_0_dout [get_bd_pins axis_packetizer_0/cfg_data] [get_bd_pins xlconstant_0/dout]
 
   # Create address segments
+  create_bd_addr_seg -range 0x00010000 -offset 0x43C00000 [get_bd_addr_spaces red_pitaya_ps/Data] [get_bd_addr_segs axi_fifo_mm_s_0/S_AXI/Mem0] SEG_axi_fifo_mm_s_0_Mem0
+  create_bd_addr_seg -range 0x00010000 -offset 0x43C10000 [get_bd_addr_spaces red_pitaya_ps/Data] [get_bd_addr_segs axi_fifo_mm_s_0/S_AXI_FULL/Mem1] SEG_axi_fifo_mm_s_0_Mem1
+  create_bd_addr_seg -range 0x00010000 -offset 0x60000000 [get_bd_addr_spaces red_pitaya_ps/Data] [get_bd_addr_segs decimator_register/s_axi/reg0] SEG_decimator_register_reg0
 
 
   # Restore current instance
