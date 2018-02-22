@@ -1,7 +1,6 @@
-# Anacleto
+![](./anacleto.svg)
 
-
-
+#  Anacleto
 A basic project automation to build logic and embedded software tools in soc devices.
 
 build:
