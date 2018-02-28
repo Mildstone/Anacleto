@@ -1,0 +1,1 @@
+../kconfig/m4/ax_config_subdirs.m4
