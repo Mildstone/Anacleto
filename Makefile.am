@@ -35,6 +35,10 @@ clean-local:
 MOSTLYCLEANFILES =
 
 
+hello.log: ##@log write hello.log file
+hello.log:
+	@ echo "hello bootstrap" > $@
+
 
 print-hello: EXAMPLE_STRING_VAR = not set
 print-hello:
