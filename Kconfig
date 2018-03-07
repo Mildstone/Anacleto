@@ -130,8 +130,12 @@ if ENABLE_EXTSRC
   # //  LLVM  //
   source conf/kscripts/ext_llvm.kconfig
 
-  # //  LLVM  //
+  # //  CCSTICKERS  //
   source conf/kscripts/ext_ccStickers.kconfig
+
+  # //  NODEJS_NODE  //
+  source conf/kscripts/ext_nodejs_node.kconfig
+
 
 endif # ENABLE_EXTSRC
 

@@ -26,7 +26,8 @@ n1_DEPS = menu
 
 REACT_MODULES = r1 r2
 
-r1_DEPS = rc-menu react-grid-layout create-react-class webpack node-json-rpc
+r1_DEPS = rc-menu react-grid-layout create-react-class webpack node-json-rpc \
+		  mini-signals
 r2_DEPS = r1
 
 clean: clean-deps
@@ -34,3 +35,8 @@ clean: clean-deps
 
 
 
+bin_PROGRAMS  = extn1
+extn1_SOURCES = extn1.cpp
+extn1_CPPFLAGS = -std=c++11 -I$(top_builddir)/ext/nodejs-node/src \
+				 -I$(top_builddir)/ext/nodejs-node/deps/v8/include
+extn1_LDFLAGS = -L$(top_builddir)/ext/nodejs-node -lnode

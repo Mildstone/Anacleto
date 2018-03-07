@@ -34,3 +34,8 @@ clean-local:
 
 MOSTLYCLEANFILES =
 
+
+
+print-hello: EXAMPLE_STRING_VAR = not set
+print-hello:
+	@ echo "this is the var: $(EXAMPLE_STRING_VAR)"

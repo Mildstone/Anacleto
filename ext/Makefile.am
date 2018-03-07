@@ -2,6 +2,7 @@ include $(top_srcdir)/Common.mk
 # include $(top_srcdir)/conf/kscripts/ext_ccStickers.mk
 # include $(top_srcdir)/conf/kscripts/ext_libjit.mk
 # include $(top_srcdir)/conf/kscripts/ext_llvm.mk
+# include $(top_srcdir)/conf/kscripts/ext_nodejs_node.mk
 
 define _ext_bootstrap
 $(eval
@@ -10,10 +11,17 @@ $1/configure: $1
 )
 endef
 
+define _ext_autogen_sh
+$(eval
+$1/configure: $1
+	@ cd $1; ./autogen.sh
+)
+endef
+
 define _ext_configure
 $(eval
-$1/config.log: $1/configure
-	@ cd $1; ./configure $($1_CFGARGS)
+$1/config.log: $1 $1/configure
+	@ cd $1; ./configure $($(subst -,_,$(subst ' ',_,$(subst .,_,$1)))_CONFIGURE_ARGS)
 $1/Makefile: $1/config.log
 	@ $(MAKE) $(AM_MAKEFLAGS) -C $1 Makefile
 )
@@ -45,7 +53,6 @@ list:
 
 
 
-
 # /////////////////////////////////////////////////////////////////////////// //
 # //  EXT MODULES  ////////////////////////////////////////////////////////// //
 # /////////////////////////////////////////////////////////////////////////// //
@@ -65,6 +72,9 @@ $(call _ext_configure,libjit)
 llvm:   ##@ext download llvm sources
 llvm_URL   = $(LLVM_URL)
 
-
-
+ext-nodejs-node: AM_MAKEFLAGS += -j$(MAKE_PROCESS)
+nodejs-node:
+nodejs_node_URL = $(NODEJS_NODE_URL)
+nodejs_node_CONFIGURE_ARGS = --shared
+$(call _ext_configure,nodejs-node)
 
