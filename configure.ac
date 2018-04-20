@@ -53,17 +53,7 @@ AX_TARGET_SELFHELP
 # //  DOCKER BUILD /////////////////////////////////////////////////////////// #
 # //////////////////////////////////////////////////////////////////////////// #
 
-AS_VAR_IF([CONFIG_ENABLE_DOCKER_BUILD],[y],[
-           AS_VAR_SET_IF([CONFIG_DOCKER_CONTAINER], 
-              [AS_VAR_SET([DOCKER_CONTAINER],[${CONFIG_DOCKER_CONTAINER}])] )
-           AS_VAR_SET_IF([CONFIG_DOCKER_IMAGE], 
-              [AS_VAR_SET([DOCKER_IMAGE],[${CONFIG_DOCKER_IMAGE}])] )
-           AS_VAR_SET_IF([CONFIG_DOCKER_URL], 
-              [AS_VAR_SET([DOCKER_URL],[${CONFIG_DOCKER_URL}])])
-          ])
-
-AX_KCONFIG_VAR([DOCKER_SHARES])
-AC_SUBST([DOCKER_SHARES])
+m4_sinclude(conf/kscripts/docker.ac)
 AX_DOCKER_BUILD
 
 # //////////////////////////////////////////////////////////////////////////// #
