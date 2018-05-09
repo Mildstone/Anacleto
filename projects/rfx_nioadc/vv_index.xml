@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<Index Version="1" Minor="0">
+	<Repository value="/home/mdsplus/devel/anacleto/projects/rfx_nioadc">
+	</Repository>
+	<IP>
+		<VLNV value="xilinx.com:module_ref:trarec:1.0">
+		</VLNV>
+		<DisplayName value="trarec_v1_0">
+		</DisplayName>
+		<Description value="xilinx.com:module_ref:trarec:1.0">
+		</Description>
+		<ManuallyDisabled value="true">
+		</ManuallyDisabled>
+		<CoreRevision value="1">
+		</CoreRevision>
+		<ComponentPath value="edit/red_pitaya/rfx_nioadc_0.1.srcs/sources_1/bd/mref/trarec/component.xml">
+		</ComponentPath>
+		<Families>
+			<Family name="zynq">
+				<Part status="Production" name="ALL">
+				</Part>
+			</Family>
+		</Families>
+		<Taxonomies>
+			<Taxonomy value="/UserIP">
+			</Taxonomy>
+		</Taxonomies>
+		<AutoFamilySupport value="Level_1">
+		</AutoFamilySupport>
+		<Interfaces>
+			<Interface value="AXI4-Stream">
+			</Interface>
+		</Interfaces>
+		<DesignToolContexts>
+			<DesignTool value="IPI">
+			</DesignTool>
+		</DesignToolContexts>
+	</IP>
+</Index>
+

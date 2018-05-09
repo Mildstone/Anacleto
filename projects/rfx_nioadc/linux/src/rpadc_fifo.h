@@ -22,7 +22,15 @@ extern "C" {
 #define RFX_RPADC_OVERFLOW  			_IO(RFX_RPADC_IOCTL_BASE, 4)
 #define RFX_RPADC_FIFO_INT_HALF_SIZE  		_IO(RFX_RPADC_IOCTL_BASE, 5)
 #define RFX_RPADC_FIFO_INT_FIRST_SAMPLE  	_IO(RFX_RPADC_IOCTL_BASE, 6)
-
+#define RFX_RPADC_GET_CONFIG  			_IO(RFX_RPADC_IOCTL_BASE, 7)
+#define RFX_RPADC_SET_CONFIG  			_IO(RFX_RPADC_IOCTL_BASE, 8)
+#define RFX_RPADC_ARM  				_IO(RFX_RPADC_IOCTL_BASE, 9)
+#define RFX_RPADC_TRIGGER  			_IO(RFX_RPADC_IOCTL_BASE, 10)
+#define RFX_RPADC_STOP  			_IO(RFX_RPADC_IOCTL_BASE, 11)
+#define RFX_RPADC_LAST_TIME  			_IO(RFX_RPADC_IOCTL_BASE, 12)
+#define RFX_RPADC_SET_BUFSIZE  			_IO(RFX_RPADC_IOCTL_BASE, 13)
+#define RFX_RPADC_GET_BUFSIZE  			_IO(RFX_RPADC_IOCTL_BASE, 14)
+    
 enum AxiStreamFifo_Register {
     ISR   = 0x00,   ///< Interrupt Status Register (ISR)
     IER   = 0x04,   ///< Interrupt Enable Register (IER)
@@ -62,7 +70,16 @@ enum AxiStreamFifo_ISREnum {
     ISR_RPURE = 1 << 31, ///< Receive Packet Underrun Read Error
 };
 
-
+enum RegisterIdx {
+    FIFO_00_IDX = 0,
+    FIFO_01_IDX = 1,
+    FIFO_10_IDX = 2,
+    FIFO11_IDX = 3,
+    COMMAND_REG_IDX = 4,
+    PRE_POST_REG_IDX = 5,
+    DEC_REG_IDX = 6,
+    MODE_REG_IDX = 8
+};
 
 
 #pragma pack(1)
@@ -83,6 +100,29 @@ struct rfx_rpadc {
 
 
 
+
+enum rpadc_mode {
+  STREAMING,
+  EVENT_STREAMING
+};
+
+
+struct rpadc_configuration
+{
+    enum rpadc_mode mode;   		//STREAMING or EVENT_STREAMING
+    unsigned short trig_threshold;		//Signal level for trigger
+    char trig_above_threshold;  //If true, trigger when above threshold, below threshold otherwise
+    char trig_from_chana;	//If true, the trigger is derived from channel A
+    unsigned char trig_samples;          //Number of samples above/below threshol for validating trigger
+    unsigned short pre_samples;		//Number of pre-trigger samples
+    unsigned short post_samples;         //Number of post-trigger samples
+    unsigned int decimation;		//Decimation factor (base frequency: 125MHz)
+};
+
+
+
+
+
 #ifndef __KERNEL__
 // api functions here //
 
@@ -92,6 +132,8 @@ struct rfx_rpadc {
 #include <sys/mman.h>
 #include <sys/types.h>
 
+
+/****** OLD STUFF
 struct rfx_rpadc_fifo *rpadc_get_device(const char *dev_file ) {
     static struct rfx_rpadc_fifo *dev = NULL;
     int fd;
@@ -121,7 +163,7 @@ int rpadc_release_device() {
     }
     return status;
 }
-
+*////////////////////////////////////
 
 #endif // __KERNEL__
 

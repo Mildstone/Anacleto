@@ -199,10 +199,18 @@ namespace upvar ::tclapp::socdev::makeutils core_env    core_env
  file mkdir "$project_env(dir_prj)/rfx_nioadc_0.1.srcs/sources_1/bd/red_pitaya_ps_1/hdl"
  file copy -force "$project_env(dir_src)/rfx_nioadc_0.1.srcs/sources_1/bd/red_pitaya_ps_1/hdl/red_pitaya_ps_1_wrapper.v" \
     "$project_env(dir_prj)/rfx_nioadc_0.1.srcs/sources_1/bd/red_pitaya_ps_1/hdl/red_pitaya_ps_1_wrapper.v"
+ file mkdir "$project_env(dir_prj)/rfx_nioadc_0.1.srcs/sources_1/new"
+ file copy -force "$project_env(dir_src)/rfx_nioadc_0.1.srcs/sources_1/new/circular_buffer.vhd" \
+    "$project_env(dir_prj)/rfx_nioadc_0.1.srcs/sources_1/new/circular_buffer.vhd"
+ file mkdir "$project_env(dir_prj)/rfx_nioadc_0.1.srcs/sim_1/new"
+ file copy -force "$project_env(dir_src)/rfx_nioadc_0.1.srcs/sim_1/new/trarec_tb1.vhd" \
+    "$project_env(dir_prj)/rfx_nioadc_0.1.srcs/sim_1/new/trarec_tb1.vhd"
  set files [list \
   "[file normalize $make_env(srcdir)/src/trarec.vhdl]"\
   "[file normalize $project_env(dir_prj)/rfx_nioadc_0.1.srcs/sources_1/bd/red_pitaya_ps_1/red_pitaya_ps_1.bd]"\
   "[file normalize $project_env(dir_prj)/rfx_nioadc_0.1.srcs/sources_1/bd/red_pitaya_ps_1/hdl/red_pitaya_ps_1_wrapper.v]"\
+  "[file normalize $project_env(dir_prj)/rfx_nioadc_0.1.srcs/sources_1/new/circular_buffer.vhd]"\
+  "[file normalize $project_env(dir_prj)/rfx_nioadc_0.1.srcs/sim_1/new/trarec_tb1.vhd]"\
  ]
  add_files -norecurse -fileset $obj $files
  # 
@@ -233,6 +241,7 @@ namespace upvar ::tclapp::socdev::makeutils core_env    core_env
   }
   set_property -quiet "library" "xil_defaultlib" $file_obj
   set_property -quiet "path_mode" "RelativeFirst" $file_obj
+  set_property -quiet "pfm_name" "" $file_obj
   if { ![get_property "is_locked" $file_obj] } {
     set_property -quiet "synth_checkpoint_mode" "None" $file_obj
   }
@@ -251,6 +260,30 @@ namespace upvar ::tclapp::socdev::makeutils core_env    core_env
   set_property -quiet "path_mode" "RelativeFirst" $file_obj
   set_property -quiet "used_in" "synthesis implementation simulation" $file_obj
   set_property -quiet "used_in_implementation" "1" $file_obj
+  set_property -quiet "used_in_simulation" "1" $file_obj
+  set_property -quiet "used_in_synthesis" "1" $file_obj
+ # 
+ # Properties for circular_buffer.vhd
+  set file "$project_env(dir_prj)/rfx_nioadc_0.1.srcs/sources_1/new/circular_buffer.vhd"
+  set file_obj [get_files -of_objects [get_filesets sources_1] [list "$file"]]
+  set_property -quiet "file_type" "VHDL" $file_obj
+  set_property -quiet "is_enabled" "0" $file_obj
+  set_property -quiet "is_global_include" "0" $file_obj
+  set_property -quiet "library" "xil_defaultlib" $file_obj
+  set_property -quiet "path_mode" "RelativeFirst" $file_obj
+  set_property -quiet "used_in" "synthesis simulation" $file_obj
+  set_property -quiet "used_in_simulation" "1" $file_obj
+  set_property -quiet "used_in_synthesis" "1" $file_obj
+ # 
+ # Properties for trarec_tb1.vhd
+  set file "$project_env(dir_prj)/rfx_nioadc_0.1.srcs/sim_1/new/trarec_tb1.vhd"
+  set file_obj [get_files -of_objects [get_filesets sources_1] [list "$file"]]
+  set_property -quiet "file_type" "VHDL" $file_obj
+  set_property -quiet "is_enabled" "1" $file_obj
+  set_property -quiet "is_global_include" "0" $file_obj
+  set_property -quiet "library" "xil_defaultlib" $file_obj
+  set_property -quiet "path_mode" "RelativeFirst" $file_obj
+  set_property -quiet "used_in" "synthesis simulation" $file_obj
   set_property -quiet "used_in_simulation" "1" $file_obj
   set_property -quiet "used_in_synthesis" "1" $file_obj
  # 
@@ -302,7 +335,61 @@ namespace upvar ::tclapp::socdev::makeutils core_env    core_env
  # 
  # Set 'sim_1' fileset object
  set obj [get_filesets sim_1]
- # Empty (no sources present)
-
+ file mkdir "$project_env(dir_prj)/rfx_nioadc_0.1.srcs/sim_1/bd/trarec_tb_block"
+ file copy -force "$project_env(dir_src)/rfx_nioadc_0.1.srcs/sim_1/bd/trarec_tb_block/trarec_tb_block.bd" \
+    "$project_env(dir_prj)/rfx_nioadc_0.1.srcs/sim_1/bd/trarec_tb_block/trarec_tb_block.bd"
+ file mkdir "$project_env(dir_prj)/rfx_nioadc_0.1.srcs/sim_1/bd/trarec_tb_block/hdl"
+ file copy -force "$project_env(dir_src)/rfx_nioadc_0.1.srcs/sim_1/bd/trarec_tb_block/hdl/trarec_tb_block_wrapper.v" \
+    "$project_env(dir_prj)/rfx_nioadc_0.1.srcs/sim_1/bd/trarec_tb_block/hdl/trarec_tb_block_wrapper.v"
+ set files [list \
+  "[file normalize $project_env(dir_prj)/rfx_nioadc_0.1.srcs/sim_1/bd/trarec_tb_block/trarec_tb_block.bd]"\
+  "[file normalize $project_env(dir_prj)/rfx_nioadc_0.1.srcs/sim_1/bd/trarec_tb_block/hdl/trarec_tb_block_wrapper.v]"\
+  "[file normalize $make_env(srcdir)/src/trarec_tb.vhdl]"\
+ ]
+ add_files -norecurse -fileset $obj $files
+ # 
+ # Properties for trarec_tb.vhdl
+  set file "$project_env(dir_src)/../../src/trarec_tb.vhdl"
+  set file [file normalize $file]
+  set file_obj [get_files -of_objects [get_filesets sim_1] [list "$file"]]
+  set_property -quiet "file_type" "VHDL" $file_obj
+  set_property -quiet "is_enabled" "0" $file_obj
+  set_property -quiet "is_global_include" "0" $file_obj
+  set_property -quiet "library" "xil_defaultlib" $file_obj
+  set_property -quiet "path_mode" "RelativeFirst" $file_obj
+  set_property -quiet "used_in" "synthesis simulation" $file_obj
+  set_property -quiet "used_in_simulation" "1" $file_obj
+  set_property -quiet "used_in_synthesis" "1" $file_obj
+ # 
+ # Properties for trarec_tb_block.bd
+  set file "$project_env(dir_prj)/rfx_nioadc_0.1.srcs/sim_1/bd/trarec_tb_block/trarec_tb_block.bd"
+  set file_obj [get_files -of_objects [get_filesets sim_1] [list "$file"]]
+  set_property -quiet "exclude_debug_logic" "0" $file_obj
+  set_property -quiet "is_enabled" "1" $file_obj
+  set_property -quiet "is_global_include" "0" $file_obj
+  if { ![get_property "is_locked" $file_obj] } {
+    set_property -quiet "is_locked" "0" $file_obj
+  }
+  set_property -quiet "library" "xil_defaultlib" $file_obj
+  set_property -quiet "path_mode" "RelativeFirst" $file_obj
+  set_property -quiet "pfm_name" "" $file_obj
+  set_property -quiet "used_in" "synthesis implementation simulation" $file_obj
+  set_property -quiet "used_in_implementation" "1" $file_obj
+  set_property -quiet "used_in_simulation" "1" $file_obj
+  set_property -quiet "used_in_synthesis" "1" $file_obj
+ # 
+ # Properties for trarec_tb_block_wrapper.v
+  set file "$project_env(dir_prj)/rfx_nioadc_0.1.srcs/sim_1/bd/trarec_tb_block/hdl/trarec_tb_block_wrapper.v"
+  set file_obj [get_files -of_objects [get_filesets sim_1] [list "$file"]]
+  set_property -quiet "file_type" "Verilog" $file_obj
+  set_property -quiet "is_enabled" "1" $file_obj
+  set_property -quiet "is_global_include" "0" $file_obj
+  set_property -quiet "library" "xil_defaultlib" $file_obj
+  set_property -quiet "path_mode" "RelativeFirst" $file_obj
+  set_property -quiet "used_in" "synthesis implementation simulation" $file_obj
+  set_property -quiet "used_in_implementation" "1" $file_obj
+  set_property -quiet "used_in_simulation" "1" $file_obj
+  set_property -quiet "used_in_synthesis" "1" $file_obj
+ # 
  # 
  # 

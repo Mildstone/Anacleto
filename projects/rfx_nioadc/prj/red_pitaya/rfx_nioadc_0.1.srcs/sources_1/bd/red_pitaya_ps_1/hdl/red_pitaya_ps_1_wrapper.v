@@ -1,8 +1,8 @@
 //Copyright 1986-2017 Xilinx, Inc. All Rights Reserved.
 //--------------------------------------------------------------------------------
-//Tool Version: Vivado v.2017.2 (lin64) Build 1909853 Thu Jun 15 18:39:10 MDT 2017
-//Date        : Thu Feb 22 14:45:24 2018
-//Host        : be16d7d72540 running 64-bit Ubuntu 14.04.5 LTS
+//Tool Version: Vivado v.2017.4 (lin64) Build 2086221 Fri Dec 15 20:54:30 MST 2017
+//Date        : Wed Mar 28 11:37:48 2018
+//Host        : fd5a933b4a76 running 64-bit Ubuntu 14.04.5 LTS
 //Command     : generate_target red_pitaya_ps_1_wrapper.bd
 //Design      : red_pitaya_ps_1_wrapper
 //Purpose     : IP block netlist
@@ -33,7 +33,9 @@ module red_pitaya_ps_1_wrapper
     FIXED_IO_ps_srstb,
     adc_dat_a,
     adc_dat_b,
-    led_o);
+    clock,
+    led_o,
+    trigger_in_0);
   inout [14:0]DDR_addr;
   inout [2:0]DDR_ba;
   inout DDR_cas_n;
@@ -57,7 +59,9 @@ module red_pitaya_ps_1_wrapper
   inout FIXED_IO_ps_srstb;
   input [13:0]adc_dat_a;
   input [13:0]adc_dat_b;
+  output clock;
   output led_o;
+  input trigger_in_0;
 
   wire [14:0]DDR_addr;
   wire [2:0]DDR_ba;
@@ -82,7 +86,9 @@ module red_pitaya_ps_1_wrapper
   wire FIXED_IO_ps_srstb;
   wire [13:0]adc_dat_a;
   wire [13:0]adc_dat_b;
+  wire clock;
   wire led_o;
+  wire trigger_in_0;
 
   red_pitaya_ps_1 red_pitaya_ps_1_i
        (.DDR_addr(DDR_addr),
@@ -108,5 +114,7 @@ module red_pitaya_ps_1_wrapper
         .FIXED_IO_ps_srstb(FIXED_IO_ps_srstb),
         .adc_dat_a(adc_dat_a),
         .adc_dat_b(adc_dat_b),
-        .led_o(led_o));
+        .clock(clock),
+        .led_o(led_o),
+        .trigger_in_0(trigger_in_0));
 endmodule

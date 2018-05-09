@@ -62,3 +62,11 @@ set_property PACKAGE_PIN Y18 [get_ports {adc_dat_b[13]}]
 
 set_property IOSTANDARD LVCMOS33 [get_ports led_o]
 set_property PULLDOWN true [get_ports led_o]
+
+set_property IOSTANDARD LVCMOS33 [get_ports trigger_in_0]
+set_property PACKAGE_PIN H16 [get_ports trigger_in_0]
+
+set_property PULLDOWN true [get_ports trigger_in_0]
+
+set_property IOSTANDARD LVCMOS33 [get_ports clock]
+set_property PACKAGE_PIN G18 [get_ports clock]

@@ -11,7 +11,8 @@ VENDOR = rfx
 vivado_PROJECTS = nioadc
 
 nioadc_SOURCES = red_pitaya.xdc \
-		 src/trarec.vhdl
+                 src/trarec.vhdl \
+                 src/trarec_tb.vhdl
 
 .PHONY: linux
 linux:
