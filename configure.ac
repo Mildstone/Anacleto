@@ -121,12 +121,16 @@ m4_sinclude(conf/kscripts/ext_ccStickers.ac)
 ## EXT_NODEJS_NODE ##
 m4_sinclude(conf/kscripts/ext_nodejs_node.ac)
 
+## EXT_MDSPLUS ##
+m4_sinclude(conf/kscripts/ext_mdsplus.ac)
+
 ## EXT ##
 AX_KCONFIG_MODULES([EXT],
 		  [libjit],[libjit external sources],
 		  [llvm],[llvm external sources],
 		  [ccStickers],[ccStickers external sources],
-		  [nodejs-node],[nodejs node external sources]
+		  [nodejs-node],[nodejs node external sources],
+		  [mdsplus],[mdsplus external sources]
 		  )
 AC_SUBST([EXT_MODULES])
 
@@ -199,8 +203,9 @@ AC_CONFIG_FILES(
 				 src/sh_template/Makefile
 dnl				 src/libjit_examples/Makefile
 				 src/parse_examples/Makefile
-				 src/nodejs/Makefile
+				 src/nodejs/Makefile				 
 				 src/project_variables/Makefile
+				 src/mds_example/Makefile
 				 doc/Makefile
 				 doc/wiki/Makefile
 				 ext/Makefile

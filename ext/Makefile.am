@@ -3,24 +3,25 @@ include $(top_srcdir)/Common.mk
 # include $(top_srcdir)/conf/kscripts/ext_libjit.mk
 # include $(top_srcdir)/conf/kscripts/ext_llvm.mk
 # include $(top_srcdir)/conf/kscripts/ext_nodejs_node.mk
+# include $(top_srcdir)/conf/kscripts/ext_mdsplus.mk
 
 define _ext_bootstrap
 $(eval
-$1/configure: $1
+$1/configure: | $1
 	@ cd $1; ./bootstrap
 )
 endef
 
 define _ext_autogen_sh
 $(eval
-$1/configure: $1
+$1/configure: | $1
 	@ cd $1; ./autogen.sh
 )
 endef
 
 define _ext_configure
 $(eval
-$1/config.log: $1 $1/configure
+$1/config.log: $1/configure
 	@ cd $1; ./configure $($(subst -,_,$(subst ' ',_,$(subst .,_,$1)))_CONFIGURE_ARGS)
 $1/Makefile: $1/config.log
 	@ $(MAKE) $(AM_MAKEFLAGS) -C $1 Makefile
@@ -77,4 +78,16 @@ nodejs-node:
 nodejs_node_URL = $(NODEJS_NODE_URL)
 nodejs_node_CONFIGURE_ARGS = --shared
 $(call _ext_configure,nodejs-node)
+
+
+EXT_MDSPLUS_URL    ?= https://github.com/mdsplus/mdsplus.git
+EXT_MDSPLUS_BRANCH ?= alpha
+ext-mdsplus: AM_MAKEFLAGS += -j1
+mdsplus: ##@ext mdsplus
+mdsplus_URL    = $(EXT_MDSPLUS_URL)
+mdsplus_BRANCH = $(EXT_MDSPLUS_BRANCH)
+$(call _ext_bootstrap,mdsplus)
+$(call _ext_configure,mdsplus)
+
+
 

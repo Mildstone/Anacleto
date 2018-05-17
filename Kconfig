@@ -136,6 +136,8 @@ if ENABLE_EXTSRC
   # //  NODEJS_NODE  //
   source conf/kscripts/ext_nodejs_node.kconfig
 
+  # //  MDSPLUS  //
+  source conf/kscripts/ext_mdsplus.kconfig
 
 endif # ENABLE_EXTSRC
 

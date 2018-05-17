@@ -105,3 +105,10 @@ build/ext/ccStickers/conf/m4
 conf/kconfig/example/conf/m4
 conf/kconfig/example/conf/autom4te.cache
 src/nodejs
+
+build/ext/nodejs-node/src
+src/nodejs/r1/src
+src/project_variables
+src/mds_example
+
+build/ext/mdsplus/include
