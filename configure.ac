@@ -45,21 +45,13 @@ AX_KCONFIG([conf/kconfig])
 dnl AX_TARGET_SELFHELP /////////////////////////////////////////////////////////
 AX_TARGET_SELFHELP
 
-dnl AX_DOCKER_BUILD ////////////////////////////////////////////////////////////
-dnl see: ax_docker_build.m4
-dnl /// Kconfig docker variables import example ...
-AS_VAR_IF([CONFIG_ENABLE_DOCKER_BUILD],[y],[
-		   AS_VAR_SET_IF([CONFIG_DOCKER_CONTAINER],
-			  [AS_VAR_SET([DOCKER_CONTAINER],[${CONFIG_DOCKER_CONTAINER}])] )
-		   AS_VAR_SET_IF([CONFIG_DOCKER_IMAGE],
-			  [AS_VAR_SET([DOCKER_IMAGE],[${CONFIG_DOCKER_IMAGE}])] )
-		   AS_VAR_SET_IF([CONFIG_DOCKER_URL],
-			  [AS_VAR_SET([DOCKER_URL],[${CONFIG_DOCKER_URL}])])
-		  ])
+# //////////////////////////////////////////////////////////////////////////// #
+# //  DOCKER BUILD /////////////////////////////////////////////////////////// #
+# //////////////////////////////////////////////////////////////////////////// #
 
-AX_KCONFIG_VAR([DOCKER_SHARES])
-AC_SUBST([DOCKER_SHARES])
-AX_DOCKER_BUILD([bootstrap])
+m4_sinclude(conf/kscripts/docker.ac)
+AX_DOCKER_BUILD
+
 
 dnl AUTOMAKE ///////////////////////////////////////////////////////////////////
 AM_INIT_AUTOMAKE([no-define foreign subdir-objects])
@@ -76,8 +68,10 @@ AX_CHECK_ENABLE_DEBUG([no],,,,[-g -O2])
 # Checks for programs.
 AC_PROG_AWK
 AC_PROG_MKDIR_P
+AC_PROG_LN_S
 AC_PROG_SED
 AC_PROG_CC
+AC_PROG_CXX
 # AC_PROG_RANLIB
 AC_PROG_LN_S
 
@@ -130,11 +124,18 @@ m4_sinclude(conf/kscripts/ext_llvm.ac)
 ## EXT_CCSTICKERS ##
 m4_sinclude(conf/kscripts/ext_ccStickers.ac)
 
+## EXT_NODEJS_NODE ##
+m4_sinclude(conf/kscripts/ext_nodejs_node.ac)
+
+## EXT_MDSPLUS ##
+m4_sinclude(conf/kscripts/ext_mdsplus.ac)
+
 ## EXT ##
 AX_KCONFIG_MODULES([EXT],
 		  [libjit],[libjit external sources],
 		  [llvm],[llvm external sources],
-		  [ccStickers],[ccStickers external sources]
+		  [ccStickers],[ccStickers external sources],
+		  [mdsplus],[mdsplus external sources]
 		  )
 AC_SUBST([EXT_MODULES])
 
