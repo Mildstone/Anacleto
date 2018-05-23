@@ -1,9 +1,7 @@
-
-include $(top_srcdir)/Common.am
+include $(top_srcdir)/Common.mk
 
 AM_MAKEFLAGS = -j$(MAKE_PROCESS)
 AM_CPPFLAGS  = -lpthread
-
 
 MODULES = \
 	  axidma_example0 \
@@ -15,17 +13,19 @@ MODULES = \
 	  axidma_example6
 
 TEST_EXAMPLES = \
-	      test_example2 \
-	      test_example3 \
-	      test_example4 \
-	      test_example5 \
-	      test_example6
+		  test_example2 \
+		  test_example3 \
+		  test_example4 \
+		  test_example5 \
+		  test_example6
+
+
+
+## /////////////////////////////////////////////////////////////////
 
 MOSTLYCLEANFILES = $(TEST_EXAMPLES)
 
-
 .PHONY: modules
-modules: ## compile current project modules
 modules: $(MODULES:=.c) Kbuild
 	@ echo " --- building modules ---"; \
 	$(_set_export); \
@@ -37,11 +37,10 @@ clean-local:
 	@ echo " --- cleaning modules ---"; \
 	$(_set_export); \
 	$(MAKE) $(AM_MAKEFLAGS) -C ${LINUX_SRCDIR} \
-	     CFLAGS="$(LINUX_CFLAGS)" M=`pwd` O=$$O \
-	     srcdir=$(srcdir) builddir=$(builddir) clean
+		 CFLAGS="$(LINUX_CFLAGS)" M=`pwd` O=$$O \
+		 srcdir=$(srcdir) builddir=$(builddir) clean
 
 .PHONY: test_examples
-test_examples: ## recompile tests
 test_examples: $(TEST_EXAMPLES)
 
 $(TEST_EXAMPLES):
@@ -51,7 +50,6 @@ $(TEST_EXAMPLES):
 
 
 .PHONY: deploy
-deploy: ## deploy current files in target device using sftp connection
 deploy: $(MODULES:=.ko) $(TEST_EXAMPLES)
 if WITH_DEVICE_SSHKEY
 	@ echo " --- deploying modules to target device: ${DEVICE_NAME} using key ---";
@@ -65,5 +63,8 @@ if WITH_DEVICE_SSHPASSWD
 endif
 endif
 
-all: ## compile all modules and examples
+
 all: modules test_examples
+
+
+
