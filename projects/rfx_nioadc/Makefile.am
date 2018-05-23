@@ -16,9 +16,9 @@ nioadc_SOURCES = red_pitaya.xdc \
 
 .PHONY: linux
 linux:
-	$(MAKE) $(AM_MAKEFLAGS) -C linux/src clean all deploy
+	$(MAKE) $(AM_MAKEFLAGS) -C linux/src clean all
 
 shell:
 	ssh $(DEVICE_USER)@$(DEVICE_IP)
 
-all: dtb deploy linux
+all: dtb linux
