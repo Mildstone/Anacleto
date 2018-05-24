@@ -14,6 +14,15 @@ nioadc_SOURCES = red_pitaya.xdc \
                  src/trarec.vhdl \
                  src/trarec_tb.vhdl
 
+
+vivado_PROJECTS += nioadc_dma
+
+nioadc_dma_SOURCES = red_pitaya.xdc \
+                     src/trarec.vhdl \
+                     src/trarec_tb.vhdl
+
+
+
 .PHONY: linux
 linux:
 	$(MAKE) $(AM_MAKEFLAGS) -C linux/src clean all
