@@ -91,3 +91,52 @@ $(call _ext_configure,mdsplus)
 
 
 
+
+
+
+
+
+
+################################################################################
+# UBOOT
+################################################################################
+
+DOWNLOADS += u-boot
+
+UBOOT_TAG   = redpitaya-v2016.4
+u_boot_DIR  = u-boot-xlnx-$(UBOOT_TAG)
+u_boot_URL    ?= https://github.com/RedPitaya/u-boot-xlnx/archive/$(UBOOT_TAG).tar.gz
+## u_boot_CFLAGS  = "-O2 -mtune=cortex-a9 -mfpu=neon -mfloat-abi=hard"
+
+
+################################################################################
+# U-Boot build provides: $(UBOOT)
+################################################################################
+
+UBOOT           = $(TMP)/u-boot.elf
+UBOOT_SCRIPT    = $(TMP)/u-boot.scr
+
+.PHONY: ext-u-boot
+ext-u-boot: $(UBOOT) $(UBOOT_SCRIPT)
+
+
+$(UBOOT): | $(u_boot_DIR) $(TMP)
+	make -C $< arch=ARM zynq_red_pitaya_defconfig
+	make -C $< arch=ARM CFLAGS=$(UBOOT_CFLAGS)
+	cp $(UBOOT_DIR)/u-boot $@
+
+$(UBOOT_SCRIPT): $(INSTALL_DIR) $(UBOOT_DIR) $(UBOOT)
+	$(UBOOT_DIR)/tools/mkimage -A ARM -O linux -T script -C none -a 0 -e 0 -n "boot Debian" -d patches/u-boot/u-boot.script $@
+
+
+
+
+
+
+
+
+
+
+
+
+
