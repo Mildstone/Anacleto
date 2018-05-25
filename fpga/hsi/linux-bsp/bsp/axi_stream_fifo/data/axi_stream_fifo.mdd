@@ -1,0 +1,10 @@
+OPTION psf_version = 3.0;
+
+BEGIN driver axi_stream_fifo
+  OPTION driver_state = ACTIVE;
+  OPTION supported_peripherals = (axi_fifo_mm_s);
+  OPTION supported_os_types = (LINUX);
+  OPTION NAME = axi_stream_fifo;
+  OPTION COPYFILES = all;
+END driver
+
