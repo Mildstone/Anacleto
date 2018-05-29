@@ -39,6 +39,8 @@ namespace eval ::tclapp::socdev::makeutils {
   namespace export make_write_linux_bsp
   namespace export make_write_fsbl
   namespace export make_package_hls_ip
+  namespace export make_package_ip
+  namespace export make_repackage_ip
 }
 
 ## INCLUDES ##
@@ -111,7 +113,23 @@ proc make_set_repo_path {} {
   }
 }
 
+proc create_runs {} {
+  set synth $v::pe(synth_name)
+  set impl  $v::pe(impl_name)
 
+  proc get_major { code } { return [lindex [split $code '.'] 0] }
+
+  if { [lsearch -exact [get_runs] $synth] == -1 } {
+	set flow "Vivado Synthesis [get_major $v::pe(VIVADO_VERSION)]"
+	create_run -flow $flow $synth
+  }
+  if { [lsearch -exact [get_runs] $impl] == -1 } {
+	set flow "Vivado Implementation [get_major $v::pe(VIVADO_VERSION)]"
+	create_run $impl -parent_run $synth -flow $flow
+  }
+  # set active by default
+  current_run [get_runs $synth]
+}
 
 ## ////////////////////////////////////////////////////////////////////////// ##
 ## /// CREATE PROJECT /////////////////////////////////////////////////////// ##
@@ -138,14 +156,16 @@ proc make_new_project {{exec_preset 1}} {
   make_set_repo_path
   update_ip_catalog
 
+  create_runs
+
   # load files
   make_load_sources
   set_property source_mgmt_mode All [current_project]
 
   # execute post scritps
   if { $v::pe(PRJCFG) eq "" && $exec_preset eq 1 } {
-	source -notrace $v::pe(BOARD_PRESET)
-	board_init
+  #	source -notrace $v::pe(BOARD_PRESET)
+  #	board_init
   } else {
 	make_exec_scripts PRJCFG
   }
@@ -229,10 +249,42 @@ proc make_package_ip { } {
    send_msg_id [v::mid]-1 ERROR "Could not start a new project"
   }
 
+  # repackage
+  make_repackage_ip
+
+  # execute post scritps
+  make_exec_scripts IPCFG
+
+  #  # reopen ip project for editing
+  #  if { [get_projects dummy] == "" } {
+  #   close_project -quiet
+  #   create_project -in_memory -part $v::pe(VIVADO_SOC_PART) -force dummy
+  #   if { [catch {current_project dummy}] } { send_msg_id [v::mid]-1 ERROR "dummy prj fail"}
+  #   current_project dummy
+  #  }
+  #  ipx::edit_ip_in_project -force true -upgrade true -name ${project_name}_ip2 \
+  #	-directory $dir_prj $ipdir/component.xml
+  #  current_project $project_name
+  #  # write project
+  #  ipx::create_xgui_files $core
+  #  ipx::update_checksums $core
+  #  ipx::save_core $core
+
+  #  # close dummy in memory project
+  #  if { [get_projects dummy] != "" } {
+  #	current_project dummy
+  #	close_project -quiet
+  #  }
+}
+
+proc make_repackage_ip {} {
+  set_compatible_with Vivado
+  #
+  set ipdir        $v::ce(ipdir)
+  #
   set files_no [llength [get_files -quiet]]
   if { $files_no > 0 } {
    ipx::package_project -import_files -root_dir $ipdir
-   # ipx::package_project -root_dir $ipdir
    set core [ipx::current_core]
    set_property VERSION      $v::ce(VERSION) $core
    set_property NAME         $v::ce(core_name) $core
@@ -240,64 +292,29 @@ proc make_package_ip { } {
    set_property LIBRARY      $v::ce(VENDOR) $core
    set_property VENDOR       $v::ce(VENDOR) $core
    #  set_property DESCRIPTION $v::ce(DESCRIPTION) $core
-
+   set_property file_type IP-XACT [get_files $ipdir/component.xml]
    # synth design to make a first compile test
-   synth_design -rtl -name rtl_1
+   # synth_design -rtl -name rtl_1
 
    ipx::create_xgui_files $core
    ipx::update_checksums $core
    ipx::save_core $core
    ipx::add_file_group -type software_driver {} $core
    foreach file [split $v::ce(DRV_LINUX) " "] {
-	add_files -force -norecurse \
-	 -copy_to ${ipdir}/bsp/[file dirname $file] $v::me(srcdir)/$file
-	ipx::add_file bsp/$file \
-	 [ipx::get_file_groups xilinx_softwaredriver -of_objects $core]
+	# add_files -force -norecurse -copy_to ${ipdir}/bsp/[file dirname $file] $v::me(srcdir)/$file
+	file mkdir ${ipdir}/bsp/[file dirname $file]
+	file copy $v::me(srcdir)/$file ${ipdir}/bsp/[file dirname $file]
+	ipx::add_file bsp/$file [ipx::get_file_groups xilinx_softwaredriver -of_objects $core]
    }
    ipx::save_core $core
   } else {
    file mkdir $ipdir
    ipx::create_core $v::ce(VENDOR) $v::ce(VENDOR) \
-		    $v::ce(core_name) $v::ce(VERSION)
+			$v::ce(core_name) $v::ce(VERSION)
    set core [ipx::current_core]
    set_property ROOT_DIRECTORY $ipdir $core
    ipx::save_core $core
-
   }
-
-#  foreach file [split $v::ce(DRV_LINUX) " "] {
-#   add_files -force -norecurse \
-#	 -copy_to ${dir_prj}/bsp/[file dirname $file] $v::me(srcdir)/$file
-#   ipx::add_file bsp/$file \
-#	 [ipx::get_file_groups xilinx_softwaredriver -of_objects $core]
-#  }
-#  ipx::save_core $core
-
-
-
-  # execute post scritps
-  make_exec_scripts IPCFG
-
-#  # reopen ip project for editing
-#  if { [get_projects dummy] == "" } {
-#   close_project -quiet
-#   create_project -in_memory -part $v::pe(VIVADO_SOC_PART) -force dummy
-#   if { [catch {current_project dummy}] } { send_msg_id [v::mid]-1 ERROR "dummy prj fail"}
-#   current_project dummy
-#  }
-#  ipx::edit_ip_in_project -force true -upgrade true -name ${project_name}_ip2 \
-#	-directory $dir_prj $ipdir/component.xml
-#  current_project $project_name
-#  # write project
-#  ipx::create_xgui_files $core
-#  ipx::update_checksums $core
-#  ipx::save_core $core
-
-#  # close dummy in memory project
-#  if { [get_projects dummy] != "" } {
-#	current_project dummy
-#	close_project -quiet
-#  }
 }
 
 
@@ -317,19 +334,28 @@ proc make_edit_ip { } {
   set core_name    $v::ce(core_name)
   set ipdir        $v::ce(ipdir)
 
-
+  make_open_project
   if { ![file exists $ipdir/component.xml] } {
    make_package_ip
-  } else {
-   make_open_project
   }
 
   puts "FILE_IP: $ipdir/component.xml"
   add_files $ipdir/component.xml
+  set_property file_type IP-XACT [get_files $ipdir/component.xml]
   ipx::open_core $ipdir/component.xml
 }
 
 
+#ipx::add_address_block_parameter OFFSET_BASE_PARAM [ipx::get_address_blocks reg0 -of_objects [ipx::get_memory_maps S00_AXI -of_objects [ipx::current_core]]]
+
+
+## GENERATE STEP EXAMPLE ##
+##
+##set_property synth_checkpoint_mode None [get_files  /home/andrea/devel/rfx/anacleto/build/projects/prova/edit/red_pitaya/rfx_cfgwrp_0.1.srcs/sources_1/bd/design_1/design_1.bd]
+#generate_target all [get_files  /home/andrea/devel/rfx/anacleto/build/projects/prova/edit/red_pitaya/rfx_cfgwrp_0.1.srcs/sources_1/bd/design_1/design_1.bd]
+##
+##export_ip_user_files -of_objects [get_files /home/andrea/devel/rfx/anacleto/build/projects/prova/edit/red_pitaya/rfx_cfgwrp_0.1.srcs/sources_1/bd/design_1/design_1.bd] -no_script -sync -force -quiet
+#export_simulation -of_objects [get_files /home/andrea/devel/rfx/anacleto/build/projects/prova/edit/red_pitaya/rfx_cfgwrp_0.1.srcs/sources_1/bd/design_1/design_1.bd] -directory /home/andrea/devel/rfx/anacleto/build/projects/prova/edit/red_pitaya/rfx_cfgwrp_0.1.ip_user_files/sim_scripts -ip_user_files_dir /home/andrea/devel/rfx/anacleto/build/projects/prova/edit/red_pitaya/rfx_cfgwrp_0.1.ip_user_files -ipstatic_source_dir /home/andrea/devel/rfx/anacleto/build/projects/prova/edit/red_pitaya/rfx_cfgwrp_0.1.ip_user_files/ipstatic -lib_map_path [list {modelsim=/home/andrea/devel/rfx/anacleto/build/projects/prova/edit/red_pitaya/rfx_cfgwrp_0.1.cache/compile_simlib/modelsim} {questa=/home/andrea/devel/rfx/anacleto/build/projects/prova/edit/red_pitaya/rfx_cfgwrp_0.1.cache/compile_simlib/questa} {ies=/home/andrea/devel/rfx/anacleto/build/projects/prova/edit/red_pitaya/rfx_cfgwrp_0.1.cache/compile_simlib/ies} {xcelium=/home/andrea/devel/rfx/anacleto/build/projects/prova/edit/red_pitaya/rfx_cfgwrp_0.1.cache/compile_simlib/xcelium} {vcs=/home/andrea/devel/rfx/anacleto/build/projects/prova/edit/red_pitaya/rfx_cfgwrp_0.1.cache/compile_simlib/vcs} {riviera=/home/andrea/devel/rfx/anacleto/build/projects/prova/edit/red_pitaya/rfx_cfgwrp_0.1.cache/compile_simlib/riviera}] -use_ip_compiled_libs -force -quiet
 
 
 ## ////////////////////////////////////////////////////////////////////////// ##
@@ -500,6 +526,8 @@ proc make_open_project {} {
   make_set_repo_path
   update_ip_catalog
 
+  create_runs
+
   ## load remote sources
   make_load_sources
   set_property source_mgmt_mode All [current_project]
@@ -544,6 +572,9 @@ proc make_write_project {} {
 ## /// WRITE BITSTREAM ////////////////////////////////////////////////////// ##
 ## ////////////////////////////////////////////////////////////////////////// ##
 
+
+
+
 proc make_write_bitstream {} {
   set_compatible_with Vivado
 
@@ -564,16 +595,8 @@ proc make_write_bitstream {} {
 
   ## ////////////////////////////////////////////////////// ##
   ## generate a bitstream
-  proc get_major { code } { return [lindex [split $code '.'] 0] }
 
-  if { [lsearch -exact [get_runs] $synth] == -1 } {
-	set flow "Vivado Synthesis [get_major $v::pe(VIVADO_VERSION)]"
-    create_run -flow $flow $synth
-  }
-  if { [lsearch -exact [get_runs] $impl] == -1 } {
-	set flow "Vivado Implementation [get_major $v::pe(VIVADO_VERSION)]"
-    create_run $impl -parent_run $synth -flow $flow
-  }
+  create_runs
 
   ## customize directory output for run ##
   #  file mkdir $v::pe(rel_dir_prj)/$path_bit/synth
@@ -675,13 +698,14 @@ proc make_write_linux_bsp {} {
 
   open_hw_design $path_sdk/$prj_name.sysdef
 
+  puts "set_repo_path  $v::me(top_srcdir)/fpga/hsi/linux-bsp"
   set_repo_path  $v::me(top_srcdir)/fpga/hsi/linux-bsp
   #  foreach ip_name [split $v::pe(IP_SOURCES)] {
   #	set_repo_path $v::me(srcdir)/$ip_name
   #  }
   # set_repo_path  $path_sdk
 
-  create_sw_design ll -os linux -proc ps7_cortexa9_0 -verbose
+  create_sw_design system -os linux -proc ps7_cortexa9_0 -verbose
   generate_target -dir $path_sdk/bsp bsp
   # generate_target -dir $path_sdk/app app
 }
