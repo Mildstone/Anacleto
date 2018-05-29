@@ -159,11 +159,13 @@ export VIVADO_SRCDIR \
 projects:      ##@projects build all projects defined in vivado_PROJECTS variable
 cores:         ##@cores build all cores defined in vivado_CORES variable
 
+
+
 check_sources = $(SOURCES) \
 				$(BD_SOURCES) \
 				| $(filter-out $(ALL_NAMES),$(IP_SOURCES))
 
-check_ip_componenents = $(foreach x,$(filter-out $(ALL_NAMES),$(IP_SOURCES)),$(VIVADO_IPDIR)/$x/component.xml)
+check_ip_componenents = $(foreach x,$(IP_SOURCES),$(VIVADO_IPDIR)/$x/component.xml)
 
 check_prj_sources = $(shell $(FIND) $(VIVADO_SRCDIR)/$(FULL_NAME).{srcs,tcl} -printf "%p " 2>/dev/null || echo "") \
 					$(shell $(FIND) $(VIVADO_PRJDIR)/$(FULL_NAME).srcs -printf "%p " 2>/dev/null || echo "")
@@ -193,7 +195,7 @@ $(vivado_CORES):
 $(filter-out $(vivado_CORES),$(IP_SOURCES)):
 	@ $(MAKE) -C $(@D) $(@F)
 
-$(VIVADO_IPDIR)/%/component.xml: $(check_sources)
+$(VIVADO_IPDIR)/%/component.xml: #$(check_sources) < not supported
 	@ $(if $(filter %.cpp,${SOURCES}),\
 		   $(call hls, package_hls_ip),\
 		   $(call vivado, package_ip))
