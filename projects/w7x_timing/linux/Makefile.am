@@ -1,5 +1,5 @@
 
-include $(top_srcdir)/Common.am
+include $(top_srcdir)/Common.mk
 
 AM_MAKEFLAGS = -j$(MAKE_PROCESS)
 AM_CPPFLAGS  = -lpthread

@@ -4,6 +4,28 @@
 ## ////////////////////////////////////////////////////////////////////////// ##
 
 
+# ////////////////////////////////////////////////////////////////////////// //
+#
+# This file is part of the anacleto project.
+# Copyright 2018 Andrea Rigoni Garola <andrea.rigoni@igi.cnr.it>.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# ////////////////////////////////////////////////////////////////////////// //
+
+
+
 ################################################################################
 # define paths
 ################################################################################
@@ -12,7 +34,7 @@ global env
 set srcdir       $env(srcdir)
 set top_srcdir   $env(top_srcdir)
 
-set_param general.maxThreads $env(maxThreads)
+## set_param general.maxThreads $env(maxThreads)
 
 namespace eval ::tclapp::socdev::makeutils {
 
@@ -79,6 +101,7 @@ proc reset_core_env {} {
   set    core_env(VENDOR)           [getenv VENDOR]
   set    core_env(VERSION)          [getenv VERSION]
   set    core_env(DRV_LINUX)        [getenv DRV_LINUX]
+  set    core_env(BSPDIR)           [getenv BSPDIR]
 }
 # set env by default when included
 reset_core_env
@@ -91,6 +114,8 @@ proc reset_project_env { } {
   set project_env(VIVADO_VERSION)  [getenv VIVADO_VERSION]
   set project_env(VIVADO_SOC_PART) [getenv VIVADO_SOC_PART]
   set project_env(BOARD)           [getenv BOARD]
+  set project_env(BOARD_PART)      [getenv BOARD_PART]
+  set project_env(BOARD_PRESET)    [getenv BOARD_PRESET]
   set project_env(dir_prj)         [compute_project_dir edit]
   set project_env(dir_src)         [compute_project_dir src]
   set project_env(dir_sdc)         [compute_project_dir edit]/[compute_project_name].sdc
@@ -100,6 +125,9 @@ proc reset_project_env { } {
   set project_env(synth_name)      [getenv synth_name "anacleto_synth"]
   set project_env(impl_name)       [getenv impl_name  "anacleto_impl"]
   set project_env(SOURCES)         [getenv SOURCES]
+  set project_env(ARCHIVE)         [getenv ARCHIVE]
+  set project_env(PRJCFG)          [getenv PRJCFG]
+  set project_env(IPCFG)           [getenv IPCFG]
   set project_env(BD_SOURCES)      [getenv BD_SOURCES]
   set project_env(IP_SOURCES)      [getenv IP_SOURCES]
   set project_env(COMPILE_ORDER)   [getenv COMPILE_ORDER]
@@ -139,7 +167,7 @@ namespace upvar ::tclapp::socdev::makeutils core_env    core_env
 ## /// CREATE PROJ ////////////////////////////////////////////////////////// ##
 ## ////////////////////////////////////////////////////////////////////////// ##
  
- create_project w7x_timing_brd_1.0  "$make_env(builddir)/edit/red_pitaya"  -part xc7z010clg400-1
+ create_project w7x_timing_0.1  "$make_env(builddir)/edit/red_pitaya"  -part xc7z010clg400-1
  
  # Set the directory path for the new project
  set proj_dir [get_property directory [current_project]]

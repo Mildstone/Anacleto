@@ -129,6 +129,10 @@ proc create_runs {} {
   }
   # set active by default
   current_run [get_runs $synth]
+
+#  set_property STEPS.WRITE_BITSTREAM.TCL.POST \
+#   [get_files {write_bitstream_post.tcl} -of [get_fileset anacleto_utils]] [get_runs $impl]
+
 }
 
 ## ////////////////////////////////////////////////////////////////////////// ##
@@ -156,7 +160,6 @@ proc make_new_project {{exec_preset 1}} {
   make_set_repo_path
   update_ip_catalog
 
-  create_runs
 
   # load files
   make_load_sources
@@ -169,6 +172,8 @@ proc make_new_project {{exec_preset 1}} {
   } else {
 	make_exec_scripts PRJCFG
   }
+
+  create_runs
 
   # write project
   make_write_project
@@ -237,12 +242,14 @@ proc make_package_ip { } {
 
   # setup a project
   if { [file exists $dir_prj/$project_name.xpr] } {
+    puts " -- OPEN PROJECT FOR IP -- "
 	 make_open_project
   } else {
   #	 create_project -in_memory -part $v::pe(VIVADO_SOC_PART) -force dummy
   #	 if { [catch {current_project}] } { send_msg_id [v::mid]-1 ERROR "dummy prj fail"}
   #	 make_load_sources
   #	 set_property source_mgmt_mode All [current_project]
+    puts " -- MAKE NEW PROJECT FOR IP -- "
 	 make_new_project 0
   }
   if { [catch {current_project}] } {
@@ -252,29 +259,8 @@ proc make_package_ip { } {
   # repackage
   make_repackage_ip
 
-  # execute post scritps
-  make_exec_scripts IPCFG
 
-  #  # reopen ip project for editing
-  #  if { [get_projects dummy] == "" } {
-  #   close_project -quiet
-  #   create_project -in_memory -part $v::pe(VIVADO_SOC_PART) -force dummy
-  #   if { [catch {current_project dummy}] } { send_msg_id [v::mid]-1 ERROR "dummy prj fail"}
-  #   current_project dummy
-  #  }
-  #  ipx::edit_ip_in_project -force true -upgrade true -name ${project_name}_ip2 \
-  #	-directory $dir_prj $ipdir/component.xml
-  #  current_project $project_name
-  #  # write project
-  #  ipx::create_xgui_files $core
-  #  ipx::update_checksums $core
-  #  ipx::save_core $core
 
-  #  # close dummy in memory project
-  #  if { [get_projects dummy] != "" } {
-  #	current_project dummy
-  #	close_project -quiet
-  #  }
 }
 
 proc make_repackage_ip {} {
@@ -283,6 +269,7 @@ proc make_repackage_ip {} {
   set ipdir        $v::ce(ipdir)
   #
   set files_no [llength [get_files -quiet]]
+  puts " PROJECT FOUND: $files_no FILES"
   if { $files_no > 0 } {
    ipx::package_project -import_files -root_dir $ipdir
    set core [ipx::current_core]
@@ -315,6 +302,14 @@ proc make_repackage_ip {} {
    set_property ROOT_DIRECTORY $ipdir $core
    ipx::save_core $core
   }
+  ipx::open_core $ipdir/component.xml
+  # execute post scritps
+  puts "EXECUTING SCRIPTS FOR IP"
+  make_exec_scripts IPCFG
+  #
+  ipx::create_xgui_files [ipx::current_core]
+  ipx::update_checksums [ipx::current_core]
+  ipx::save_core [ipx::current_core]
 }
 
 
@@ -398,7 +393,7 @@ proc make_load_sources { } {
   # refer to https://www.xilinx.com/itp/xilinx10/isehelp/ise_r_source_types.htm
   # import all remote sources
 
-  puts " $v::pe(SOURCES) "
+  puts " SOURCES: $v::pe(SOURCES) "
   if {!($v::pe(SOURCES) eq "")} {
    foreach file [split $v::pe(SOURCES) " "] {
      set ftype [file extension $file]
@@ -458,6 +453,14 @@ proc make_load_sources { } {
 	 }
 	}
   }
+
+
+  # add anacleto_utils
+#  catch {create_fileset anacleto_utils}
+#  set anacleto_utils [get_filesets anacleto_utils]
+#  add_files -fileset $anacleto_utils $v::me(top_srcdir)/fpga/vivado_socdev_env.tcl \
+#                                     $v::me(top_srcdir)/fpga/vivado_socdev_utils.tcl \
+#												 $v::me(top_srcdir)/fpga/write_bitstream_post.tcl
 
 }
 
@@ -526,11 +529,12 @@ proc make_open_project {} {
   make_set_repo_path
   update_ip_catalog
 
-  create_runs
 
   ## load remote sources
   make_load_sources
   set_property source_mgmt_mode All [current_project]
+
+  create_runs
 
   # execute post scritps
   make_exec_scripts PRJCFG
@@ -621,6 +625,10 @@ proc make_write_bitstream {} {
   set  synth_dir [get_property DIRECTORY [get_runs $synth]]
   set  impl_dir  [get_property DIRECTORY [get_runs $impl ]]
   set  top_name  [get_property TOP [current_design]]
+
+#  set_property STEPS.WRITE_BITSTREAM.TCL.POST \
+#   [get_files {write_bitstream_post.tcl} -of [get_fileset anacleto_utils]] [get_runs $impl]
+
   file  copy -force  $impl_dir/${top_name}.hwdef $path_sdk/$prj_name.hwdef
   file  copy -force  $impl_dir/${top_name}.bit   $path_sdk/$prj_name.bit
   file  copy -force  $impl_dir/${top_name}.bit   $path_bit/$prj_name.bit

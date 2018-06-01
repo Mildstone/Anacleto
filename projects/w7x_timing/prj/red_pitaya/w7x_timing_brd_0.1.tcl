@@ -167,7 +167,7 @@ namespace upvar ::tclapp::socdev::makeutils core_env    core_env
 ## /// CREATE PROJ ////////////////////////////////////////////////////////// ##
 ## ////////////////////////////////////////////////////////////////////////// ##
  
- create_project w7x_timing_1.0  "$make_env(builddir)/edit/red_pitaya"  -part xc7z010clg400-1
+ create_project w7x_timing_brd_0.1  "$make_env(builddir)/edit/red_pitaya"  -part xc7z010clg400-1
  
  # Set the directory path for the new project
  set proj_dir [get_property directory [current_project]]
@@ -193,67 +193,55 @@ namespace upvar ::tclapp::socdev::makeutils core_env    core_env
  # 
  # Set 'sources_1' fileset object
  set obj [get_filesets sources_1]
+ file mkdir "$project_env(dir_prj)/w7x_timing_brd_0.1.srcs/sources_1/bd/system"
+ file copy -force "$project_env(dir_src)/w7x_timing_brd_0.1.srcs/sources_1/bd/system/system.bd" \
+    "$project_env(dir_prj)/w7x_timing_brd_0.1.srcs/sources_1/bd/system/system.bd"
+ file mkdir "$project_env(dir_prj)/w7x_timing_brd_0.1.srcs/sources_1/bd/system/hdl"
+ file copy -force "$project_env(dir_src)/w7x_timing_brd_0.1.srcs/sources_1/bd/system/hdl/system_wrapper.v" \
+    "$project_env(dir_prj)/w7x_timing_brd_0.1.srcs/sources_1/bd/system/hdl/system_wrapper.v"
  set files [list \
-  "[file normalize $make_env(srcdir)/src/TestTiming.vhd]"\
-  "[file normalize $make_env(srcdir)/src/w7x_timing.vhd]"\
-  "[file normalize $make_env(srcdir)/src/w7x_timing_v1_0.vhd]"\
-  "[file normalize $make_env(srcdir)/src/w7x_timing_v1_0_S00_AXI.vhd]"\
+  "[file normalize $project_env(dir_prj)/w7x_timing_brd_0.1.srcs/sources_1/bd/system/system.bd]"\
+  "[file normalize $project_env(dir_prj)/w7x_timing_brd_0.1.srcs/sources_1/bd/system/hdl/system_wrapper.v]"\
  ]
  add_files -norecurse -fileset $obj $files
  # 
- # Properties for TestTiming.vhd
-  set file "$project_env(dir_src)/../../src/TestTiming.vhd"
-  set file [file normalize $file]
-  set file_obj [get_files -of_objects [get_filesets sources_1] [list "$file"]]
-  set_property -quiet "file_type" "VHDL" $file_obj
-  set_property -quiet "is_enabled" "1" $file_obj
-  set_property -quiet "is_global_include" "0" $file_obj
-  set_property -quiet "library" "xil_defaultlib" $file_obj
-  set_property -quiet "path_mode" "RelativeFirst" $file_obj
-  set_property -quiet "used_in" "synthesis simulation" $file_obj
-  set_property -quiet "used_in_simulation" "1" $file_obj
-  set_property -quiet "used_in_synthesis" "1" $file_obj
- # 
- # Properties for w7x_timing.vhd
-  set file "$project_env(dir_src)/../../src/w7x_timing.vhd"
-  set file [file normalize $file]
-  set file_obj [get_files -of_objects [get_filesets sources_1] [list "$file"]]
-  set_property -quiet "file_type" "VHDL" $file_obj
-  set_property -quiet "is_enabled" "1" $file_obj
-  set_property -quiet "is_global_include" "0" $file_obj
-  set_property -quiet "library" "xil_defaultlib" $file_obj
-  set_property -quiet "path_mode" "RelativeFirst" $file_obj
-  set_property -quiet "used_in" "synthesis simulation" $file_obj
-  set_property -quiet "used_in_simulation" "1" $file_obj
-  set_property -quiet "used_in_synthesis" "1" $file_obj
- # 
- # Properties for w7x_timing_v1_0.vhd
-  set file "$project_env(dir_src)/../../src/w7x_timing_v1_0.vhd"
-  set file [file normalize $file]
-  set file_obj [get_files -of_objects [get_filesets sources_1] [list "$file"]]
-  set_property -quiet "file_type" "VHDL" $file_obj
-  set_property -quiet "is_enabled" "1" $file_obj
-  set_property -quiet "is_global_include" "0" $file_obj
-  set_property -quiet "library" "xil_defaultlib" $file_obj
-  set_property -quiet "path_mode" "RelativeFirst" $file_obj
-  set_property -quiet "used_in" "synthesis simulation" $file_obj
-  set_property -quiet "used_in_simulation" "1" $file_obj
-  set_property -quiet "used_in_synthesis" "1" $file_obj
- # 
- # Properties for w7x_timing_v1_0_S00_AXI.vhd
-  set file "$project_env(dir_src)/../../src/w7x_timing_v1_0_S00_AXI.vhd"
-  set file [file normalize $file]
-  set file_obj [get_files -of_objects [get_filesets sources_1] [list "$file"]]
-  set_property -quiet "file_type" "VHDL" $file_obj
-  set_property -quiet "is_enabled" "1" $file_obj
-  set_property -quiet "is_global_include" "0" $file_obj
-  set_property -quiet "library" "xil_defaultlib" $file_obj
-  set_property -quiet "path_mode" "RelativeFirst" $file_obj
-  set_property -quiet "used_in" "synthesis simulation" $file_obj
-  set_property -quiet "used_in_simulation" "1" $file_obj
-  set_property -quiet "used_in_synthesis" "1" $file_obj
- # 
  # No properties for sources_1
+ # Properties for system.bd
+  set file "$project_env(dir_prj)/w7x_timing_brd_0.1.srcs/sources_1/bd/system/system.bd"
+  set file_obj [get_files -of_objects [get_filesets sources_1] [list "$file"]]
+  set_property -quiet "exclude_debug_logic" "0" $file_obj
+  if { ![get_property "is_locked" $file_obj] } {
+    set_property -quiet "generate_synth_checkpoint" "0" $file_obj
+  }
+  set_property -quiet "is_enabled" "1" $file_obj
+  set_property -quiet "is_global_include" "0" $file_obj
+  if { ![get_property "is_locked" $file_obj] } {
+    set_property -quiet "is_locked" "0" $file_obj
+  }
+  set_property -quiet "library" "xil_defaultlib" $file_obj
+  set_property -quiet "path_mode" "RelativeFirst" $file_obj
+  set_property -quiet "pfm_name" "" $file_obj
+  if { ![get_property "is_locked" $file_obj] } {
+    set_property -quiet "synth_checkpoint_mode" "None" $file_obj
+  }
+  set_property -quiet "used_in" "synthesis implementation simulation" $file_obj
+  set_property -quiet "used_in_implementation" "1" $file_obj
+  set_property -quiet "used_in_simulation" "1" $file_obj
+  set_property -quiet "used_in_synthesis" "1" $file_obj
+ # 
+ # Properties for system_wrapper.v
+  set file "$project_env(dir_prj)/w7x_timing_brd_0.1.srcs/sources_1/bd/system/hdl/system_wrapper.v"
+  set file_obj [get_files -of_objects [get_filesets sources_1] [list "$file"]]
+  set_property -quiet "file_type" "Verilog" $file_obj
+  set_property -quiet "is_enabled" "1" $file_obj
+  set_property -quiet "is_global_include" "0" $file_obj
+  set_property -quiet "library" "xil_defaultlib" $file_obj
+  set_property -quiet "path_mode" "RelativeFirst" $file_obj
+  set_property -quiet "used_in" "synthesis implementation simulation" $file_obj
+  set_property -quiet "used_in_implementation" "1" $file_obj
+  set_property -quiet "used_in_simulation" "1" $file_obj
+  set_property -quiet "used_in_synthesis" "1" $file_obj
+ # 
  # 
  # 
  # /////////////////////////////////////////////////////////////  
@@ -267,8 +255,28 @@ namespace upvar ::tclapp::socdev::makeutils core_env    core_env
  # 
  # Set 'constrs_1' fileset object
  set obj [get_filesets constrs_1]
- # Empty (no sources present)
-
+ set files [list \
+  "[file normalize $make_env(srcdir)/src/red_pitaya.xdc]"\
+ ]
+ add_files -norecurse -fileset $obj $files
+ # 
+ # Properties for red_pitaya.xdc
+  set file "$project_env(dir_src)/../../src/red_pitaya.xdc"
+  set file [file normalize $file]
+  set file_obj [get_files -of_objects [get_filesets constrs_1] [list "$file"]]
+  set_property -quiet "file_type" "XDC" $file_obj
+  set_property -quiet "is_enabled" "1" $file_obj
+  set_property -quiet "is_global_include" "0" $file_obj
+  set_property -quiet "library" "xil_defaultlib" $file_obj
+  set_property -quiet "path_mode" "RelativeFirst" $file_obj
+  set_property -quiet "processing_order" "NORMAL" $file_obj
+  set_property -quiet "scoped_to_cells" "" $file_obj
+  set_property -quiet "scoped_to_ref" "" $file_obj
+  set_property -quiet "used_in" "synthesis implementation" $file_obj
+  set_property -quiet "used_in_implementation" "1" $file_obj
+  set_property -quiet "used_in_synthesis" "1" $file_obj
+ # 
+ # No properties for constrs_1
  # 
  # 
  # /////////////////////////////////////////////////////////////  
