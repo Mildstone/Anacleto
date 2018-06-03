@@ -244,7 +244,6 @@ proc create_root_design { parentCell } {
    CONFIG.PCW_CAN_PERIPHERAL_CLKSRC {IO PLL} \
    CONFIG.PCW_CAN_PERIPHERAL_DIVISOR0 {1} \
    CONFIG.PCW_CAN_PERIPHERAL_DIVISOR1 {1} \
-   CONFIG.PCW_CAN_PERIPHERAL_FREQMHZ {100} \
    CONFIG.PCW_CAN_PERIPHERAL_VALID {0} \
    CONFIG.PCW_CLK0_FREQ {125000000} \
    CONFIG.PCW_CLK1_FREQ {10000000} \
@@ -734,7 +733,6 @@ proc create_root_design { parentCell } {
    CONFIG.PCW_SMC_CYCLE_T6 {NA} \
    CONFIG.PCW_SMC_PERIPHERAL_CLKSRC {IO PLL} \
    CONFIG.PCW_SMC_PERIPHERAL_DIVISOR0 {1} \
-   CONFIG.PCW_SMC_PERIPHERAL_FREQMHZ {100} \
    CONFIG.PCW_SMC_PERIPHERAL_VALID {0} \
    CONFIG.PCW_SPI0_GRP_SS0_ENABLE {0} \
    CONFIG.PCW_SPI0_GRP_SS1_ENABLE {0} \
@@ -752,10 +750,6 @@ proc create_root_design { parentCell } {
    CONFIG.PCW_SPI_PERIPHERAL_DIVISOR0 {6} \
    CONFIG.PCW_SPI_PERIPHERAL_FREQMHZ {166.666666} \
    CONFIG.PCW_SPI_PERIPHERAL_VALID {1} \
-   CONFIG.PCW_S_AXI_HP0_DATA_WIDTH {64} \
-   CONFIG.PCW_S_AXI_HP1_DATA_WIDTH {64} \
-   CONFIG.PCW_S_AXI_HP2_DATA_WIDTH {64} \
-   CONFIG.PCW_S_AXI_HP3_DATA_WIDTH {64} \
    CONFIG.PCW_TPIU_PERIPHERAL_CLKSRC {External} \
    CONFIG.PCW_TPIU_PERIPHERAL_DIVISOR0 {1} \
    CONFIG.PCW_TPIU_PERIPHERAL_FREQMHZ {200} \
@@ -786,7 +780,6 @@ proc create_root_design { parentCell } {
    CONFIG.PCW_TTC1_CLK2_PERIPHERAL_DIVISOR0 {1} \
    CONFIG.PCW_TTC1_CLK2_PERIPHERAL_FREQMHZ {133.333333} \
    CONFIG.PCW_TTC1_PERIPHERAL_ENABLE {0} \
-   CONFIG.PCW_TTC_PERIPHERAL_FREQMHZ {50} \
    CONFIG.PCW_UART0_BASEADDR {0xE0000000} \
    CONFIG.PCW_UART0_BAUD_RATE {115200} \
    CONFIG.PCW_UART0_GRP_FULL_ENABLE {0} \
@@ -931,19 +924,8 @@ proc create_root_design { parentCell } {
   set w7x_timing_0 [ create_bd_cell -type ip -vlnv w7x:w7x:timing:1.0 w7x_timing_0 ]
 
   set_property -dict [ list \
-   CONFIG.MASTER_TYPE {BRAM_CTRL} \
- ] [get_bd_intf_pins /w7x_timing_0/BRAM_A]
-
-  set_property -dict [ list \
-   CONFIG.MASTER_TYPE {BRAM_CTRL} \
- ] [get_bd_intf_pins /w7x_timing_0/BRAM_B]
-
-  set_property -dict [ list \
-   CONFIG.FREQ_HZ {125000000} \
-   CONFIG.SUPPORTS_NARROW_BURST {0} \
    CONFIG.NUM_READ_OUTSTANDING {1} \
    CONFIG.NUM_WRITE_OUTSTANDING {1} \
-   CONFIG.MAX_BURST_LENGTH {1} \
  ] [get_bd_intf_pins /w7x_timing_0/s00_axi]
 
   # Create instance: w7x_timing_0_bram, and set properties
@@ -962,11 +944,11 @@ proc create_root_design { parentCell } {
 
   # Create port connections
   connect_bd_net -net clk_1 [get_bd_ports clk_in] [get_bd_pins w7x_timing_0/clk_in]
-  connect_bd_net -net processing_system7_0_FCLK_CLK0 [get_bd_pins processing_system7_0/FCLK_CLK0] [get_bd_pins processing_system7_0/M_AXI_GP0_ACLK] [get_bd_pins ps7_0_axi_periph/ACLK] [get_bd_pins ps7_0_axi_periph/M00_ACLK] [get_bd_pins ps7_0_axi_periph/S00_ACLK] [get_bd_pins rst_ps7_0_125M/slowest_sync_clk] [get_bd_pins w7x_timing_0/clk_axi_in]
+  connect_bd_net -net processing_system7_0_FCLK_CLK0 [get_bd_pins processing_system7_0/FCLK_CLK0] [get_bd_pins processing_system7_0/M_AXI_GP0_ACLK] [get_bd_pins ps7_0_axi_periph/ACLK] [get_bd_pins ps7_0_axi_periph/M00_ACLK] [get_bd_pins ps7_0_axi_periph/S00_ACLK] [get_bd_pins rst_ps7_0_125M/slowest_sync_clk] [get_bd_pins w7x_timing_0/aclk]
   connect_bd_net -net processing_system7_0_FCLK_CLK1 [get_bd_pins processing_system7_0/FCLK_CLK1] [get_bd_pins w7x_timing_0/clk20_in]
   connect_bd_net -net processing_system7_0_FCLK_RESET0_N [get_bd_pins processing_system7_0/FCLK_RESET0_N] [get_bd_pins rst_ps7_0_125M/ext_reset_in]
   connect_bd_net -net rst_ps7_0_125M_interconnect_aresetn [get_bd_pins ps7_0_axi_periph/ARESETN] [get_bd_pins rst_ps7_0_125M/interconnect_aresetn]
-  connect_bd_net -net rst_ps7_0_125M_peripheral_aresetn [get_bd_pins ps7_0_axi_periph/M00_ARESETN] [get_bd_pins ps7_0_axi_periph/S00_ARESETN] [get_bd_pins rst_ps7_0_125M/peripheral_aresetn] [get_bd_pins w7x_timing_0/s00_axi_resetn]
+  connect_bd_net -net rst_ps7_0_125M_peripheral_aresetn [get_bd_pins ps7_0_axi_periph/M00_ARESETN] [get_bd_pins ps7_0_axi_periph/S00_ARESETN] [get_bd_pins rst_ps7_0_125M/peripheral_aresetn] [get_bd_pins w7x_timing_0/aresetn]
   connect_bd_net -net trig_1 [get_bd_ports trig_in] [get_bd_pins w7x_timing_0/trig_in]
   connect_bd_net -net w7x_timing_0_state_do [get_bd_ports state1] [get_bd_pins w7x_timing_0/state_do]
   connect_bd_net -net w7x_timing_0_state_led [get_bd_ports state0] [get_bd_ports state_leds] [get_bd_pins w7x_timing_0/state_led]

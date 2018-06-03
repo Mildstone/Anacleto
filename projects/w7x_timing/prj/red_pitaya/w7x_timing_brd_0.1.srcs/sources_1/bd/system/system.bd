@@ -179,7 +179,7 @@
           </spirit:wire>
         </spirit:port>
         <spirit:port>
-          <spirit:name>state_leds</spirit:name>
+          <spirit:name>state0</spirit:name>
           <spirit:wire>
             <spirit:direction>out</spirit:direction>
             <spirit:vector>
@@ -189,7 +189,7 @@
           </spirit:wire>
         </spirit:port>
         <spirit:port>
-          <spirit:name>state0</spirit:name>
+          <spirit:name>state_leds</spirit:name>
           <spirit:wire>
             <spirit:direction>out</spirit:direction>
             <spirit:vector>
@@ -782,7 +782,7 @@
         <spirit:instanceName>ps7_0_axi_periph</spirit:instanceName>
         <spirit:componentRef spirit:library="BlockDiagram/system_imp" spirit:name="ps7_0_axi_periph" spirit:vendor="xilinx.com" spirit:version="1.00.a"/>
         <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">system_ps7_0_axi_periph_1</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">system_ps7_0_axi_periph_0</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="NUM_MI">1</spirit:configurableElementValue>
           <spirit:configurableElementValue spirit:referenceId="appcore">xilinx.com:ip:axi_interconnect:2.1</spirit:configurableElementValue>
         </spirit:configurableElementValues>
@@ -791,7 +791,7 @@
         <spirit:instanceName>rst_ps7_0_125M</spirit:instanceName>
         <spirit:componentRef spirit:library="ip" spirit:name="proc_sys_reset" spirit:vendor="xilinx.com" spirit:version="5.0"/>
         <spirit:configurableElementValues>
-          <spirit:configurableElementValue spirit:referenceId="bd:xciName">system_rst_ps7_0_125M_1</spirit:configurableElementValue>
+          <spirit:configurableElementValue spirit:referenceId="bd:xciName">system_rst_ps7_0_125M_0</spirit:configurableElementValue>
         </spirit:configurableElementValues>
       </spirit:componentInstance>
     </spirit:componentInstances>
@@ -827,11 +827,11 @@
         <spirit:name>processing_system7_0_FCLK_CLK0</spirit:name>
         <spirit:internalPortReference spirit:componentRef="processing_system7_0" spirit:portRef="FCLK_CLK0"/>
         <spirit:internalPortReference spirit:componentRef="processing_system7_0" spirit:portRef="M_AXI_GP0_ACLK"/>
-        <spirit:internalPortReference spirit:componentRef="w7x_timing_0" spirit:portRef="clk_axi_in"/>
         <spirit:internalPortReference spirit:componentRef="rst_ps7_0_125M" spirit:portRef="slowest_sync_clk"/>
         <spirit:internalPortReference spirit:componentRef="ps7_0_axi_periph" spirit:portRef="S00_ACLK"/>
         <spirit:internalPortReference spirit:componentRef="ps7_0_axi_periph" spirit:portRef="M00_ACLK"/>
         <spirit:internalPortReference spirit:componentRef="ps7_0_axi_periph" spirit:portRef="ACLK"/>
+        <spirit:internalPortReference spirit:componentRef="w7x_timing_0" spirit:portRef="aclk"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>trig_1</spirit:name>
@@ -851,9 +851,9 @@
       <spirit:adHocConnection>
         <spirit:name>rst_ps7_0_125M_peripheral_aresetn</spirit:name>
         <spirit:internalPortReference spirit:componentRef="rst_ps7_0_125M" spirit:portRef="peripheral_aresetn"/>
-        <spirit:internalPortReference spirit:componentRef="w7x_timing_0" spirit:portRef="s00_axi_resetn"/>
         <spirit:internalPortReference spirit:componentRef="ps7_0_axi_periph" spirit:portRef="S00_ARESETN"/>
         <spirit:internalPortReference spirit:componentRef="ps7_0_axi_periph" spirit:portRef="M00_ARESETN"/>
+        <spirit:internalPortReference spirit:componentRef="w7x_timing_0" spirit:portRef="aresetn"/>
       </spirit:adHocConnection>
       <spirit:adHocConnection>
         <spirit:name>rst_ps7_0_125M_interconnect_aresetn</spirit:name>
@@ -868,8 +868,8 @@
       <spirit:adHocConnection>
         <spirit:name>w7x_timing_0_state_led</spirit:name>
         <spirit:internalPortReference spirit:componentRef="w7x_timing_0" spirit:portRef="state_led"/>
-        <spirit:externalPortReference spirit:portRef="state0"/>
         <spirit:externalPortReference spirit:portRef="state_leds"/>
+        <spirit:externalPortReference spirit:portRef="state0"/>
       </spirit:adHocConnection>
     </spirit:adHocConnections>
     <spirit:hierConnections>

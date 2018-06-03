@@ -267,8 +267,28 @@ namespace upvar ::tclapp::socdev::makeutils core_env    core_env
  # 
  # Set 'constrs_1' fileset object
  set obj [get_filesets constrs_1]
- # Empty (no sources present)
-
+ set files [list \
+  "[file normalize $make_env(srcdir)/src/w7x_timing.xdc]"\
+ ]
+ add_files -norecurse -fileset $obj $files
+ # 
+ # Properties for w7x_timing.xdc
+  set file "$project_env(dir_src)/../../src/w7x_timing.xdc"
+  set file [file normalize $file]
+  set file_obj [get_files -of_objects [get_filesets constrs_1] [list "$file"]]
+  set_property -quiet "file_type" "XDC" $file_obj
+  set_property -quiet "is_enabled" "1" $file_obj
+  set_property -quiet "is_global_include" "0" $file_obj
+  set_property -quiet "library" "xil_defaultlib" $file_obj
+  set_property -quiet "path_mode" "RelativeFirst" $file_obj
+  set_property -quiet "processing_order" "NORMAL" $file_obj
+  set_property -quiet "scoped_to_cells" "" $file_obj
+  set_property -quiet "scoped_to_ref" "" $file_obj
+  set_property -quiet "used_in" "synthesis implementation" $file_obj
+  set_property -quiet "used_in_implementation" "1" $file_obj
+  set_property -quiet "used_in_synthesis" "1" $file_obj
+ # 
+ # No properties for constrs_1
  # 
  # 
  # /////////////////////////////////////////////////////////////  
