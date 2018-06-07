@@ -4,5 +4,6 @@
 //
 
 
+#define DRIVER_NAME "@modname@"
 
 

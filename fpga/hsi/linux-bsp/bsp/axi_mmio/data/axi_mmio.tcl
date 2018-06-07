@@ -60,6 +60,7 @@ proc generate { drv_handle } {
   set li [list]
   foreach node [array names sw] {
     lappend li "@$node@"
+    lappend li "\$$node\$"
     if {[catch {lappend li [expr $sw($node)]}]} {
      lappend li $sw($node)
     }
@@ -67,6 +68,8 @@ proc generate { drv_handle } {
 
   parse_file $drv_handle "${src_dir}/src/axi_mmio.c.template" "src/${drv_name}.c" "axi_mmio" li;
   parse_file $drv_handle "${src_dir}/src/axi_mmio.h.template" "src/${drv_name}.h" "axi_mmio" li;
+  parse_file $drv_handle "${src_dir}/src/axi_mmio2.c.template" "src/${drv_name}_v2.c" "axi_mmio" li;
+  parse_file $drv_handle "${src_dir}/src/axi_mmio2.h.template" "src/${drv_name}_v2.h" "axi_mmio" li;
 
   ## ///////////////////////////////////////////////////////////////////////////
   ## //  REG.H  ////////////////////////////////////////////////////////////////
