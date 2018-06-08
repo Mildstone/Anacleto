@@ -279,7 +279,7 @@ proc make_repackage_ip {} {
    set_property LIBRARY      $v::ce(VENDOR) $core
    set_property VENDOR       $v::ce(VENDOR) $core
    #  set_property DESCRIPTION $v::ce(DESCRIPTION) $core
-   #set_property file_type IP-XACT [get_files $ipdir/component.xml]
+   catch {set_property file_type IP-XACT [get_files $ipdir/component.xml]}
    # synth design to make a first compile test
    # synth_design -rtl -name rtl_1
 
@@ -412,6 +412,9 @@ proc make_load_sources { } {
 				    send_msg_id [v::mid]-2 ERROR \
 				    "some error occurred executing TCL script.."}
 				 }
+	default {
+	   add_files $path
+	}
      }
    }
   }
@@ -498,7 +501,7 @@ if {!($v::pe($var) eq "")} {
 }
 
 
-proc make_open_project {{exec_preset 1}} {
+proc make_open_project {{exec_preset 0}} {
   set_compatible_with Vivado
 
   # init script

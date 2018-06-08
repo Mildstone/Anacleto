@@ -18,5 +18,12 @@ AX_CONFIG_FILES(
  rfx_dmatests/Makefile
  rfx_dmatests/linux/Makefile
  rfx_dmatests/linux/Kbuild
+
+ mit_jasadc/Makefile
+ mit_jasadc/linux/src/Makefile
+ mit_jasadc/linux/src/Kbuild
+
+ rp_legacy/Makefile
+
 )
 

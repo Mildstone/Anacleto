@@ -1,0 +1,5 @@
+obj    = $(builddir)
+src    = $(srcdir)
+obj-m  += rpadc_fifo.o
+
+obj-m  += xilinx-xadc-core.o

@@ -75,10 +75,13 @@ proc generate { drv_handle } {
   set periphs [::hsi::utils::get_common_driver_ips $drv_handle]
   set li [list]
   foreach i $periphs {
+	puts " properies of pheripheral: \n[report_property $i]"
 	set c_name [common::get_property CONFIG.Component_Name $i]
 	set l_addr [common::get_property CONFIG.C_BASEADDR $i]
 	set h_addr [common::get_property CONFIG.C_HIGHADDR $i]
-	lappend li "void *$c_name\[\] = {$l_addr, $h_addr};"
+	set l4_addr [common::get_property CONFIG.C_AXI4_BASEADDR $i]
+	set h4_addr [common::get_property CONFIG.C_AXI4_HIGHADDR $i]
+	lappend li "void *$c_name\[\] = {$l_addr, $h_addr, $l4_addr, $h4_addr};"
   }
   set file_dst [open "src/${drv_name}_reg.h" "w"]
   foreach l $li {
