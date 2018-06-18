@@ -86,10 +86,12 @@ proc set_compatible_with { program } {
 
 proc make_init_script {} {
  set path_brd "$v::me(top_srcdir)/fpga/brd \
-			   $v::me(top_srcdir)/fpga/brd/red_pitaya \
-			   $v::me(top_srcdir)/fpga/brd/red_pitaya/1.1 "
+	       $v::me(top_srcdir)/fpga/brd/red_pitaya \
+	       $v::me(top_srcdir)/fpga/brd/red_pitaya/1.1 \
+	       $v::me(top_srcdir)/fpga/brd/zybo \
+	       $v::me(top_srcdir)/fpga/brd/zybo/B.3 \
+	       "
  set_param board.repoPaths $path_brd
-
 }
 
 
