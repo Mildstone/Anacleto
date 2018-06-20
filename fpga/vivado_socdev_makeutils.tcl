@@ -198,7 +198,7 @@ proc make_package_hls_ip {} {
   set current_dir [pwd]
   file mkdir $dir_prj
   cd $dir_prj
-  open_project $project_name 0
+  open_project $project_name
   cd $current_dir
   foreach file [split $v::pe(SOURCES) " "] {
 	set ftype [file extension $file]
@@ -254,15 +254,16 @@ proc make_package_ip { } {
     puts " -- MAKE NEW PROJECT FOR IP -- "
 	 make_new_project 0
   }
+
+  # remove board from ip project
+  set_property BOARD_PART "" [current_project]
+
   if { [catch {current_project}] } {
    send_msg_id [v::mid]-1 ERROR "Could not start a new project"
   }
 
   # repackage
   make_repackage_ip
-
-
-
 }
 
 proc make_repackage_ip {} {
@@ -273,7 +274,11 @@ proc make_repackage_ip {} {
   set files_no [llength [get_files -quiet]]
   puts " PROJECT FOUND: $files_no FILES"
   if { $files_no > 0 } {
-   ipx::package_project -import_files -root_dir $ipdir
+   if { "[get_property TOP [current_fileset]]" != "" } {
+	 ipx::package_project -import_files -root_dir $ipdir
+   } else {
+	 ipx::package_project -import_files -root_dir $ipdir -module [get_bd_design]
+   }
    set core [ipx::current_core]
    set_property VERSION      $v::ce(VERSION) $core
    set_property NAME         $v::ce(core_name) $core

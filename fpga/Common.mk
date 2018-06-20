@@ -36,8 +36,6 @@ project_VARIABLES = SOURCES \
 					BD_SOURCES \
 					PRJCFG \
 					IPCFG \
-					BOARD_PART \
-					BOARD_PRESET \
 					COMPILE_ORDER \
 					DRV_LINUX \
 					BSPDIR \
@@ -93,6 +91,10 @@ VIVADO_VERSION ?= 2015.4
 maxThreads     ?= 6
 COMPILE_ORDER  ?= auto
 
+BOARD_PART      ?= $($(BOARD)_BOARD_PART)
+BOARD_PRESET    ?= $($(BOARD)_BOARD_PRESET)
+VIVADO_SOC_PART ?= $($(BOARD)_VIVADO_SOC_PART)
+
 VIVADO_SRCDIR ?= $(srcdir)/prj/$(BOARD)
 VIVADO_PRJDIR ?= $(builddir)/edit/$(BOARD)
 VIVADO_BITDIR ?= $(builddir)/edit/$(BOARD)/$(FULL_NAME).bit
@@ -117,7 +119,6 @@ export FPGA_DIR \
 	   FPGA_BIT \
 	   DTREE_DIR \
 	   VIVADO_VERSION \
-	   VIVADO_SOC_PART \
 	   FPGA_REPO_DIR \
 	   COMPILE_ORDER
 
@@ -125,6 +126,7 @@ export NAME \
 	   BOARD \
 	   BOARD_PART \
 	   BOARD_PRESET \
+	   VIVADO_SOC_PART \
 	   VENDOR \
 	   LIBRARY \
 	   VERSION \
@@ -222,7 +224,23 @@ list: print_banner
 	$(info | PROJECTS: ) \
 	$(call _item,vivado_PROJECTS) \
 	$(info |) \
-	$(info | CURRENT: $(NAME)) \
+	$(info | ENABLED_BOARDS: ) \
+	$(call _item,ENABLED_BOARDS) \
+	$(info |) \
+	$(info | CURRENT: $(NAME)   [on $(BOARD)]) \
+	$(info |) \
+	$(info `-----------------------------------------------------------------) :
+
+
+board_info: ##@miscellaneous show board information
+board_info: print_banner
+	@ \
+	$(info ,-----------------------------------------------------------------) \
+	$(info | Board: $(BOARD) ) \
+	$(info |) \
+	$(info | BOARD_PART: $(BOARD_PART) ) \
+	$(info | BOARD_PRESET: $(BOARD_PRESET) ) \
+	$(info | VIVADO_SOC_PART: $(VIVADO_SOC_PART) ) \
 	$(info |) \
 	$(info `-----------------------------------------------------------------) :
 
@@ -254,11 +272,11 @@ bitstream:     print_banner ##@projects generate bitstream
 package_ip:   ##@cores create a new pheripheral project for edit.
 edit_ip:  ##@cores open project ip or edit existing project as a new ip.
 
-new_project write_project write_bitstream package_ip: $(check_sources)
+write_project write_bitstream package_ip: $(check_sources)
 	@ $(call vivado,$@)
 
 .PHONY: open_project edit_ip
-open_project: $(check_sources)
+new_project open_project: $(check_sources)
 	@ $(call vivado_shell,$@)
 
 edit_ip: $(check_sources)
