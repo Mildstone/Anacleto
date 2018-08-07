@@ -425,6 +425,15 @@ proc make_load_sources { } {
      }
    }
   }
+  # Test bench sources
+  if {!($v::pe(TB_SOURCES) eq "")} {
+   foreach file [split $v::pe(TB_SOURCES) " "] {
+     set ftype [file extension $file]
+     set path [make_find_path $file]
+     if {$path eq ""} {continue}
+	 add_files $path -fileset sim_1
+   }
+  }
   # import all remote BD from TCL scripts
   if {!($v::pe(BD_SOURCES) eq "")} {
    foreach file [split $v::pe(BD_SOURCES) " "] {

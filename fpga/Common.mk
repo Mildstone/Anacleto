@@ -34,6 +34,7 @@ project_LISTS = vivado_CORES \
 project_VARIABLES = SOURCES \
 					IP_SOURCES \
 					BD_SOURCES \
+					TB_SOURCES \
 					PRJCFG \
 					IPCFG \
 					COMPILE_ORDER \
@@ -101,6 +102,8 @@ VIVADO_BITDIR ?= $(builddir)/edit/$(BOARD)/$(FULL_NAME).bit
 VIVADO_SDKDIR ?= $(builddir)/edit/$(BOARD)/$(FULL_NAME).sdk
 VIVADO_IPDIR  ?= $(builddir)/ip/vivado
 
+GHDL_IPDIR ?=
+
 FPGA_BIT    = $(VIVADO_BITDIR)/$(FULL_NAME).bit
 FSBL_ELF    = $(VIVADO_SDKDIR)/fsbl/executable.elf
 DTS         = $(VIVADO_SDKDIR)/dts/devicetree.dts
@@ -133,6 +136,7 @@ export NAME \
 	   SOURCES \
 	   BD_SOURCES \
 	   IP_SOURCES \
+	   TB_SOURCES \
 	   PRJCFG \
 	   IPCFG \
 	   DRV_LINUX \
@@ -360,7 +364,7 @@ bash:
 ## ///  CLEAN  ////////////////////////////////////////////////////////////// ##
 ## ////////////////////////////////////////////////////////////////////////// ##
 
-clean-local:
+clean-local::
 	-rm -rf .Xil .srcs webtalk_* *jou*.tcl \
 	 vivado.jou  vivado.log  \
 	 vivado_*.backup.jou  vivado_*.backup.log  vivado_pid*.str \
@@ -424,5 +428,71 @@ else
 	@ echo "none of sshpass command or configured ssh key was found"
 endif
 endif
+
+
+
+## ////////////////////////////////////////////////////////////////////////////////
+## //  GHDL  //////////////////////////////////////////////////////////////////////
+## ////////////////////////////////////////////////////////////////////////////////
+
+
+GHDL_BINARY  = ghdl
+GHDL_WORK   ?= work
+GHDL_FLAGS   = --ieee=synopsys --warn-no-vital-generic
+
+define _rename =
+$(info overriding with $(1))
+override SOURCES = $$($(1)_SOURCES)
+override TB_SOURCES = $$($(1)_TB_SOURCES)
+override GHDL_WORK = $(1)_ghdl
+endef
+
+
+.vhdl.o:
+	@ $(GHDL_BINARY) -a $(GHDL_FLAGS) --workdir=$(builddir) --work=$(GHDL_WORK) $<
+
+ghdl-%: GHDL_WORK=$(NAME)_ghdl
+ghdl-%: SOURCES:=$(filter %.vhdl %.vhd,$(SOURCES)) \
+        TB_SOURCES:=$(filter %.vhdl %.vhd,$(TB_SOURCES))
+
+ghdl-core: $(SOURCES:.vhdl=.o)
+	@ $(GHDL_BINARY) -m $(GHDL_FLAGS) --workdir=$(builddir) --work=$(GHDL_WORK) \
+	  $(UNIT) $(ARCHITECTURE)
+
+ghdl-list: $(SOURCES:.vhdl=.o)
+	@ $(GHDL_BINARY) -d $(GHDL_FLAGS) --workdir=$(builddir) --work=$(GHDL_WORK)
+
+$($(NAME)_UNITS):
+	@ $(MAKE) ghdl-core UNIT=$@
+
+ghdl-clean::
+	@ ghdl --clean --workdir=$(builddir) --work=$(GHDL_WORK)
+	@ ghdl --remove --workdir=$(builddir) --work=$(GHDL_WORK)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
