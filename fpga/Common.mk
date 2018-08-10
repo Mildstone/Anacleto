@@ -254,11 +254,11 @@ board_info: print_banner
 ## ////////////////////////////////////////////////////////////////////////// ##
 
 .PHONY: vivado_shell hsi_shell xsdk_shell
-vivado_shell:##@xilinx open a vivado shell with configured env
-hsi_shell:   ##@xilinx open hsi shell with configured env
-hls_shell:   ##@xilinx open hls shell with configured env
-xsdk_shell:  ##@xilinx open xsdk shell with configured env
-sdk_shell:   ##@xilinx open sdk shell with configured env
+vivado_shell:##@@xilinx open a vivado shell with configured env
+hsi_shell:   ##@@xilinx open hsi shell with configured env
+hls_shell:   ##@@xilinx open hls shell with configured env
+xsdk_shell:  ##@@xilinx open xsdk shell with configured env
+sdk_shell:   ##@@xilinx open sdk shell with configured env
 
 vivado vivado_shell hsi hsi_shell hls hls_shell xsdk_shell sdk_shell:
 	@ $(call $@,${TCL_ARGS})
@@ -274,7 +274,7 @@ write_project: print_banner ##@projects Store the current project
 bitstream:     print_banner ##@projects generate bitstream
 
 package_ip:   ##@cores create a new pheripheral project for edit.
-edit_ip:  ##@cores open project ip or edit existing project as a new ip.
+edit_ip:      ##@cores open project ip or edit existing project as a new ip.
 
 write_project write_bitstream package_ip: $(check_sources)
 	@ $(call vivado,$@)
@@ -355,7 +355,7 @@ autotest_name:
 	VENDOR=pven NAME=pven_pnam       $(MAKE) print_name
 	VENDOR=pven NAME=pven_pnam_5.55  $(MAKE) print_name
 
-bash:
+vivado-bash: ##@@xilinx vivado env bash
 	@ ${_envset}; \
 	  /bin/bash
 
@@ -391,7 +391,7 @@ clean-all: clean-local clean_project clean_ip
 ## ////////////////////////////////////////////////////////////////////////// ##
 
 .PHONY: deploy
-deploy: ## Copy all files to target device
+deploy: ##@projects Copy all files to target device
 deploy: $(FPGA_BIT) $(LINUX_IMAGE) $(DTB)
 if WITH_DEVICE_SSHKEY
 	@ echo " --- deploying to target device: ${DEVICE_NAME} using key ---";
@@ -408,7 +408,7 @@ endif
 endif
 
 .PHONY: deploy_fpga
-deploy_fpga: ##projects Start generated bitstream in target device
+deploy_fpga: ##@projects Start generated bitstream in target device
 deploy_fpga: $(FPGA_BIT)
 	@ echo ""; \
 	  echo " WARNING: This will reprogram fpga without setting devicetree and kernel "
@@ -439,6 +439,7 @@ endif
 GHDL_BINARY  = ghdl
 GHDL_WORK   ?= work
 GHDL_FLAGS   = --ieee=synopsys --warn-no-vital-generic
+GHDL_STOP_TIME ?= 100us
 
 define _rename =
 $(info overriding with $(1))
@@ -448,23 +449,31 @@ override GHDL_WORK = $(1)_ghdl
 endef
 
 
-.vhdl.o:
+VHDL_OBJECTS = $(SOURCES:.vhdl=.o) $(SOURCES:.vhd=.o) \
+               $(TB_SOURCES:.vhdl=.o) $(TB_SOURCES:.vhd=.o)
+
+.vhd.o .vhdl.o:
 	@ $(GHDL_BINARY) -a $(GHDL_FLAGS) --workdir=$(builddir) --work=$(GHDL_WORK) $<
 
 ghdl-%: GHDL_WORK=$(NAME)_ghdl
 ghdl-%: SOURCES:=$(filter %.vhdl %.vhd,$(SOURCES)) \
         TB_SOURCES:=$(filter %.vhdl %.vhd,$(TB_SOURCES))
 
-ghdl-core: $(SOURCES:.vhdl=.o)
+ghdl-core: ##@@ghdl compile core in NAME identified by UNIT
+ghdl-core: $(VHDL_OBJECTS)
 	@ $(GHDL_BINARY) -m $(GHDL_FLAGS) --workdir=$(builddir) --work=$(GHDL_WORK) \
 	  $(UNIT) $(ARCHITECTURE)
 
-ghdl-list: $(SOURCES:.vhdl=.o)
+ghdl-list: $(VHDL_OBJECTS)
 	@ $(GHDL_BINARY) -d $(GHDL_FLAGS) --workdir=$(builddir) --work=$(GHDL_WORK)
+
+ghdl-run: $(UNIT)
+	@ ./$(UNIT) $(if $(GHDL_STOP_TIME),--stop-time=$(GHDL_STOP_TIME))
 
 $($(NAME)_UNITS):
 	@ $(MAKE) ghdl-core UNIT=$@
 
+ghdl-clean:: ##@@ghdl clean ghdl files
 ghdl-clean::
 	@ ghdl --clean --workdir=$(builddir) --work=$(GHDL_WORK)
 	@ ghdl --remove --workdir=$(builddir) --work=$(GHDL_WORK)

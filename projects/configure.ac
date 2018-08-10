@@ -25,5 +25,8 @@ AX_CONFIG_FILES(
 
  rp_legacy/Makefile
 
+ rfx_spalk/Makefile
+ rfx_spalk/linux/src/Makefile
+ rfx_spalk/linux/src/Kbuild
 )
 
