@@ -8,7 +8,6 @@ __ax_awk_envsubst = $(AWK) '{while(match($$0,"[^\\$$]{[^}]*}")) {var=substr($$0,
 __ax_pl_envsubst = $(PERL) -pe 's/([^\\]|^)\$$\{([a-zA-Z_][a-zA-Z_0-9]*)\}/$$1.$$ENV{$$2}/eg' < $1 > $2
 
 SUFFIXES = .sh .sh.template
-
 .sh.template.sh:
 	@ $(call __ax_pl_envsubst,$<,$@); \
 	source ./$@

@@ -1,7 +1,7 @@
 include $(top_srcdir)/Common.mk
 include $(top_srcdir)/conf/kscripts/nodejs.mk
 
-NODOCKERBUILD = %
+NODOCKERBUILD += %
 
 ## DEFAULT MODULES ##
 NAME = r1
@@ -26,7 +26,8 @@ n1_DEPS = menu
 
 REACT_MODULES = r1 r2
 
-r1_DEPS = rc-menu react-grid-layout create-react-class webpack node-json-rpc \
+r1_DEPS = flow \
+          rc-menu react-grid-layout create-react-class webpack node-json-rpc \
 		  mini-signals
 r2_DEPS = r1
 
@@ -40,3 +41,10 @@ extn1_SOURCES = extn1.cpp
 extn1_CPPFLAGS = -std=c++11 -I$(top_builddir)/ext/nodejs-node/src \
 				 -I$(top_builddir)/ext/nodejs-node/deps/v8/include
 extn1_LDFLAGS = -L$(top_builddir)/ext/nodejs-node -lnode
+
+
+
+## ATOM EDITOR ##
+## from: https://medium.com/@bhongy/atom-nuclide-setup-for-react-flow-projects-4db02484c230
+##
+ATOM_PACKAGES = nuclide linter linter-eslint linter-ui-default prettier-atom intentions busy-signal
