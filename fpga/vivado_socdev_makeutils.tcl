@@ -601,9 +601,10 @@ proc make_write_project {} {
 proc make_write_bitstream {} {
   set_compatible_with Vivado
 
-  set prj_name $v::pe(project_name)
-  set path_bit $v::pe(dir_bit)
-  set path_sdk $v::pe(dir_sdk)
+  set prj_name       $v::pe(project_name)
+  set path_bit       $v::pe(dir_bit)
+  set path_sdk       $v::pe(dir_sdk)
+	set vivado_version $v::pe(VIVADO_VERSION)
 
   make_open_project 0
 
@@ -658,6 +659,8 @@ proc make_write_bitstream {} {
 
   # Export Hardware for SDK inclusion #
   write_hwdef     -force   -file    $path_sdk/$prj_name.hdf
+	write_dsa       -force   -include_bit $path_sdk/$prj_name.dsa
+	write_dsa       -force   -include_bit $path_sdk/$prj_name_$vivado_version.dsa
 }
 
 

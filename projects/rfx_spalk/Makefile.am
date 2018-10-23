@@ -18,6 +18,8 @@ axis_8b10b_SOURCES = \
 axis_8b10b_TB_SOURCES = \
                         8b10b_encdec/IO_TB.vhd
 
+
+
 vhdl_CORES = axis_8b10b
 axis_8b10b_UNITS = IO_TB
 
@@ -27,7 +29,11 @@ spalk_VERSION = 1.0
 spalk_SOURCES =  \
 				 red_pitaya.xdc
 
-spalk_IP_SOURCES = suart
+spalk_IP_SOURCES = axis_8b10b
+
+
+
+
 
 
 
@@ -43,7 +49,7 @@ hello_SOURCES = hello_world/hello.vhdl \
                 hello_world/adder.vhdl \
 				hello_world/adder_tb.vhdl
 
-hello_UNITS = hello_world adder_tb
+hello_UNITS   = hello_world adder_tb
 
 
 
@@ -52,9 +58,11 @@ hello_UNITS = hello_world adder_tb
 ## //  IDE  ///////////////////////////////////////////////////////////////////////
 ## ////////////////////////////////////////////////////////////////////////////////
 
-NODOCKERBUILD += $(targets_IDE) $(axis_8b10b_UNITS) $(hello_UNITS)
+NODOCKERBUILD += $(targets_IDE) $(axis_8b10b_UNITS) $(hello_UNITS) \
+                 edit-atom \
+								 edit-code
 
-ATOM_PACKAGES += language-vhdl \
+ATOM_PACKAGES  = language-vhdl \
                  linter-vhdl \
 				 vhdl-entity-converter \
 				 busy-signal build

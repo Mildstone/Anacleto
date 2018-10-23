@@ -19,6 +19,8 @@ architecture behavioral of IO_TB is
  signal test_out_tvalid    : std_logic;
  signal sdat : std_logic;
 
+
+
  component io_8b10b
  generic (
    C_AXIS_TDATA_WIDTH : integer

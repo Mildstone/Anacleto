@@ -37,7 +37,7 @@ if ENABLE_FPGA
 
   menuconfig ENABLE_BOARD_RED_PITAYA
 	bool "STEMLab Red Pitaya"
-	default y	
+	default y
   if ENABLE_BOARD_RED_PITAYA
 	config red_pitaya_BOARD_PART
 	 string "board part"
@@ -111,6 +111,8 @@ if ENABLE_FPGA
 	 bool  "2017.4"
 	 config VIVADO_VERSION_2018_1
 	 bool  "2018.1"
+	 config VIVADO_VERSION_2018_2
+	 bool  "2018.2"
   endchoice
 
   choice VIVADO_SETUP_METHOD
@@ -138,6 +140,7 @@ if ENABLE_FPGA
 	default "/opt/Xilinx/Vivado/2017.2/settings64.sh" if VIVADO_VERSION_2017_2
 	default "/opt/Xilinx/Vivado/2017.4/settings64.sh" if VIVADO_VERSION_2017_4
 	default "/opt/Xilinx/Vivado/2018.1/settings64.sh" if VIVADO_VERSION_2018_1
+	default "/opt/Xilinx/Vivado/2018.2/settings64.sh" if VIVADO_VERSION_2018_2
 
   config VIVADO_SDK_SETUP_SCRIPT
 	string "Setup script to set vivado SDK environments"
@@ -149,6 +152,7 @@ if ENABLE_FPGA
 	default "/opt/Xilinx/SDK/2017.2/settings64.sh" if VIVADO_VERSION_2017_2
 	default "/opt/Xilinx/SDK/2017.4/settings64.sh" if VIVADO_VERSION_2017_4
 	default "/opt/Xilinx/SDK/2018.1/settings64.sh" if VIVADO_VERSION_2018_1
+	default "/opt/Xilinx/SDK/2018.2/settings64.sh" if VIVADO_VERSION_2018_2
   endif # SCRIPTS
 
   config DEVICETREE_BASEFILES_TAR
@@ -160,6 +164,7 @@ if ENABLE_FPGA
 	default "https://github.com/Xilinx/device-tree-xlnx/archive/xilinx-v2017.2.tar.gz" if VIVADO_VERSION_2017_2
 	default "https://github.com/Xilinx/device-tree-xlnx/archive/xilinx-v2017.4.tar.gz" if VIVADO_VERSION_2017_4
 	default "https://github.com/Xilinx/device-tree-xlnx/archive/xilinx-v2018.1.tar.gz" if VIVADO_VERSION_2018_1
+	default "https://github.com/Xilinx/device-tree-xlnx/archive/xilinx-v2018.2.tar.gz" if VIVADO_VERSION_2018_2
 
 
 #  config VIVADO_LICENSE_PATH

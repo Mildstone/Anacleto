@@ -464,11 +464,25 @@ ghdl-core: $(VHDL_OBJECTS)
 	@ $(GHDL_BINARY) -m $(GHDL_FLAGS) --workdir=$(builddir) --work=$(GHDL_WORK) \
 	  $(UNIT) $(ARCHITECTURE)
 
+ghdl-list: ##@@ghdl list ghdl defined modules
 ghdl-list: $(VHDL_OBJECTS)
 	@ $(GHDL_BINARY) -d $(GHDL_FLAGS) --workdir=$(builddir) --work=$(GHDL_WORK)
 
-ghdl-run: $(UNIT)
-	@ ./$(UNIT) $(if $(GHDL_STOP_TIME),--stop-time=$(GHDL_STOP_TIME))
+
+ghdl-wave: ##@@ghdl show ghdl wave
+ghdl-wave: $(UNIT).vcd
+	@ gtkwave $^
+
+.PHONY: $(UNIT).vcd
+$(UNIT).vcd: $(UNIT)
+	@ $(GHDL_BINARY) -r $(GHDL_FLAGS) --workdir=$(builddir) --work=$(GHDL_WORK) \
+	  $(UNIT) $(ARCHITECTURE) --vcd=$(UNIT).vcd \
+		$(if $(GHDL_STOP_TIME),--stop-time=$(GHDL_STOP_TIME))
+
+ghdl-run: ##@@ghdl run ghdl compiled code
+ghdl-run: $(UNIT).vcd
+
+
 
 $($(NAME)_UNITS):
 	@ $(MAKE) ghdl-core UNIT=$@

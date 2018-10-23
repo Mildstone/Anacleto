@@ -23,42 +23,67 @@ end io_8b10b;
 
 architecture behavioral of io_8b10b is
 
-   -- Special character code values
- 	constant K28d0 : std_logic_vector := "00011100"; -- Balanced
- 	constant K28d1 : std_logic_vector := "00111100"; -- Unbalanced comma
- 	constant K28d2 : std_logic_vector := "01011100"; -- Unbalanced
- 	constant K28d3 : std_logic_vector := "01111100"; -- Unbalanced
- 	constant K28d4 : std_logic_vector := "10011100"; -- Balanced
- 	constant K28d5 : std_logic_vector := "10111100"; -- Unbalanced comma
- 	constant K28d6 : std_logic_vector := "11011100"; -- Unbalanced
- 	constant K28d7 : std_logic_vector := "11111100"; -- Balanced comma
- 	constant K23d7 : std_logic_vector := "11110111"; -- Balanced
- 	constant K27d7 : std_logic_vector := "11111011"; -- Balanced
- 	constant K29d7 : std_logic_vector := "11111101"; -- Balanced
- 	constant K30d7 : std_logic_vector := "11111110"; -- Balanced
 
-    -- function called clogb2 that returns an integer which has the
-    -- value of the ceiling of the log base 2.
-  	function clogb2 (bit_depth : integer) return integer is
-  	variable depth  : integer := bit_depth;
-  	  begin
-  	    if (depth = 0) then
-  	      return(0);
-  	    else
-  	      for clogb2 in 1 to bit_depth loop  -- Works for up to 32 bit integers
-  	        if(depth <= 1) then
-  	          return(clogb2);
-  	        else
-  	          depth := depth / 2;
-  	        end if;
-  	      end loop;
-  	    end if;
-  	end;
+
+  -- function called clogb2 that returns an integer which has the
+  -- value of the ceiling of the log base 2.
+	function clogb2 (bit_depth : integer) return integer is
+	variable depth  : integer := bit_depth;
+	  begin
+	    if (depth = 0) then
+	      return(0);
+	    else
+	      for clogb2 in 1 to bit_depth loop  -- Works for up to 32 bit integers
+	        if(depth <= 1) then
+	          return(clogb2);
+	        else
+	          depth := depth / 2;
+	        end if;
+	      end loop;
+	    end if;
+	end;
   -- number of words in input data
   constant WORD_NUM : integer := C_AXIS_TDATA_WIDTH/8;
   -- number of bits needed to represent word pos pointer
 	constant WORD_LEN : integer := clogb2(word_num-1);
 
+  signal rst : std_logic;
+  signal qclk : std_logic;
+  signal send_en : std_logic := '0';
+  signal encd_en : std_logic := '0';
+  signal encd_in, decd_out  : std_logic_vector(7 downto 0);
+  signal encd_out, decd_in  : std_logic_vector(9 downto 0);
+  signal encd_out_buffer : std_logic_vector(9 downto 0);
+  signal K_in, K_out : std_logic := '0';
+
+  signal K285 : std_logic := '0';
+
+  type state is ( ST_IDLE, ST_K285, ST_DATA, ST_PAYLOAD, ST_UPDATE, ST_STORE);
+  signal stm_read, stm_write : state := ST_IDLE;
+  signal stm_data : state := ST_IDLE;
+
+  signal encd_end : std_logic := '0';
+
+  -- Special character code values
+  constant K28d0 : std_logic_vector := "00011100"; -- Balanced
+  constant K28d1 : std_logic_vector := "00111100"; -- Unbalanced comma
+  constant K28d2 : std_logic_vector := "01011100"; -- Unbalanced
+  constant K28d3 : std_logic_vector := "01111100"; -- Unbalanced
+  constant K28d4 : std_logic_vector := "10011100"; -- Balanced
+  constant K28d5 : std_logic_vector := "10111100"; -- Unbalanced comma
+  constant K28d6 : std_logic_vector := "11011100"; -- Unbalanced
+  constant K28d7 : std_logic_vector := "11111100"; -- Balanced comma
+  constant K23d7 : std_logic_vector := "11110111"; -- Balanced
+  constant K27d7 : std_logic_vector := "11111011"; -- Balanced
+  constant K29d7 : std_logic_vector := "11111101"; -- Balanced
+  constant K30d7 : std_logic_vector := "11111110"; -- Balanced
+
+  subtype T_octet        is std_logic_vector(7 downto 0);
+  subtype T_message_data is std_logic_vector( T_octet'length*2+C_AXIS_TDATA_WIDTH-1 downto 0);
+  constant null_payload  : std_logic_vector( C_AXIS_TDATA_WIDTH-1 downto 0) := (others => '0');
+  constant msg_data_null : T_message_data := K28d5 & "00000000" & null_payload;
+  signal msg_data : T_message_data := msg_data_null;
+  signal msg_data_dec : T_message_data := msg_data_null;
 
   -- By PK debug mean for printing std_logic
   function std_logic_vector_to_sting( v : std_logic_vector ) return string is
@@ -103,31 +128,6 @@ component dec_8b10b
 	    );
 end component;
 
-
-
-signal rst : std_logic;
-signal qclk : std_logic;
-signal send_en : std_logic := '0';
-signal encd_en : std_logic := '0';
-signal encd_in, decd_out  : std_logic_vector(7 downto 0);
-signal encd_out, decd_in  : std_logic_vector(9 downto 0);
-signal encd_out_buffer : std_logic_vector(9 downto 0);
-signal K_in, K_out : std_logic := '0';
-
-signal K285 : std_logic := '0';
-
-type state is ( ST_IDLE, ST_K285, ST_DATA, ST_PAYLOAD, ST_UPDATE, ST_STORE);
-signal stm_read, stm_write : state := ST_IDLE;
-signal stm_data : state := ST_IDLE;
-
-signal encd_end : std_logic := '0';
-
-subtype T_octet        is std_logic_vector(7 downto 0);
-subtype T_message_data is std_logic_vector( T_octet'length*2+C_AXIS_TDATA_WIDTH-1 downto 0);
-constant null_payload  : std_logic_vector( C_AXIS_TDATA_WIDTH-1 downto 0) := (others => '0');
-constant msg_data_null : T_message_data := K28d5 & "00000000" & null_payload;
-signal msg_data : T_message_data := msg_data_null;
-signal msg_data_dec : T_message_data := msg_data_null;
 
 -- RETURN OCTETS FROM T_message_data
 type    T_message_data_octets is array (0 to WORD_NUM+2) of T_octet;
@@ -239,19 +239,18 @@ end process process_serial_out;
 
 -- PROCESS: axis_write_data
 axis_write_data: process (rstn,lclk)
- variable pos : integer := 0;
+  variable pos : integer := 0;
 begin
  if rstn = '0' then
- -- init --
-elsif rising_edge(lclk) then
-   if k285 = '1' then
-     pos := 0;
-   end if;
-   pos := pos + 1;
-   if pos = 10 then
-     report "data after k285: " & std_logic_vector_to_sting(decd_out);
-   end if;
-  -- report "msg_data: " & std_logic_vector_to_sting(decd_out);
+  -- init --
+ elsif rising_edge(lclk) then
+    if K_out = '1' and decd_out = K28d5 then
+      pos := 0;
+    else
+      pos := pos + 1;
+    end if;
+    if pos = 10 then report "cmd code after k285: " & std_logic_vector_to_sting(decd_out); end if;
+   -- report "msg_data: " & std_logic_vector_to_sting(decd_out);
  end if;
 end process axis_write_data;
 
@@ -274,7 +273,8 @@ begin
  if rstn = '0' then
   k285 <= '0';
 elsif rising_edge(lclk) then
-  if K_out = '1' and decd_out = "10111100" then
+  --if K_out = '1' and decd_out = "10111100" then
+  if K_out = '1' and decd_out = K28d5 then
    k285 <= '1';
    report "K285";
   else
@@ -283,15 +283,11 @@ elsif rising_edge(lclk) then
  end if;
 end process find_K28_5;
 
-
-
-
-
 qclk_process : process(clk, rstn)
   variable pos : integer := 0;
 begin
   if rstn = '0' then
-    qclk <= '0';
+    qclk <= '1';
     pos := 0;
   elsif falling_edge(clk) then
     if pos = 5 then
@@ -305,7 +301,7 @@ end process;
 enc : enc_8b10b
 port map (
        RESET => rst,
-       SBYTECLK => clk,
+       SBYTECLK => qclk,
        KI => K_in,
 
        AI => encd_in(0),
@@ -317,7 +313,7 @@ port map (
        GI => encd_in(6),
        HI => encd_in(7),
 
-       AO => encd_out(0),
+     AO => encd_out(0),
 	   BO => encd_out(1),
 	   CO => encd_out(2),
 	   DO => encd_out(3),

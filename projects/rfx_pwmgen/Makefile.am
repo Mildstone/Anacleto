@@ -26,3 +26,11 @@ pwmgen_SOURCES = src/test_script.tcl \
 pwmgen_IP_SOURCES = rfx_pwm_1.0
 
 
+vivado_CORES += pwmpack
+pwmpack_IP_SOURCES = rfx_pwm_1.0
+
+vivado_PROJECTS += pwmpack_test
+pwmpack_test_IP_SOURCES = pwmpack
+
+
+

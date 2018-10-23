@@ -90,4 +90,28 @@ $(call _ext_bootstrap,mdsplus)
 $(call _ext_configure,mdsplus)
 
 
+DOWNLOADS += koheron
+koheron:
+koheron_URL = https://github.com/Koheron/koheron-sdk.git
+koheron_BRANCH = master
+
+
+gnuradio: PYTHON_PACKAGES = PyBOMBS
+# DOWNLOADS += gnuradio
+gnuradio: ##@ext download and install gnuradio
+gnuradio: pip-install
+	@ \
+	  pybombs recipes add gr-recipes https://github.com/gnuradio/gr-recipes.git; \
+	  pybombs recipes add gr-etcetera https://github.com/gnuradio/gr-etcetera.git; \
+	  pybombs prefix init gnuradio-install; \
+	  pybombs install gnuradio
+
+gnuradio-companion: gnuradio
+	@ \
+	  pybombs run gnuradio
+
+
+
+
+
 
