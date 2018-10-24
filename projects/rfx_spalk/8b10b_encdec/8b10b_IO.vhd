@@ -22,9 +22,6 @@ entity io_8b10b is
 end io_8b10b;
 
 architecture behavioral of io_8b10b is
-
-
-
   -- function called clogb2 that returns an integer which has the
   -- value of the ceiling of the log base 2.
 	function clogb2 (bit_depth : integer) return integer is
@@ -50,19 +47,29 @@ architecture behavioral of io_8b10b is
   signal rst : std_logic;
   signal qclk : std_logic;
   signal send_en : std_logic := '0';
-  signal encd_en : std_logic := '0';
   signal encd_in, decd_out  : std_logic_vector(7 downto 0);
   signal encd_out, decd_in  : std_logic_vector(9 downto 0);
   signal encd_out_buffer : std_logic_vector(9 downto 0);
   signal K_in, K_out : std_logic := '0';
-
   signal K285 : std_logic := '0';
-
-  type state is ( ST_IDLE, ST_K285, ST_DATA, ST_PAYLOAD, ST_UPDATE, ST_STORE);
-  signal stm_read, stm_write : state := ST_IDLE;
-  signal stm_data : state := ST_IDLE;
-
   signal encd_end : std_logic := '0';
+
+  type state is ( ST_IDLE, ST_K285, ST_COMMAND, ST_DATA, ST_PAYLOAD, ST_UPDATE, ST_STORE);
+  signal stm_read, stm_write : state := ST_IDLE;
+  
+  -- state to logic (only for debug) --
+  function convert_state(st : state) return std_logic_vector is
+    variable IntVal : integer;
+    variable Slv8Val : std_logic_vector(7 downto 0);
+  begin
+    IntVal  := state'POS(st) ; 
+    Slv8Val := std_logic_vector(to_unsigned(IntVal, Slv8Val'length)) ; 
+    return Slv8Val;
+  end convert_state;
+  signal stm_read_v  : std_logic_vector(7 downto 0);
+  signal stm_write_v : std_logic_vector(7 downto 0);
+
+  
 
   -- Special character code values
   constant K28d0 : std_logic_vector := "00011100"; -- Balanced
@@ -80,8 +87,9 @@ architecture behavioral of io_8b10b is
 
   subtype T_octet        is std_logic_vector(7 downto 0);
   subtype T_message_data is std_logic_vector( T_octet'length*2+C_AXIS_TDATA_WIDTH-1 downto 0);
+  subtype T_axis_data    is std_logic_vector( C_AXIS_TDATA_WIDTH-1 downto 0);
   constant null_payload  : std_logic_vector( C_AXIS_TDATA_WIDTH-1 downto 0) := (others => '0');
-  constant msg_data_null : T_message_data := K28d5 & "00000000" & null_payload;
+  constant msg_data_null : T_message_data := K28d5 & "00000100" & null_payload;
   signal msg_data : T_message_data := msg_data_null;
   signal msg_data_dec : T_message_data := msg_data_null;
 
@@ -141,17 +149,35 @@ begin
   return octets;
 end;
 
+-- RETURN OCTETS FROM T_axis_data
+-- NOT USED ... (REMOVE THIS)
+type    T_axis_data_octets is array (0 to WORD_NUM) of T_octet;
+function octets (msg : T_axis_data) return T_axis_data_octets is
+  variable octets : T_axis_data_octets;
+  constant wlen : integer := WORD_NUM;
+begin
+  for i in 0 to wlen-1 loop
+    octets(i) := msg( (wlen-i)*8-1 downto (wlen-i-1)*8 );
+  end loop;
+  return octets;
+end;
+
 
 -------------------------------------------------------------------------------
 begin
-
 rst <= not rstn;
 
+stm_read_v <= convert_state(stm_read);
+stm_write_v <= convert_state(stm_write);
 
+-- PROCESS: axis_read_data
+-- -----------------------
+-- read data form AXIS in msg_data signal
 axis_read_data : process(clk, rstn)
   variable octs : T_message_data_octets := octets(msg_data_null);
   variable pos : integer := 0;
-  variable next_state : state := ST_IDLE;
+  variable axis_ready : std_logic := '0';
+  variable next_state : state := ST_IDLE;  
 begin
   if rstn = '0' then
     msg_data <= msg_data_null;
@@ -160,27 +186,20 @@ begin
     if S0_AXIS_TVALID = '1' then
       msg_data(C_AXIS_TDATA_WIDTH-1 downto 0) <= S0_AXIS_TDATA;
       octs := octets(msg_data);
-      -- report "msg_data: " & std_logic_vector_to_sting(octs(0)) & " "
-      --                     & std_logic_vector_to_sting(octs(1)) & " "
-      --                     & std_logic_vector_to_sting(octs(2)) & " "
-      --                     & std_logic_vector_to_sting(octs(3)) & " "
-      --                     & std_logic_vector_to_sting(octs(4)) & " "
-      --                     & std_logic_vector_to_sting(octs(5)) & " "
-      --                     ;
     end if;
     -- VERY SIMPLE READ STATE MACHINE --
-    next_state := stm_data;
+    next_state := stm_read;
     K_in <= '0';
-    case( stm_data ) is
+    case( stm_read ) is
       when ST_IDLE =>
         send_en <= '1';
         pos := (WORD_NUM + 1);
         encd_in <= octs(0);
         next_state := ST_DATA;
       when ST_DATA =>
-        if pos = 0 then
-          K_in <= '1';
-        end if;
+      if pos = 0 then
+        K_in <= '1';
+      end if;
         send_en <= '1';
         encd_in <= octs(pos);
         next_state := ST_DATA;
@@ -190,13 +209,97 @@ begin
     -- update state at word end
     if encd_end = '1' then
       pos := (pos + 1) rem (WORD_NUM + 2);
-      stm_data <= next_state;
+      stm_read <= next_state;
+      if pos = 3 then
+        axis_ready := '1';
+      end if;
+    end if;
+    if axis_ready = '1' then
+      axis_ready := '0';
+      S0_AXIS_TREADY <= '1';
+    else         
+      S0_AXIS_TREADY <= '0';
     end if;
   end if;
 end process;
 
 
+
+-- PROCESS: axis_write_data
+-- ------------------------
+-- Write 8 bit data output decd_out into 32bit register for AXIS output
+axis_write_data: process (rstn,lclk)
+  variable buf_out : T_axis_data := (others => '0');
+  variable buf_oct : T_axis_data_octets := octets(buf_out);
+  variable pos : integer := 0; -- clock position
+  variable wct : integer := 0; -- word count
+  variable stm_next : state := ST_IDLE;
+  variable write_en : std_logic := '0';
+begin
+ if rstn = '0' then
+  pos := 0;
+  wct := 0;
+  stm_write <= ST_IDLE;
+ elsif rising_edge(lclk) then
+    if K_out = '1' and decd_out = K28d5 then
+      pos := 0;
+      wct := 0;    
+      stm_write <= ST_COMMAND;
+    else
+      pos := (pos + 1);
+    end if;
+
+    -- state machine: data octet in decd_out
+    if pos = 10 then
+    case( stm_write ) is
+      when ST_IDLE =>
+      when ST_COMMAND =>
+        buf_out(C_AXIS_TDATA_WIDTH-1 downto 8) := (others => '0');
+        buf_out(7 downto 0) := decd_out;
+        write_en := '1';
+        stm_next := ST_DATA;
+      when ST_DATA =>
+        buf_out( (3-wct+1)*8-1 downto (3-wct)*8 ) := decd_out;
+        if wct = 3 then 
+          write_en := '1';
+          wct := 0;
+        else
+          wct := wct + 1;
+        end if;
+      when others =>
+        stm_next := ST_IDLE;
+      end case;
+      pos := 0;
+      stm_write <= stm_next;
+    end if;
+
+    -- write axis --
+    if write_en = '1' then
+      M0_AXIS_TDATA  <= buf_out;
+      M0_AXIS_TVALID <= '1';
+      write_en := '0';
+    else
+      M0_AXIS_TVALID <= '0';
+    end if;
+    
+    -- debug output --
+    -- if pos = 0 then report "com code   : " & std_logic_vector_to_sting(decd_out); end if;
+    -- if pos = 1 then report "data byte 1: " & std_logic_vector_to_sting(decd_out); end if;
+    -- if pos = 2 then report "data byte 2: " & std_logic_vector_to_sting(decd_out); end if;
+    -- if pos = 3 then report "data byte 3: " & std_logic_vector_to_sting(decd_out); end if;
+    -- if pos = 4 then report "data byte 4: " & std_logic_vector_to_sting(decd_out); end if;
+    -- if pos = 4 then report "msg_data: "    & std_logic_vector_to_sting(decd_out); end if;
+ end if;
+end process axis_write_data;
+
+
+
+
+
 -- PROCESS: process_serial_out
+-- ---------------------------
+-- write 10 bit word output from encoder into serial data output and drive the
+-- encoder state update/store
 process_serial_out: process (rstn,clk)
  variable pos : integer := 0;
  variable stm : state := ST_IDLE;
@@ -206,16 +309,12 @@ begin
   s_out <= '0';
   pos   := 0;
  elsif rising_edge(clk) then
-  if    pos = 8 then stm := ST_UPDATE;
-  elsif pos = 9 then stm := ST_STORE;
-  else               stm := ST_IDLE;
+  if pos = 9 then stm := ST_STORE;
+  else            stm := ST_IDLE;
   end if;
-  encd_en  <= '0';
   encd_end <= '0';
   case( stm ) is
     when ST_IDLE =>
-    when ST_UPDATE =>
-     encd_en <= '1';
     when ST_STORE =>
      encd_end <= '1';
      encd_out_buffer <= encd_out;
@@ -227,47 +326,31 @@ begin
   --      & "enc_o: " & std_logic_vector_to_sting(encd_out_buffer);
   pos := (pos + 1) rem 10;
  end if;
-
-
-
 end process process_serial_out;
 
 
 
-
-
-
--- PROCESS: axis_write_data
-axis_write_data: process (rstn,lclk)
-  variable pos : integer := 0;
-begin
- if rstn = '0' then
-  -- init --
- elsif rising_edge(lclk) then
-    if K_out = '1' and decd_out = K28d5 then
-      pos := 0;
-    else
-      pos := pos + 1;
-    end if;
-    if pos = 10 then report "cmd code after k285: " & std_logic_vector_to_sting(decd_out); end if;
-   -- report "msg_data: " & std_logic_vector_to_sting(decd_out);
- end if;
-end process axis_write_data;
-
-
--- PROCESS: process_serial_in
+-- PROCESS: process_serial_in (DESERIALIZE)
+-- ----------------------------------------
+-- deserialize data input into a 8 bit decd_in word
+-- in : s_in, out: decd_in
 process_serial_in: process (rstn,lclk)
  variable pos : integer := 0;
 begin
  if rstn = '0' then
   decd_in <= (others => '0');
-elsif falling_edge(lclk) then
-  -- shift >> decd_in
+ elsif falling_edge(lclk) then
+  -- shift << decd_in 
   decd_in <= decd_in(8 downto 0) & s_in;
  end if;
 end process process_serial_in;
 
+
+
 -- PROCESS: find_K28_5
+-- -------------------
+-- used for debug purpose activates a k285 line if the corresponding code has been found
+-- in the decoded output parallel data.
 find_K28_5: process (rstn,lclk)
 begin
  if rstn = '0' then
@@ -283,6 +366,11 @@ elsif rising_edge(lclk) then
  end if;
 end process find_K28_5;
 
+
+
+-- PROCESS: 10b WORD CLOCK --
+-- --------------------------
+-- used in enc_8b10b to change symbol once in a period of 10 bits
 qclk_process : process(clk, rstn)
   variable pos : integer := 0;
 begin
@@ -298,6 +386,14 @@ begin
   end if;
 end process;
 
+
+
+
+-- 
+-- ////////////////////////////////////////////////////////
+-- /// COMPONENTS CONNECTION  /////////////////////////////
+-- ////////////////////////////////////////////////////////
+-- 
 enc : enc_8b10b
 port map (
        RESET => rst,

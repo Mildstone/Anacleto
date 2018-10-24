@@ -13,7 +13,8 @@ architecture behavioral of IO_TB is
  constant half_period : integer := 20; -- ns
  signal TB_rsn : std_logic := '0';
  signal TB_clk : std_logic := '0'; -- make sure you initialise!
- signal test_data   : std_logic_vector(IO_TB_WIDTH-1 downto 0) := (others => '0');
+ signal test_data   : std_logic_vector(IO_TB_WIDTH-1 downto 0) 
+                    := (0 downto 0 => '1', others => '0');
  signal test_tvalid : std_logic := '0';
  signal test_out_data      : std_logic_vector(IO_TB_WIDTH-1 downto 0);
  signal test_out_tvalid    : std_logic;
@@ -50,7 +51,7 @@ begin
  generate_test_data: process
  begin
   test_tvalid <= '1';
-  wait for 10 us;
+  wait for 50 us;
   test_data <= std_logic_vector(unsigned(test_data) + 1);
   report "test_data: " & integer'image(to_integer(unsigned(test_data)));
  end process generate_test_data;
