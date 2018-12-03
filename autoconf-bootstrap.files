@@ -18,6 +18,7 @@ conf/kscripts/yocto.mk
 config.h.in
 configure
 configure.ac
+src/dk.sh
 src/libjit_examples/Makefile.am
 src/main.cpp
 src/mds_example/Makefile.am
@@ -27,7 +28,9 @@ src/nodejs/extn1.cpp
 src/nodejs/r1/src/App.js
 src/nodejs/r1/src/index.js
 src/nodejs/testserver.js
+src/parse_examples/Makefile.am
 src/project_variables/Makefile.am
+src/rs.sh
 src/sh_template/script.sh.template
 COPYING
 Common.mk
