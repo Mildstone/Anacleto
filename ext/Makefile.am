@@ -29,6 +29,29 @@ $1/Makefile: $1/config.log
 endef
 
 
+define _ext_cmake
+$(eval
+.PHONY: $1/CMakeCache.txt
+$1/CMakeLists.txt: | $1
+$1/CMakeCache.txt: $1/CMakeLists.txt
+        @ cd $1; cmake $($(subst -,_,$(subst ' ',_,$(subst .,_,$1)))_CMAKE_ARGS) .
+$1/Makefile: $1/CMakeCache.txt
+)
+endef
+
+
+define _ext_cmake_offsrc
+$(eval
+.PHONY: $3/CMakeCache.txt
+$2/CMakeLists.txt: | $2
+$3/CMakeCache.txt: $2/CMakeLists.txt | $3
+        @ cd $3; cmake $($(subst -,_,$(subst ' ',_,$(subst .,_,$1)))_CMAKE_ARGS) $(abspath $2)
+$2/Makefile: $3/CMakeCache.txt
+)
+endef
+
+
+
 ext-: ##@ext enter ext module with $TARGET
 ext-%: %/Makefile
 	@ $(MAKE) $(AM_MAKEFLAGS) -C $(subst ext-,,$@) $(TARGET)
