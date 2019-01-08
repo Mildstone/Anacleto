@@ -1,5 +1,4 @@
-
-
+#!/bin/bash
 
 # //////////////////////////////////////////////////////////////////////////// #
 # // ARGS PARSE ////////////////////////////////////////////////////////////// #
@@ -104,7 +103,6 @@ user_home=${HOME}
 ## ////////////////////////////////////////////////////////////////////////////////
 
 
-
 write_config() {
   file_name=${DOCKER_SCRIPTPATH}/${DOCKER_CONTAINER_PREFIX}.sh
 	log "Writing script file in ${file_name}"
@@ -115,6 +113,8 @@ write_config() {
 DOCKER_CONTAINER=${DOCKER_CONTAINER}
 DOCKER_CONTAINER_ID=$(dk_get_container_id ${DOCKER_CONTAINER}; echo $_ans)
 DOCKER_IMAGE=${DOCKER_IMAGE}
+DOCKER_URL=${DOCKER_URL}
+DOCKER_DOCKERFILE=${DOCKER_DOCKERFILE}
 DOCKER_IMAGE_ID=$(dk_get_image_id ${DOCKER_IMAGE}; echo $_ans)
 USER=${USER}
 user_id=${user_id}
@@ -180,8 +180,24 @@ dk_image_exist() {
   [ -n "$_ans" ] && return 0 || return 1
 }
 
+# build image from URL (either local directory or web page content)
+# the image name can be a local name or any overlapping name that will 
+# overload the that name for the local repository 
+build() {
+	[ -n "${DOCKER_IMAGE}" ] || DOCKER_IMAGE="${DOCKER_CONTAINER}_build"
+	if [ -n "${DOCKER_DOCKERFILE}" ]; then
+	  DOCKER_BUILD_ARGS="${DOCKER_BUILD_ARGS} -f ${DOCKER_DOCKERFILE}"
+	fi
+	echo docker build ${DOCKER_BUILD_ARGS} -t ${DOCKER_IMAGE} ${DOCKER_URL}
+	docker build ${DOCKER_BUILD_ARGS} -t ${DOCKER_IMAGE} ${DOCKER_URL}
+}
+
+
 # START
 start() {
+	if [ -n ${DOCKER_URL} ]; then
+		build
+	fi
   # find if container is is registered
   dk_get_container_id ${DOCKER_CONTAINER_ID}
 	if [ -z "${_ans}" ]; then
@@ -236,6 +252,17 @@ stop()  {
   docker rm -f ${DOCKER_CONTAINER}
 }
 
+# CLEAN
+clean() {
+	dk_get_container_id ${DOCKER_CONTAINER_ID}
+	if [ -n "${_ans}" ]; then
+	  stop
+	fi
+	file_name=${DOCKER_SCRIPTPATH}/${DOCKER_CONTAINER_PREFIX}.sh
+	[ -f ${file_name} ] && rm -f ${file_name} ||:
+}
+
+
 pause()  {
   log "Pauing container ${DOCKER_CONTAINER}"
   docker pause ${DOCKER_CONTAINER}
@@ -277,15 +304,25 @@ shell() {
 ## //  MAIN  //////////////////////////////////////////////////////////////////////
 ## ////////////////////////////////////////////////////////////////////////////////
 
-# READ CONFIGURATION BACK (IF EXISTS)
+# ALWAYS READ CONFIGURATION BACK (IF EXISTS)
 read_config
 
 # MAIN [TO FIX]
-if [ x$CMD = x"shell" ]; then
-  execute ${DOCKER_SHELL} -c "$@"
-else
-  $@
-fi
+# if [ x$CMD = x"shell" ]; then
+#   execute ${DOCKER_SHELL} -c "$@"
+# else
+#   $@
+# fi
+
+case ${CMD} in
+	shell)
+		execute ${DOCKER_SHELL} -c "$@"
+		;;
+	*)
+		$@
+		;;
+esac
+
 
 
 
