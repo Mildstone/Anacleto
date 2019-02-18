@@ -19,7 +19,6 @@ Usage: $SCRIPTNAME [options] [commands]
        options
        -------
        -h|--help)         get this help
-       -C|--config)       set distribution config file
        -v|--verbose)      show script source script
 			 -c )               reserved for Makefile operations
 
@@ -38,12 +37,9 @@ while [[ "$1" == -* ]] ; do
 			shift
 			break
 			;;
-		-C|--config)
-		  CONFIG_FILE=$2
-			shift 2
-			;;
 	  -v|--verbose)
-		  set -o verbose
+			set -x
+			echo "VEROBOSE dk command: $@"
 			shift
 			;;
 		--)
@@ -61,11 +57,10 @@ if [ $# -lt 1 ] ; then
 	exit 1
 fi
 
-# evaluate config file
-#if [ -f ${CONFIG_FILE} ]; then
-# source ${CONFIG_FILE}
-#fi
-
+# if no DOCKER_CONTAINER revert to normal shell 
+# (this is needed for shell command within make for example,
+#  but those command are not executed in container though )
+[ ${DOCKER_CONTAINER} ] || { /bin/sh -c $@; exit; }
 
 
 ## ////////////////////////////////////////////////////////////////////////////////
@@ -88,6 +83,7 @@ DOCKER_CONTAINER=$(get_md5_container ${DOCKER_CONTAINER}; echo $_ans)
 DOCKER_ENTRYPOINT=${DOCKER_ENTRYPOINT:-/bin/sh}
 DOCKER_SHELL=${DOCKER_SHELL:-/bin/sh}
 
+
 # CONSTRUCTED VARIABLES
 [ -t 7 -o -t 0 ] && INT=-ti || unset INT
 user_entry=$(awk -F: "{if (\$1 == "${USER}") {print \$0} }" /etc/passwd)
@@ -97,11 +93,13 @@ user_home=${HOME}
 
 
 
-
-## ////////////////////////////////////////////////////////////////////////////////
-## //  FUNCTIONS  /////////////////////////////////////////////////////////////////
-## ////////////////////////////////////////////////////////////////////////////////
-
+##   ..######...#######..##....##.########....###....####.##....##.########.########.
+##   .##....##.##.....##.###...##....##......##.##....##..###...##.##.......##.....##
+##   .##.......##.....##.####..##....##.....##...##...##..####..##.##.......##.....##
+##   .##.......##.....##.##.##.##....##....##.....##..##..##.##.##.######...########.
+##   .##.......##.....##.##..####....##....#########..##..##..####.##.......##...##..
+##   .##....##.##.....##.##...###....##....##.....##..##..##...###.##.......##....##.
+##   ..######...#######..##....##....##....##.....##.####.##....##.########.##.....##
 
 write_config() {
   file_name=${DOCKER_SCRIPTPATH}/${DOCKER_CONTAINER_PREFIX}.sh
@@ -116,7 +114,10 @@ DOCKER_IMAGE=${DOCKER_IMAGE}
 DOCKER_URL=${DOCKER_URL}
 DOCKER_DOCKERFILE=${DOCKER_DOCKERFILE}
 DOCKER_IMAGE_ID=$(dk_get_image_id ${DOCKER_IMAGE}; echo $_ans)
-USER=${USER}
+DOCKER_NETWORKS=${DOCKER_NETWORKS}
+DOCKER_SHARES=${DOCKER_SHARES}
+: \${DOCKER_MACHINE=${DOCKER_MACHINE}}
+: \${USER=${USER}}
 user_id=${user_id}
 user_group=${user_group}
 user_home=${user_home}
@@ -193,15 +194,30 @@ build() {
 }
 
 
+push() {	
+	dk_get_container_image ${DOCKER_CONTAINER}
+	if [ -n $_ans ]; then
+	  if [ ${DOCKER_REGISTRY} ]; then
+	    docker tag $_ans ${DOCKER_REGISTRY}/$_ans
+			docker push ${DOCKER_REGISTRY}/$_ans
+	  else
+			echo "pushing to: ${DOCKER_IMAGE}"
+			docker push $_ans
+		fi
+	fi
+}
+
+
 # START
 start() {
-	if [ -n ${DOCKER_URL} ]; then
+	if [ -n "${DOCKER_URL}" ]; then
+	  echo "BUILDING |${DOCKER_URL}|"
 		build
 	fi
   # find if container is is registered
   dk_get_container_id ${DOCKER_CONTAINER_ID}
 	if [ -z "${_ans}" ]; then
-	  log "Starting docker container from image"
+	  log "Starting docker container from image ${1:-${DOCKER_IMAGE}}"
   	docker run -d ${INT} --entrypoint=${DOCKER_ENTRYPOINT} \
   						 -e USER=${USER} \
   						 -e DISPLAY=${DISPLAY} \
@@ -274,7 +290,6 @@ restart()  {
   docker restart ${DOCKER_CONTAINER}
 }
 
-
 execute()  {
   dk_get_status ${DOCKER_CONTAINER}
   [ $_ans = "running" ] || start ${DOCKER_IMAGE}
@@ -300,12 +315,134 @@ shell() {
 }
 
 
+##    .##.....##....###.....######..##.....##.####.##....##.########
+##    .###...###...##.##...##....##.##.....##..##..###...##.##......
+##    .####.####..##...##..##.......##.....##..##..####..##.##......
+##    .##.###.##.##.....##.##.......#########..##..##.##.##.######..
+##    .##.....##.#########.##.......##.....##..##..##..####.##......
+##    .##.....##.##.....##.##....##.##.....##..##..##...###.##......
+##    .##.....##.##.....##..######..##.....##.####.##....##.########
+
+## ENV
+## NEEDS: abs_top_builddir abs_top_srcdir
+: ${abs_top_srcdir:? "error abs_top_srcdir not defined"}
+: ${abs_top_builddir:? "error abs_top_builddir not defined"}
+: ${DOCKER_MACHINE_SORAGE_PATH=${abs_top_builddir}/conf/.docker}
+
+clean_dir () {
+	cd $1 && pwd
+}
+
+abs_top_srcdir=$(clean_dir ${abs_top_srcdir}; )
+abs_top_builddir=$(clean_dir ${abs_top_builddir}; )
+
+machine() {
+	docker-machine -s ${DOCKER_MACHINE_SORAGE_PATH} $@
+}
+
+machine_ssh() {
+	machine ssh ${MACHINE_NAME} $@
+}
+
+machine_status() {	
+	machine ls -f '{{.State}}' --filter name=${MACHINE_NAME}
+}
+
+# machine-create: ##@docker_machine create new machine
+machine_create() {    
+    local _driver=${DOCKER_MACHINE_DRIVER:-virtualbox}
+    local _swarm_token=$(docker swarm join-token worker -q 2>/dev/null)
+    local _swarm=${_swarm_token:+ --swarm}
+    
+    local _driver_args="--driver $_driver"
+    if [ $_driver = "virtualbox" ]; then
+				local _iso=${DOCKER_MACHINE_ISO}
+        [ $_iso ] && _driver_args="$_driver_args --virtualbox-boot2docker-url $_iso"
+    fi
+
+    # create storage path
+    if [ ! -d ${DOCKER_MACHINE_SORAGE_PATH} ]; then
+        mkdir -p ${DOCKER_MACHINE_SORAGE_PATH};
+    fi
+
+		if [ ! "$(machine_status)" = "Running" ]; then
+    	machine create $_driver_args ${DOCKER_MACHINE_ARGS} $_swarm ${MACHINE_NAME}
+		fi
+}
+
+
+machine_rm() {
+	${MACHINE_NAME:? "error no MACHINE_NAME defined"}
+	machine rm ${MACHINE_NAME}
+}
+
+machine_mount() {
+    test "$(machine_status)" = "Running" && _machine=${MACHINE_NAME}
+		: ${_machine:? "any configured machine could be found"}
+
+    _ip=$(machine inspect -f '{{.Driver.IPAddress}}' $_machine)
+    _port=$(machine inspect -f '{{.Driver.SSHPort}}' $_machine)
+    _user=$(machine inspect -f '{{.Driver.SSHUser}}' $_machine)
+    _key=$(machine inspect -f '{{.Driver.SSHKeyPath}}' $_machine)
+
+		# reverse_mount () {
+		# 	##
+		# 	## linux - how to mount local directory to remote like sshfs? - Super User 
+		# 	## https://superuser.com/questions/616182/how-to-mount-local-directory-to-remote-like-sshfs
+		# 	##		
+
+		# 	local _local_port="22"
+		# 	local _forward_port="10000" # work on this !!
+		# 	local _remote_port="xxx"
+
+		# 	local _local_ssh="-p $_forward_port ${USER}@$_local_addr"
+		# 	local _remote_ssh="-p $_remote_port ${USER}@$_remote_addr"
+		# 	local _sshfs_option="-o NoHostAuthenticationForLocalhost=yes"
+
+		# 	## options:
+		# 	##       -v Verbose 
+		# 	##       -X X11 forwarding
+		# 	##       -t pseudo-terminal for an interactive shell
+		# 	##
+		# 	#ssh -X -t $REMOTE_SSH -R $FORWARD_PORT:localhost:$LOCAL_PORT \
+		# 	#"source /etc/profile; mkdir -p $REMOTE_DIR; \
+		# 	# sshfs $SSHFS_OPTION $LOCAL_SSH:$LOCAL_DIR $REMOTE_DIR; bash; \			 
+		# 	# umount $REMOTE_DIR; rm -r $REMOTE_DIR"
+
+		# 	machine-ssh tce-load -w -i sshfs-fuse
+		# 	machine-ssh mkdir -p $1;
+		# 	sshfs $_sshfs_option 
+
+		#   # groupadd -g ${user_group} ${USER} 2>/dev/null; \
+		#   # useradd  -d ${user_home} -u ${user_id} -g ${user_group} ${USER} 2>/dev/null; \
+
+		# }
+
+    # mount() { sshfs -d $1 $_user@$_ip:/$1; }
+    # mount ${abs_top_srcdir}
+    # mount ${abs_top_builddir}
+		echo "This wont work unless reverse sshfs is performed"
+}   
+
+machine_ls() {
+	machine ls
+}
+
+
+machine_init() {
+	# set -e
+	machine_create && eval $(machine env ${DOCKER_MACHINE})
+
+}
+
+
 ## ////////////////////////////////////////////////////////////////////////////////
 ## //  MAIN  //////////////////////////////////////////////////////////////////////
 ## ////////////////////////////////////////////////////////////////////////////////
 
 # ALWAYS READ CONFIGURATION BACK (IF EXISTS)
 read_config
+
 
 # MAIN [TO FIX]
 # if [ x$CMD = x"shell" ]; then
@@ -316,12 +453,15 @@ read_config
 
 case ${CMD} in
 	shell)
+    # start machine env if exists
+    [ ${DOCKER_MACHINE} ] && machine_init
 		execute ${DOCKER_SHELL} -c "$@"
 		;;
 	*)
 		$@
 		;;
 esac
+
 
 
 
