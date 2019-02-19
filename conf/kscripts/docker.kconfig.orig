@@ -1,0 +1,58 @@
+
+# //////////////////////////////////////////////////////////////////////////// #
+# //  DOCKER  //////////////////////////////////////////////////////////////// #
+# //////////////////////////////////////////////////////////////////////////// #
+
+menuconfig   ENABLE_DOCKER_BUILD
+  bool "Docker Build support"
+  #  depends on HAS_DOCKER
+  ---help---
+  This enables the docker build mechanism provided by a m4 macro
+  that uses a custom script for SHELL command in  make  to enter
+  a given running docker container. The actual  configure script
+  and all make commands are executed  within that container.
+  To see  how to manage  this please run "make docker" after the
+  configuration completes.
+
+if ENABLE_DOCKER_BUILD
+
+  choice DOCKER_BUILD
+	prompt "Select the docker build method"
+	config WITH_DOCKER_URL
+	 bool "Create from url with a Dockerfile"
+	config WITH_DOCKER_IMAGE
+	 bool "Pull docker image"
+	config WITH_DOCKER_CONTAINER
+	 bool "Start existing docker container"
+  endchoice
+
+  config DOCKER_IMAGE
+	string "Docker image"
+	depends on WITH_DOCKER_IMAGE
+	default "rigoni/linux-socdev:latest"
+
+  config DOCKER_CONTAINER
+	string "Container name or ID"
+	depends on WITH_DOCKER_CONTAINER
+
+  config DOCKER_URL
+	string "Url"
+	depends on WITH_DOCKER_URL
+	default "${srcdir}"
+	---help---
+	  Url or path to a directory wiht a valid Dockerfile
+
+  config DOCKER_SHARES
+	string "Additional user shares"
+	default "/opt:/opt"
+	---help---
+	  Read a list of additional docker shares in the form:
+	  <local_path_1>:<remote_path_> [<lcoal_path_2>:<remote_path_2>] [...]
+	  This could be used to add common paths such the Vivado local install
+	  or toolchains.
+
+	  Note:
+	  The srcdir and current build dir are always shared to the container
+
+
+endif # ENABLE_DOCKER_BUILD

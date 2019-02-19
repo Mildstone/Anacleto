@@ -139,3 +139,12 @@ clean-local:
 
 MOSTLYCLEANFILES = $(LINUX_IMAGE)
 
+
+hello.log: ##@log write hello.log file
+hello.log:
+	@ echo "hello bootstrap" > $@
+
+
+print-hello: EXAMPLE_STRING_VAR = not set
+print-hello:
+	@ echo "this is the var: $(EXAMPLE_STRING_VAR)"

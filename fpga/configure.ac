@@ -18,8 +18,6 @@
 ##
 ## ////////////////////////////////////////////////////////////////////////// //
 
-
-
 # //////////////////////////////////////////////////////////////////////////// #
 # //  FPGA  ////////////////////////////////////////////////////////////////// #
 # //////////////////////////////////////////////////////////////////////////// #
@@ -44,7 +42,8 @@ AX_KCONFIG_WITH_CHOICE([VIVADO_VERSION],["Vivado version to use"],
 			   [VIVADO_VERSION_2016_4],["2016.4"],
 			   [VIVADO_VERSION_2017_1],["2017.1"],
 			   [VIVADO_VERSION_2017_2],["2017.2"],
-			   [VIVADO_VERSION_2017_4],["2017.4"])
+			   [VIVADO_VERSION_2017_4],["2017.4"],
+			   [VIVADO_VERSION_2018_1],["2018.1"])
 AC_SUBST([VIVADO_VERSION])
 
 AX_KCONFIG_WITH_CHOICE([VIVADO_SETUP_METHOD],["Vivado setup method"],
@@ -78,15 +77,11 @@ AX_KCONFIG_VAR([DEVICETREE_BASEFILES_TAR])
 AC_SUBST([DEVICETREE_BASEFILES_TAR])
 
 
-
-
-
 ## /////// CONFIG FILES ////////////////
 
 AX_CONFIG_FILES(
   Makefile
-dnl  /lib/red-pitaya-notes/Makefile
-dnl  tclapp/Makefile
+  lib/red-pitaya-notes/Makefile
 )
 
 ## /////////////////////////////////////

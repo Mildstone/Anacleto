@@ -23,3 +23,11 @@ rpadc_fifo_ARCHIVE   = $(NAME)_archive.zip
 
 
 
+.PHONY: linux
+linux:
+	$(MAKE) $(AM_MAKEFLAGS) -C linux/src clean all
+
+shell:
+	ssh $(DEVICE_USER)@$(DEVICE_IP)s
+
+all: dtb linux

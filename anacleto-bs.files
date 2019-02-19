@@ -35,6 +35,7 @@ conf/m4/ax_compare_version.m4
 conf/m4/ax_compiler_vendor.m4
 conf/m4/ax_compiler_version.m4
 conf/m4/ax_config_subdirs.m4
+conf/m4/ax_docker_build.m4
 conf/m4/ax_download_repository.m4
 conf/m4/ax_prog_doxygen.m4
 conf/m4/ax_target_selfhelp.m4
