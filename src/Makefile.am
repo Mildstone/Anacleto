@@ -16,7 +16,7 @@ main_SOURCES = main.cpp
 
 
 
-DOKER_TARGETS = prova-%
+DOCKER_TARGETS = prova-%
 
 prova-%: DOCKER_CONTAINER = prova
 prova-%: DOCKER_IMAGE     = debian:latest
@@ -49,7 +49,7 @@ tensorflow_BRANCH = master
 PYTHON_PACKAGES = pip six numpy wheel mock
 tf_DOCKER_IMAGE = tensorflow/tensorflow:nightly-devel-py3
 
-DOKER_TARGETS += tf-%
+DOCKER_TARGETS += tf-%
 tf-init: ##@tf build process
 tf-init: DOCKER_IMAGE = $(tf_DOCKER_IMAGE)
 tf-init: DOCKER_CONTAINER = tf-build
