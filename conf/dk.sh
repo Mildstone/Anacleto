@@ -341,11 +341,11 @@ machine() {
 }
 
 machine_ssh() {
-	machine ssh ${MACHINE_NAME} $@
+	machine ssh ${DOCKER_MACHINE} $@
 }
 
 machine_status() {	
-	machine ls -f '{{.State}}' --filter name=${MACHINE_NAME}
+	machine ls -f '{{.State}}' --filter name=${DOCKER_MACHINE}
 }
 
 # machine-create: ##@docker_machine create new machine
@@ -366,18 +366,18 @@ machine_create() {
     fi
 
 		if [ ! "$(machine_status)" = "Running" ]; then
-    	machine create $_driver_args ${DOCKER_MACHINE_ARGS} $_swarm ${MACHINE_NAME}
+    	machine create $_driver_args ${DOCKER_MACHINE_ARGS} $_swarm ${DOCKER_MACHINE}
 		fi
 }
 
 
 machine_rm() {
-	${MACHINE_NAME:? "error no MACHINE_NAME defined"}
-	machine rm ${MACHINE_NAME}
+	${DOCKER_MACHINE:? "error no DOCKER_MACHINE defined"}
+	machine rm ${DOCKER_MACHINE}
 }
 
 machine_mount() {
-    test "$(machine_status)" = "Running" && _machine=${MACHINE_NAME}
+    test "$(machine_status)" = "Running" && _machine=${DOCKER_MACHINE}
 		: ${_machine:? "any configured machine could be found"}
 
     _ip=$(machine inspect -f '{{.Driver.IPAddress}}' $_machine)

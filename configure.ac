@@ -31,7 +31,7 @@ dnl AC_CONFIG_SRCDIR([...])
 AC_CANONICAL_TARGET
 
 dnl AUTOMAKE ///////////////////////////////////////////////////////////////////
-AM_INIT_AUTOMAKE([1.14 foreign subdir-objects])
+AM_INIT_AUTOMAKE([foreign subdir-objects])
 
 
 dnl update submodules at first ... (must be cleaned out)
@@ -86,7 +86,7 @@ AC_CHECK_PROGS([PERL],[perl])
 
 ## LIBTOOL
 LT_INIT()
-
+ 
 ## /////////////////////////////////////////////////////////////////////////////
 ## //  KSCRIPTS  ///////////////////////////////////////////////////////////////
 ## /////////////////////////////////////////////////////////////////////////////
@@ -208,6 +208,7 @@ dnl				 src/libjit_examples/Makefile
 				 src/mds_example/Makefile
 				 doc/Makefile
 				 doc/wiki/Makefile
+				 doc/git-mw/Makefile
 				 ext/Makefile
                )
 AC_OUTPUT

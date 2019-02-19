@@ -1,4 +1,5 @@
 include $(top_srcdir)/Common.mk
+include $(top_srcdir)/conf/kscripts/tensorflow.mk
 
 SUBDIRS = sh_template
 
@@ -15,42 +16,19 @@ main_SOURCES = main.cpp
 
 
 
-##     .########...#######...######..##....##.########.########.........########.##.....##.########....
-##     .##.....##.##.....##.##....##.##...##..##.......##.....##........##........##...##.....##.......
-##     .##.....##.##.....##.##.......##..##...##.......##.....##........##.........##.##......##.......
-##     .##.....##.##.....##.##.......#####....######...########.........######......###.......##.......
-##     .##.....##.##.....##.##.......##..##...##.......##...##..........##.........##.##......##.......
-##     .##.....##.##.....##.##....##.##...##..##.......##....##.........##........##...##.....##.......
-##     .########...#######...######..##....##.########.##.....##........########.##.....##....##.......
-
-
-
-export DOCKER_CONTAINER
-export DOCKER_IMAGE
-export DOCKER_URL
-export DOCKER_DOCKERFILE
-
-DSHELL = $(top_srcdir)/conf/dk.sh ${DSHELL_ARGS}
-$(DOKER_TARGETS): SHELL = $(DSHELL)
-
-docker-%:
-	@ $(info [docker] $*)
-	@ . $(DSHELL) $*
-
-
 DOKER_TARGETS = prova-%
-prova-init: DOCKER_IMAGE     = debian:latest
+
+prova-%: DOCKER_CONTAINER = prova
+prova-%: DOCKER_IMAGE     = debian:latest
+
 prova-init: DOCKER_CONTAINER = prova
 prova-init: DOCKER_URL = $(srcdir)/docker_build
 prova-init: DOCKER_DOCKERFILE = $(srcdir)/docker_build/Dockerfile-git
 prova-init:
 	@ :;
 
-prova-%: DOCKER_CONTAINER = prova
-prova-shell: | prova-init
+prova-shell: 
 	@ /bin/bash
-
-
 
 
 ##    .########.########.##....##..######...#######..########..########.##........#######..##......##  
@@ -78,7 +56,7 @@ tf-init: DOCKER_CONTAINER = tf-build
 tf-init: | tensorflow pip-install
 	@ cd tensorflow;
 
-tf-%: DOCKER_CONTAINER = tf-build
+tf-%: export DOCKER_CONTAINER = tf-build
 
 tensorflow/.tf_configure.bazelrc: | tf-init
 	@ cd tensorflow; ./configure
@@ -88,7 +66,8 @@ tf-configure: tensorflow/.tf_configure.bazelrc
 tf-build: tf-configure | tf-init
 	@ cd tensorflow; bazel build --config=opt //tensorflow/tools/pip_package:build_pip_package
 
-
+tf-shell:
+	/bin/bash
 
 
 
