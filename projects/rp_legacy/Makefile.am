@@ -19,12 +19,11 @@ logic_SOURCES    = \
 
 logic_BD_SOURCES = redpitaya/fpga/prj/logic/ip/system.tcl
 
-
 # look at: linux/drivers/iio/adc/xilinx-xadc.h
 #          linux/drivers/iio/adc/xilinx-xadc-core.c
 
-
 redpitaya: ## download redpitaya repo
-DOWNLOADS += redpitaya
+DOWNLOADS        = redpitaya
 redpitaya_URL    = https://github.com/redpitaya/redpitaya.git
 redpitaya_BRANCH = master
+
