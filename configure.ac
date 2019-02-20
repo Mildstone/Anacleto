@@ -83,6 +83,7 @@ AC_CHECK_PROGS([WC],[wc])
 AC_PROG_LEX
 AC_PROG_YACC
 
+
 # needed for sh_envsubst
 AC_CHECK_PROGS([PERL],[perl])
 
@@ -245,4 +246,3 @@ AX_CONFIG_FILES(
 		 )
 
 AC_OUTPUT
-

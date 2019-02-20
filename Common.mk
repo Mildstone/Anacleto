@@ -79,8 +79,10 @@ reconfigure: ##@miscellaneous re-run configure with last passed arguments
 	echo ; \
 	cd '$(abs_top_builddir)' && \
 	$(abs_top_srcdir)/configure $(shell $(abs_top_builddir)/config.status --config);
+	
 
 
+NODOCKERBUILD += am__configure_deps
 
 ## ////////////////////////////////////////////////////////////////////////// ##
 ## ///  LINUX  ////////////////////////////////////////////////////////////// ##

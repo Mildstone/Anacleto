@@ -1,0 +1,1 @@
+../kconfig/scripts/ext_nodejs_node.mk
