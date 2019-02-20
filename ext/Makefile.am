@@ -112,6 +112,11 @@ gnuradio-companion: gnuradio
 
 
 
+DOWNLOADS += aws-fpga
+aws-fpga: ##@ext aws FPGA examples and tutorials
+aws_fpga_URL = https://github.com/aws/aws-fpga.git
+aws_fpga_BRANCH = master
+
 
 
 
