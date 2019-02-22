@@ -295,10 +295,10 @@ proc make_repackage_ip {} {
    ipx::save_core $core
    ipx::add_file_group -type software_driver {} $core
    foreach file [split $v::ce(DRV_LINUX) " "] {
-	# add_files -force -norecurse -copy_to ${ipdir}/bsp/[file dirname $file] $v::me(srcdir)/$file
-	file mkdir ${ipdir}/bsp/[file dirname $file]
-	file copy $v::me(srcdir)/$file ${ipdir}/bsp/[file dirname $file]
-	ipx::add_file bsp/$file [ipx::get_file_groups xilinx_softwaredriver -of_objects $core]
+	  # add_files -force -norecurse -copy_to ${ipdir}/bsp/[file dirname $file] $v::me(srcdir)/$file
+	 file mkdir ${ipdir}/bsp/[file dirname $file]
+	 file copy -force $v::me(srcdir)/$file ${ipdir}/bsp/[file dirname $file]
+	 ipx::add_file bsp/$file [ipx::get_file_groups xilinx_softwaredriver -of_objects $core]
    }
    ipx::save_core $core
   } else {
@@ -659,8 +659,10 @@ proc make_write_bitstream {} {
 
   # Export Hardware for SDK inclusion #
   write_hwdef     -force   -file    $path_sdk/$prj_name.hdf
-	write_dsa       -force   -include_bit $path_sdk/$prj_name.dsa
-	write_dsa       -force   -include_bit $path_sdk/$prj_name_$vivado_version.dsa
+  # set_property    dsa.name  "$prj_name" [current_project]
+  # set_property    dsa.board.name  "$prj_name" [current_project]
+	# write_dsa       -force   -include_bit $path_sdk/$prj_name.dsa
+	# write_dsa       -force   -include_bit $path_sdk/$prj_name_$vivado_version.dsa
 }
 
 
