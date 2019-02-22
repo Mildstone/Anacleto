@@ -28,5 +28,7 @@ AX_CONFIG_FILES(
  rfx_spalk/Makefile
  rfx_spalk/linux/src/Makefile
  rfx_spalk/linux/src/Kbuild
+
+ axi_generic/Makefile
 )
 
