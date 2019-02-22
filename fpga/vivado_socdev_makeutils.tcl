@@ -268,52 +268,56 @@ proc make_package_ip { } {
 
 proc make_repackage_ip {} {
   set_compatible_with Vivado
-  #
-  set ipdir        $v::ce(ipdir)
-  #
-  set files_no [llength [get_files -quiet]]
-  puts " PROJECT FOUND: $files_no FILES"
-  if { $files_no > 0 } {
-   if { "[get_property TOP [current_fileset]]" != "" } {
-	 ipx::package_project -import_files -root_dir $ipdir
-   } else {
-	 ipx::package_project -import_files -root_dir $ipdir -module [get_bd_design]
-   }
-   set core [ipx::current_core]
-   set_property VERSION      $v::ce(VERSION) $core
-   set_property NAME         $v::ce(core_name) $core
-   set_property DISPLAY_NAME $v::ce(core_fullname) $core
-   set_property LIBRARY      $v::ce(VENDOR) $core
-   set_property VENDOR       $v::ce(VENDOR) $core
-   #  set_property DESCRIPTION $v::ce(DESCRIPTION) $core
-   catch {set_property file_type IP-XACT [get_files $ipdir/component.xml]}
-   # synth design to make a first compile test
-   # synth_design -rtl -name rtl_1
-
-   ipx::create_xgui_files $core
-   ipx::update_checksums $core
-   ipx::save_core $core
-   ipx::add_file_group -type software_driver {} $core
-   foreach file [split $v::ce(DRV_LINUX) " "] {
-	  # add_files -force -norecurse -copy_to ${ipdir}/bsp/[file dirname $file] $v::me(srcdir)/$file
-	 file mkdir ${ipdir}/bsp/[file dirname $file]
-	 file copy -force $v::me(srcdir)/$file ${ipdir}/bsp/[file dirname $file]
-	 ipx::add_file bsp/$file [ipx::get_file_groups xilinx_softwaredriver -of_objects $core]
-   }
-   ipx::save_core $core
-  } else {
-   file mkdir $ipdir
-   ipx::create_core $v::ce(VENDOR) $v::ce(VENDOR) \
-			$v::ce(core_name) $v::ce(VERSION)
-   set core [ipx::current_core]
-   set_property ROOT_DIRECTORY $ipdir $core
-   ipx::save_core $core
+  set ipdir $v::ce(ipdir)
+  
+  proc create_core {} {    
+    upvar 1 ipdir ipdir
+    file mkdir $ipdir
+    ipx::create_core $v::ce(VENDOR) $v::ce(VENDOR) $v::ce(core_name) $v::ce(VERSION)
+    set core [ipx::current_core]
+    set_property ROOT_DIRECTORY $ipdir $core
+    ipx::save_core $core
+    return $core
   }
-  ipx::open_core $ipdir/component.xml
+  
+  ## create core
+  if {[catch {set core [ipx::current_core]}]} {set core [create_core]}
+
+  ## REPACKAGE CURRENT PROJECT WITH FILES
+  set files_no [llength [get_files -quiet]]  
+  if { $files_no > 0 } { 
+    puts "REPACKAGE IP: $files_no FILES"  
+    ipx::package_project -vendor $v::ce(VENDOR) -import_files -root_dir $ipdir 
+    ipx::open_core $ipdir/component.xml
+    set core [ipx::current_core]
+  }
+  
+  ## SET VARIABLES
+  set_property ROOT_DIRECTORY $ipdir $core   
+  set_property VERSION        $v::ce(VERSION) $core
+  set_property NAME           $v::ce(core_name) $core
+  set_property DISPLAY_NAME   $v::ce(core_fullname) $core
+  set_property LIBRARY        $v::ce(VENDOR) $core
+  set_property VENDOR         $v::ce(VENDOR) $core
+
+  catch {set_property file_type IP-XACT [get_files $ipdir/component.xml]}
+  
+  ipx::add_file_group -type software_driver {} $core
+  foreach file [split $v::ce(DRV_LINUX) " "] {
+    # add_files -force -norecurse -copy_to ${ipdir}/bsp/[file dirname $file] $v::me(srcdir)/$file
+    file mkdir ${ipdir}/bsp/[file dirname $file]
+    file copy -force $v::me(srcdir)/$file ${ipdir}/bsp/[file dirname $file]
+    ipx::add_file bsp/$file [ipx::get_file_groups xilinx_softwaredriver -of_objects $core]
+  }
+  ipx::save_core $core
+
+  # puts "REOPEN CORE"
+  # catch {ipx::open_core $ipdir/component.xml}
+
   # execute post scritps
-  puts "EXECUTING SCRIPTS FOR IP"
+  puts "EXECUTING SCRIPTS in \${IPCFG}"
   make_exec_scripts IPCFG
-  #
+
   ipx::create_xgui_files [ipx::current_core]
   ipx::update_checksums [ipx::current_core]
   ipx::save_core [ipx::current_core]
