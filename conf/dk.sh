@@ -25,6 +25,24 @@ Usage: $SCRIPTNAME [options] [commands]
 EOF
 }
 
+assert () {                                               
+  E_PARAM_ERR=98
+  E_ASSERT_FAILED=99
+
+  if [ -z "$1" ]; then                
+    return $E_PARAM_ERR 
+  fi
+
+  if [ ! $1 ]; then
+    echo "Assertion failed:  \"$1\""
+    echo "File \"$0\", line ${2:-$1}"  
+    exit $E_ASSERT_FAILED
+  fi  
+}
+
+
+
+
 ## parse cmd parameters:
 while [[ "$1" == -* ]] ; do
 	case "$1" in
@@ -122,6 +140,7 @@ DOCKER_IMAGE_ID=$(dk_get_image_id ${DOCKER_IMAGE}; echo $_ans)
 DOCKER_NETWORKS="${DOCKER_NETWORKS}"
 DOCKER_PORTS="${DOCKER_PORTS}"
 DOCKER_SHARES="${DOCKER_SHARES}"
+DOCKER_MOUNTS="${DOCKER_MOUNTS}"
 : \${DOCKER_MACHINE=${DOCKER_MACHINE}}
 : \${USER=${USER}}
 user_id=${user_id}
@@ -249,6 +268,21 @@ adduser() {
 	# 	"
 }
 
+
+# # create the volume in advance
+#   $ docker volume create --driver local \
+#       --opt type=none \
+#       --opt device=/home/user/test \
+#       --opt o=bind \
+#       test_vol
+
+#   # create on the fly with --mount
+#   $ docker run -it --rm \
+#     --mount type=volume,dst=/container/path,volume-driver=local,volume-opt=type=none,volume-opt=o=bind,volume-opt=device=/home/user/test \
+#     foo
+
+
+
 # START
 start() {
 	if [ -n "${DOCKER_URL}" ]; then
@@ -273,7 +307,16 @@ start() {
 		  DOCKER_PORTS_VAR="-p $_n ${DOCKER_PORTS_VAR}";
 		 done
 		fi
-		#
+    if test -n "${DOCKER_MOUNTS}"; then
+		 for _n in ${DOCKER_MOUNTS}; do		  
+			IFS=':' read -ra _vols <<< "$_n";
+			assert "${#_vols[@]} -eq 2" $LINENO
+			mkdir -p ${_vols[0]}
+			local _src="$(cd ${_vols[0]}; pwd)"
+			local _dst="${_vols[1]}"
+		  DOCKER_MOUNTS_VAR="--mount dst=$_dst,volume-driver=local,volume-opt=o=bind,volume-opt=device=$_src ${DOCKER_MOUNTS_VAR}";
+		 done
+		fi
 	  log "Starting docker container from image ${1:-${DOCKER_IMAGE}}"
   	docker run -d ${INT} --entrypoint=${DOCKER_ENTRYPOINT} \
   						 -e USER=${USER} \
@@ -288,18 +331,13 @@ start() {
   						 --tmpfs /run --tmpfs /run/lock \
   						 --cap-add=SYS_ADMIN \
   						 ${DOCKER_SHARES_VAR} \
+  						 ${DOCKER_MOUNTS_VAR} \
   						 ${DOCKER_NETWORKS_VAR} \
 							 ${DOCKER_PORTS_VAR} \
-  						 ${DOCKER_PROFILE_VAR} \
+							 ${DOCKER_PROFILE_VAR} \
   						 -w $(pwd) \
   						 --name ${DOCKER_CONTAINER} \
   						 ${1:-${DOCKER_IMAGE}};
-    # docker exec --user root ${DOCKER_CONTAINER} \
-    # 				 ${DOCKER_SHELL} -c " \
-    # 					 groupadd -g ${user_group} ${USER} 2>/dev/null; \
-    # 					 useradd  -d ${user_home} -u ${user_id} -g ${user_group} ${USER} 2>/dev/null; \
-    # 				 ";
-		
 		# add user
 		adduser
 		# copy dk.sh in container for furter operations
