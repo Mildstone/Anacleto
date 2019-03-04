@@ -33,10 +33,15 @@ while [[ "$1" == -* ]] ; do
 			exit
 			;;
 		-c) # this argument is reserved for shell execution (by Makefile)
-		  CMD=shell
+		  CMD=docker_shell
 			shift
 			break
 			;;
+		# -i)
+		#   CMD=init_container
+		# 	shift
+		# 	break
+		# 	;;
 	  -v|--verbose)
 			set -x
 			echo "VEROBOSE dk command: $@"
@@ -60,7 +65,7 @@ fi
 # if no DOCKER_CONTAINER revert to normal shell 
 # (this is needed for shell command within make for example,
 #  but those command are not executed in container though )
-[ ${DOCKER_CONTAINER} ] || { /bin/sh -c $@; exit; }
+[ ${DOCKER_CONTAINER} ] || { echo "CMD=${CMD}"; ${SHELL:-/bin/sh} -c $@; exit; }
 
 
 ## ////////////////////////////////////////////////////////////////////////////////
@@ -114,8 +119,9 @@ DOCKER_IMAGE=${DOCKER_IMAGE}
 DOCKER_URL=${DOCKER_URL}
 DOCKER_DOCKERFILE=${DOCKER_DOCKERFILE}
 DOCKER_IMAGE_ID=$(dk_get_image_id ${DOCKER_IMAGE}; echo $_ans)
-DOCKER_NETWORKS=${DOCKER_NETWORKS}
-DOCKER_SHARES=${DOCKER_SHARES}
+DOCKER_NETWORKS="${DOCKER_NETWORKS}"
+DOCKER_PORTS="${DOCKER_PORTS}"
+DOCKER_SHARES="${DOCKER_SHARES}"
 : \${DOCKER_MACHINE=${DOCKER_MACHINE}}
 : \${USER=${USER}}
 user_id=${user_id}
@@ -208,6 +214,41 @@ push() {
 }
 
 
+
+execute()  {
+  dk_get_status ${DOCKER_CONTAINER}
+  [ $_ans = "running" ] || start ${DOCKER_IMAGE}
+  M_ENV="$(export -p | awk '{printf("%s; ",$0)}')"
+  # xhost local:andrea > /dev/null
+  log "Docker: Entering container ${DOCKER_CONTAINER} ";
+  quoted_args="$(printf " %q" "$@")"
+  if [ -n "${MAKESHELL}" ]; then
+    ${MAKESHELL} ${quoted_args};
+  else
+    docker exec ${INT} --user ${USER} ${DOCKER_CONTAINER} /bin/bash -l -c \
+		 "save_path=\$PATH; $M_ENV \
+		  export PATH=\$save_path; \
+			cd $(pwd); \
+			export MAKESHELL=${DOCKER_SHELL}; \
+			${quoted_args}";
+  fi
+}
+
+
+adduser() {
+	local user_id=$(id -u ${USER})
+	local user_entry=$(awk -F: "{if (\$3 == "${user_id}") {print \$0} }" /etc/passwd);
+	docker exec ${INT} --user root ${DOCKER_CONTAINER} /bin/bash -l -c \
+	  " id -u ${USER} 2>/dev/null || echo ${user_entry} >> /etc/passwd; "
+	#
+	# local group_id=$(id -g ${USER})
+	#	local group_entry=$(awk -F: "{if (\$3 == "${group_id}") {print \$0} }" /etc/group);
+	# docker exec ${INT} --user root ${DOCKER_CONTAINER} /bin/bash -l -c \
+	#   " group_entry=\$(awk -F: \"{if (\\\$3 == \"${group_id}\") {print \\\$0} }\" /etc/group); \
+	# 	  [ -n "\${group_entry}" ] || echo ${group_entry} >> /etc/group; \
+	# 	"
+}
+
 # START
 start() {
 	if [ -n "${DOCKER_URL}" ]; then
@@ -217,6 +258,22 @@ start() {
   # find if container is is registered
   dk_get_container_id ${DOCKER_CONTAINER_ID}
 	if [ -z "${_ans}" ]; then
+		if test -n "${DOCKER_SHARES}"; then
+		 for _share in ${DOCKER_SHARES}; do
+		  DOCKER_SHARES_VAR="-v ${_share} ${DOCKER_SHARES_VAR}";
+		 done
+		fi
+    if test -n "${DOCKER_NETWORKS}"; then
+		 for _n in ${DOCKER_NETWORKS}; do
+		  DOCKER_NETWORKS_VAR="--network=$_n ${DOCKER_NETWORKS_VAR}";
+		 done
+		fi
+    if test -n "${DOCKER_PORTS}"; then
+		 for _n in ${DOCKER_PORTS}; do
+		  DOCKER_PORTS_VAR="-p $_n ${DOCKER_PORTS_VAR}";
+		 done
+		fi
+		#
 	  log "Starting docker container from image ${1:-${DOCKER_IMAGE}}"
   	docker run -d ${INT} --entrypoint=${DOCKER_ENTRYPOINT} \
   						 -e USER=${USER} \
@@ -232,15 +289,21 @@ start() {
   						 --cap-add=SYS_ADMIN \
   						 ${DOCKER_SHARES_VAR} \
   						 ${DOCKER_NETWORKS_VAR} \
+							 ${DOCKER_PORTS_VAR} \
   						 ${DOCKER_PROFILE_VAR} \
   						 -w $(pwd) \
   						 --name ${DOCKER_CONTAINER} \
   						 ${1:-${DOCKER_IMAGE}};
-    docker exec --user root ${DOCKER_CONTAINER} \
-    				 ${DOCKER_SHELL} -c " \
-    					 groupadd -g ${user_group} ${USER} 2>/dev/null; \
-    					 useradd  -d ${user_home} -u ${user_id} -g ${user_group} ${USER} 2>/dev/null; \
-    				 ";
+    # docker exec --user root ${DOCKER_CONTAINER} \
+    # 				 ${DOCKER_SHELL} -c " \
+    # 					 groupadd -g ${user_group} ${USER} 2>/dev/null; \
+    # 					 useradd  -d ${user_home} -u ${user_id} -g ${user_group} ${USER} 2>/dev/null; \
+    # 				 ";
+		
+		# add user
+		adduser
+		# copy dk.sh in container for furter operations
+		docker cp ${SCRIPT_DIR}/${SCRIPTNAME} ${DOCKER_CONTAINER}:/sbin/dk.sh		
 		write_config
 		read_config
   fi
@@ -260,7 +323,6 @@ start() {
 	_err=$?
 	return $_err
 }
-
 
 # STOP
 stop()  {
@@ -290,24 +352,6 @@ restart()  {
   docker restart ${DOCKER_CONTAINER}
 }
 
-execute()  {
-  dk_get_status ${DOCKER_CONTAINER}
-  [ $_ans = "running" ] || start ${DOCKER_IMAGE}
-  M_ENV="$(export -p | awk '{printf("%s; ",$0)}')"
-  # xhost local:andrea > /dev/null
-  log "Docker: Entering container ${DOCKER_CONTAINER} ";
-  quoted_args="$(printf " %q" "$@")"
-  if [ -n "${MAKESHELL}" ]; then
-    ${MAKESHELL} ${quoted_args};
-  else
-    docker exec ${INT} --user ${USER} ${DOCKER_CONTAINER} /bin/bash -l -c \
-		 "save_path=\$PATH; $M_ENV \
-		  export PATH=\$save_path; \
-			cd $(pwd); \
-			export MAKESHELL=${DOCKER_SHELL}; \
-			${quoted_args}";
-  fi
-}
 
 
 shell() {
@@ -323,113 +367,111 @@ shell() {
 ##    .##.....##.##.....##.##....##.##.....##..##..##...###.##......
 ##    .##.....##.##.....##..######..##.....##.####.##....##.########
 
-## ENV
-## NEEDS: abs_top_builddir abs_top_srcdir
-: ${abs_top_srcdir:? "error abs_top_srcdir not defined"}
-: ${abs_top_builddir:? "error abs_top_builddir not defined"}
-: ${DOCKER_MACHINE_SORAGE_PATH=${abs_top_builddir}/conf/.docker}
+if [ -n ${MACHINE_NAME} ]; then
+  ## ENV
+  ## NEEDS: abs_top_builddir abs_top_srcdir
+  : ${abs_top_srcdir:? "error abs_top_srcdir not defined"}
+  : ${abs_top_builddir:? "error abs_top_builddir not defined"}
+  : ${DOCKER_MACHINE_SORAGE_PATH=${abs_top_builddir}/conf/.docker}
 
-clean_dir () {
-	cd $1 && pwd
-}
-
-abs_top_srcdir=$(clean_dir ${abs_top_srcdir}; )
-abs_top_builddir=$(clean_dir ${abs_top_builddir}; )
+  clean_dir () {
+  	cd $1 && pwd
+  }
+  
+  abs_top_srcdir=$(clean_dir ${abs_top_srcdir}; )
+  abs_top_builddir=$(clean_dir ${abs_top_builddir}; )
+fi
 
 machine() {
+	: ${MACHINE_NAME:? "error no MACHINE_NAME defined"}
 	docker-machine -s ${DOCKER_MACHINE_SORAGE_PATH} $@
 }
 
 machine_ssh() {
-	machine ssh ${DOCKER_MACHINE} $@
+	: ${MACHINE_NAME:? "error no MACHINE_NAME defined"}
+	machine ssh ${MACHINE_NAME} $@
 }
 
 machine_status() {	
-	machine ls -f '{{.State}}' --filter name=${DOCKER_MACHINE}
+	: ${MACHINE_NAME:? "error no MACHINE_NAME defined"}
+	machine ls -f '{{.State}}' --filter name=${MACHINE_NAME}
 }
 
 # machine-create: ##@docker_machine create new machine
 machine_create() {    
-    local _driver=${DOCKER_MACHINE_DRIVER:-virtualbox}
-    local _swarm_token=$(docker swarm join-token worker -q 2>/dev/null)
-    local _swarm=${_swarm_token:+ --swarm}
-    
-    local _driver_args="--driver $_driver"
-    if [ $_driver = "virtualbox" ]; then
-				local _iso=${DOCKER_MACHINE_ISO}
-        [ $_iso ] && _driver_args="$_driver_args --virtualbox-boot2docker-url $_iso"
-    fi
-
-    # create storage path
-    if [ ! -d ${DOCKER_MACHINE_SORAGE_PATH} ]; then
-        mkdir -p ${DOCKER_MACHINE_SORAGE_PATH};
-    fi
-
-		if [ ! "$(machine_status)" = "Running" ]; then
-    	machine create $_driver_args ${DOCKER_MACHINE_ARGS} $_swarm ${DOCKER_MACHINE}
-		fi
+	: ${MACHINE_NAME:? "error no MACHINE_NAME defined"}
+  local _driver=${DOCKER_MACHINE_DRIVER:-virtualbox}
+  local _swarm_token=$(docker swarm join-token worker -q 2>/dev/null)
+  local _swarm=${_swarm_token:+ --swarm}
+  
+  local _driver_args="--driver $_driver"
+  if [ $_driver = "virtualbox" ]; then
+			local _iso=${DOCKER_MACHINE_ISO}
+      [ $_iso ] && _driver_args="$_driver_args --virtualbox-boot2docker-url $_iso"
+  fi
+  # create storage path
+  if [ ! -d ${DOCKER_MACHINE_SORAGE_PATH} ]; then
+      mkdir -p ${DOCKER_MACHINE_SORAGE_PATH};
+  fi
+	if [ ! "$(machine_status)" = "Running" ]; then
+  	machine create $_driver_args ${DOCKER_MACHINE_ARGS} $_swarm ${MACHINE_NAME}
+	fi
 }
 
 
 machine_rm() {
-	${DOCKER_MACHINE:? "error no DOCKER_MACHINE defined"}
-	machine rm ${DOCKER_MACHINE}
+	${MACHINE_NAME:? "error no MACHINE_NAME defined"}
+	machine rm ${MACHINE_NAME}
 }
 
 machine_mount() {
-    test "$(machine_status)" = "Running" && _machine=${DOCKER_MACHINE}
-		: ${_machine:? "any configured machine could be found"}
-
-    _ip=$(machine inspect -f '{{.Driver.IPAddress}}' $_machine)
-    _port=$(machine inspect -f '{{.Driver.SSHPort}}' $_machine)
-    _user=$(machine inspect -f '{{.Driver.SSHUser}}' $_machine)
-    _key=$(machine inspect -f '{{.Driver.SSHKeyPath}}' $_machine)
-
-		# reverse_mount () {
-		# 	##
-		# 	## linux - how to mount local directory to remote like sshfs? - Super User 
-		# 	## https://superuser.com/questions/616182/how-to-mount-local-directory-to-remote-like-sshfs
-		# 	##		
-
-		# 	local _local_port="22"
-		# 	local _forward_port="10000" # work on this !!
-		# 	local _remote_port="xxx"
-
-		# 	local _local_ssh="-p $_forward_port ${USER}@$_local_addr"
-		# 	local _remote_ssh="-p $_remote_port ${USER}@$_remote_addr"
-		# 	local _sshfs_option="-o NoHostAuthenticationForLocalhost=yes"
-
-		# 	## options:
-		# 	##       -v Verbose 
-		# 	##       -X X11 forwarding
-		# 	##       -t pseudo-terminal for an interactive shell
-		# 	##
-		# 	#ssh -X -t $REMOTE_SSH -R $FORWARD_PORT:localhost:$LOCAL_PORT \
-		# 	#"source /etc/profile; mkdir -p $REMOTE_DIR; \
-		# 	# sshfs $SSHFS_OPTION $LOCAL_SSH:$LOCAL_DIR $REMOTE_DIR; bash; \			 
-		# 	# umount $REMOTE_DIR; rm -r $REMOTE_DIR"
-
-		# 	machine-ssh tce-load -w -i sshfs-fuse
-		# 	machine-ssh mkdir -p $1;
-		# 	sshfs $_sshfs_option 
-
-		#   # groupadd -g ${user_group} ${USER} 2>/dev/null; \
-		#   # useradd  -d ${user_home} -u ${user_id} -g ${user_group} ${USER} 2>/dev/null; \
-
-		# }
-
-    # mount() { sshfs -d $1 $_user@$_ip:/$1; }
-    # mount ${abs_top_srcdir}
-    # mount ${abs_top_builddir}
-		echo "This wont work unless reverse sshfs is performed"
+	: ${MACHINE_NAME:? "error no MACHINE_NAME defined"}
+   test "$(machine_status)" = "Running" && _machine=${MACHINE_NAME}
+	: ${_machine:? "any configured machine could be found"}
+   _ip=$(machine inspect -f '{{.Driver.IPAddress}}' $_machine)
+   _port=$(machine inspect -f '{{.Driver.SSHPort}}' $_machine)
+   _user=$(machine inspect -f '{{.Driver.SSHUser}}' $_machine)
+   _key=$(machine inspect -f '{{.Driver.SSHKeyPath}}' $_machine)
+	# reverse_mount () {
+	# 	##
+	# 	## linux - how to mount local directory to remote like sshfs? - Super User 
+	# 	## https://superuser.com/questions/616182/how-to-mount-local-directory-to-remote-like-sshfs
+	# 	##		
+	# 	local _local_port="22"
+	# 	local _forward_port="10000" # work on this !!
+	# 	local _remote_port="xxx"
+	# 	local _local_ssh="-p $_forward_port ${USER}@$_local_addr"
+	# 	local _remote_ssh="-p $_remote_port ${USER}@$_remote_addr"
+	# 	local _sshfs_option="-o NoHostAuthenticationForLocalhost=yes"
+	# 	## options:
+	# 	##       -v Verbose 
+	# 	##       -X X11 forwarding
+	# 	##       -t pseudo-terminal for an interactive shell
+	# 	##
+	# 	#ssh -X -t $REMOTE_SSH -R $FORWARD_PORT:localhost:$LOCAL_PORT \
+	# 	#"source /etc/profile; mkdir -p $REMOTE_DIR; \
+	# 	# sshfs $SSHFS_OPTION $LOCAL_SSH:$LOCAL_DIR $REMOTE_DIR; bash; \			 
+	# 	# umount $REMOTE_DIR; rm -r $REMOTE_DIR"
+	# 	machine-ssh tce-load -w -i sshfs-fuse
+	# 	machine-ssh mkdir -p $1;
+	# 	sshfs $_sshfs_option 
+	#   # groupadd -g ${user_group} ${USER} 2>/dev/null; \
+	#   # useradd  -d ${user_home} -u ${user_id} -g ${user_group} ${USER} 2>/dev/null; \
+	# }
+   # mount() { sshfs -d $1 $_user@$_ip:/$1; }
+   # mount ${abs_top_srcdir}
+   # mount ${abs_top_builddir}
+	echo "This wont work unless reverse sshfs is performed"
 }   
 
 machine_ls() {
+	: ${MACHINE_NAME:? "error no MACHINE_NAME defined"}
 	machine ls
 }
 
 
 machine_init() {
+	: ${MACHINE_NAME:? "error no MACHINE_NAME defined"}
 	# set -e
 	machine_create && eval $(machine env ${DOCKER_MACHINE})
 
@@ -452,11 +494,11 @@ read_config
 # fi
 
 case ${CMD} in
-	shell)
+	docker_shell)
     # start machine env if exists
     [ ${DOCKER_MACHINE} ] && machine_init
 		execute ${DOCKER_SHELL} -c "$@"
-		;;
+		;;	
 	*)
 		$@
 		;;
