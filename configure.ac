@@ -208,7 +208,7 @@ dnl				 src/libjit_examples/Makefile
 				 src/mds_example/Makefile
 				 doc/Makefile
 				 doc/wiki/Makefile
-				 doc/git-mw/Makefile
+dnl				 doc/git-mw/Makefile
 				 ext/Makefile
                )
 AC_OUTPUT
