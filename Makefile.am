@@ -62,11 +62,13 @@ rpm: ##@rpm build rpm for DOCKER_IMAGE
 rpm: DOCKER_IMAGE = alanfranz/docker-rpm-builder-configurations:centos-7
 rpm: docker-rpm-builder-install autoconf-bootstrap.spec dist
 	docker-rpm-builder dir $(DOCKER_IMAGE) . $(TMP)/
-
+	
 
 
 DOCKER_TARGETS = rpm-test
+rpm-test: ##@rpm test created rpm packages
 rpm-test: DOCKER_CONTAINER = rpm-test
 rpm-test: DOCKER_IMAGE = alanfranz/docker-rpm-builder-configurations:centos-7
 rpm-test: $(wildcard $(TMP)/$(build_cpu)/*.rpm)
 	rpm -qlp $^
+	rpm -Uvvvh --test $^
