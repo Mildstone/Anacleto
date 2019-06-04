@@ -18,7 +18,6 @@
 # EXTRA_SEARCH_MAPPINGS  = $(DX_TAGFILES)
 # TAGFILES               = $(DX_TAGFILES)
 # GENERATE_TAGFILE       = $(DX_DESTTAG)
-
 # project
 DX_TITLE  ?= Project title
 DX_BRIEF  ?= project code documentation reference

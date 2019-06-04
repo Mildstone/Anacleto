@@ -66,3 +66,7 @@ NODOCKERBUILD += am__configure_deps
 ## locale-gen:: USER=root
 ## locale-gen::
 ##	locale-gen
+
+
+shell:
+	$(SHELL)

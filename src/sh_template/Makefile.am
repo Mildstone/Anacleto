@@ -21,5 +21,7 @@ export top_builddir
 
 SH_FILES = script.sh
 CLEANFILES = $(SH_FILES)
+EXTRA_DIST = $(SH_FILES)
+
 all: $(SH_FILES)
 

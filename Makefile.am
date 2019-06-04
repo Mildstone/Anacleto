@@ -25,15 +25,14 @@ include $(top_srcdir)/conf/kscripts/yocto.mk
 AM_MAKEFLAGS = -j$(MAKE_PROCESS)
 ACLOCAL_AMFLAGS = -I conf/m4
 
-SUBDIRS = src
+SUBDIRS = conf/kconfig src ext doc
 
 all: ##@all all target
 all:
 
 clean-local:
 
-MOSTLYCLEANFILES =
-
+DISTCLEANFILES = .config .config.old
 
 hello.log: ##@log write hello.log file
 hello.log:
@@ -43,3 +42,15 @@ hello.log:
 print-hello: EXAMPLE_STRING_VAR = not set
 print-hello:
 	@ echo "this is the var: $(EXAMPLE_STRING_VAR)"
+
+
+# if MAKE_RPMS
+# rpm: @RPM_TARGET@
+# $(RPM_TARGET): $(DISTFILES)
+# 	${MAKE} dist
+# 	-mkdir -p $(RPM_DIR)/SRPMS
+# 	-mkdir -p `dirname $(RPM_TARGET)`
+# 	$(RPM_PROG) $(RPM_ARGS) $(RPM_TARBALL)
+# 	@echo Congratulations, $(RPM_TARGET) "(and friends)" should now exist.
+# else
+# endif

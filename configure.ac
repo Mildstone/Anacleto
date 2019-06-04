@@ -194,6 +194,17 @@ AS_ECHO(["DOXYGEN_MODULES -----------------> ${DOXYGEN_MODULES}"])
 AS_ECHO()
 
 
+##
+## RPM
+##
+#     dnl For my rpm.m4 macros
+RPM_RELEASE=1
+AC_SUBST(RPM_RELEASE)
+
+AX_RPM_INIT
+AM_CONDITIONAL(MAKE_RPMS, test x$make_rpms = xtrue)
+
+
 
 AC_CONFIG_FILES( 
                  Makefile
@@ -201,14 +212,12 @@ AC_CONFIG_FILES(
 				 src/Makefile
 				 src/qt_example/Makefile
 				 src/sh_template/Makefile
-dnl				 src/libjit_examples/Makefile
 				 src/parse_examples/Makefile
 				 src/nodejs/Makefile				 
 				 src/project_variables/Makefile
 				 src/mds_example/Makefile
 				 doc/Makefile
-				 doc/wiki/Makefile
-dnl				 doc/git-mw/Makefile
 				 ext/Makefile
+				 dnl autoconf-bootstrap.spectemplate
                )
 AC_OUTPUT

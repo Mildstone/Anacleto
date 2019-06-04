@@ -1,7 +1,7 @@
 include $(top_srcdir)/Common.mk
 include $(top_srcdir)/conf/kscripts/tensorflow.mk
 
-SUBDIRS = sh_template
+SUBDIRS = sh_template parse_examples project_variables mds_example
 
 if ENABLE_NODEJS
 SUBDIRS += nodejs
@@ -11,8 +11,9 @@ if ENABLE_QT
 SUBDIRS += qt_example
 endif
 
-bin_PROGRAMS = main
-main_SOURCES = main.cpp
+bin_PROGRAMS = autoconf-bootstrap-example
+noinst_PROGRAMS = autoconf-bootstrap-example
+autoconf_bootstrap_example_SOURCES = main.cpp
 
 
 
