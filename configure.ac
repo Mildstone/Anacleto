@@ -218,6 +218,6 @@ AC_CONFIG_FILES(
 				 src/mds_example/Makefile
 				 doc/Makefile
 				 ext/Makefile
-				 dnl autoconf-bootstrap.spectemplate
+				 autoconf-bootstrap.spec
                )
 AC_OUTPUT
