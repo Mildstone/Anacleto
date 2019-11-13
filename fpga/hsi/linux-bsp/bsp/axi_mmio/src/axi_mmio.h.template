@@ -1,9 +1,0 @@
-
-//
-// this is a @test@ test for comp: @compatible@
-//
-
-
-#define DRIVER_NAME "@modname@"
-
-

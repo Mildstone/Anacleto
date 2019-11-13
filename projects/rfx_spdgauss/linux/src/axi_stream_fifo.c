@@ -19,7 +19,7 @@
 #include <linux/interrupt.h>
 #include <linux/poll.h>
 
-#include "axis_fifo_v2.h"
+#include "axi_stream_fifo.h"
 
 #include <asm/io.h>
 #include <linux/semaphore.h>
@@ -217,7 +217,6 @@ static int device_open(struct inode *inode, struct file *file)
 	u32 off;
 
 	struct rpadc_fifo_dev *privateInfo = container_of(inode->i_cdev, struct rpadc_fifo_dev, cdev);
-
 	printk(KERN_DEBUG "OPEN: privateInfo = %0x \n",privateInfo);
 	//struct resource *r_mem =  platform_get_resource(s_pdev, IORESOURCE_MEM, 0);
 	file->private_data = privateInfo;
@@ -418,22 +417,22 @@ static long device_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
     //    void* dev1 = scc_dev->iomap1;
 
     switch (cmd) {
-    case $MOD_NAME$_RESOFFSET:
-	printk(KERN_DEBUG "<%s> ioctl: $mod_name$_RESOFFSET\n", MODULE_NAME);
+    case AXI_STREAM_FIFO_RESOFFSET:
+	printk(KERN_DEBUG "<%s> ioctl: axi_stream_fifo_RESOFFSET\n", MODULE_NAME);
 	if (copy_to_user((u32 *) arg, &dev, sizeof(u32)))
 	    return -EFAULT;
 	break;
 
-    case $MOD_NAME$_RESET:
-	printk(KERN_DEBUG "<%s> ioctl: $mod_name$_RESET\n", MODULE_NAME);
+    case AXI_STREAM_FIFO_RESET:
+	printk(KERN_DEBUG "<%s> ioctl: axi_stream_fifo_RESET\n", MODULE_NAME);
 	Write(dev,ISR,0xFFFFFFFF);
 	Write(dev,RDFR,0xa5);
 	scc_dev->fifoOverflow = 0;
 	return 0;
 	break;
 
-    case $MOD_NAME$_CLEAR:
-	printk(KERN_DEBUG "<%s> ioctl: $mod_name$_CLEAR\n", MODULE_NAME);
+    case AXI_STREAM_FIFO_CLEAR:
+	printk(KERN_DEBUG "<%s> ioctl: axi_stream_fifo_CLEAR\n", MODULE_NAME);
 	Write(dev,RDFR,0xa5);
 	if(scc_dev->fifoHalfInterrupt)
 	    Write(dev,IER,0x00100000);
@@ -442,27 +441,27 @@ static long device_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	return 0;
 	break;
 
-    case $MOD_NAME$_GETSR:
-	printk(KERN_DEBUG "<%s> ioctl: $mod_name$_GETSR\n", MODULE_NAME);
+    case AXI_STREAM_FIFO_GETSR:
+	printk(KERN_DEBUG "<%s> ioctl: axi_stream_fifo_GETSR\n", MODULE_NAME);
 	Write(dev,ISR,0xFFFFFFFF);
 	return 0;
 	break;
 
-    case $MOD_NAME$_OVERFLOW:
-	printk(KERN_DEBUG "<%s> ioctl: $mod_name$_OVERFLOW\n", MODULE_NAME);
+    case AXI_STREAM_FIFO_OVERFLOW:
+	printk(KERN_DEBUG "<%s> ioctl: axi_stream_fifo_OVERFLOW\n", MODULE_NAME);
 	return scc_dev->fifoOverflow;
 	break;
-    case $MOD_NAME$_INT_HALF_SIZE:
+    case AXI_STREAM_FIFO_INT_HALF_SIZE:
 	scc_dev->fifoHalfInterrupt = 1;
 	return 0;
 	break;
-    case $MOD_NAME$_INT_FIRST_SAMPLE:
+    case AXI_STREAM_FIFO_INT_FIRST_SAMPLE:
 	scc_dev->fifoHalfInterrupt = 0;
 	return 0;
 	break;
 
 
-    case $MOD_NAME$_SET_BUFSIZE:
+    case AXI_STREAM_FIFO_SET_BUFSIZE:
     {
 	int newSize;
 	copy_from_user (&newSize, (void __user *)arg, sizeof(u32));
@@ -475,7 +474,7 @@ static long device_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	scc_dev->fifoBuffer = kmalloc(newSize * sizeof(u32), GFP_KERNEL);
 	return 0;
     }
-    case $MOD_NAME$_GET_BUFSIZE:
+    case AXI_STREAM_FIFO_GET_BUFSIZE:
     {
 	copy_to_user ((void __user *)arg, &scc_dev->bufSize, sizeof(u32));
 	return 0;
@@ -512,7 +511,7 @@ static unsigned int device_poll(struct file *file, struct poll_table_struct *p)
 static int id_major;
 static struct class *rpadc_class;
 static struct rpadc_fifo_dev staticPrivateInfo;
-static int $mod_name$_probe(struct platform_device *pdev)
+static int axi_stream_fifo_probe(struct platform_device *pdev)
 {
     int i;
 
@@ -590,7 +589,7 @@ static int $mod_name$_probe(struct platform_device *pdev)
     return 0;
 }
 
-static int $mod_name$_remove(struct platform_device *pdev)
+static int axi_stream_fifo_remove(struct platform_device *pdev)
 {
     printk("PLATFORM DEVICE REMOVE...\n");
     if(rpadc_class) {
@@ -602,33 +601,33 @@ static int $mod_name$_remove(struct platform_device *pdev)
     return 0;
 }
 
-static const struct of_device_id $mod_name$_of_ids[] = {
+static const struct of_device_id axi_stream_fifo_of_ids[] = {
 { .compatible = "xlnx,axi-fifo-mm-s-4.1",},
 {}
 };
 
-static struct platform_driver $mod_name$_driver = {
+static struct platform_driver axi_stream_fifo_driver = {
     .driver = {
 	.name  = MODULE_NAME,
 	.owner = THIS_MODULE,
-	.of_match_table = $mod_name$_of_ids,
+	.of_match_table = axi_stream_fifo_of_ids,
     },
-    .probe = $mod_name$_probe,
-    .remove = $mod_name$_remove,
+    .probe = axi_stream_fifo_probe,
+    .remove = axi_stream_fifo_remove,
 };
 
-static int __init $mod_name$_init(void)
+static int __init axi_stream_fifo_init(void)
 {
     printk(KERN_INFO "inizializing AXI module ...\n");
-    return platform_driver_register(&$mod_name$_driver);
+    return platform_driver_register(&axi_stream_fifo_driver);
 }
 
-static void __exit $mod_name$_exit(void)
+static void __exit axi_stream_fifo_exit(void)
 {
     printk(KERN_INFO "exiting AXI module ...\n");
-    platform_driver_unregister(&$mod_name$_driver);
+    platform_driver_unregister(&axi_stream_fifo_driver);
 }
 
-module_init($mod_name$_init);
-module_exit($mod_name$_exit);
+module_init(axi_stream_fifo_init);
+module_exit(axi_stream_fifo_exit);
 MODULE_LICENSE("GPL");

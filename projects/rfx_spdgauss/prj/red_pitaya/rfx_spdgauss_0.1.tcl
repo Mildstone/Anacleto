@@ -4,11 +4,6 @@
 ## ////////////////////////////////////////////////////////////////////////// ##
 
 
-## ////////////////////////////////////////////////////////////////////////// ##
-## /// MAKE ENV  //////////////////////////////////////////////////////////// ##
-## ////////////////////////////////////////////////////////////////////////// ##
-
-
 # ////////////////////////////////////////////////////////////////////////// //
 #
 # This file is part of the anacleto project.
@@ -173,7 +168,7 @@ namespace upvar ::tclapp::socdev::makeutils core_env    core_env
 ## /// CREATE PROJ ////////////////////////////////////////////////////////// ##
 ## ////////////////////////////////////////////////////////////////////////// ##
  
- create_project axi_cfgreg_0.1  "$make_env(builddir)/edit/red_pitaya"  -part xc7z010clg400-1
+ create_project rfx_spdgauss_0.1  "$make_env(builddir)/edit/red_pitaya"  -part xc7z010clg400-1
  
  # Set the directory path for the new project
  set proj_dir [get_property directory [current_project]]
@@ -199,14 +194,45 @@ namespace upvar ::tclapp::socdev::makeutils core_env    core_env
  # 
  # Set 'sources_1' fileset object
  set obj [get_filesets sources_1]
+ file mkdir "$project_env(dir_prj)/rfx_spdgauss_0.1.srcs/sources_1/bd/spdgaus_1"
+ file copy -force "$project_env(dir_src)/rfx_spdgauss_0.1.srcs/sources_1/bd/spdgaus_1/spdgaus_1.bd" \
+    "$project_env(dir_prj)/rfx_spdgauss_0.1.srcs/sources_1/bd/spdgaus_1/spdgaus_1.bd"
+ file mkdir "$project_env(dir_prj)/rfx_spdgauss_0.1.srcs/sources_1/bd/spdgaus_1/hdl"
+ file copy -force "$project_env(dir_src)/rfx_spdgauss_0.1.srcs/sources_1/bd/spdgaus_1/hdl/spdgaus_1_wrapper.v" \
+    "$project_env(dir_prj)/rfx_spdgauss_0.1.srcs/sources_1/bd/spdgaus_1/hdl/spdgaus_1_wrapper.v"
  set files [list \
-  "[file normalize $make_env(srcdir)/src/axi_cfgreg.v]"\
+  "[file normalize $project_env(dir_prj)/rfx_spdgauss_0.1.srcs/sources_1/bd/spdgaus_1/spdgaus_1.bd]"\
+  "[file normalize $project_env(dir_prj)/rfx_spdgauss_0.1.srcs/sources_1/bd/spdgaus_1/hdl/spdgaus_1_wrapper.v]"\
  ]
  add_files -norecurse -fileset $obj $files
  # 
- # Properties for axi_cfgreg.v
-  set file "$project_env(dir_src)/../../src/axi_cfgreg.v"
-  set file [file normalize $file]
+ # No properties for sources_1
+ # Properties for spdgaus_1.bd
+  set file "$project_env(dir_prj)/rfx_spdgauss_0.1.srcs/sources_1/bd/spdgaus_1/spdgaus_1.bd"
+  set file_obj [get_files -of_objects [get_filesets sources_1] [list "$file"]]
+  set_property -quiet "exclude_debug_logic" "0" $file_obj
+  if { ![get_property "is_locked" $file_obj] } {
+    set_property -quiet "generate_synth_checkpoint" "1" $file_obj
+  }
+  set_property -quiet "is_enabled" "1" $file_obj
+  set_property -quiet "is_global_include" "0" $file_obj
+  if { ![get_property "is_locked" $file_obj] } {
+    set_property -quiet "is_locked" "0" $file_obj
+  }
+  set_property -quiet "library" "xil_defaultlib" $file_obj
+  set_property -quiet "path_mode" "RelativeFirst" $file_obj
+  set_property -quiet "pfm_name" "" $file_obj
+  set_property -quiet "registered_with_manager" "1" $file_obj
+  if { ![get_property "is_locked" $file_obj] } {
+    set_property -quiet "synth_checkpoint_mode" "Hierarchical" $file_obj
+  }
+  set_property -quiet "used_in" "synthesis implementation simulation" $file_obj
+  set_property -quiet "used_in_implementation" "1" $file_obj
+  set_property -quiet "used_in_simulation" "1" $file_obj
+  set_property -quiet "used_in_synthesis" "1" $file_obj
+ # 
+ # Properties for spdgaus_1_wrapper.v
+  set file "$project_env(dir_prj)/rfx_spdgauss_0.1.srcs/sources_1/bd/spdgaus_1/hdl/spdgaus_1_wrapper.v"
   set file_obj [get_files -of_objects [get_filesets sources_1] [list "$file"]]
   set_property -quiet "file_type" "Verilog" $file_obj
   set_property -quiet "is_enabled" "1" $file_obj
@@ -218,7 +244,6 @@ namespace upvar ::tclapp::socdev::makeutils core_env    core_env
   set_property -quiet "used_in_simulation" "1" $file_obj
   set_property -quiet "used_in_synthesis" "1" $file_obj
  # 
- # No properties for sources_1
  # 
  # 
  # /////////////////////////////////////////////////////////////  
@@ -232,8 +257,28 @@ namespace upvar ::tclapp::socdev::makeutils core_env    core_env
  # 
  # Set 'constrs_1' fileset object
  set obj [get_filesets constrs_1]
- # Empty (no sources present)
-
+ set files [list \
+  "[file normalize $make_env(srcdir)/./red_pitaya.xdc]"\
+ ]
+ add_files -norecurse -fileset $obj $files
+ # 
+ # Properties for red_pitaya.xdc
+  set file "$project_env(dir_src)/../../red_pitaya.xdc"
+  set file [file normalize $file]
+  set file_obj [get_files -of_objects [get_filesets constrs_1] [list "$file"]]
+  set_property -quiet "file_type" "XDC" $file_obj
+  set_property -quiet "is_enabled" "1" $file_obj
+  set_property -quiet "is_global_include" "0" $file_obj
+  set_property -quiet "library" "xil_defaultlib" $file_obj
+  set_property -quiet "path_mode" "RelativeFirst" $file_obj
+  set_property -quiet "processing_order" "NORMAL" $file_obj
+  set_property -quiet "scoped_to_cells" "" $file_obj
+  set_property -quiet "scoped_to_ref" "" $file_obj
+  set_property -quiet "used_in" "synthesis implementation" $file_obj
+  set_property -quiet "used_in_implementation" "1" $file_obj
+  set_property -quiet "used_in_synthesis" "1" $file_obj
+ # 
+ # No properties for constrs_1
  # 
  # 
  # /////////////////////////////////////////////////////////////  
@@ -251,4 +296,3 @@ namespace upvar ::tclapp::socdev::makeutils core_env    core_env
 
  # 
  # 
-

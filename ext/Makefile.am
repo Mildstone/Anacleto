@@ -143,3 +143,24 @@ aws_fpga_BRANCH = master
 
 
 
+DOWNLOADS += finn
+finn: ##@NN finn FPGA code
+finn_URL = https://github.com/Xilinx/FINN.git
+finn_BRANCH = master
+finn_DIR = FINN
+
+DOWNLOADS += hwgq
+hwgq: ##@NN Half Wave Gaussian Quantization
+hwgq_URL = https://github.com/zhaoweicai/hwgq.git
+hwgq_BRANCH = master
+
+
+hwgq_prepare: USER = root
+hwgq_prepare: DEB_PACKAGES = cmake cmake-qt-gui libboost-all-dev \
+                             libprotobuf-dev protobuf-compiler \
+							 libhdf5-dev \
+							 liblmdb-dev libleveldb-dev \
+							 libsnappy-dev \
+							 libopencv-dev
+hwgq_prepare:
+	@ apt -y install $(DEB_PACKAGES)

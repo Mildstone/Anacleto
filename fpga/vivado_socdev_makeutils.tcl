@@ -273,6 +273,7 @@ proc make_repackage_ip {} {
   proc create_core {} {    
     upvar 1 ipdir ipdir
     file mkdir $ipdir
+    puts " --- CREATING NEW CORE --- "
     ipx::create_core $v::ce(VENDOR) $v::ce(VENDOR) $v::ce(core_name) $v::ce(VERSION)
     set core [ipx::current_core]
     set_property ROOT_DIRECTORY $ipdir $core
@@ -280,16 +281,15 @@ proc make_repackage_ip {} {
     return $core
   }
   
-  ## create core
-  if {[catch {set core [ipx::current_core]}]} {set core [create_core]}
-
   ## REPACKAGE CURRENT PROJECT WITH FILES
   set files_no [llength [get_files -quiet]]  
-  if { $files_no > 0 } { 
+  if { $files_no > 0 } {     
     puts "REPACKAGE IP: $files_no FILES"  
-    ipx::package_project -vendor $v::ce(VENDOR) -import_files -root_dir $ipdir 
-    ipx::open_core $ipdir/component.xml
+    ipx::package_project -root_dir $ipdir -vendor $v::ce(VENDOR) -import_files -set_current 1
     set core [ipx::current_core]
+    #note: use -module to add a bd_design
+  } else {
+    if {[catch {set core [ipx::current_core]}]} {set core [create_core]}    
   }
   
   ## SET VARIABLES
@@ -299,7 +299,8 @@ proc make_repackage_ip {} {
   set_property DISPLAY_NAME   $v::ce(core_fullname) $core
   set_property LIBRARY        $v::ce(VENDOR) $core
   set_property VENDOR         $v::ce(VENDOR) $core
-
+  # set_property supported_families {zynq Beta} $core
+  
   catch {set_property file_type IP-XACT [get_files $ipdir/component.xml]}
   
   ipx::add_file_group -type software_driver {} $core
@@ -309,10 +310,9 @@ proc make_repackage_ip {} {
     file copy -force $v::me(srcdir)/$file ${ipdir}/bsp/[file dirname $file]
     ipx::add_file bsp/$file [ipx::get_file_groups xilinx_softwaredriver -of_objects $core]
   }
-  ipx::save_core $core
 
   # puts "REOPEN CORE"
-  # catch {ipx::open_core $ipdir/component.xml}
+  catch {ipx::open_core $ipdir/component.xml}
 
   # execute post scritps
   puts "EXECUTING SCRIPTS in \${IPCFG}"
@@ -321,6 +321,7 @@ proc make_repackage_ip {} {
   ipx::create_xgui_files [ipx::current_core]
   ipx::update_checksums [ipx::current_core]
   ipx::save_core [ipx::current_core]
+
 }
 
 

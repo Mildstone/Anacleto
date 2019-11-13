@@ -30,5 +30,10 @@ AX_CONFIG_FILES(
  rfx_spalk/linux/src/Kbuild
 
  axi_generic/Makefile
+ axi_generic/linux/src/Makefile
+
+ rfx_spdgauss/Makefile
+ rfx_spdgauss/linux/src/Makefile
+
 )
 

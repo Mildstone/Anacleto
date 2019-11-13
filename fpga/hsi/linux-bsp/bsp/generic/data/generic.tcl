@@ -14,6 +14,7 @@ proc source_core_tcl { sw_core tcl_script } {
 
 
 proc generate { drv_handle } {
+  puts ""
   puts "-- GENERATE GENERIC --"
 
   set os_core_v    [string map {. _} [get_property "VERSION" [get_os]]]
@@ -27,3 +28,6 @@ proc generate { drv_handle } {
   report_driver_properties  $drv_handle
   report_reg_property $drv_handle
 }
+
+
+

@@ -65,25 +65,25 @@ endef
 # Vivado from Xilinx provides IP handling, FPGA compilation hsi (hardware
 # software interface) provides software integration both tools are run in batch
 # mode with an option to save journal files
-VIVADO       = vivado -nolog -journal $(NAME)_jou.tcl      -mode batch
-VIVADO_SHELL = vivado -nolog -journal vivado_shell_jou.tcl $(if $(MODE),-mode $(MODE))
-HSI          = hsi    -nolog -journal $(NAME)_hsi_jou.tcl  -mode batch
-HSI_SHELL    = hsi    -nolog -journal hsi_shell_jou.tcl    $(if $(MODE),-mode $(MODE))
+VIVADO       = vivado -nolog -journal $(NAME)_jou.tcl      $(if $(MODE),-mode $(MODE),-mode batch)
+# VIVADO_SHELL = vivado -nolog -journal vivado_shell_jou.tcl $(if $(MODE),-mode $(MODE),-mode batch)
+HSI          = hsi    -nolog -journal $(NAME)_hsi_jou.tcl  $(if $(MODE),-mode $(MODE),-mode batch)
+# HSI_SHELL    = hsi    -nolog -journal hsi_shell_jou.tcl    $(if $(MODE),-mode $(MODE),-mode batch)
 HLS          = vivado_hls -nosplash
-HLS_SHELL    = vivado_hls -nosplash
+# HLS_SHELL    = vivado_hls -nosplash
 XSDK         = xsdk
-XSDK_SHELL   = xsdk -batch
-SDK_SHELL    = xsdk
+# XSDK_SHELL   = xsdk -batch
+# SDK_SHELL    = xsdk
 
 vivado       = ${_envset}; $(VIVADO)       -source $(FPGA_DIR)/vivado_make.tcl $(if $1,-tclargs $1)
-vivado_shell = ${_envset}; $(VIVADO_SHELL) -source $(FPGA_DIR)/vivado_make.tcl $(if $1,-tclargs $1)
+# vivado_shell = ${_envset}; $(VIVADO_SHELL) -source $(FPGA_DIR)/vivado_make.tcl $(if $1,-tclargs $1)
 hsi          = ${_envset}; $(HSI)       -source $(FPGA_DIR)/vivado_make.tcl $(if $1,-tclargs $1)
-hsi_shell    = ${_envset}; $(HSI_SHELL) -source $(FPGA_DIR)/vivado_make.tcl $(if $1,-tclargs $1)
+# hsi_shell    = ${_envset}; $(HSI_SHELL) -source $(FPGA_DIR)/vivado_make.tcl $(if $1,-tclargs $1)
 hls          = ${_envset}; $(HLS)       -f $(FPGA_DIR)/make_vivado_hls.tcl
-hls_shell    = ${_envset}; $(HLS_SHELL)
+# hls_shell    = ${_envset}; $(HLS_SHELL)
 xsdk         = ${_envset}; $(XSDK)       $1
-xsdk_shell   = ${_envset}; $(XSDK_SHELL) $1
-sdk_shell    = ${_envset}; $(SDK_SHELL)
+# xsdk_shell   = ${_envset}; $(XSDK_SHELL) $1
+# sdk_shell    = ${_envset}; $(SDK_SHELL)
 
 FPGA_DIR        = $(abs_top_srcdir)/fpga
 FPGA_REPO_DIR   = $(abs_top_srcdir)/fpga/ip_repo
@@ -201,7 +201,7 @@ $(vivado_CORES):
 $(filter-out $(vivado_CORES),$(IP_SOURCES)):
 	@ $(MAKE) -C $(@D) $(@F)
 
-$(VIVADO_IPDIR)/%/component.xml: #$(check_sources) < not supported
+$(VIVADO_IPDIR)/%/component.xml: $(SOURCES) #$(check_sources) < not supported
 	@ $(if $(filter %.cpp,${SOURCES}),\
 		   $(call hls, package_hls_ip),\
 		   $(call vivado, package_ip))
@@ -260,6 +260,8 @@ hls_shell:   ##@@xilinx open hls shell with configured env
 xsdk_shell:  ##@@xilinx open xsdk shell with configured env
 sdk_shell:   ##@@xilinx open sdk shell with configured env
 
+%_shell: export MODE = tcl
+vivado vivado_shell hsi hsi_shell hls hls_shell xsdk_shell sdk_shell: 
 vivado vivado_shell hsi hsi_shell hls hls_shell xsdk_shell sdk_shell:
 	@ $(call $@,${TCL_ARGS})
 
@@ -280,13 +282,15 @@ write_project write_bitstream package_ip: $(check_sources)
 	@ $(call vivado,$@)
 
 .PHONY: open_project edit_ip
+new_project open_project: export MODE = gui
 new_project open_project: $(check_sources)
-	@ $(call vivado_shell,$@)
+	@ $(call vivado,$@)
 
+edit_ip: export MODE = gui
 edit_ip: $(check_sources)
 	@ $(if $(filter %.cpp,${SOURCES}),\
 		   ${_envset}; $(HLS) -p $(VIVADO_PRJDIR)/$(FULL_NAME),\
-		   $(call vivado_shell,$@))
+		   $(call vivado,$@))
 
 
 ## ////////////////////////////////////////////////////////////////////////// ##
@@ -335,8 +339,9 @@ $(DTB):  $(DTS) $(LINUX_IMAGE)
 	$(LINUX_BUILDDIR)/scripts/dtc/dtc -I dts -O dtb -o $@ -i sdk/dts/ $<
 
 bsp: ##@hsi write linux drivers template (MEN AT WORK HERE !!)
-bsp: dts
+bsp: # dts
 	@ $(call hsi,write_linux_bsp)
+
 
 ## ////////////////////////////////////////////////////////////////////////// ##
 ## ///  TEST     //////////////////////////////////////////////////////////// ##

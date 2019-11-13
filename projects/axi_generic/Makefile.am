@@ -7,9 +7,14 @@ VENDOR = axi
 vivado_CORES    = cfgreg
 axi_cfgreg_SOURCES   = src/axi_cfgreg.v
 axi_cfgreg_DRV_LINUX = linux/data/cfgreg_0.1.mdd \
-					   linux/data/cfgreg_0.1.tcl
+					   linux/data/cfgreg_0.1.tcl \
+					   linux/src/cfgreg_0.1.c
 
 
 ## PROJECTS ##
 vivado_PROJECTS = cfgreg_tbp
 cfgreg_tbp_IP_SOURCES = cfgreg
+
+
+
+

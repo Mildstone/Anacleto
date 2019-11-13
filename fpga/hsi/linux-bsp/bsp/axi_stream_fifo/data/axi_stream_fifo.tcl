@@ -15,9 +15,8 @@ proc source_core_tcl { sw_core tcl_script } {
 
 
 
-
-
 proc generate { drv_handle } {
+  puts ""
   puts "-- GENERATE FIFO --"
 
   set os_core_v    [string map {. _} [get_property "VERSION" [get_os]]]
@@ -32,7 +31,7 @@ proc generate { drv_handle } {
   gen_interrupt_property $drv_handle
 
   report_driver_properties  $drv_handle
-  report_driver_peripherals $drv_handle
+  # report_driver_peripherals $drv_handle
 
   ## ///////////////////////////////////////////////////////////////////////////
   ## //  DRV  //////////////////////////////////////////////////////////////////
@@ -41,53 +40,27 @@ proc generate { drv_handle } {
   set drv_name [common::get_property NAME $drv_handle]
   set src_dir  [get_property "REPOSITORY" [get_sw_cores $drv_name]]
   set dst_dir  [get_source_path $drv_handle]
+  set hw_cell  [get_cell [common::get_property HW_INSTANCE $drv_handle]]
+  set ip_name  [get_property "IP_NAME" $hw_cell]
 
   array set sw {
-  # -------------------------------------------------
-    os_core     $os_core_name
-    mod_name    $drv_name
-    modname     $drv_name
-    hw_instance {[common::get_property HW_INSTANCE $drv_handle]}
-    hw_version  {[common::get_property VERSION $drv_handle]}
-    hw_name     {[common::get_property NAME $drv_handle]}
-    compatible  {[common::get_property CONFIG.compatible $drv_handle]}
-	reg         {[common::get_property CONFIG.reg $drv_handle]}
-    dev_type    {[common::get_property CONFIG.dev_type $drv_handle]}
-  # --------------------------------------------------
+    os_core     {$os_core_name}
+    ip_name     {$ip_name}
+    IP_NAME     {[string toupper $ip_name]}
+    mod_name    {$drv_name}
+    MOD_NAME    {[string toupper $drv_name]}
+    hw_instance {[get_property HW_INSTANCE $drv_handle]}
+    hw_version  {[get_property VERSION $drv_handle]}
+    hw_name     {[get_property NAME $drv_handle]}
+    compatible  {[get_property CONFIG.compatible $drv_handle]}
+	  reg         {[get_property CONFIG.reg $drv_handle]}
+    dev_type    {[get_property CONFIG.dev_type $drv_handle]}
   }
 
-  # prepare substitution list for parser map #
-  set li [list]
-  foreach node [array names sw] {
-    lappend li "@$node@"
-    lappend li "\$$node\$"
-    if {[catch {lappend li [expr $sw($node)]}]} {
-     lappend li $sw($node)
-    }
-  }
+  parse_file $drv_handle "${src_dir}/src/axi_stream_fifo.c" "src/${drv_name}.c" sw;
+  parse_file $drv_handle "${src_dir}/src/axi_stream_fifo.h" "src/${drv_name}.h" sw;
 
-  parse_file $drv_handle "${src_dir}/src/axi_stream_fifo.c.template" "src/${drv_name}.c" "axi_mmio" li;
-  parse_file $drv_handle "${src_dir}/src/axi_stream_fifo.h.template" "src/${drv_name}.h" "axi_mmio" li;
 
-  ## ///////////////////////////////////////////////////////////////////////////
-  ## //  REG.H  ////////////////////////////////////////////////////////////////
-  ##
-  set periphs [::hsi::utils::get_common_driver_ips $drv_handle]
-  set li [list]
-  foreach i $periphs {
-	puts " properies of pheripheral: \n[report_property $i]"
-	set c_name [common::get_property CONFIG.Component_Name $i]
-	set l_addr [common::get_property CONFIG.C_BASEADDR $i]
-	set h_addr [common::get_property CONFIG.C_HIGHADDR $i]
-	set l4_addr [common::get_property CONFIG.C_AXI4_BASEADDR $i]
-	set h4_addr [common::get_property CONFIG.C_AXI4_HIGHADDR $i]
-	lappend li "void *$c_name\[\] = {$l_addr, $h_addr, $l4_addr, $h4_addr};"
-  }
-  set file_dst [open "src/${drv_name}_reg.h" "w"]
-  foreach l $li {
-   puts $file_dst "$l"
-  }
-  close $file_dst
 }
 
 

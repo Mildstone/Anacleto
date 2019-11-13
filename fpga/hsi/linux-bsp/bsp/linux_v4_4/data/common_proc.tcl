@@ -96,10 +96,6 @@ proc report_reg_property {drv_handle {skip_ps_check ""}} {
 
 
 
-
-
-
-
 proc write_define_file { drv_handle file_dst drv_string args } {
   # get args list
   set args [::hsi::utils::get_exact_arg_list $args]
@@ -158,12 +154,14 @@ proc fforeach {fforeach_line_ref fforeach_file_path fforeach_body} {
     close $fforeach_fid
  }
 
+
+
 # PARSE FILE #
-proc parse_file { drv_handle file_src file_dst drv_string subs_ref_list } {
+proc parse_file2 { drv_handle file_src file_dst drv_string subs_ref_list } {
 
   set periphs  [::hsi::utils::get_common_driver_ips $drv_handle]
   set drv_name [common::get_property NAME $drv_handle]
-  upvar $subs_ref_list words
+  upvar $subs_ref_list words	
 
   set file_src [file normalize $file_src ]
   set file_dst [file normalize $file_dst]
@@ -174,4 +172,29 @@ proc parse_file { drv_handle file_src file_dst drv_string subs_ref_list } {
   }
   close $file_dst
 
+}
+
+# PARSE FILE #
+proc parse_file { drv_handle file_src file_dst sw } {  
+  set drv_name [common::get_property NAME $drv_handle]
+  # prepare substitution list for parser map #  
+	uplevel {
+	  set li [list]
+    foreach node [array names sw] {	  	
+      lappend li "\$$node\$"
+      if {[catch {lappend li [expr $sw($node)]}]} {
+       lappend li $sw($node)
+      }
+    }
+	}
+	upvar li li
+
+  set file_src [file normalize $file_src ]
+  set file_dst [file normalize $file_dst]
+  puts " parsing in: [file tail $file_dst]"
+  set file_dst [open $file_dst "w"]
+  fforeach line $file_src {
+    puts $file_dst [string map $li $line]
+  }
+  close $file_dst
 }

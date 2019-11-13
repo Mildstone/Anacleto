@@ -7,6 +7,8 @@
 #include <linux/mm.h>
 #include <linux/vmalloc.h>
 
+#include <linux/types.h>
+
 #include <linux/io.h>
 #include <linux/ptrace.h>
 
@@ -29,8 +31,6 @@
 #include <linux/cdev.h>
 #include <linux/delay.h>
 
-#define SUCCESS 0
-#define FIFO_LEN 16384
 
 //static struct platform_device *s_pdev = 0;
 // static int s_device_open = 0;
@@ -246,7 +246,7 @@ static long device_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 
     switch (cmd) {
     case RFX_RPADC_RESET:
-        printk(KERN_DEBUG "<%s> ioctl: $mod_name$_RESET\n", MODULE_NAME);
+        printk(KERN_DEBUG "<%s> ioctl: $ip_name$_RESET\n", MODULE_NAME);
         return 0;
         break;
 
@@ -262,11 +262,7 @@ static unsigned int device_poll(struct file *file, struct poll_table_struct *p)
 {
     unsigned int mask=0;
     struct rpadc_fifo_dev *privateInfo =  (struct rpadc_fifo_dev *)file->private_data;
-
     down(&privateInfo->sem);
-//    poll_wait(file,&privateInfo->readq,p);
-//    if(privateInfo->bufCount > 0)
-//        mask |= POLLIN | POLLRDNORM;
     up(&privateInfo->sem);
     return mask;
 }
@@ -281,7 +277,7 @@ static unsigned int device_poll(struct file *file, struct poll_table_struct *p)
 static int id_major;
 static struct class *rpadc_class;
 static struct rpadc_fifo_dev staticPrivateInfo;
-static int $mod_name$_probe(struct platform_device *pdev)
+static int $ip_name$_probe(struct platform_device *pdev)
 {
     int i;
 
@@ -344,7 +340,7 @@ static int $mod_name$_probe(struct platform_device *pdev)
     return 0;
 }
 
-static int $mod_name$_remove(struct platform_device *pdev)
+static int $ip_name$_remove(struct platform_device *pdev)
 {
     printk("PLATFORM DEVICE REMOVE...\n");
     if(rpadc_class) {
@@ -356,33 +352,33 @@ static int $mod_name$_remove(struct platform_device *pdev)
     return 0;
 }
 
-static const struct of_device_id $mod_name$_of_ids[] = {
+static const struct of_device_id $ip_name$_of_ids[] = {
 { .compatible = "xlnx,$compatible$",},
 {}
 };
 
-static struct platform_driver $mod_name$_driver = {
+static struct platform_driver $ip_name$_driver = {
     .driver = {
         .name  = MODULE_NAME,
         .owner = THIS_MODULE,
-        .of_match_table = $mod_name$_of_ids,
+        .of_match_table = $ip_name$_of_ids,
     },
-    .probe = $mod_name$_probe,
-    .remove = $mod_name$_remove,
+    .probe = $ip_name$_probe,
+    .remove = $ip_name$_remove,
 };
 
-static int __init $mod_name$_init(void)
+static int __init $ip_name$_init(void)
 {
     printk(KERN_INFO "inizializing AXI module ...\n");
-    return platform_driver_register(&$mod_name$_driver);
+    return platform_driver_register(&$ip_name$_driver);
 }
 
-static void __exit $mod_name$_exit(void)
+static void __exit $ip_name$_exit(void)
 {
     printk(KERN_INFO "exiting AXI module ...\n");
-    platform_driver_unregister(&$mod_name$_driver);
+    platform_driver_unregister(&$ip_name$_driver);
 }
 
-module_init($mod_name$_init);
-module_exit($mod_name$_exit);
+module_init($ip_name$_init);
+module_exit($ip_name$_exit);
 MODULE_LICENSE("GPL");

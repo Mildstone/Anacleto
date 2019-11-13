@@ -11,19 +11,19 @@
 extern "C" {
 #endif
 
-#define DEVICE_NAME "rpadc_fifo"  /* Dev name as it appears in /proc/devices */
-#define MODULE_NAME "rpadc_fifo"
+#define DEVICE_NAME "axi_fifo_mm_s"  /* Dev name as it appears in /proc/devices */
+#define MODULE_NAME "axi_fifo_mm_s"
 
-#define $MOD_NAME$_IOCTL_BASE	'W'
-#define $MOD_NAME$_RESOFFSET 			_IO($MOD_NAME$_IOCTL_BASE, 0)
-#define $MOD_NAME$_RESET     			_IO($MOD_NAME$_IOCTL_BASE, 1)
-#define $MOD_NAME$_CLEAR     			_IO($MOD_NAME$_IOCTL_BASE, 2)
-#define $MOD_NAME$_GETSR     			_IO($MOD_NAME$_IOCTL_BASE, 3)
-#define $MOD_NAME$_OVERFLOW  			_IO($MOD_NAME$_IOCTL_BASE, 4)
-#define $MOD_NAME$_INT_HALF_SIZE  		_IO($MOD_NAME$_IOCTL_BASE, 5)
-#define $MOD_NAME$_INT_FIRST_SAMPLE  	_IO($MOD_NAME$_IOCTL_BASE, 6)
-#define $MOD_NAME$_SET_BUFSIZE  			_IO($MOD_NAME$_IOCTL_BASE, 7)
-#define $MOD_NAME$_GET_BUFSIZE  			_IO($MOD_NAME$_IOCTL_BASE, 8)
+#define AXI_STREAM_FIFO_IOCTL_BASE	'W'
+#define AXI_STREAM_FIFO_RESOFFSET 			_IO(AXI_STREAM_FIFO_IOCTL_BASE, 0)
+#define AXI_STREAM_FIFO_RESET     			_IO(AXI_STREAM_FIFO_IOCTL_BASE, 1)
+#define AXI_STREAM_FIFO_CLEAR     			_IO(AXI_STREAM_FIFO_IOCTL_BASE, 2)
+#define AXI_STREAM_FIFO_GETSR     			_IO(AXI_STREAM_FIFO_IOCTL_BASE, 3)
+#define AXI_STREAM_FIFO_OVERFLOW  			_IO(AXI_STREAM_FIFO_IOCTL_BASE, 4)
+#define AXI_STREAM_FIFO_INT_HALF_SIZE  		_IO(AXI_STREAM_FIFO_IOCTL_BASE, 5)
+#define AXI_STREAM_FIFO_INT_FIRST_SAMPLE  	_IO(AXI_STREAM_FIFO_IOCTL_BASE, 6)
+#define AXI_STREAM_FIFO_SET_BUFSIZE  		_IO(AXI_STREAM_FIFO_IOCTL_BASE, 7)
+#define AXI_STREAM_FIFO_GET_BUFSIZE  		_IO(AXI_STREAM_FIFO_IOCTL_BASE, 8)
 
 enum AxiStreamFifo_Register {
     ISR   = 0x00,   ///< Interrupt Status Register (ISR)
@@ -72,61 +72,17 @@ struct fifo_data {
     int pad[0x40];
 };
 
-struct $mod_name$ {
-    struct $mod_name$ *next,*prev;
+struct axi_stream_fifo {
+    struct axi_stream_fifo *next, *prev;
     const char *name;
     struct fifo_data fifo;
     int    fd;
-
 };
 
 
 #ifndef __KERNEL__
 // api functions here //
-
-#include <stdio.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <sys/mman.h>
-#include <sys/types.h>
-
-
-/****** OLD STUFF
-struct rfx_rpadc_fifo *rpadc_get_device(const char *dev_file ) {
-    static struct rfx_rpadc_fifo *dev = NULL;
-    int fd;
-    if(!dev) {
-	if(dev_file) fd = open(dev_file, O_RDWR | O_SYNC);
-	else fd = open("/dev/"DEVICE_NAME, O_RDWR | O_SYNC);
-	if(fd < 0) {
-	    printf(" ERROR: failed to open device file\n");
-	    return NULL;
-	}
-	dev = mmap(NULL, sizeof(struct rfx_rpadc_fifo), PROT_READ | PROT_WRITE, MAP_SHARED,fd,0);
-    }
-
-    if(!dev) {
-	printf(" ERROR: failed to mmap device memory\n");
-	return NULL;
-    }
-    return dev;
-}
-
-int rpadc_release_device() {
-    struct rfx_rpadc_fifo *dev = rpadc_get_device(0);
-    int status;
-    if(dev) {
-	status = munmap(dev, sizeof(struct rfx_rpadc_fifo));
-	if(status == 0) dev = NULL;
-    }
-    return status;
-}
-*////////////////////////////////////
-
 #endif // __KERNEL__
-
-
-
 
 #ifdef __cplusplus
 }
