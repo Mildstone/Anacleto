@@ -52,7 +52,7 @@ proc  getenv { name {default ""}} {
   variable ::env
   if { [info exists env($name)] } {
     return $env($name)
-  } else {    
+  } else {
     return $default
   }
 }
@@ -135,6 +135,7 @@ proc reset_project_env { } {
   set project_env(IPCFG)           [getenv IPCFG]
   set project_env(BD_SOURCES)      [getenv BD_SOURCES]
   set project_env(IP_SOURCES)      [getenv IP_SOURCES]
+  set project_env(TB_SOURCES)      [getenv TB_SOURCES]
   set project_env(COMPILE_ORDER)   [getenv COMPILE_ORDER]
   set project_env(sources_list)    [split [getenv SOURCES] " "]
 }
@@ -198,55 +199,8 @@ namespace upvar ::tclapp::socdev::makeutils core_env    core_env
  # 
  # Set 'sources_1' fileset object
  set obj [get_filesets sources_1]
- file mkdir "$project_env(dir_prj)/rfx_pwmgen_1.0.srcs/sources_1/bd/pwmgen"
- file copy -force "$project_env(dir_src)/rfx_pwmgen_1.0.srcs/sources_1/bd/pwmgen/pwmgen.bd" \
-    "$project_env(dir_prj)/rfx_pwmgen_1.0.srcs/sources_1/bd/pwmgen/pwmgen.bd"
- file mkdir "$project_env(dir_prj)/rfx_pwmgen_1.0.srcs/sources_1/bd/pwmgen/hdl"
- file copy -force "$project_env(dir_src)/rfx_pwmgen_1.0.srcs/sources_1/bd/pwmgen/hdl/pwmgen_wrapper.v" \
-    "$project_env(dir_prj)/rfx_pwmgen_1.0.srcs/sources_1/bd/pwmgen/hdl/pwmgen_wrapper.v"
- set files [list \
-  "[file normalize $project_env(dir_prj)/rfx_pwmgen_1.0.srcs/sources_1/bd/pwmgen/pwmgen.bd]"\
-  "[file normalize $project_env(dir_prj)/rfx_pwmgen_1.0.srcs/sources_1/bd/pwmgen/hdl/pwmgen_wrapper.v]"\
- ]
- add_files -norecurse -fileset $obj $files
- # 
- # No properties for sources_1
- # Properties for pwmgen.bd
-  set file "$project_env(dir_prj)/rfx_pwmgen_1.0.srcs/sources_1/bd/pwmgen/pwmgen.bd"
-  set file_obj [get_files -of_objects [get_filesets sources_1] [list "$file"]]
-  set_property -quiet "exclude_debug_logic" "0" $file_obj
-  if { ![get_property "is_locked" $file_obj] } {
-    set_property -quiet "generate_synth_checkpoint" "0" $file_obj
-  }
-  set_property -quiet "is_enabled" "1" $file_obj
-  set_property -quiet "is_global_include" "0" $file_obj
-  if { ![get_property "is_locked" $file_obj] } {
-    set_property -quiet "is_locked" "0" $file_obj
-  }
-  set_property -quiet "library" "xil_defaultlib" $file_obj
-  set_property -quiet "path_mode" "RelativeFirst" $file_obj
-  set_property -quiet "pfm_name" "" $file_obj
-  if { ![get_property "is_locked" $file_obj] } {
-    set_property -quiet "synth_checkpoint_mode" "None" $file_obj
-  }
-  set_property -quiet "used_in" "synthesis implementation simulation" $file_obj
-  set_property -quiet "used_in_implementation" "1" $file_obj
-  set_property -quiet "used_in_simulation" "1" $file_obj
-  set_property -quiet "used_in_synthesis" "1" $file_obj
- # 
- # Properties for pwmgen_wrapper.v
-  set file "$project_env(dir_prj)/rfx_pwmgen_1.0.srcs/sources_1/bd/pwmgen/hdl/pwmgen_wrapper.v"
-  set file_obj [get_files -of_objects [get_filesets sources_1] [list "$file"]]
-  set_property -quiet "file_type" "Verilog" $file_obj
-  set_property -quiet "is_enabled" "1" $file_obj
-  set_property -quiet "is_global_include" "0" $file_obj
-  set_property -quiet "library" "xil_defaultlib" $file_obj
-  set_property -quiet "path_mode" "RelativeFirst" $file_obj
-  set_property -quiet "used_in" "synthesis implementation simulation" $file_obj
-  set_property -quiet "used_in_implementation" "1" $file_obj
-  set_property -quiet "used_in_simulation" "1" $file_obj
-  set_property -quiet "used_in_synthesis" "1" $file_obj
- # 
+ # Empty (no sources present)
+
  # 
  # 
  # /////////////////////////////////////////////////////////////  
@@ -363,6 +317,7 @@ namespace upvar ::tclapp::socdev::makeutils core_env    core_env
   set_property -quiet "library" "xil_defaultlib" $file_obj
   set_property -quiet "path_mode" "RelativeFirst" $file_obj
   set_property -quiet "pfm_name" "" $file_obj
+  set_property -quiet "registered_with_manager" "1" $file_obj
   if { ![get_property "is_locked" $file_obj] } {
     set_property -quiet "synth_checkpoint_mode" "None" $file_obj
   }

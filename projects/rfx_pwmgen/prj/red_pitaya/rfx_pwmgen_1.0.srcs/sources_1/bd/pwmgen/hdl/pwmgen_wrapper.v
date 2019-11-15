@@ -1,8 +1,8 @@
-//Copyright 1986-2017 Xilinx, Inc. All Rights Reserved.
+//Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
 //--------------------------------------------------------------------------------
-//Tool Version: Vivado v.2017.4 (lin64) Build 2086221 Fri Dec 15 20:54:30 MST 2017
-//Date        : Tue Jun  5 12:24:10 2018
-//Host        : cmodws122 running 64-bit Ubuntu 16.04.4 LTS
+//Tool Version: Vivado v.2018.2 (lin64) Build 2258646 Thu Jun 14 20:02:38 MDT 2018
+//Date        : Fri Nov 15 12:00:23 2019
+//Host        : 2e424f70dde7 running 64-bit Ubuntu 14.04.5 LTS
 //Command     : generate_target pwmgen_wrapper.bd
 //Design      : pwmgen_wrapper
 //Purpose     : IP block netlist
@@ -33,7 +33,9 @@ module pwmgen_wrapper
     FIXED_IO_ps_srstb,
     led_o,
     pwm_n_out,
-    pwm_out);
+    pwm_n_out_1,
+    pwm_out,
+    pwm_out_1);
   inout [14:0]DDR_addr;
   inout [2:0]DDR_ba;
   inout DDR_cas_n;
@@ -57,7 +59,9 @@ module pwmgen_wrapper
   inout FIXED_IO_ps_srstb;
   output led_o;
   output [0:0]pwm_n_out;
+  output [0:0]pwm_n_out_1;
   output [0:0]pwm_out;
+  output [0:0]pwm_out_1;
 
   wire [14:0]DDR_addr;
   wire [2:0]DDR_ba;
@@ -82,7 +86,9 @@ module pwmgen_wrapper
   wire FIXED_IO_ps_srstb;
   wire led_o;
   wire [0:0]pwm_n_out;
+  wire [0:0]pwm_n_out_1;
   wire [0:0]pwm_out;
+  wire [0:0]pwm_out_1;
 
   pwmgen pwmgen_i
        (.DDR_addr(DDR_addr),
@@ -108,5 +114,7 @@ module pwmgen_wrapper
         .FIXED_IO_ps_srstb(FIXED_IO_ps_srstb),
         .led_o(led_o),
         .pwm_n_out(pwm_n_out),
-        .pwm_out(pwm_out));
+        .pwm_n_out_1(pwm_n_out_1),
+        .pwm_out(pwm_out),
+        .pwm_out_1(pwm_out_1));
 endmodule
