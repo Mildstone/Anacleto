@@ -47,7 +47,7 @@ proc  getenv { name {default ""}} {
   variable ::env
   if { [info exists env($name)] } {
     return $env($name)
-  } else {
+  } else {    
     return $default
   }
 }
@@ -130,7 +130,6 @@ proc reset_project_env { } {
   set project_env(IPCFG)           [getenv IPCFG]
   set project_env(BD_SOURCES)      [getenv BD_SOURCES]
   set project_env(IP_SOURCES)      [getenv IP_SOURCES]
-  set project_env(TB_SOURCES)      [getenv TB_SOURCES]
   set project_env(COMPILE_ORDER)   [getenv COMPILE_ORDER]
   set project_env(sources_list)    [split [getenv SOURCES] " "]
 }
@@ -168,7 +167,7 @@ namespace upvar ::tclapp::socdev::makeutils core_env    core_env
 ## /// CREATE PROJ ////////////////////////////////////////////////////////// ##
 ## ////////////////////////////////////////////////////////////////////////// ##
  
- create_project axi_cfgreg_0.1  "$make_env(builddir)/edit/red_pitaya"  -part xc7z010clg400-1
+ create_project rfx_cfgwrp_0.1  "$make_env(builddir)/edit/red_pitaya"  -part xc7z010clg400-1
  
  # Set the directory path for the new project
  set proj_dir [get_property directory [current_project]]
@@ -194,26 +193,8 @@ namespace upvar ::tclapp::socdev::makeutils core_env    core_env
  # 
  # Set 'sources_1' fileset object
  set obj [get_filesets sources_1]
- set files [list \
-  "[file normalize $make_env(srcdir)/src/axi_cfgreg.v]"\
- ]
- add_files -norecurse -fileset $obj $files
- # 
- # Properties for axi_cfgreg.v
-  set file "$project_env(dir_src)/../../src/axi_cfgreg.v"
-  set file [file normalize $file]
-  set file_obj [get_files -of_objects [get_filesets sources_1] [list "$file"]]
-  set_property -quiet "file_type" "Verilog" $file_obj
-  set_property -quiet "is_enabled" "1" $file_obj
-  set_property -quiet "is_global_include" "0" $file_obj
-  set_property -quiet "library" "xil_defaultlib" $file_obj
-  set_property -quiet "path_mode" "RelativeFirst" $file_obj
-  set_property -quiet "used_in" "synthesis implementation simulation" $file_obj
-  set_property -quiet "used_in_implementation" "1" $file_obj
-  set_property -quiet "used_in_simulation" "1" $file_obj
-  set_property -quiet "used_in_synthesis" "1" $file_obj
- # 
- # No properties for sources_1
+ # Empty (no sources present)
+
  # 
  # 
  # /////////////////////////////////////////////////////////////  

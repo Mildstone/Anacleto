@@ -1,0 +1,13 @@
+
+OPTION psf_version = 3.0;
+
+BEGIN driver cfgreg_1.0
+  OPTION driver_state = ACTIVE;
+  OPTION supported_peripherals = (cfgreg);
+  OPTION supported_os_types = (LINUX);
+  OPTION NAME = pwm_1.0;
+  OPTION copyfiles = all;
+END driver
+
+
+
