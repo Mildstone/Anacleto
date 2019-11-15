@@ -1,0 +1,1 @@
+../kconfig/scripts/project_variables.mk

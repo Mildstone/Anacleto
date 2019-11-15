@@ -32,6 +32,18 @@ proc generate {os_handle} {
 	source_core_tcl  $os_core_name "dt_common_proc.tcl"
 	source_core_tcl  $os_core_name "common_proc.tcl"
 
+#        # set variables
+#        set drv_name [common::get_property NAME $os_handle]
+#        set src_dir  [get_property "REPOSITORY" [get_sw_cores $drv_name]]
+#        set dst_dir  [get_source_path $os_handle]
+
+#        set top_dstdir $dst_dir/../../../
+#        set file [open $top_dstdir/Makefile w]
+#        puts $file "## empty"
+#        close $file
+
+#        puts " LINUX DIR: $dst_dir"
+
 	puts "| ========= LIST OF ACTIVE PERIPHERALS ======="
 	puts "|    NAME \t\t DRIVER "
 	foreach drv_handle [get_drivers] {
@@ -41,4 +53,21 @@ proc generate {os_handle} {
 	}
 	puts ""
 	puts ""
+}
+
+
+
+proc post_generate {os_handle} {
+  #
+  # set variables
+  puts " --- POST GENERATE LINUX V4 --- "
+
+#  set drv_name [common::get_property NAME $os_handle]
+#  set src_dir  [get_property "REPOSITORY" [get_sw_cores $drv_name]]
+#  set dst_dir  [get_source_path $os_handle]
+
+#  set top_dstdir $dst_dir/../../../
+#  set file [open $top_dstdir/Makefile w]
+#  puts $file "## empty"
+#  close $file
 }

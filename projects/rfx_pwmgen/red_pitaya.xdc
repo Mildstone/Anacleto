@@ -42,9 +42,3 @@ set_property PACKAGE_PIN G15 [get_ports {pwm_n_out_1[0]}]
 
 set_property BITSTREAM.GENERAL.COMPRESS TRUE [current_design]
 
-set_property IOSTANDARD LVCMOS33 [get_ports {pwm_n_out_2[0]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {pwm_out_2[0]}]
-set_property IOSTANDARD LVCMOS33 [get_ports led_o_1]
-set_property PACKAGE_PIN H15 [get_ports led_o_1]
-set_property PACKAGE_PIN K14 [get_ports {pwm_out_2[0]}]
-set_property PACKAGE_PIN G14 [get_ports {pwm_n_out_2[0]}]

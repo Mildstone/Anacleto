@@ -22,18 +22,40 @@
 # //  FPGA  ////////////////////////////////////////////////////////////////// #
 # //////////////////////////////////////////////////////////////////////////// #
 
-AX_KCONFIG_WITH_CHOICE([BOARD],["Select SoC board to use"],
+
+AX_KCONFIG_MODULES([ENABLE_BOARD],
+			[red_pitaya], [],
+			[zybo], [])
+AC_SUBST([ENABLED_BOARDS],[${ENABLE_BOARD_MODULES}])
+
+AX_KCONFIG_WITH_CHOICE([BOARD],["Select default board"],
 			   [WITH_SOC_RED_PITAYA],["red_pitaya"],
-			   [WITH_SOC_PARALLELLA],["parallella"])
+			   [WITH_SOC_ZYBO],["zybo"],
+			   [WITH_SOC_CUSTOM],["custom"]
+			   )
 AC_SUBST([BOARD])
 
-AX_KCONFIG_VAR([BOARD_PART])
-AC_SUBST([BOARD_PART])
-AX_KCONFIG_VAR([BOARD_PRESET])
-AC_SUBST([BOARD_PRESET])
+AX_KCONFIG_VAR([red_pitaya_BOARD_PRESET])
+AC_SUBST([red_pitaya_BOARD_PRESET])
+AX_KCONFIG_VAR([red_pitaya_BOARD_PART])
+AC_SUBST([red_pitaya_BOARD_PART])
+AX_KCONFIG_VAR([red_pitaya_VIVADO_SOC_PART])
+AC_SUBST([red_pitaya_VIVADO_SOC_PART])
 
-AX_KCONFIG_VAR([VIVADO_SOC_PART])
-AC_SUBST([VIVADO_SOC_PART])
+AX_KCONFIG_VAR([zybo_BOARD_PRESET])
+AC_SUBST([zybo_BOARD_PRESET])
+AX_KCONFIG_VAR([zybo_BOARD_PART])
+AC_SUBST([zybo_BOARD_PART])
+AX_KCONFIG_VAR([zybo_VIVADO_SOC_PART])
+AC_SUBST([zybo_VIVADO_SOC_PART])
+
+AX_KCONFIG_VAR([custom_BOARD_PRESET])
+AC_SUBST([custom_BOARD_PRESET])
+AX_KCONFIG_VAR([custom_BOARD_PART])
+AC_SUBST([custom_BOARD_PART])
+AX_KCONFIG_VAR([custom_VIVADO_SOC_PART])
+AC_SUBST([custom_VIVADO_SOC_PART])
+
 
 AX_KCONFIG_WITH_CHOICE([VIVADO_VERSION],["Vivado version to use"],
 			   [VIVADO_VERSION_2015_4],["2015.4"],
@@ -43,7 +65,8 @@ AX_KCONFIG_WITH_CHOICE([VIVADO_VERSION],["Vivado version to use"],
 			   [VIVADO_VERSION_2017_1],["2017.1"],
 			   [VIVADO_VERSION_2017_2],["2017.2"],
 			   [VIVADO_VERSION_2017_4],["2017.4"],
-			   [VIVADO_VERSION_2018_1],["2018.1"])
+			   [VIVADO_VERSION_2018_1],["2018.1"],
+				 [VIVADO_VERSION_2018_2],["2018.2"])
 AC_SUBST([VIVADO_VERSION])
 
 AX_KCONFIG_WITH_CHOICE([VIVADO_SETUP_METHOD],["Vivado setup method"],

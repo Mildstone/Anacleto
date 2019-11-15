@@ -689,7 +689,6 @@ static int rfx_rpadc_fifo_probe(struct platform_device *pdev)
                   NULL, DEVICE_NAME);
 
     /* Get iospace for the device */
-    
     for(i = 0; i < 8; i++)
     {
     
@@ -700,8 +699,6 @@ static int rfx_rpadc_fifo_probe(struct platform_device *pdev)
 	    dev_err(dev, "Can't find device base address\n");
 	    return 1;
 	}
-
-
 	printk(KERN_DEBUG"mem start: %x\n",r_mem->start);
 	printk(KERN_DEBUG"mem end: %x\n",r_mem->end);
 	printk(KERN_DEBUG"mem offset: %x\n",r_mem->start & ~PAGE_MASK);

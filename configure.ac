@@ -83,6 +83,7 @@ AC_CHECK_PROGS([WC],[wc])
 AC_PROG_LEX
 AC_PROG_YACC
 
+
 # needed for sh_envsubst
 AC_CHECK_PROGS([PERL],[perl])
 
@@ -220,7 +221,7 @@ AC_SUBST([YOCTO_XILINX_GIT])
 AX_KCONFIG_VAR([YOCTO_XILINX_TAR])
 AC_SUBST([YOCTO_XILINX_TAR])
 
-
+AC_SUBST([obj_m],[obj-m])
 
 # // GIT IGNORE // #
 AX_GITIGNORE_SUBST
@@ -240,8 +241,8 @@ AX_CONFIG_SUBDIRS(
 
 AX_CONFIG_FILES(
 		 Makefile
+		 ext/Makefile
 		 .gitignore
 		 )
 
 AC_OUTPUT
-

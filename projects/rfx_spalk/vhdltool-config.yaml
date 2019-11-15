@@ -1,0 +1,55 @@
+#Define your project's libraries and source files here.
+#This section is compulsory.
+Libraries:
+    #The name of the library.
+    - name: hardware_lib
+    #The paths where the source files for this library can be found. Use "**" to match arbitrarily nested directories.
+      paths: 
+        - "8b10b_encdec/*.vhd"
+        - "8b10b_encdec/*.vhdl"
+
+    - name: vivado_lib
+      paths: 
+        - "/mnt/data0/Xilinx/Vivado/2018.2/data/vhdl/src/**/*.vhd"
+        - "/mnt/data0/Xilinx/Vivado/2018.2/data/vhdl/src/**/*.vhdl"
+
+#Enable/disable typechecking
+TypeCheck: True
+
+
+#Enable/disable check-as-you-type
+CheckOnChange: True
+
+
+#Linter rule configuration.
+#Rules can be enabled or disabled.
+#Rules also have a severity. It may be one of Info, Warning, Critical or Error.
+Lint:
+    #Threshold, below which messages are not displayed.
+    Threshold: Warning
+
+
+    #Long form rule configuration. Both enabled/disabled status and severity can be configured this way.
+    DeclaredNotAssigned: 
+        enabled:  True
+        severity: Warning #Default severity Warning
+
+
+    #Short form. Only enabled/disabled status can be specified. Severity is the default for the rule.
+    DeclaredNotRead:             True #Default severity Warning
+    ReadNotAssigned:             True #Default severity Critical
+    SensitivityListCheck:        True #Default severity Warning
+    ExtraSensitivityListCheck:   True #Default severity Warning
+    DuplicateSensitivity:        True #Default severity Warning
+    LatchCheck:                  True #Default severity Critical
+    VariableNotRead:             True #Default severity Warning
+#    VariableNotWritten:          True #Default severity Warning
+    PortNotRead:                 True #Default severity Warning
+    PortNotWritten:              True #Default severity Critical
+    NoPrimaryUnit:               True #Default severity Warning
+    DuplicateLibraryImport:      True #Default severity Warning
+    DuplicatePackageUsage:       True #Default severity Warning
+    DeprecatedPackages:          True #Default severity Warning
+    ImplicitLibraries:           True #Default severity Warning
+    DisconnectedPorts:           True #Default severity Critical
+

@@ -35,3 +35,7 @@ ipdes_VERSION = 1.0
 ipdes_prj_IP_SOURCES = ipdes
 
 
+vivado_PROJECTS += rp1_board
+
+
+

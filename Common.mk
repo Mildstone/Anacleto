@@ -50,8 +50,18 @@ ${DL} ${TMP}:
 ## /////////////////////////////////////////////////////////////////////////////
 
 locale-gen: USER = root
-locale-gen:
+locale-gen: ##@@docker set locale in the docker container instance
 	@ locale-gen $${LANG}
+
+ip-address: NIC    = eth0
+ip-address: HOSTID = 02:42:ac:11:00:aa
+ip-address: USER   = root
+ip-address: ##@@docker set MAC address in the docker container instance
+	@ ip link set $(NIC) address $(HOSTID)
+
+
+NODOCKERBUILD += edit-code
+
 
 ## /////////////////////////////////////////////////////////////////////////////
 ## // RECONFIGURE  /////////////////////////////////////////////////////////////
@@ -71,6 +81,8 @@ reconfigure: ##@miscellaneous re-run configure with last passed arguments
 	$(abs_top_srcdir)/configure $(shell $(abs_top_builddir)/config.status --config);
 	
 
+
+NODOCKERBUILD += am__configure_deps
 
 ## ////////////////////////////////////////////////////////////////////////// ##
 ## ///  LINUX  ////////////////////////////////////////////////////////////// ##

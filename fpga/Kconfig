@@ -30,22 +30,70 @@ menuconfig ENABLE_FPGA
 
 if ENABLE_FPGA
 
+  ## ///////////////////////////////////////////////////////////////////////////
+  ## //  PRESETS  //////////////////////////////////////////////////////////////
+  ## ///////////////////////////////////////////////////////////////////////////
+  menu "Enabled SOC boards"
+
+  menuconfig ENABLE_BOARD_RED_PITAYA
+	bool "STEMLab Red Pitaya"
+	default y
+  if ENABLE_BOARD_RED_PITAYA
+	config red_pitaya_BOARD_PART
+	 string "board part"
+	 default "redpitaya.com:redpitaya:part0:1.1"
+	config red_pitaya_BOARD_PRESET
+	 string "Preset tcl"
+	 default "${srcdir}/fpga/brd/red_pitaya/presets/zynq_rp1.1.tcl"
+	config red_pitaya_VIVADO_SOC_PART
+	 string "SoC part"
+	 default "xc7z010clg400-1"
+  endif
+
+  menuconfig ENABLE_BOARD_ZYBO
+	bool "Digilent Zybo"
+	default y
+  if ENABLE_BOARD_ZYBO
+	config zybo_BOARD_PART
+	 string "board part"
+	 default "digilentinc.com:zybo:part0:1.0"
+	config zybo_BOARD_PRESET
+	 string "Preset tcl"
+	 default "${srcdir}/fpga/brd/zybo/presets/ZYBO_C.tcl"
+	config zybo_VIVADO_SOC_PART
+	 string "SoC part"
+	 default "xc7z010clg400-1"
+  endif
+
+  endmenu
+
   choice BOARD
-      prompt "Select SOC board"
-      depends on ENABLE_FPGA
-      config WITH_SOC_RED_PITAYA
-       bool "red_pitaya"
-      config WITH_SOC_PARALLELLA
-       bool "parallella"
+	prompt "Default"
+	config WITH_SOC_RED_PITAYA
+	 depends on ENABLE_BOARD_RED_PITAYA
+	 bool "red_pitaya"
+	config WITH_SOC_ZYBO
+	 depends on ENABLE_BOARD_ZYBO
+	 bool "zybo"
+	config WITH_SOC_CUSTOM
+	 bool "custom"
   endchoice
 
+  if WITH_SOC_CUSTOM
   config BOARD_PART
-	string "Board part id"
-	default "redpitaya.com:redpitaya:part0:1.1" if WITH_SOC_RED_PITAYA
-
+	string "board part"
   config BOARD_PRESET
 	string "Board preset init template"
-	default "${srcdir}/fpga/brd/red_pitaya/presets/zynq_rp1.1.tcl" if WITH_SOC_RED_PITAYA
+  config VIVADO_SOC_PART
+   string "Vivado soc part"
+   default "xc7z010clg400-1"
+  endif # custom
+
+
+
+## ////////////////////////////////////////////////////////////////////////////////
+## //  VIVADO  ////////////////////////////////////////////////////////////////////
+## ////////////////////////////////////////////////////////////////////////////////
 
   choice VIVADO_VERSION
 	prompt "Vivado version yyyy.v "
@@ -63,6 +111,8 @@ if ENABLE_FPGA
 	 bool  "2017.4"
 	 config VIVADO_VERSION_2018_1
 	 bool  "2018.1"
+	 config VIVADO_VERSION_2018_2
+	 bool  "2018.2"
   endchoice
 
   choice VIVADO_SETUP_METHOD
@@ -90,6 +140,7 @@ if ENABLE_FPGA
 	default "/opt/Xilinx/Vivado/2017.2/settings64.sh" if VIVADO_VERSION_2017_2
 	default "/opt/Xilinx/Vivado/2017.4/settings64.sh" if VIVADO_VERSION_2017_4
 	default "/opt/Xilinx/Vivado/2018.1/settings64.sh" if VIVADO_VERSION_2018_1
+	default "/opt/Xilinx/Vivado/2018.2/settings64.sh" if VIVADO_VERSION_2018_2
 
   config VIVADO_SDK_SETUP_SCRIPT
 	string "Setup script to set vivado SDK environments"
@@ -101,6 +152,7 @@ if ENABLE_FPGA
 	default "/opt/Xilinx/SDK/2017.2/settings64.sh" if VIVADO_VERSION_2017_2
 	default "/opt/Xilinx/SDK/2017.4/settings64.sh" if VIVADO_VERSION_2017_4
 	default "/opt/Xilinx/SDK/2018.1/settings64.sh" if VIVADO_VERSION_2018_1
+	default "/opt/Xilinx/SDK/2018.2/settings64.sh" if VIVADO_VERSION_2018_2
   endif # SCRIPTS
 
   config DEVICETREE_BASEFILES_TAR
@@ -112,11 +164,8 @@ if ENABLE_FPGA
 	default "https://github.com/Xilinx/device-tree-xlnx/archive/xilinx-v2017.2.tar.gz" if VIVADO_VERSION_2017_2
 	default "https://github.com/Xilinx/device-tree-xlnx/archive/xilinx-v2017.4.tar.gz" if VIVADO_VERSION_2017_4
 	default "https://github.com/Xilinx/device-tree-xlnx/archive/xilinx-v2018.1.tar.gz" if VIVADO_VERSION_2018_1
+	default "https://github.com/Xilinx/device-tree-xlnx/archive/xilinx-v2018.2.tar.gz" if VIVADO_VERSION_2018_2
 
-  config VIVADO_SOC_PART
-	string "Vivado soc part to load in project"
-	default "xc7z010clg400-1" if WITH_SOC_RED_PITAYA
-	default "xc7z010clg400-1" if WITH_SOC_PARALLELLA
 
 #  config VIVADO_LICENSE_PATH
 #        string "Path to the vivado system folder"

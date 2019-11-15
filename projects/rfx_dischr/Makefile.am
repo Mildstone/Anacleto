@@ -13,6 +13,8 @@ vivado_PROJECTS       = dischr-prj
 dischr_prj_SOURCES    = src/red_pitaya.xdc
 dischr_prj_IP_SOURCES = trigger
 
-
 dump:
 	@ echo "$(NAME) -> $(SOURCES)"
+
+
+
