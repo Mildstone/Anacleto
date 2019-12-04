@@ -1,0 +1,1 @@
+../autoconf-archive/m4/ax_rpm_init.m4

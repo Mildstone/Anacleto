@@ -1,0 +1,43 @@
+Name:           @PACKAGE_NAME@
+Version:        @PACKAGE_VERSION@
+Release:        @PACKAGE_VERSION@%{?dist}
+Summary:        autoconf bootstrap
+
+Group:          Applications/System
+License:        GPLv3
+URL:            https://github.com/andrearigoni/autoconf-bootstrap.git
+Source:         @PACKAGE_NAME@-@PACKAGE_VERSION@.tar.gz
+
+BuildRequires:  autoconf
+BuildRequires:  automake
+BuildRequires:  libtool
+BuildRequires:  ncurses-devel
+
+%description
+Base setup for autoconf distribution
+This is a autoconf/automake minimal setup to start a new project. It uses Kconfig integration provided by https://github.com/AndreaRigoni/autoconf-kconfig as a submodule in conf/kconfig
+
+%prep
+%setup
+
+%build
+%configure
+echo " ******* CFG DONE  ********** "
+make
+echo " ******* BUILD DONE  ********** "
+# make %{?_smp_mflags} LDFLAGS="%{optflags}"
+
+%install
+rm -rf %{buildroot}
+make install DESTDIR=%{buildroot} INSTALLBIN="install -p -m 755" INSTALLMAN="install -p -m 644"
+
+%files
+%defattr(-,root,root,-)
+# %doc CHANGES FAQ TODO examples/
+%{_bindir}/autoconf-bootstrap-example
+# %{_mandir}
+
+## %changelog
+## * Fri Jan 24 2014 Daniel Mach <dmach@redhat.com> - 1.8-4
+## - Mass rebuild 2014-01-24
+
