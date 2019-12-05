@@ -1,5 +1,4 @@
-name: CI
-
+name: bootstrap
 on: [push]
 
 jobs:
