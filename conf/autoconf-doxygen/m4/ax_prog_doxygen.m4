@@ -51,7 +51,7 @@ AC_DEFUN([DX_TEST_FEATURE],[test x"${DOXYGEN_[]m4_toupper($1)}" = x"yes"])
 # ---------------------------------------------------------
 # PROJECT also serves as the base name for the documentation files.
 # The default CONFIG-FILE is "Doxyfile" and OUTPUT-DOC-DIR is "doxygen-doc".
-AC_DEFUN([DX_MY_INIT_DOXYGEN], [
+AC_DEFUN([DX_INIT_DOXYGEN], [
 
   # Files:
   AC_SUBST([DX_PROJECT], [$1])
