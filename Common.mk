@@ -37,38 +37,16 @@ print_banner:
 ## // DIRECTORIES //////////////////////////////////////////////////////////////
 ## /////////////////////////////////////////////////////////////////////////////
 
-kscripts = $(top_srcdir)/conf/kscripts
-
 DL   ?= $(DOWNLOAD_DIR)
 TMP  ?= $(abs_top_builddir)
 
 ${DL} ${TMP}:
 	@$(MKDIR_P) $@
 
-## /////////////////////////////////////////////////////////////////////////////
-## // DOCKER  //////////////////////////////////////////////////////////////////
-## /////////////////////////////////////////////////////////////////////////////
-
-locale-gen: USER = root
-locale-gen: ##@@docker set locale in the docker container instance
-	@ locale-gen $${LANG}
-
-ip-address: NIC    = eth0
-ip-address: HOSTID = 02:42:ac:11:00:aa
-ip-address: USER   = root
-ip-address: ##@@docker set MAC address in the docker container instance
-	@ ip link set $(NIC) address $(HOSTID)
-
-
-NODOCKERBUILD += edit-code
-
 
 ## /////////////////////////////////////////////////////////////////////////////
 ## // RECONFIGURE  /////////////////////////////////////////////////////////////
 ## /////////////////////////////////////////////////////////////////////////////
-
-$(top_srcdir)/configure.ac: $(foreach x,$(CONFIG_SUBDIRS), $(top_srcdir)/$x/configure.ac)
-	@ touch $@
 
 .PHONY: reconfigure
 reconfigure: ##@miscellaneous re-run configure with last passed arguments
@@ -79,39 +57,20 @@ reconfigure: ##@miscellaneous re-run configure with last passed arguments
 	echo ; \
 	cd '$(abs_top_builddir)' && \
 	$(abs_top_srcdir)/configure $(shell $(abs_top_builddir)/config.status --config);
-	
 
 
 NODOCKERBUILD += am__configure_deps
 
-## ////////////////////////////////////////////////////////////////////////// ##
-## ///  LINUX  ////////////////////////////////////////////////////////////// ##
-## ////////////////////////////////////////////////////////////////////////// ##
 
-LINUX_CFLAGS    ?= "-O2 -mtune=cortex-a9 -mfpu=neon -mfloat-abi=hard"
-LINUX_PACKAGE   ?= uImage
-LINUX_IMAGE     ?= $(TMP)/$(LINUX_PACKAGE)
-LINUX_DIR       ?= linux
+## ACLOCAL = ${SHELL} /home/andrea/devel/utils/autoconf-bootstrap/conf/missing aclocal
+## AUTOCONF = ${SHELL} /home/andrea/devel/utils/autoconf-bootstrap/conf/missing autoconf
+## AUTOHEADER = ${SHELL} /home/andrea/devel/utils/autoconf-bootstrap/conf/missing autoheader
+## AUTOMAKE = ${SHELL} /home/andrea/devel/utils/autoconf-bootstrap/conf/missing automake
 
-if LINUX_DIR_IN_SRCTREE
- LINUX_SRCDIR    = $(abs_top_srcdir)/$(LINUX_DIR)
- LINUX_BUILDDIR  = $(abs_top_builddir)/$(LINUX_DIR)
- LINUX_BUILD_O   = $(filter-out $(LINUX_SRCDIR),$(LINUX_BUILDDIR))
-else
- LINUX_SRCDIR    = $(abs_top_builddir)/$(LINUX_DIR)
- LINUX_BUILDDIR  = $(abs_top_builddir)/$(LINUX_DIR)
-endif
-
-ARCH                     = arm
-WITH_TOOLCHAIN_DIR      ?= ${abs_top_builddir}/toolchain
-TOOLCHAIN_PATH          ?= ${WITH_TOOLCHAIN_DIR}/bin
-CROSS_COMPILE           ?= arm-linux-gnueabihf-
+## locale-gen:: USER=root
+## locale-gen::
+##	locale-gen
 
 
-
-define _set_export
-export ARCH=$(ARCH); \
-export CROSS_COMPILE=${CROSS_COMPILE}; \
-export PATH=$${PATH}:$(TOOLCHAIN_PATH); \
-export O=${LINUX_BUILD_O}
-endef
+shell:
+	$(SHELL)
