@@ -189,29 +189,6 @@ AC_SUBST([DEVICE_SSHKEY])
 
 
 
-# //////////////////////////////////////////////////////////////////////////// #
-# //  YOCTO  ///////////////////////////////////////////////////////////////// #
-# //////////////////////////////////////////////////////////////////////////// #
-
-AX_KCONFIG_CONDITIONAL([ENABLE_YOCTO])
-AX_KCONFIG_CONDITIONAL([WITH_YOCTO_GIT])
-AX_KCONFIG_CONDITIONAL([WITH_YOCTO_TAR])
-
-AX_KCONFIG_VAR([YOCTO_DIR])
-AC_SUBST([YOCTO_DIR])
-AS_VAR_IF([ENABLE_YOCTO],[yes],[AX_GITIGNORE_ADD([/${YOCTO_DIR}])])
-
-
-AX_KCONFIG_VAR([YOCTO_VERSION])
-AC_SUBST([YOCTO_VERSION])
-
-AX_KCONFIG_VAR([YOCTO_GIT])
-AC_SUBST([YOCTO_GIT])
-AX_KCONFIG_VAR([YOCTO_TAR])
-AC_SUBST([YOCTO_TAR])
-AX_KCONFIG_VAR([YOCTO_VERSION])
-AC_SUBST([YOCTO_VERSION])
-
 # Yocto meta-xilinx support
 AX_KCONFIG_CONDITIONAL([ENABLE_YOCTO_XILINX])
 AX_KCONFIG_CONDITIONAL([WITH_YOCTO_XILINX_GIT])
@@ -221,10 +198,11 @@ AC_SUBST([YOCTO_XILINX_GIT])
 AX_KCONFIG_VAR([YOCTO_XILINX_TAR])
 AC_SUBST([YOCTO_XILINX_TAR])
 
-AC_SUBST([obj_m],[obj-m])
+dnl AC_SUBST([obj_m],[obj-m])
 
 # // GIT IGNORE // #
 AX_GITIGNORE_SUBST
+
 
 dnl forward declaration for fpga configure.ac
 AX_COMPARE_VERSION([],[eq],[])
