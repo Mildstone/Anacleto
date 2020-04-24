@@ -1,48 +1,44 @@
-## ////////////////////////////////////////////////////////////////////////// //
-##
-## This file is part of the autoconf-bootstrap project.
-## Copyright 2018 Andrea Rigoni Garola <andrea.rigoni@igi.cnr.it>.
-##
-## This program is free software: you can redistribute it and/or modify
-## it under the terms of the GNU General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
-##
-## This program is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with this program.  If not, see <http://www.gnu.org/licenses/>.
-##
-## ////////////////////////////////////////////////////////////////////////// //
-
-
+dnl // /////////////////////////////////////////////////////////////////////// //
+dnl //
+dnl // This file is part of the anacleto project.
+dnl // Copyright 2018 Andrea Rigoni Garola <andrea.rigoni@igi.cnr.it>.
+dnl //
+dnl // This program is free software: you can redistribute it and/or modify
+dnl // it under the terms of the GNU General Public License as published by
+dnl // the Free Software Foundation, either version 3 of the License, or
+dnl // (at your option) any later version.
+dnl //
+dnl // This program is distributed in the hope that it will be useful,
+dnl // but WITHOUT ANY WARRANTY; without even the implied warranty of
+dnl // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+dnl // GNU General Public License for more details.
+dnl //
+dnl // You should have received a copy of the GNU General Public License
+dnl // along with this program.  If not, see <http://www.gnu.org/licenses/>.
+dnl //
+dnl // ////////////////////////////////////////////////////////////////////// //
 
 dnl Process this file with autoconf to produce a configure script.
 
 dnl AUTOCONF ///////////////////////////////////////////////////////////////////
 AC_PREREQ([2.69])
-AC_INIT([autoconf-bootstrap], [0.1], [andrea.rgn@gmail.com])
+AC_INIT([Anacleto], [0.1], [andrea.rgn@gmail.com])
 AC_CONFIG_MACRO_DIRS([conf/m4])
 AC_CONFIG_AUX_DIR([conf])
 dnl AC_CONFIG_SRCDIR([...])
 AC_CANONICAL_TARGET
 
-dnl AUTOMAKE ///////////////////////////////////////////////////////////////////
-AM_INIT_AUTOMAKE([foreign subdir-objects])
-
+dnl AX_ANACLETO_BANNER
 
 dnl update submodules at first ... (must be cleaned out)
 AS_IF([${srcdir}/conf/update_submodules.sh],
-      [AS_ECHO(["Submodules succesfully updated"])],
-      [AS_ECHO(["Error updating submodules"])])
+	  [AS_ECHO(["Submodules succesfully updated"])],
+	  [AS_ECHO(["Error updating submodules"])])
 
 
 dnl AX_KCONFIG /////////////////////////////////////////////////////////////////
 dnl see: m4/ax_enable_kconfig.m4
-AS_VAR_SET([srcdir],[${srcdir}])
+AS_VAR_SET([srcdir],[$(cd ${srcdir}; pwd)])
 AS_VAR_SET([builddir],[$(pwd)])
 AX_KCONFIG([conf/kconfig])
 
@@ -56,13 +52,18 @@ AX_TARGET_SELFHELP
 m4_sinclude(conf/kscripts/docker.ac)
 AX_DOCKER_BUILD
 
-# //////////////////////////////////////////////////////////////////////////// #
+
+dnl AUTOMAKE ///////////////////////////////////////////////////////////////////
+AM_INIT_AUTOMAKE([no-define foreign subdir-objects])
+dnl ([1.14 foreign subdir-objects])
+
 
 AC_CONFIG_HEADERS([config.h])
 
 dnl RELEASE
 AX_IS_RELEASE([always])
 AX_CHECK_ENABLE_DEBUG([no],,,,[-g -O2])
+
 
 # Checks for programs.
 AC_PROG_AWK
@@ -71,6 +72,8 @@ AC_PROG_LN_S
 AC_PROG_SED
 AC_PROG_CC
 AC_PROG_CXX
+# AC_PROG_RANLIB
+AC_PROG_LN_S
 
 AC_CHECK_PROGS([CURL],[curl])
 AC_CHECK_PROGS([TAR],[gtar tar])
@@ -84,9 +87,13 @@ AC_PROG_YACC
 # needed for sh_envsubst
 AC_CHECK_PROGS([PERL],[perl])
 
+# needed to scan all subdirectories files timestamp for make deps
+AC_CHECK_PROGS([FIND],[find])
+AC_SUBST([FIND])
+
 ## LIBTOOL
-LT_INIT()
- 
+dnl LT_INIT()
+
 ## /////////////////////////////////////////////////////////////////////////////
 ## //  KSCRIPTS  ///////////////////////////////////////////////////////////////
 ## /////////////////////////////////////////////////////////////////////////////
@@ -129,7 +136,6 @@ AX_KCONFIG_MODULES([EXT],
 		  [libjit],[libjit external sources],
 		  [llvm],[llvm external sources],
 		  [ccStickers],[ccStickers external sources],
-		  [nodejs-node],[nodejs node external sources],
 		  [mdsplus],[mdsplus external sources]
 		  )
 AC_SUBST([EXT_MODULES])
@@ -137,62 +143,63 @@ AC_SUBST([EXT_MODULES])
 ## YOCTO ##
 m4_sinclude(conf/kscripts/yocto.ac)
 
-## // GIT IGNORE // ##
-AX_GITIGNORE_ADD_PATH([${builddir}])
-AX_GITIGNORE_SUBST
+## LINUX ##
+m4_sinclude(conf/kscripts/linux.ac)
+
+
+# COMPILER OPTIONS
+AX_KCONFIG_VAR([LINUX_CFLAGS])
+AX_KCONFIG_VAR([LINUX_PACKAGE])
+AX_KCONFIG_VAR([LINUX_DIR])
+AC_SUBST([LINUX_CFLAGS])
+AC_SUBST([LINUX_PACKAGE])
+AC_SUBST([LINUX_DIR])
 
 
 # //////////////////////////////////////////////////////////////////////////// #
-# //  EXAMPLES /////////////////////////////////////////////////////////////// #
+# //  TARGET  //////////////////////////////////////////////////////////////// #
 # //////////////////////////////////////////////////////////////////////////// #
 
-AX_KCONFIG_VAR_ENABLE([EXAMPLE_BOOL_VAR],["Set example bool var"])
-AC_SUBST([EXAMPLE_BOOL_VAR])
 
-AX_KCONFIG_VAR_WITH([EXAMPLE_STRING_VAR],["Set example string var"])
-AC_SUBST([EXAMPLE_STRING_VAR])
+# DEVICE
+AX_KCONFIG_VAR([DEVICE_NAME])
+AC_SUBST([DEVICE_NAME])
+AX_KCONFIG_VAR([DEVICE_IP])
+AC_SUBST([DEVICE_IP])
+AX_KCONFIG_VAR([DEVICE_MODULES_DIR])
+AC_SUBST([DEVICE_MODULES_DIR])
+AX_KCONFIG_VAR([DEVICE_BOOT_DIR])
+AC_SUBST([DEVICE_BOOT_DIR])
 
-AX_KCONFIG_MODULES([MDS],[java],[])
-AX_KCONFIG_MODULES([MDS],[lv],[labview],
-			 [ni],[national instruments components])
-AC_SUBST(MDS_JAVA)
-AC_SUBST(MDS_LV)
-AC_SUBST(MDS_NI)
-AC_SUBST(MDS_MODULES)
+# SSH to deploy
+AX_KCONFIG_VAR([DEVICE_ACCESS])
+AX_KCONFIG_VAR([DEVICE_USER])
+AC_CHECK_PROG([SSHPASS],sshpass,sshpass)
+AX_KCONFIG_VAR([WITH_DEVICE_SSHPASSWD])
+AM_CONDITIONAL([WITH_DEVICE_SSHPASSWD],
+		   [test -n "${WITH_DEVICE_SSHPASSWD}" -a -n "${SSHPASS}"] )
+AX_KCONFIG_VAR([WITH_DEVICE_SSHKEY])
+AM_CONDITIONAL([WITH_DEVICE_SSHKEY], [test -n "${WITH_DEVICE_SSHKEY}"])
+AX_KCONFIG_VAR([DEVICE_PASSWD])
+AX_KCONFIG_VAR([DEVICE_SSHKEY])
+AC_SUBST([DEVICE_ACCESS])
+AC_SUBST([DEVICE_USER])
+AC_SUBST([DEVICE_PASSWD])
+AC_SUBST([DEVICE_SSHKEY])
 
 
-AX_KCONFIG_MODULES([],[mod1],[],
-		      [mod2],[],
-		      [mod3],[])
-AC_SUBST(MOD1)
-AC_SUBST(MOD2)
-AC_SUBST(MOD3)
-AC_SUBST(MODULES)
 
+# //////////////////////////////////////////////////////////////////////////// #
+# //  YOCTO  ///////////////////////////////////////////////////////////////// #
+# //////////////////////////////////////////////////////////////////////////// #
 
-AS_ECHO()
-AS_BOX([// EXAMPLES CONFIG VARIABLES //////], [\/])
-AS_ECHO()
-AS_ECHO(["EXAMPLE_BOOL_VAR --------> $EXAMPLE_BOOL_VAR"])
-AS_ECHO(["EXAMPLE_STRING_VAR ------> $EXAMPLE_STRING_VAR"])
-AS_ECHO()
-AS_ECHO(["MDS_MODULES_AVAILABLE ---> ${MDS_MODULES_AVAILABLE}"])
-AS_ECHO(["MDS_MODULES_ENABLED -----> ${MDS_MODULES_ENABLED}"])
-AS_ECHO(["MDS_MODULES_DISABLED ----> ${MDS_MODULES_DISABLED}"])
-AS_ECHO(["MDS_MODULES -------------> ${MDS_MODULES}"])
-AS_ECHO()
-AS_ECHO(["MODULES_AVAILABLE -------> ${MODULES_AVAILABLE}"])
-AS_ECHO(["MODULES_ENABLED ---------> ${MODULES_ENABLED}"])
-AS_ECHO(["MODULES_DISABLED --------> ${MODULES_DISABLED}"])
-AS_ECHO(["MODULES -----------------> ${MODULES}"])
-AS_ECHO()
-AS_ECHO(["ENABLE_DOXYGEN ------------------> ${ENABLE_DOXYGEN}"])
-AS_ECHO(["DOXYGEN_MODULES_AVAILABLE -------> ${DOXYGEN_MODULES_AVAILABLE}"])
-AS_ECHO(["DOXYGEN_MODULES_ENABLED ---------> ${DOXYGEN_MODULES_ENABLED}"])
-AS_ECHO(["DOXYGEN_MODULES_DISABLED --------> ${DOXYGEN_MODULES_DISABLED}"])
-AS_ECHO(["DOXYGEN_MODULES -----------------> ${DOXYGEN_MODULES}"])
-AS_ECHO()
+AX_KCONFIG_CONDITIONAL([ENABLE_YOCTO])
+AX_KCONFIG_CONDITIONAL([WITH_YOCTO_GIT])
+AX_KCONFIG_CONDITIONAL([WITH_YOCTO_TAR])
 
+AX_KCONFIG_VAR([YOCTO_DIR])
+AC_SUBST([YOCTO_DIR])
+AS_VAR_IF([ENABLE_YOCTO],[yes],[AX_GITIGNORE_ADD([/${YOCTO_DIR}])])
 
 
 AX_KCONFIG_VAR([YOCTO_VERSION])
@@ -218,7 +225,6 @@ AC_SUBST([obj_m],[obj-m])
 
 # // GIT IGNORE // #
 AX_GITIGNORE_SUBST
-
 
 dnl forward declaration for fpga configure.ac
 AX_COMPARE_VERSION([],[eq],[])

@@ -95,25 +95,9 @@ if ENABLE_FPGA
 ## //  VIVADO  ////////////////////////////////////////////////////////////////////
 ## ////////////////////////////////////////////////////////////////////////////////
 
-  choice VIVADO_VERSION
-	prompt "Vivado version yyyy.v "
-	config VIVADO_VERSION_2015_4
-	 bool  "2015.4"
-	config VIVADO_VERSION_2016_2
-	 bool  "2016.2"
-	config VIVADO_VERSION_2016_4
-	 bool  "2016.4"
-	 config VIVADO_VERSION_2017_1
-	 bool  "2017.1"
-	 config VIVADO_VERSION_2017_2
-	 bool  "2017.2"
-	 config VIVADO_VERSION_2017_4
-	 bool  "2017.4"
-	 config VIVADO_VERSION_2018_1
-	 bool  "2018.1"
-	 config VIVADO_VERSION_2018_2
-	 bool  "2018.2"
-  endchoice
+  config VIVADO_VERSION
+	string "Vivado version yyyy.v "
+	default "2019.1"
 
   choice VIVADO_SETUP_METHOD
 	prompt "Select Vivado setup method"
@@ -132,39 +116,16 @@ if ENABLE_FPGA
   if VIVADO_SETUP_METHOD_SCRIPTS
   config VIVADO_SETUP_SCRIPT
 	string "Setup script to set vivado environments"
-	default "/opt/Xilinx/Vivado/2015.4/settings64.sh" if VIVADO_VERSION_2015_4
-	default "/opt/Xilinx/Vivado/2016.1/settings64.sh" if VIVADO_VERSION_2016_1
-	default "/opt/Xilinx/Vivado/2016.2/settings64.sh" if VIVADO_VERSION_2016_2
-	default "/opt/Xilinx/Vivado/2016.4/settings64.sh" if VIVADO_VERSION_2016_4
-	default "/opt/Xilinx/Vivado/2017.1/settings64.sh" if VIVADO_VERSION_2017_1
-	default "/opt/Xilinx/Vivado/2017.2/settings64.sh" if VIVADO_VERSION_2017_2
-	default "/opt/Xilinx/Vivado/2017.4/settings64.sh" if VIVADO_VERSION_2017_4
-	default "/opt/Xilinx/Vivado/2018.1/settings64.sh" if VIVADO_VERSION_2018_1
-	default "/opt/Xilinx/Vivado/2018.2/settings64.sh" if VIVADO_VERSION_2018_2
+	default "/opt/Xilinx/Vivado/2019.1/settings64.sh"
 
   config VIVADO_SDK_SETUP_SCRIPT
 	string "Setup script to set vivado SDK environments"
-	default "/opt/Xilinx/SDK/2015.4/settings64.sh" if VIVADO_VERSION_2015_4
-	default "/opt/Xilinx/SDK/2016.1/settings64.sh" if VIVADO_VERSION_2016_1
-	default "/opt/Xilinx/SDK/2016.2/settings64.sh" if VIVADO_VERSION_2016_2
-	default "/opt/Xilinx/SDK/2016.4/settings64.sh" if VIVADO_VERSION_2016_4
-	default "/opt/Xilinx/SDK/2017.1/settings64.sh" if VIVADO_VERSION_2017_1
-	default "/opt/Xilinx/SDK/2017.2/settings64.sh" if VIVADO_VERSION_2017_2
-	default "/opt/Xilinx/SDK/2017.4/settings64.sh" if VIVADO_VERSION_2017_4
-	default "/opt/Xilinx/SDK/2018.1/settings64.sh" if VIVADO_VERSION_2018_1
-	default "/opt/Xilinx/SDK/2018.2/settings64.sh" if VIVADO_VERSION_2018_2
+	default "/opt/Xilinx/SDK/2019.1/settings64.sh"
   endif # SCRIPTS
 
   config DEVICETREE_BASEFILES_TAR
 	string "Device tree base files"
-	default "https://github.com/Xilinx/device-tree-xlnx/archive/xilinx-v2015.4.tar.gz" if VIVADO_VERSION_2015_4
-	default "https://github.com/Xilinx/device-tree-xlnx/archive/xilinx-v2016.2.tar.gz" if VIVADO_VERSION_2016_2
-	default "https://github.com/Xilinx/device-tree-xlnx/archive/xilinx-v2016.4.tar.gz" if VIVADO_VERSION_2016_4
-	default "https://github.com/Xilinx/device-tree-xlnx/archive/xilinx-v2017.1.tar.gz" if VIVADO_VERSION_2017_1
-	default "https://github.com/Xilinx/device-tree-xlnx/archive/xilinx-v2017.2.tar.gz" if VIVADO_VERSION_2017_2
-	default "https://github.com/Xilinx/device-tree-xlnx/archive/xilinx-v2017.4.tar.gz" if VIVADO_VERSION_2017_4
-	default "https://github.com/Xilinx/device-tree-xlnx/archive/xilinx-v2018.1.tar.gz" if VIVADO_VERSION_2018_1
-	default "https://github.com/Xilinx/device-tree-xlnx/archive/xilinx-v2018.2.tar.gz" if VIVADO_VERSION_2018_2
+	default "https://github.com/Xilinx/device-tree-xlnx/archive/xilinx-v2019.1.tar.gz"
 
 
 #  config VIVADO_LICENSE_PATH
