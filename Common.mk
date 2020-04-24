@@ -59,7 +59,8 @@ reconfigure: ##@miscellaneous re-run configure with last passed arguments
 	$(abs_top_srcdir)/configure $(shell $(abs_top_builddir)/config.status --config);
 
 
-NODOCKERBUILD += am__configure_deps
+NODOCKERBUILD += am__configure_deps \
+		 edit-code
 
 
 ## ACLOCAL = ${SHELL} /home/andrea/devel/utils/autoconf-bootstrap/conf/missing aclocal
