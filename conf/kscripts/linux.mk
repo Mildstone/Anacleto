@@ -8,6 +8,7 @@ linux_DIR    = $(LINUX_SRCDIR)
 linux_URL    = $(LINUX_URL)
 linux_BRANCH = $(LINUX_GIT_BRANCH)
 
+LINUX_BUILDDIR = $(LINUX_SRCDIR)
 
 linux-:     ##@linux_target use: "make linux-<target>" to build target in linux directory
 linux-init: ##@linux initialize linux sources applying the soc defconfig

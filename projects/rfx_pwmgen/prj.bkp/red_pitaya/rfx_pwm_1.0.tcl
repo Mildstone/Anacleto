@@ -168,7 +168,7 @@ namespace upvar ::tclapp::socdev::makeutils core_env    core_env
 ## /// CREATE PROJ ////////////////////////////////////////////////////////// ##
 ## ////////////////////////////////////////////////////////////////////////// ##
  
- create_project rfx_pwm_0.1  "$make_env(builddir)/edit/red_pitaya"  -part xc7z010clg400-1
+ create_project rfx_pwm_1.0  "$make_env(builddir)/edit/red_pitaya"  -part xc7z010clg400-1
  
  # Set the directory path for the new project
  set proj_dir [get_property directory [current_project]]

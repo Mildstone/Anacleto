@@ -1,6 +1,6 @@
 
 ################################################################
-# This is a generated script based on design: pwmgen
+# This is a generated script based on design: red_pitaya
 #
 # Though there are limitations about the generated script,
 # the main purpose of this utility is to make learning
@@ -35,7 +35,7 @@ if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
 ################################################################
 
 # To test this script, run the following commands from Vivado Tcl console:
-# source pwmgen_script.tcl
+# source red_pitaya_script.tcl
 
 # If there is no project opened, this script will create a
 # project, but make sure you do not have an existing project
@@ -50,7 +50,7 @@ if { $list_projs eq "" } {
 
 # CHANGE DESIGN NAME HERE
 variable design_name
-set design_name pwmgen
+set design_name red_pitaya
 
 # If you do not already have an existing IP Integrator design open,
 # you can create a design using the following command:
@@ -194,9 +194,11 @@ proc create_root_design { parentCell } {
   set FIXED_IO [ create_bd_intf_port -mode Master -vlnv xilinx.com:display_processing_system7:fixedio_rtl:1.0 FIXED_IO ]
 
   # Create ports
-  set led_o_0 [ create_bd_port -dir O led_o_0 ]
-  set pwm_n_out_0 [ create_bd_port -dir O -from 0 -to 0 pwm_n_out_0 ]
-  set pwm_out_0 [ create_bd_port -dir O -from 0 -to 0 pwm_out_0 ]
+  set led_o [ create_bd_port -dir O led_o ]
+  set pwm_n_out [ create_bd_port -dir O -from 0 -to 0 pwm_n_out ]
+  set pwm_n_out_1 [ create_bd_port -dir O -from 0 -to 0 pwm_n_out_1 ]
+  set pwm_out [ create_bd_port -dir O -from 0 -to 0 pwm_out ]
+  set pwm_out_1 [ create_bd_port -dir O -from 0 -to 0 pwm_out_1 ]
 
   # Create instance: processing_system7_0, and set properties
   set processing_system7_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:processing_system7:5.5 processing_system7_0 ]
@@ -585,12 +587,12 @@ proc create_root_design { parentCell } {
    CONFIG.PCW_UIPARAM_DDR_ENABLE {1} \
    CONFIG.PCW_UIPARAM_DDR_FREQ_MHZ {533.333333} \
    CONFIG.PCW_UIPARAM_DDR_MEMORY_TYPE {DDR 3 (Low Voltage)} \
-   CONFIG.PCW_UIPARAM_DDR_PARTNO {MT41K256M16 RE-125} \
+   CONFIG.PCW_UIPARAM_DDR_PARTNO {MT41J256M16 RE-125} \
    CONFIG.PCW_UIPARAM_DDR_ROW_ADDR_COUNT {15} \
    CONFIG.PCW_UIPARAM_DDR_SPEED_BIN {DDR3_1066F} \
    CONFIG.PCW_UIPARAM_DDR_T_FAW {40.0} \
    CONFIG.PCW_UIPARAM_DDR_T_RAS_MIN {35.0} \
-   CONFIG.PCW_UIPARAM_DDR_T_RC {48.75} \
+   CONFIG.PCW_UIPARAM_DDR_T_RC {48.91} \
    CONFIG.PCW_UIPARAM_DDR_T_RCD {7} \
    CONFIG.PCW_UIPARAM_DDR_T_RP {7} \
    CONFIG.PCW_USB0_PERIPHERAL_ENABLE {1} \
@@ -618,8 +620,8 @@ proc create_root_design { parentCell } {
    CONFIG.NUM_WRITE_OUTSTANDING {1} \
  ] [get_bd_intf_pins /pwm_0/s00_axi]
 
-  # Create instance: rst_ps7_0_125M, and set properties
-  set rst_ps7_0_125M [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset:5.0 rst_ps7_0_125M ]
+  # Create instance: rst_ps7_0_50M, and set properties
+  set rst_ps7_0_50M [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset:5.0 rst_ps7_0_50M ]
 
   # Create interface connections
   connect_bd_intf_net -intf_net processing_system7_0_DDR [get_bd_intf_ports DDR] [get_bd_intf_pins processing_system7_0/DDR]
@@ -628,13 +630,13 @@ proc create_root_design { parentCell } {
   connect_bd_intf_net -intf_net ps7_0_axi_periph_M00_AXI [get_bd_intf_pins ps7_0_axi_periph/M00_AXI] [get_bd_intf_pins pwm_0/s00_axi]
 
   # Create port connections
-  connect_bd_net -net processing_system7_0_FCLK_CLK0 [get_bd_pins processing_system7_0/FCLK_CLK0] [get_bd_pins processing_system7_0/M_AXI_GP0_ACLK] [get_bd_pins ps7_0_axi_periph/ACLK] [get_bd_pins ps7_0_axi_periph/M00_ACLK] [get_bd_pins ps7_0_axi_periph/S00_ACLK] [get_bd_pins pwm_0/clk] [get_bd_pins pwm_0/s00_axi_aclk] [get_bd_pins rst_ps7_0_125M/slowest_sync_clk]
-  connect_bd_net -net processing_system7_0_FCLK_RESET0_N [get_bd_pins processing_system7_0/FCLK_RESET0_N] [get_bd_pins rst_ps7_0_125M/ext_reset_in]
-  connect_bd_net -net pwm_0_led_o [get_bd_ports led_o_0] [get_bd_pins pwm_0/led_o]
-  connect_bd_net -net pwm_0_pwm_n_out [get_bd_ports pwm_n_out_0] [get_bd_pins pwm_0/pwm_n_out]
-  connect_bd_net -net pwm_0_pwm_out [get_bd_ports pwm_out_0] [get_bd_pins pwm_0/pwm_out]
-  connect_bd_net -net rst_ps7_0_125M_interconnect_aresetn [get_bd_pins ps7_0_axi_periph/ARESETN] [get_bd_pins rst_ps7_0_125M/interconnect_aresetn]
-  connect_bd_net -net rst_ps7_0_125M_peripheral_aresetn [get_bd_pins ps7_0_axi_periph/M00_ARESETN] [get_bd_pins ps7_0_axi_periph/S00_ARESETN] [get_bd_pins pwm_0/reset_n] [get_bd_pins pwm_0/s00_axi_aresetn] [get_bd_pins rst_ps7_0_125M/peripheral_aresetn]
+  connect_bd_net -net processing_system7_0_FCLK_CLK0 [get_bd_pins processing_system7_0/FCLK_CLK0] [get_bd_pins processing_system7_0/M_AXI_GP0_ACLK] [get_bd_pins ps7_0_axi_periph/ACLK] [get_bd_pins ps7_0_axi_periph/M00_ACLK] [get_bd_pins ps7_0_axi_periph/S00_ACLK] [get_bd_pins pwm_0/clk] [get_bd_pins pwm_0/s00_axi_aclk] [get_bd_pins rst_ps7_0_50M/slowest_sync_clk]
+  connect_bd_net -net processing_system7_0_FCLK_RESET0_N [get_bd_pins processing_system7_0/FCLK_RESET0_N] [get_bd_pins rst_ps7_0_50M/ext_reset_in]
+  connect_bd_net -net pwm_0_led_o [get_bd_ports led_o] [get_bd_pins pwm_0/led_o]
+  connect_bd_net -net pwm_0_pwm_n_out [get_bd_ports pwm_n_out] [get_bd_ports pwm_n_out_1] [get_bd_pins pwm_0/pwm_n_out]
+  connect_bd_net -net pwm_0_pwm_out [get_bd_ports pwm_out] [get_bd_ports pwm_out_1] [get_bd_pins pwm_0/pwm_out]
+  connect_bd_net -net rst_ps7_0_50M_interconnect_aresetn [get_bd_pins ps7_0_axi_periph/ARESETN] [get_bd_pins rst_ps7_0_50M/interconnect_aresetn]
+  connect_bd_net -net rst_ps7_0_50M_peripheral_aresetn [get_bd_pins ps7_0_axi_periph/M00_ARESETN] [get_bd_pins ps7_0_axi_periph/S00_ARESETN] [get_bd_pins pwm_0/reset_n] [get_bd_pins pwm_0/s00_axi_aresetn] [get_bd_pins rst_ps7_0_50M/peripheral_aresetn]
 
   # Create address segments
   create_bd_addr_seg -range 0x00010000 -offset 0x43C00000 [get_bd_addr_spaces processing_system7_0/Data] [get_bd_addr_segs pwm_0/s00_axi/reg0] SEG_pwm_0_reg0

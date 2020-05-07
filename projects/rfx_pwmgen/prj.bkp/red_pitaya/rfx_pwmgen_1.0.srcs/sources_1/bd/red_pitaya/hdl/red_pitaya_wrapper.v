@@ -1,15 +1,15 @@
 //Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
 //--------------------------------------------------------------------------------
-//Tool Version: Vivado v.2018.2 (lin64) Build 2258646 Thu Jun 14 20:02:38 MDT 2018
-//Date        : Fri Nov 15 12:00:23 2019
-//Host        : 2e424f70dde7 running 64-bit Ubuntu 14.04.5 LTS
-//Command     : generate_target pwmgen_wrapper.bd
-//Design      : pwmgen_wrapper
+//Tool Version: Vivado v.2018.1 (lin64) Build 2188600 Wed Apr  4 18:39:19 MDT 2018
+//Date        : Tue May  5 13:04:29 2020
+//Host        : HP running 64-bit Ubuntu 14.04.5 LTS
+//Command     : generate_target red_pitaya_wrapper.bd
+//Design      : red_pitaya_wrapper
 //Purpose     : IP block netlist
 //--------------------------------------------------------------------------------
 `timescale 1 ps / 1 ps
 
-module pwmgen_wrapper
+module red_pitaya_wrapper
    (DDR_addr,
     DDR_ba,
     DDR_cas_n,
@@ -90,7 +90,7 @@ module pwmgen_wrapper
   wire [0:0]pwm_out;
   wire [0:0]pwm_out_1;
 
-  pwmgen pwmgen_i
+  red_pitaya red_pitaya_i
        (.DDR_addr(DDR_addr),
         .DDR_ba(DDR_ba),
         .DDR_cas_n(DDR_cas_n),

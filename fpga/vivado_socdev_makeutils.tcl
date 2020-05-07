@@ -169,10 +169,12 @@ proc make_new_project {{exec_preset 1}} {
 
   # execute post scritps
   if { $v::pe(PRJCFG) eq "" && $exec_preset eq 1 } {
-	source -notrace $v::pe(BOARD_PRESET)
-	board_init
+	  source -notrace $v::pe(BOARD_PRESET)
+	  board_init
   } else {
-	make_exec_scripts PRJCFG
+    puts "EXECUTING SCRIPTS in \${PRJCFG}"
+    puts " ---> var  $v::pe(project_name) $v::pe(PRJCFG)"
+	  make_exec_scripts PRJCFG
   }
 
   create_runs
@@ -415,8 +417,8 @@ proc make_load_sources { } {
        \.(v|V|verilog)\$         { read_verilog $path }
        \.(sv|SV)\$               { read_verilog -sv $path }
        \.(vhd|Vhd|vhdl|Vhdl)\$   { read_vhdl $path }
-	   \.(xdc|Xdc)\$             { read_xdc $path }
-	   \.(bd)\$                  { add_files $path }
+	     \.(xdc|Xdc)\$             { read_xdc $path }
+	     \.(bd)\$                  { add_files $path }
        \.(tcl|Tcl)\$             { send_msg_id [v::mid]-1 INFO \
 				   "executing TCL script from SOURCES ..."
 				   set err [source -notrace $path]
@@ -561,7 +563,7 @@ proc make_open_project {{exec_preset 0}} {
   create_runs
 
   # execute post scritps
-  make_exec_scripts PRJCFG
+  # make_exec_scripts PRJCFG
 }
 
 

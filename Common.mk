@@ -43,8 +43,6 @@ TMP  ?= $(abs_top_builddir)
 ${DL} ${TMP}:
 	@$(MKDIR_P) $@
 
-<<<<<<< HEAD
-=======
 ## /////////////////////////////////////////////////////////////////////////////
 ## // DOCKER  //////////////////////////////////////////////////////////////////
 ## /////////////////////////////////////////////////////////////////////////////
@@ -62,7 +60,6 @@ ip-address: ##@@docker set MAC address in the docker container instance
 
 NODOCKERBUILD += edit-code
 NODOCKERBUILD += edit-code-server
->>>>>>> a4ad65bd1a9d63ed100e303b0496be81b375da2c
 
 ## /////////////////////////////////////////////////////////////////////////////
 ## // RECONFIGURE  /////////////////////////////////////////////////////////////
@@ -83,20 +80,7 @@ NODOCKERBUILD += am__configure_deps \
 		 edit-code
 
 
-<<<<<<< HEAD
-## ACLOCAL = ${SHELL} /home/andrea/devel/utils/autoconf-bootstrap/conf/missing aclocal
-## AUTOCONF = ${SHELL} /home/andrea/devel/utils/autoconf-bootstrap/conf/missing autoconf
-## AUTOHEADER = ${SHELL} /home/andrea/devel/utils/autoconf-bootstrap/conf/missing autoheader
-## AUTOMAKE = ${SHELL} /home/andrea/devel/utils/autoconf-bootstrap/conf/missing automake
 
-## locale-gen:: USER=root
-## locale-gen::
-##	locale-gen
-
-
-shell:
-	$(SHELL)
-=======
 LINUX_CFLAGS    ?= "-O2 -mtune=cortex-a9 -mfpu=neon -mfloat-abi=hard"
 LINUX_PACKAGE   ?= uImage
 LINUX_IMAGE     ?= $(TMP)/$(LINUX_PACKAGE)
@@ -124,4 +108,3 @@ export CROSS_COMPILE=${CROSS_COMPILE}; \
 export PATH=$${PATH}:$(TOOLCHAIN_PATH); \
 export O=${LINUX_BUILD_O}
 endef
->>>>>>> a4ad65bd1a9d63ed100e303b0496be81b375da2c

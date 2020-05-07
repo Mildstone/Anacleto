@@ -52,6 +52,10 @@ vivado_CORES_TARGETS    = core new_ip edit_ip clean_ip
 FULL_NAME = $(if $(VENDOR),$(VENDOR)_)$(NAME)_$(VERSION)
 ALL_NAMES = $(NAME) $(VENDOR)_$(NAME) $(NAME)_$(VERSION) $(FULL_NAME)
 
+print: ##@debug print all names associated with this NAME
+	@ echo " | NAMES   = $(ALL_NAMES)"; \
+	  echo " | SOURCES = $(SOURCES)";   \
+	  echo " | PRJCFG  = $(PRJCFG)";
 
 ## ////////////////////////////////////////////////////////////////////////// ##
 ## ///  CONFIGURATION   ///////////////////////////////////////////////////// ##
@@ -87,7 +91,7 @@ xsdk         = ${_envset}; $(XSDK)       $1
 
 FPGA_DIR        = $(abs_top_srcdir)/fpga
 FPGA_REPO_DIR   = $(abs_top_srcdir)/fpga/ip_repo
-DTREE_DIR      ?= $(abs_top_builddir)/fpga/device-tree-xlnx-${VIVADO_VERSION}
+DTREE_DIR       = $(abs_top_builddir)/fpga/xlnx-devicetree
 VIVADO_VERSION ?= 2015.4
 maxThreads     ?= 6
 COMPILE_ORDER  ?= auto
@@ -108,6 +112,9 @@ FPGA_BIT    = $(VIVADO_BITDIR)/$(FULL_NAME).bit
 FSBL_ELF    = $(VIVADO_SDKDIR)/fsbl/executable.elf
 DTS         = $(VIVADO_SDKDIR)/dts/devicetree.dts
 DTB         = $(VIVADO_SDKDIR)/dts/devicetree.dtb
+
+PRJCFG = 
+IPCFG  = 
 
 export XILINX_TCLAPP_REPO = $(abs_top_builddir)/fpga/tclapp
 export XILINX_LOCAL_USER_DATA = NO
@@ -190,13 +197,14 @@ $(VIVADO_PRJDIR)/%.xpr: $(check_ip_componenents) $(check_sources)
 	@ $(call vivado, open_project)
 
 
-core:
+_core:
 	$(MAKE) $(VIVADO_IPDIR)/$(FULL_NAME)/component.xml BOARD="vivado"
 
+core:  $(vivado_CORES)
 cores: $(vivado_CORES)
 
 $(vivado_CORES):
-	@ $(MAKE) core NAME=$@
+	@ $(MAKE) _core NAME=$@
 
 $(filter-out $(vivado_CORES),$(IP_SOURCES)):
 	@ $(MAKE) -C $(@D) $(@F)
@@ -333,10 +341,10 @@ $(LINUX_IMAGE):
 	$(MAKE) $(AM_MAKEFLAGS) -C $(top_builddir) $@
 
 $(DTS): $(VIVADO_SDKDIR)/dts/$(SYSTEM_DTS) $(LINUX_IMAGE)
-	$(LINUX_BUILDDIR)/scripts/dtc/dtc -I dts -O dts -o $@ -i sdk/dts/ $<
+	$(LINUX_BUILDDIR)/scripts/dtc/dtc -I dts -O dts -o $@ -i $(<D) $<
 
 $(DTB):  $(DTS) $(LINUX_IMAGE)
-	$(LINUX_BUILDDIR)/scripts/dtc/dtc -I dts -O dtb -o $@ -i sdk/dts/ $<
+	$(LINUX_BUILDDIR)/scripts/dtc/dtc -I dts -O dtb -o $@ -i $(<D) $<
 
 bsp: ##@hsi write linux drivers template (MEN AT WORK HERE !!)
 bsp: # dts

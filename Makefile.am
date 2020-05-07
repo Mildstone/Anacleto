@@ -25,7 +25,6 @@ include $(top_srcdir)/conf/kscripts/linux.mk
 AM_MAKEFLAGS = -j$(MAKE_PROCESS)
 ACLOCAL_AMFLAGS = -I conf/m4
 
-<<<<<<<<< Temporary merge branch 1
 all: ##@all download and build the selected toolchain and the linux image
 all: toolchain $(LINUX_IMAGE)
 

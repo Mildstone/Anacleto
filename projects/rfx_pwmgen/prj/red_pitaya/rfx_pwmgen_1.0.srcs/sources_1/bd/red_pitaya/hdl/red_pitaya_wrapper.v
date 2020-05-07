@@ -1,7 +1,7 @@
-//Copyright 1986-2019 Xilinx, Inc. All Rights Reserved.
+//Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
 //--------------------------------------------------------------------------------
-//Tool Version: Vivado v.2019.1 (lin64) Build 2552052 Fri May 24 14:47:09 MDT 2019
-//Date        : Fri Apr 24 06:57:48 2020
+//Tool Version: Vivado v.2018.1 (lin64) Build 2188600 Wed Apr  4 18:39:19 MDT 2018
+//Date        : Tue May  5 13:04:29 2020
 //Host        : HP running 64-bit Ubuntu 14.04.5 LTS
 //Command     : generate_target red_pitaya_wrapper.bd
 //Design      : red_pitaya_wrapper

@@ -10,6 +10,8 @@ pwm_SOURCES = src/rfx_pwm_v1_0.vhd \
 			  src/rfx_pwm_v1_0_S00_AXI.vhd \
 			  src/pwm.vhd
 
+
+
 pwm_DRV_LINUX = linux/data/pwm_1.0.mdd \
 				linux/data/pwm_1.0.tcl \
 				linux/src/Kbuild.in \
@@ -25,6 +27,7 @@ pwmgen_SOURCES = src/test_script.tcl \
 
 pwmgen_IP_SOURCES = rfx_pwm_1.0
 
+# pwmgen_PRJCFG = gen_script.tcl
 
 
 
