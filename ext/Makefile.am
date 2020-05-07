@@ -224,3 +224,14 @@ docker-rpm-builder-install: | docker-rpm-builder
 
 
 
+
+# // PYNQ //
+
+DOWNLOADS += pynq
+
+pynq: ##@pynq download
+pynq_URL = https://github.com/Xilinx/PYNQ.git
+pynq_BRANCH = master
+
+
+
