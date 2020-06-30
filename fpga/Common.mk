@@ -220,7 +220,7 @@ $(VIVADO_IPDIR)/%/component.xml: $(SOURCES) #$(check_sources) < not supported
 ## ///  PROJECT LIST  /////////////////////////////////////////////////////// ##
 ## ////////////////////////////////////////////////////////////////////////// ##
 
-NODOCKERBUILD += list
+NODOCKERBUILD += list print_banner board_info
 
 list: ##@projects list all projects defined in vivado_PROJECTS variable
 list: ##@cores list all projects defined in vivado_PROJECTS variable

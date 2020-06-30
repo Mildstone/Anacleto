@@ -1,5 +1,6 @@
 include $(top_srcdir)/Common.mk
 include $(top_srcdir)/fpga/Common.mk
+include $(top_srcdir)/conf/kscripts/yocto.mk
 
 VENDOR = rfx
 
@@ -28,6 +29,23 @@ pwmgen_SOURCES = src/test_script.tcl \
 pwmgen_IP_SOURCES = rfx_pwm_1.0
 
 # pwmgen_PRJCFG = gen_script.tcl
+
+yocto-%: DOCKER_CONTAINER = yocto-build
+yocto-%: DOCKER_DEVICES = /dev/net/tun
+yocto-%: DOCKER_IMAGE = yocto-build
+yocto-%: DOCKER_URL = $(top_srcdir)/docker/yocto-build
+#yocto-%: DOCKER_IMAGE = gmacario/build-yocto
+## yocto-%: DOCKER_IMAGE = crops/yocto:ubuntu-18.04-builder
+
+
+
+DOWNLOADS += meta-xilinx
+
+meta-xilinx: ##@yocto download and prepare the meta-xilinx yocto layer
+meta_xilinx_URL = https://github.com/Xilinx/meta-xilinx.git
+meta_xilinx_BRANCH = pyro
+meta_xilinx_DIR = ./yocto-build/meta-Xilinx
+
 
 
 

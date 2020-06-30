@@ -20,6 +20,7 @@
 
 include Common.mk
 include $(top_srcdir)/conf/kscripts/linux.mk
+include $(top_srcdir)/conf/kscripts/yocto.mk
 
 
 AM_MAKEFLAGS = -j$(MAKE_PROCESS)
@@ -104,28 +105,33 @@ $(ENVTOOLS_CFG): $(UBOOT_DIR)
 # Yocto meta-xilinx download
 ################################################################################
 
-YOCTO_XILINX_DIR ?= ${YOCTO_DIR}/meta-xilinx
 
-DOWNLOADS += oe-core meta-xilinx
 
-oe-core: ##@yocto download and prepare the oe-core yocto layer
-oe_core_DIR = ${YOCTO_DIR}/oe-core
-oe_core_URL = https://github.com/openembedded/openembedded-core.git
-oe_core_BRANCH = $(YOCTO_GIT_BRANCH)
+# oe-core: ##@yocto download and prepare the oe-core yocto layer
+# oe_core_DIR = oe-core
+# oe_core_URL = https://github.com/openembedded/openembedded-core.git
+# oe_core_BRANCH = $(YOCTO_GIT_BRANCH)
+
+# oe-shell: ##@yocto enter oe-init-build-env
+# oe-shell: PATH := $(abs_top_builddir)/$(YOCTO_PYBIN_PATH):$(abs_top_builddir)/$(YOCTO_BITBAKE_BINDIR):$(PATH)
+# oe-shell: yocto-py2-link
+# 	@ cd $(oe_core_DIR); source ./oe-init-build-env; \
+# 	  bitbake
+
+
+DOWNLOADS += meta-xilinx
 
 meta-xilinx: ##@yocto download and prepare the meta-xilinx yocto layer
-meta_xilinx_DIR = $(YOCTO_XILINX_DIR)
 meta_xilinx_URL = $(YOCTO_XILINX_URL)
 meta_xilinx_BRANCH = master
 
 
-oe-shell: ##@yocto enter oe-init-build-env
-oe-shell: PATH := $(abs_top_builddir)/$(YOCTO_PYBIN_PATH):$(abs_top_builddir)/$(YOCTO_BITBAKE_BINDIR):$(PATH)
-oe-shell: yocto-py2-link
-	@ cd $(oe_core_DIR); source ./oe-init-build-env; \
-	  bitbake
+yocto-%: DOCKER_CONTAINER = yocto-builder
+yocto-%: DOCKER_IMAGE = yocto-builder:latest
+yocto-%: DOCKER_URL   = $(top_srcdir)/docker/yocto-build
 
-
+yocto-init: ##@yocto init docker
+	echo "done...";
 
 
 clean-local:
@@ -145,3 +151,6 @@ hello.log:
 print-hello: EXAMPLE_STRING_VAR = not set
 print-hello:
 	@ echo "this is the var: $(EXAMPLE_STRING_VAR)"
+
+
+
