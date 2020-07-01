@@ -37,6 +37,21 @@ yocto-%: DOCKER_URL = $(top_srcdir)/docker/yocto-build
 #yocto-%: DOCKER_IMAGE = gmacario/build-yocto
 ## yocto-%: DOCKER_IMAGE = crops/yocto:ubuntu-18.04-builder
 
+# yocto-%: BBPATH = $(srcdir)/yocto
+
+# enable take env from external
+export BB_ENV_EXTRAWHITE = BBLAYERS DISTRO MACHINE PACKAGE_CLASSES
+
+export BBLAYERS = \
+  $(abs_top_builddir)/yocto/meta \
+  $(abs_top_builddir)/yocto/meta-poky  \
+  $(abs_top_builddir)/yocto/meta-xilinx/meta-xilinx-bsp \
+  $(abs_top_builddir)/yocto/meta-xilinx/meta-xilinx-standalone \
+  $(abs_top_builddir)/yocto/meta-xilinx/meta-xilinx-contrib 
+  
+export DISTRO          = poky
+export PACKAGE_CLASSES = package_rpm
+export MACHINE         = qemu-zynq7
 
 
 DOWNLOADS += meta-xilinx
