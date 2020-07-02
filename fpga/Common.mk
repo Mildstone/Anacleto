@@ -90,7 +90,7 @@ xsdk         = ${_envset}; $(XSDK)       $1
 # sdk_shell    = ${_envset}; $(SDK_SHELL)
 
 FPGA_DIR        = $(abs_top_srcdir)/fpga
-FPGA_REPO_DIR   = $(abs_top_srcdir)/fpga/ip_repo
+FPGA_REPO_DIR   = 
 DTREE_DIR       = $(abs_top_builddir)/fpga/xlnx-devicetree
 VIVADO_VERSION ?= 2015.4
 maxThreads     ?= 6
