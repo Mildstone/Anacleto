@@ -103,11 +103,12 @@ proc make_set_repo_path {} {
   set path_list [list]
   foreach ip_name [split $v::pe(IP_SOURCES) " "] {
     send_msg_id [v::mid]-1 INFO "ip name: $ip_name"
-	set ip_path [file dirname $ip_name]
+	  set ip_path [file dirname $ip_name]
+    if { $ip_path == "." } { set ip_path "./ip" }
     lappend path_list $ip_path
   }
   foreach el [split $v::pe(ip_repo) " "] { lappend path_list $el }
-  lappend path_list $v::me(builddir)
+  ## lappend path_list $v::me(builddir)
   if { [catch {current_project}] } {
    send_msg_id [v::mid]-2 ERROR "project not defined"
   } else {
