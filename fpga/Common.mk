@@ -63,7 +63,7 @@ print: ##@debug print all names associated with this NAME
 
 define _envset
  . $(VIVADO_SETUP_SCRIPT); \
- . $(VIVADO_SDK_SETUP_SCRIPT)
+ [ -x $(VIVADO_SDK_SETUP_SCRIPT) ] && . $(VIVADO_SDK_SETUP_SCRIPT)
 endef
 
 # Vivado from Xilinx provides IP handling, FPGA compilation hsi (hardware
