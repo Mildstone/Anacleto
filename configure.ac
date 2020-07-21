@@ -109,6 +109,9 @@ m4_sinclude(conf/kscripts/nodejs.ac)
 ## DOXYGEN ##
 m4_sinclude(conf/autoconf-doxygen/doxygen.ac)
 
+## JUPYTER ##
+m4_sinclude(conf/kscripts/jupyter.ac)
+
 ## EXT_LIBJIT ##
 m4_sinclude(conf/kscripts/ext_libjit.ac)
 
@@ -123,6 +126,7 @@ m4_sinclude(conf/kscripts/ext_nodejs_node.ac)
 
 ## EXT_MDSPLUS ##
 m4_sinclude(conf/kscripts/ext_mdsplus.ac)
+
 
 ## EXT ##
 AX_KCONFIG_MODULES([EXT],
@@ -216,6 +220,7 @@ AC_CONFIG_FILES(
 				 src/nodejs/Makefile				 
 				 src/project_variables/Makefile
 				 src/mds_example/Makefile
+				 src/jp_notebook/Makefile
 				 doc/Makefile
 				 ext/Makefile
 				 autoconf-bootstrap.spec
