@@ -112,6 +112,9 @@ mdsplus_BRANCH = $(EXT_MDSPLUS_BRANCH)
 $(call _ext_bootstrap,mdsplus)
 $(call _ext_configure,mdsplus)
 
+unexport DOCKER_CONTAINER
+unexport DOCKER_IMAGE
+unexport DOCKER_URL
 
 
 
