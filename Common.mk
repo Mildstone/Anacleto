@@ -41,33 +41,3 @@ ${DL} ${TMP}:
 	@$(MKDIR_P) $@
 
 
-## /////////////////////////////////////////////////////////////////////////////
-## // RECONFIGURE  /////////////////////////////////////////////////////////////
-## /////////////////////////////////////////////////////////////////////////////
-
-.PHONY: reconfigure
-reconfigure: ##@miscellaneous re-run configure with last passed arguments
-	@ \
-	echo " -- Reconfiguring build with following parameters: -----------"; \
-	echo $(shell $(abs_top_builddir)/config.status --config);              \
-	echo " -------------------------------------------------------------"; \
-	echo ; \
-	cd '$(abs_top_builddir)' && \
-	$(abs_top_srcdir)/configure $(shell $(abs_top_builddir)/config.status --config);
-
-
-NODOCKERBUILD += am__configure_deps
-
-
-## ACLOCAL = ${SHELL} /home/andrea/devel/utils/autoconf-bootstrap/conf/missing aclocal
-## AUTOCONF = ${SHELL} /home/andrea/devel/utils/autoconf-bootstrap/conf/missing autoconf
-## AUTOHEADER = ${SHELL} /home/andrea/devel/utils/autoconf-bootstrap/conf/missing autoheader
-## AUTOMAKE = ${SHELL} /home/andrea/devel/utils/autoconf-bootstrap/conf/missing automake
-
-## locale-gen:: USER=root
-## locale-gen::
-##	locale-gen
-
-
-shell:
-	$(SHELL)
