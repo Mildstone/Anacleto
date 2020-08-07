@@ -1,0 +1,39 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "make debug: Python",
+            "type": "python",
+            "request": "attach",
+            // "program": "${file}",
+            // "console": "integratedTerminal",
+            "connect": {
+                "host": "localhost",
+                "port": 5678
+              },                        
+        },
+        {
+            "name": "make debug: Gdb",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "python",
+            "miDebuggerServerAddress": "localhost:5677",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceRoot}",
+            "environment": [],
+            "externalConsole": true,
+            "MIMode": "gdb"
+          }
+    ],
+    // "compounds": [
+    //     {
+    //       "name": "PyGDB",
+    //       "configurations": ["5677","5678"],
+    //       // "preLaunchTask": "${defaultBuildTask}" //
+    //     }
+    //   ]
+}

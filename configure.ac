@@ -34,6 +34,8 @@ dnl AUTOMAKE ///////////////////////////////////////////////////////////////////
 AM_INIT_AUTOMAKE([foreign subdir-objects])
 
 
+
+
 dnl update submodules at first ... (must be cleaned out)
 AS_IF([${srcdir}/conf/update_submodules.sh],
       [AS_ECHO(["Submodules succesfully updated"])],
@@ -62,7 +64,8 @@ AC_CONFIG_HEADERS([config.h])
 
 dnl RELEASE
 AX_IS_RELEASE([always])
-AX_CHECK_ENABLE_DEBUG([no],,,,[-g -O2])
+AK_ENABLE_DEBUG([no],,,,[-O3])
+AC_SUBST([ENABLE_DEBUG],[${ax_enable_debug}])
 
 # Checks for programs.
 AC_PROG_AWK
