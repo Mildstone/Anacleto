@@ -15,6 +15,17 @@ mds_test_LDFLAGS      = $(MDSLDFLAGS) -Wl,-rpath,${MDS_LIBDIR}
 ## this is done before compiling code
 $(mds_test_OBJECTS): ext-mdsplus
 
+debug: ##@mdsplus debug test program
+debug:
+	@ gdbserver localhost:5677 mds-test
+
+
+PYTHON_PACKAGES = debugpy
+debugpy: ##@mdsplus debug test program
+debugpy:
+	@ gdbserver localhost:5677 python -m debugpy --listen 5678 --wait-for-client $(srcdir)/mds-test.py
+
+
 else
 $(warning ext sources for Mdsplus are disabled, please reconfigure)
 endif

@@ -1,0 +1,8 @@
+{
+    "python.globalModuleInstallation": true,
+    "python.linting.pylintEnabled": true,
+    "python.autoComplete.extraPaths": [
+        "${workspaceFolder}/build/ext/mdsplus/python/",
+    ],
+
+}
