@@ -154,3 +154,7 @@ print-hello:
 
 
 
+DOWNLOADS += linux
+linux_DIR    = $(LINUX_SRCDIR)
+linux_URL    = $(LINUX_URL)
+linux_BRANCH = $(LINUX_GIT_BRANCH)

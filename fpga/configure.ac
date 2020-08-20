@@ -63,13 +63,21 @@ AC_SUBST([VIVADO_VERSION])
 AX_KCONFIG_WITH_CHOICE([VIVADO_SETUP_METHOD],["Vivado setup method"],
 					   [VIVADO_SETUP_METHOD_BASEPATH],[basepath],
 					   [VIVADO_SETUP_METHOD_SCRIPTS],[scripts])
+
+
 AS_CASE([${VIVADO_SETUP_METHOD}],
 [basepath],
-  [AX_KCONFIG_VAR([XILINX_BASE_PATHDIR])
-   AS_VAR_SET([VIVADO_SETUP_SCRIPT],
+  [ AX_KCONFIG_VAR([XILINX_BASE_PATHDIR])
+	
+	# select if SDK of Vitis settings script exists
+	AS_IF([test -e ${XILINX_BASE_PATHDIR}/SDK/${VIVADO_VERSION}/settings64.sh],
+		AS_VAR_SET([ak__sdk_script],[${XILINX_BASE_PATHDIR}/SDK/${VIVADO_VERSION}/settings64.sh]))
+	AS_IF([test -e ${XILINX_BASE_PATHDIR}/Vitis/${VIVADO_VERSION}/settings64.sh],
+		AS_VAR_SET([ak__sdk_script],[${XILINX_BASE_PATHDIR}/Vitis/${VIVADO_VERSION}/settings64.sh]))
+   	
+	AS_VAR_SET([VIVADO_SETUP_SCRIPT],
 			  [${XILINX_BASE_PATHDIR}/Vivado/${VIVADO_VERSION}/settings64.sh])
-   AS_VAR_SET([VIVADO_SDK_SETUP_SCRIPT],
-			  [${XILINX_BASE_PATHDIR}/SDK/${VIVADO_VERSION}/settings64.sh])
+   	AS_VAR_SET([VIVADO_SDK_SETUP_SCRIPT], [${ak__sdk_script}])
   ],
 [scripts],
   [AX_KCONFIG_VAR([VIVADO_SETUP_SCRIPT])

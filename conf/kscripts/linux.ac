@@ -3,7 +3,7 @@
 # //////////////////////////////////////////////////////////////////////////// #
 
 AX_KCONFIG_VAR([LINUX_DIR])
-AC_SUBST([LINUX_DIR])
+AC_SUBST([LINUXDIR],[LINUX_DIR])
 AX_GITIGNORE_ADD([/${LINUX_DIR}])
 
 AX_KCONFIG_CHOICE([LINUX_DLMETHOD],
@@ -38,3 +38,4 @@ AC_SUBST([LINUX_MAKE_PROCESS])
 
 AX_KCONFIG_VAR_WITH([LINUX_CFLAGS],["set with LINUX_CFLAGS"])
 AC_SUBST([LINUX_CFLAGS])
+

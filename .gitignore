@@ -23,6 +23,12 @@ vivado_project/
 .hw/
 .xpr
 
+
 /home/andrea/devel/rfx/anacleto/build/download
 /home/andrea/devel/rfx/anacleto/build/toolchain
 /linux
+conf/m4/libtool.m4
+conf/m4/lt~obsolete.m4
+conf/m4/ltoptions.m4
+conf/m4/ltsugar.m4
+conf/m4/ltversion.m4

@@ -81,30 +81,3 @@ NODOCKERBUILD += am__configure_deps \
 
 
 
-LINUX_CFLAGS    ?= "-O2 -mtune=cortex-a9 -mfpu=neon -mfloat-abi=hard"
-LINUX_PACKAGE   ?= uImage
-LINUX_IMAGE     ?= $(TMP)/$(LINUX_PACKAGE)
-LINUX_DIR       ?= linux
-
-if LINUX_DIR_IN_SRCTREE
- LINUX_SRCDIR    = $(abs_top_srcdir)/$(LINUX_DIR)
- LINUX_BUILDDIR  = $(abs_top_builddir)/$(LINUX_DIR)
- LINUX_BUILD_O   = $(filter-out $(LINUX_SRCDIR),$(LINUX_BUILDDIR))
-else
- LINUX_SRCDIR    = $(abs_top_builddir)/$(LINUX_DIR)
- LINUX_BUILDDIR  = $(abs_top_builddir)/$(LINUX_DIR)
-endif
-
-ARCH                     = arm
-WITH_TOOLCHAIN_DIR      ?= ${abs_top_builddir}/toolchain
-TOOLCHAIN_PATH          ?= ${WITH_TOOLCHAIN_DIR}/bin
-CROSS_COMPILE           ?= arm-linux-gnueabihf-
-
-
-
-define _set_export
-export ARCH=$(ARCH); \
-export CROSS_COMPILE=${CROSS_COMPILE}; \
-export PATH=$${PATH}:$(TOOLCHAIN_PATH); \
-export O=${LINUX_BUILD_O}
-endef

@@ -18,6 +18,15 @@
 #
 # ////////////////////////////////////////////////////////////////////////// //
 
+# include $(top_srcdir)/conf/kscripts/linux.mk
+if LINUX_DIR_IN_SRCTREE
+ LINUX_SRCDIR    = $(abs_top_srcdir)/$(LINUX_DIR)
+ LINUX_BUILDDIR  = $(abs_top_builddir)/$(LINUX_DIR)
+ LINUX_BUILD_O   = $(filter-out $(LINUX_SRCDIR),$(LINUX_BUILDDIR))
+else
+ LINUX_SRCDIR    = $(abs_top_builddir)/$(LINUX_DIR)
+ LINUX_BUILDDIR  = $(abs_top_builddir)/$(LINUX_DIR)
+endif
 
 
 ## ////////////////////////////////////////////////////////////////////////// ##
@@ -71,7 +80,10 @@ endef
 # mode with an option to save journal files
 VIVADO       = vivado -nolog -journal $(NAME)_jou.tcl      $(if $(MODE),-mode $(MODE),-mode batch)
 # VIVADO_SHELL = vivado -nolog -journal vivado_shell_jou.tcl $(if $(MODE),-mode $(MODE),-mode batch)
-HSI          = hsi    -nolog -journal $(NAME)_hsi_jou.tcl  $(if $(MODE),-mode $(MODE),-mode batch)
+
+# With vivado version > 2020.1 we must use xsct as hsi became a tcl library ( works in vivado as well )
+HSI          = xsct 
+# HSI          = hsi    -nolog -journal $(NAME)_hsi_jou.tcl  $(if $(MODE),-mode $(MODE),-mode batch)
 # HSI_SHELL    = hsi    -nolog -journal hsi_shell_jou.tcl    $(if $(MODE),-mode $(MODE),-mode batch)
 HLS          = vivado_hls -nosplash
 # HLS_SHELL    = vivado_hls -nosplash
@@ -81,7 +93,7 @@ XSDK         = xsdk
 
 vivado       = ${_envset}; $(VIVADO)       -source $(FPGA_DIR)/vivado_make.tcl $(if $1,-tclargs $1)
 # vivado_shell = ${_envset}; $(VIVADO_SHELL) -source $(FPGA_DIR)/vivado_make.tcl $(if $1,-tclargs $1)
-hsi          = ${_envset}; $(HSI)       -source $(FPGA_DIR)/vivado_make.tcl $(if $1,-tclargs $1)
+hsi          = ${_envset}; $(HSI) $(FPGA_DIR)/vivado_make.tcl $1
 # hsi_shell    = ${_envset}; $(HSI_SHELL) -source $(FPGA_DIR)/vivado_make.tcl $(if $1,-tclargs $1)
 hls          = ${_envset}; $(HLS)       -f $(FPGA_DIR)/make_vivado_hls.tcl
 # hls_shell    = ${_envset}; $(HLS_SHELL)
@@ -333,15 +345,20 @@ dtb: ##@hsi compile device tree binary
 	$(MAKE) $(DTB)
 
 
+SYSTEM_DTS = system-top.dts
+
 $(VIVADO_SDKDIR)/dts/$(SYSTEM_DTS):  $(FPGA_BIT)
 	@ $(MAKE) -C $(top_builddir)/fpga xlnx-devicetree; \
 	  $(call hsi,write_devicetree)
+
+write_devicetree: $(VIVADO_SDKDIR)/dts/$(SYSTEM_DTS)
 
 $(LINUX_IMAGE):
 	$(MAKE) $(AM_MAKEFLAGS) -C $(top_builddir) $@
 
 $(DTS): $(VIVADO_SDKDIR)/dts/$(SYSTEM_DTS) $(LINUX_IMAGE)
-	$(LINUX_BUILDDIR)/scripts/dtc/dtc -I dts -O dts -o $@ -i $(<D) $<
+	$(CC) -E -nostdinc -undef -D__DTS__ -x assembler-with-cpp -o $<.tmp $<; \
+	$(LINUX_BUILDDIR)/scripts/dtc/dtc -I dts -O dts -o $@ -i $(<D) $<.tmp
 
 $(DTB):  $(DTS) $(LINUX_IMAGE)
 	$(LINUX_BUILDDIR)/scripts/dtc/dtc -I dts -O dtb -o $@ -i $(<D) $<
