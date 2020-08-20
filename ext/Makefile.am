@@ -234,4 +234,13 @@ pynq_URL = https://github.com/Xilinx/PYNQ.git
 pynq_BRANCH = master
 
 
+define _envset
+ . $(VIVADO_SETUP_SCRIPT); \
+ . $(VIVADO_SDK_SETUP_SCRIPT)
+endef
+
+pynq-build: ##@pynq build
+	$(_envset); cd pynq; ./build.sh
+
+
 

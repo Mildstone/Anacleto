@@ -2,24 +2,27 @@
 # Linux build
 ################################################################################
 
-LINUX_CFLAGS    ?= "-O2 -mtune=cortex-a9 -mfpu=neon -mfloat-abi=hard"
-LINUX_PACKAGE   ?= uImage
-LINUX_IMAGE     ?= $(TMP)/$(LINUX_PACKAGE)
-LINUX_DIR       ?= linux
+
+
+
+LINUX_CFLAGS    = "-O2 -mtune=cortex-a9 -mfpu=neon -mfloat-abi=hard"
+LINUX_PACKAGE   = uImage
+LINUX_IMAGE     = $(TMP)/$(LINUX_PACKAGE)
+LINUXDIR        = linux
 
 if LINUX_DIR_IN_SRCTREE
- LINUX_SRCDIR    = $(abs_top_srcdir)/$(LINUX_DIR)
- LINUX_BUILDDIR  = $(abs_top_builddir)/$(LINUX_DIR)
+ LINUX_SRCDIR    = $(abs_top_srcdir)/$(LINUXDIR)
+ LINUX_BUILDDIR  = $(abs_top_builddir)/$(LINUXDIR)
  LINUX_BUILD_O   = $(filter-out $(LINUX_SRCDIR),$(LINUX_BUILDDIR))
 else
- LINUX_SRCDIR    = $(abs_top_builddir)/$(LINUX_DIR)
- LINUX_BUILDDIR  = $(abs_top_builddir)/$(LINUX_DIR)
+ LINUX_SRCDIR    = $(abs_top_builddir)/$(LINUXDIR)
+ LINUX_BUILDDIR  = $(abs_top_builddir)/$(LINUXDIR)
 endif
 
 ARCH                     = arm
-WITH_TOOLCHAIN_DIR      ?= ${abs_top_builddir}/toolchain
-TOOLCHAIN_PATH          ?= ${WITH_TOOLCHAIN_DIR}/bin
-CROSS_COMPILE           ?= arm-linux-gnueabihf-
+WITH_TOOLCHAIN_DIR       = ${abs_top_builddir}/toolchain
+TOOLCHAIN_PATH           = ${WITH_TOOLCHAIN_DIR}/bin
+CROSS_COMPILE            = arm-linux-gnueabihf-
 
 
 
@@ -30,6 +33,12 @@ export PATH=$${PATH}:$(TOOLCHAIN_PATH); \
 export O=${LINUX_BUILD_O}
 endef
 
+
+
+DOWNLOADS += linux
+linux_DIR    = $(LINUX_SRCDIR)
+linux_URL    = $(LINUX_URL)
+linux_BRANCH = $(LINUX_GIT_BRANCH)
 
 
 linux-:     ##@linux_target use: "make linux-<target>" to build target in linux directory
@@ -44,59 +53,69 @@ linux-kernelversion: ##@linux_target display the current kernel version
 linux-kernelrelease: ##@linux_target display the current kernel release
 linux-updateconfig: ##@linux update the soc defconf in /conf/linux/...
 
+KERNELVERSION = $(shell $(MAKE) -s -C $(LINUX_BUILDDIR) kernelversion)
+DEFCONFIG     = $(abs_top_srcdir)/conf/linux/$(KERNELVERSION)/$(BOARD).def
+ak__LINUX_PATCH = $(abs_top_srcdir)/conf/linux/$(KERNELVERSION)/*.patch $(LINUX_PATCH)
+
+
+
+
+
+# config_file: $(LINUX_CONFIG_FILE)
+
 
 .PHONY: linux-init linux-init-s
-linux-init-s: $(LINUX_SRCDIR) print-env
+linux-init-s: export CC := $(CROSS_COMPILE)$(CC)
+linux-init-s: export SRCARCH=$(ARCH)
+linux-init-s: export srctree=$(LINUX_SRCDIR)
+linux-init-s:
 	$(_set_export); \
-	$(MKDIR_P) $(LINUX_BUILDDIR); \
 	cd $(LINUX_BUILDDIR); \
-	export LS=$$(ls); \
-	export CC=$(CROSS_COMPILE)$(CC); \
-	export KERNELVERSION=$$($(MAKE) -s -C $< kernelversion); \
-	export DEFCONFIG=${abs_top_srcdir}/conf/linux/$${KERNELVERSION}/${BOARD}.def; \
-	export SRCARCH=${ARCH}; \
-	export srctree=$(LINUX_SRCDIR); \
-	$(LINUX_BUILDDIR)/scripts/kconfig/conf --defconfig=$${DEFCONFIG} Kconfig
+	$(LINUX_BUILDDIR)/scripts/kconfig/conf --defconfig=$(DEFCONFIG) Kconfig
 
+# export KERNELVERSION=$$($(MAKE) -s -C $< kernelversion);
+# export DEFCONFIG=${abs_top_srcdir}/conf/linux/$(KERNELVERSION)/$(BOARD.def; 
+
+LINUX_CONFIG_FILE = $(LINUX_BUILDDIR)/.config
+$(LINUX_BUILDDIR)/.config: $(LINUX_SRCDIR)
+	$(_set_export); \
+	$(MKDIR_P) $(@D); \
+	$(MAKE) $(AM_MAKEFLAGS) -C $(LINUX_BUILDDIR) mrproper; \
+	$(MAKE) -s $(AM_MAKEFLAGS) -C $(LINUX_BUILDDIR) O=$$O CFLAGS="$(LINUX_CFLAGS)" defconfig; \
+	$(MAKE) -s linux-init-s;
+
+linux_config: $(LINUX_BUILDDIR)/.config
+
+linux-init: 
+	$(MAKE) -s config_file
 
 linux-apply-patches: ##@linux apply patches
-linux-apply-patches: $(LINUX_SRCDIR)
+linux-apply-patches: 
 	@ cd $(LINUX_SRCDIR); \
-	KERNELVERSION=$$($(MAKE) -s -C $(LINUX_SRCDIR) kernelversion); \
-	_patch="$(abs_top_srcdir)/conf/linux/$${KERNELVERSION}/*.patch $(LINUX_PATCH)"; \
-	test -f $${_patch} && \
-	for p in $${_patch}; do patch -N -p0 < $$p ||:; done;
+	test -f $(ak__LINUX_PATCH) && \
+	for p in $(ak__LINUX_PATCH); do patch -N -p0 < $$p ||:; done;
 
-linux-init: linux-apply-patches
-	$(MAKE) -s linux-init-s
 
 .PHONY: linux-%
 linux-nconfig linux-menuconfig linux-xconfig linux-gconfig: \
- $(LINUX_SRCDIR) $(LINUX_BUILDDIR)/.config
+ $(LINUX_SRCDIR) $(LINUX_CONFIG_FILE)
 	$(_set_export); \
 	_target=$@; \
 	$(MAKE) -C $< O=$$O $${_target//linux-/}
 
 
-linux-updateconfig: $(LINUX_SRCDIR) $(LINUX_BUILDDIR)/.config
+linux-updateconfig: $(LINUX_CONFIG_FILE)
 	$(_set_export); \
-	KERNELVERSION=$$($(MAKE) -s -C $< kernelversion); \
-	DEFCONFIG=${abs_top_srcdir}/conf/linux/$${KERNELVERSION}/${BOARD}.def; \
-	$(MAKE) linux-savedefconfig && cp $(LINUX_BUILDDIR)/defconfig $${DEFCONFIG}
+	$(MAKE) linux-savedefconfig && cp $(LINUX_BUILDDIR)/defconfig $(DEFCONFIG)
+
 
 linux-%: $(LINUX_SRCDIR) $(LINUX_BUILDDIR)
 	$(_set_export); \
 	_target=$@; \
 	$(MAKE) $(AM_MAKEFLAGS) -C $< O=$$O CFLAGS="$(LINUX_CFLAGS)" $${_target//linux-/}
 
-$(LINUX_BUILDDIR)/.config: $(LINUX_SRCDIR)
-	$(_set_export); \
-	$(MKDIR_P) $(LINUX_BUILDDIR); \
-	$(MAKE) $(AM_MAKEFLAGS) -C $< mrproper; \
-	$(MAKE) -s $(AM_MAKEFLAGS) -C $< O=$$O CFLAGS="$(LINUX_CFLAGS)" defconfig; \
-	$(MAKE) -s linux-init;
 
-$(LINUX_IMAGE): $(LINUX_SRCDIR) $(LINUX_BUILDDIR)/.config
+$(LINUX_IMAGE): $(LINUX_SRCDIR) $(LINUX_CONFIG_FILE)
 	$(_set_export); \
 	$(MAKE) $(AM_MAKEFLAGS) -C $< O=$$O CFLAGS="$(LINUX_CFLAGS)" \
 		UIMAGE_LOADADDR=$(LINUX_UIMAGE_LOADADDR) $(LINUX_PACKAGE); \

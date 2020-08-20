@@ -76,10 +76,16 @@ catch {
   }
 
 
-proc set_compatible_with { program } {
+proc set_compatible_with { programs } {
   set current_parser [lindex [split [version] " "] 0]
-  if { [string tolower $current_parser] != [string tolower $program] } {
-    error "This script requires to be fired within $program environment."
+  set current_parser_match 0
+  foreach program $programs {
+    if { [string tolower $current_parser] == [string tolower $program] } {
+      set current_parser_match 1
+    }
+  }
+  if { ! $current_parser_match } {
+    error "This script requires to be fired within one of $programs."
   }
 }
 
@@ -679,7 +685,8 @@ proc make_write_bitstream {} {
 ## ////////////////////////////////////////////////////////////////////////// ##
 
 proc make_write_devicetree {} {
-  set_compatible_with Hsi
+  puts "MAKE WRITE DEVICETREE ..."
+  set_compatible_with { Hsi Xsct Vivado }
 
   set prj_name $v::pe(project_name)
   set path_bit $v::pe(dir_bit)
@@ -690,14 +697,16 @@ proc make_write_devicetree {} {
   #		  mtdparts=physmap-flash.0:512K(nor-fsbl),512K(nor-u-boot),\
   #		  5M(nor-linux),9M(nor-user),1M(nor-scratch),-(nor-rootfs) }
 
-  open_hw_design $path_sdk/$prj_name.sysdef
-  set_repo_path $v::me(DTREE_DIR)
-  create_sw_design device-tree -os device_tree -proc ps7_cortexa9_0
+  puts "OPEN DESIGN ..."
+  hsi::open_hw_design $path_sdk/$prj_name.sysdef
+  puts "DTREE DIR = $v::me(DTREE_DIR)"
+  hsi::set_repo_path $v::me(DTREE_DIR)
+  hsi::create_sw_design device-tree -os device_tree -proc ps7_cortexa9_0
 
   # set_property CONFIG.kernel_version {2016.2} [get_os]
   # set_property CONFIG.bootargs $boot_args [get_os]
 
-  generate_target -dir $path_sdk/dts
+  hsi::generate_target -dir $path_sdk/dts
 }
 
 
@@ -706,7 +715,7 @@ proc make_write_devicetree {} {
 ## ////////////////////////////////////////////////////////////////////////// ##
 
 proc make_write_fsbl {} {
-  set_compatible_with Hsi
+  set_compatible_with { Hsi xsct }
 
   set prj_name $v::pe(project_name)
   set path_bit $v::pe(dir_bit)
@@ -717,10 +726,10 @@ proc make_write_fsbl {} {
   #		  mtdparts=physmap-flash.0:512K(nor-fsbl),512K(nor-u-boot),\
   #		  5M(nor-linux),9M(nor-user),1M(nor-scratch),-(nor-rootfs) }
 
-  open_hw_design $path_sdk/$prj_name.sysdef
-  set_repo_path $v::me(DTREE_DIR)
+  hsi::open_hw_design $path_sdk/$prj_name.sysdef
+  hsi::set_repo_path $v::me(DTREE_DIR)
 
-  generate_app  -os standalone -proc ps7_cortexa9_0 -app zynq_fsbl \
+  hsi::generate_app  -os standalone -proc ps7_cortexa9_0 -app zynq_fsbl \
       -compile -sw fsbl -dir $path_sdk/fsbl
 }
 
@@ -730,23 +739,23 @@ proc make_write_fsbl {} {
 ## ////////////////////////////////////////////////////////////////////////// ##
 
 proc make_write_linux_bsp {} {
-  set_compatible_with Hsi
+  set_compatible_with { Hsi xsct }
 
   set prj_name $v::pe(project_name)
   set path_bit $v::pe(dir_bit)
   set path_sdk $v::pe(dir_sdk)
 
-  open_hw_design $path_sdk/$prj_name.sysdef
+  hsi::open_hw_design $path_sdk/$prj_name.sysdef
 
   puts "set_repo_path  $v::me(top_srcdir)/fpga/hsi/linux-bsp"
-  set_repo_path  $v::me(top_srcdir)/fpga/hsi/linux-bsp
+  hsi::set_repo_path  $v::me(top_srcdir)/fpga/hsi/linux-bsp
   #  foreach ip_name [split $v::pe(IP_SOURCES)] {
   #	set_repo_path $v::me(srcdir)/$ip_name
   #  }
   # set_repo_path  $path_sdk
 
-  create_sw_design system -os linux -proc ps7_cortexa9_0 -verbose
-  generate_target -dir $path_sdk/bsp bsp
+  hsi::create_sw_design system -os linux -proc ps7_cortexa9_0 -verbose
+  hsi::generate_target -dir $path_sdk/bsp bsp
   # generate_target -dir $path_sdk/app app
 }
 
