@@ -16,10 +16,6 @@ else
  LINUX_BUILDDIR  = $(abs_top_builddir)/$(LINUX_DIR)
 endif
 
-ARCH                     = arm
-WITH_TOOLCHAIN_DIR      ?= ${abs_top_builddir}/toolchain
-TOOLCHAIN_PATH          ?= ${WITH_TOOLCHAIN_DIR}/bin
-CROSS_COMPILE           ?= arm-linux-gnueabihf-
 
 
 

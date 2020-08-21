@@ -219,6 +219,7 @@ AX_CONFIG_SUBDIRS(
 AX_CONFIG_FILES(
 		 Makefile
 		 ext/Makefile
+		 src/hello_cpp/Makefile
 		 .gitignore
 		 )
 
