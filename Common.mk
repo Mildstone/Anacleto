@@ -61,23 +61,23 @@ ip-address: ##@@docker set MAC address in the docker container instance
 NODOCKERBUILD += edit-code
 NODOCKERBUILD += edit-code-server
 
-## /////////////////////////////////////////////////////////////////////////////
-## // RECONFIGURE  /////////////////////////////////////////////////////////////
-## /////////////////////////////////////////////////////////////////////////////
+# ## /////////////////////////////////////////////////////////////////////////////
+# ## // RECONFIGURE  /////////////////////////////////////////////////////////////
+# ## /////////////////////////////////////////////////////////////////////////////
 
-.PHONY: reconfigure
-reconfigure: ##@miscellaneous re-run configure with last passed arguments
-	@ \
-	echo " -- Reconfiguring build with following parameters: -----------"; \
-	echo $(shell $(abs_top_builddir)/config.status --config);              \
-	echo " -------------------------------------------------------------"; \
-	echo ; \
-	cd '$(abs_top_builddir)' && \
-	$(abs_top_srcdir)/configure $(shell $(abs_top_builddir)/config.status --config);
+# .PHONY: reconfigure
+# reconfigure: ##@miscellaneous re-run configure with last passed arguments
+# 	@ \
+# 	echo " -- Reconfiguring build with following parameters: -----------"; \
+# 	echo $(shell $(abs_top_builddir)/config.status --config);              \
+# 	echo " -------------------------------------------------------------"; \
+# 	echo ; \
+# 	cd '$(abs_top_builddir)' && \
+# 	$(abs_top_srcdir)/configure $(shell $(abs_top_builddir)/config.status --config);
 
 
-NODOCKERBUILD += am__configure_deps \
-		 edit-code
+# NODOCKERBUILD += am__configure_deps \
+# 		 edit-code
 
 
 
