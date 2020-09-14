@@ -1,0 +1,22 @@
+--- conf/ide/code_local/bin/code	2020-09-10 15:14:51.000000000 +0200
++++ code	2020-09-14 17:38:06.682462923 +0200
+@@ -49,6 +49,18 @@
+ fi
+ 
+ ELECTRON="$VSCODE_PATH/code"
++LIBXCB="$(cd $VSCODE_PATH; pwd)/libxcb.so.1"
++
++if [ ! -f $LIBXCB ]; then 
++  _xcb=$(ldd ${ELECTRON} | grep libxcb.so.1 | awk '{print $3}')
++  if [ -f $_xcb ]; then
++    cp -aL $_xcb $LIBXCB
++    sed -i 's/BIG-REQUESTS/_IG-REQUESTS/' $LIBXCB
++  fi
++fi
++
++
++ELECTRON="$VSCODE_PATH/code"
+ CLI="$VSCODE_PATH/resources/app/out/cli.js"
+-ELECTRON_RUN_AS_NODE=1 "$ELECTRON" "$CLI" "$@"
++ELECTRON_RUN_AS_NODE=1 LD_PRELOAD=$LIBXCB "$ELECTRON" "$CLI" "$@"
+ exit $?
