@@ -100,6 +100,9 @@ m4_sinclude(conf/kscripts/build_common.ac)
 ## TOOLCHAIN ##
 m4_sinclude(conf/kscripts/toolchain.ac)
 
+## PYTHON ##
+m4_sinclude(conf/kscripts/python.ac)
+
 ## CODAC ##
 # m4_sinclude(conf/kscripts/iter_codac.ac)
 
@@ -111,9 +114,6 @@ m4_sinclude(conf/kscripts/nodejs.ac)
 
 ## DOXYGEN ##
 m4_sinclude(conf/autoconf-doxygen/doxygen.ac)
-
-## JUPYTER ##
-m4_sinclude(conf/kscripts/jupyter.ac)
 
 ## EXT_LIBJIT ##
 m4_sinclude(conf/kscripts/ext_libjit.ac)
