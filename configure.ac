@@ -146,6 +146,9 @@ m4_sinclude(conf/kscripts/yocto.ac)
 
 ## // GIT IGNORE // ##
 AX_GITIGNORE_ADD_PATH([${builddir}])
+AX_GITIGNORE_ADD_PATH([${builddir}/conf/python])
+AX_GITIGNORE_ADD_PATH([${builddir}/conf/ide])
+AX_GITIGNORE_ADD_PATH([*/.deps])
 AX_GITIGNORE_SUBST
 
 
