@@ -1,0 +1,1 @@
+../kconfig/scripts/sphinx.mk
