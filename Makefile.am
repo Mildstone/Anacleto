@@ -25,7 +25,7 @@ include $(top_srcdir)/conf/kscripts/yocto.mk
 AM_MAKEFLAGS = -j$(MAKE_PROCESS)
 ACLOCAL_AMFLAGS = -I conf/m4
 
-SUBDIRS = conf/kconfig src ext doc
+SUBDIRS = conf/kconfig src ext docs
 
 all: ##@all all target
 all:

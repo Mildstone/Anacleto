@@ -17,12 +17,12 @@ from os import environ as env
 # -- Project information -----------------------------------------------------
 
 
-project   = '$(DX_TITLE)'
-copyright = '$(DX_COPYRIGHT)'
-author    = '$(DX_AUTHOR)'
+project   = 'Project title'
+copyright = 'Andrea Rigoni'
+author    = 'andrea.rgn@gmail.com'
 
 # The full version, including alpha/beta/rc tags
-release = '$(PACKAGE_VERSION)'
+release = '0.1'
 
 # -*- coding: utf-8 -*-
 #

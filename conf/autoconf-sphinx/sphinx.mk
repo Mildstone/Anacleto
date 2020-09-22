@@ -1,7 +1,9 @@
 # Minimal makefile for Sphinx documentation
 # 
 
-ak__PYTHON_PACKAGES += sphinx recommonmark
+ak__PYTHON_PACKAGES +=  sphinx \
+						sphinx-rtd-theme \
+					    git+https://github.com/rtfd/recommonmark.git
 
 # You can set these variables from the command line, and also
 # from the environment for the first two.
@@ -23,15 +25,15 @@ sphinx-%: conf.py # pip-install
 
 # SPHINX VARIABLES
 
-export SX_TITLE     ?= $(PACKAGE)
-export SX_COPYRIGHT ?= Andrea Rigoni
-export SX_AUTHOR    ?= $(PACKAGE_BUGREPORT)
+export DX_TITLE     ?= $(PACKAGE)
+export DX_COPYRIGHT ?= Andrea Rigoni
+export DX_AUTHOR    ?= $(PACKAGE_BUGREPORT)
 export PACKAGE_VERSION
 
-export SX_EXTENSIONS ?= recommonmark
+export DX_EXTENSIONS ?= recommonmark
 
-export SX_templates = $(abs_top_srcdir)/conf/autoconf-sphinx/config/_templates
-export SX_static    = $(abs_top_srcdir)/conf/autoconf-sphinx/config/_static
+export DX_templates = $(abs_top_srcdir)/conf/autoconf-sphinx/config/_templates
+export DX_static    = $(abs_top_srcdir)/conf/autoconf-sphinx/config/_static
 
 
 # GENERATE CONF .py
@@ -40,7 +42,10 @@ spynx-gen-conf: ##@sphinx generate conf.py example
 spynx-gen-conf: $(srcdir)/conf.py
 
 ## PERL SUBST ##
-$(srcdir)/conf.py: __ax_pl_envsubst = $(PERL) -pe 's/([^\\]|^)\$$\{([a-zA-Z_][a-zA-Z_0-9]*)\}/$$1.$$ENV{$$2}/eg' < $1 > $2
+$(srcdir)/conf.py: __ax_pl_envsubst = $(PERL) -pe 's/([^\\]|^)\$$\(([a-zA-Z_][a-zA-Z_0-9]*)\)/$$1.$$ENV{$$2}/eg' < $1 > $2
 $(srcdir)/conf.py: $(abs_top_srcdir)/conf/autoconf-sphinx/config/conf.py.in
 	@ $(call __ax_pl_envsubst,$<,$@); 
+
+
+
 
