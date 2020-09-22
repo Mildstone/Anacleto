@@ -3,6 +3,9 @@ include $(top_srcdir)/conf/autoconf-doxygen/doxygen.mk
 include $(top_srcdir)/conf/kscripts/python.mk
 include $(top_srcdir)/conf/autoconf-sphinx/sphinx.mk
 
+
+SUBDIRS = example_jpnb
+
 if ENABLE_DOXYGEN
 DX_TITLE  ?= Autoconf bootstrap
 DX_BRIEF  ?= project code documentation reference
