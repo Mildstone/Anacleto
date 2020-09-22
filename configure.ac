@@ -227,7 +227,8 @@ AC_CONFIG_FILES(
 				 src/project_variables/Makefile
 				 src/mds_example/Makefile
 				 src/jp_notebook/Makefile
-				 doc/Makefile
+				 docs/Makefile
+				 docs/example_jpnb/Makefile
 				 ext/Makefile
 				 autoconf-bootstrap.spec
                )
