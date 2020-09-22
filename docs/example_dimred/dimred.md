@@ -26,7 +26,7 @@ Luckily, thanks to linear algebra we don't have to sweat much for PCA. Eigenvalu
 
 Eigenvalue decomposition is a matrix factorization algorithm applicable to semi-definite matrix. In the context of PCA, an eigenvector represents a direction or axis and the corresponding eigenvalue represents variance along that eigenvector. Higher the eigenvalue, higher will be the variance along that eigenvector.
 
-![image alt text](image_0.png)
+![](image_0.png)
 
 The picture above shows the eigenvalue decomposition of a positive definite matrix A. Q is an orthonormal matrix whose columns are eigenvectors and Λ is a diagonal matrix with eigenvalues as the diagonal elements.
 
@@ -34,7 +34,7 @@ The picture above shows the eigenvalue decomposition of a positive definite matr
 
 SVD is a matrix factorization method which expresses a matrix as a linear combination of rank 1 matrices. SVD is more stable than PCA and it doesn't require a positive definite matrix.
 
-![image alt text](image_1.png)
+![](image_1.png)
 
 As shown in the image SVD produces three matrices U, S & V. U and V orthogonal matrices whose columns represent eigenvectors of AAT and ATA respectively. The matrix S is a diagonal matrix and diagonal values are called singular values. Each singular value is square-root of the corresponding eigenvalue.
 
@@ -80,7 +80,7 @@ plt.scatter(versicolor[:,0], versicolor[:,1], c="g",label="versicolor")
 plt.scatter(verginica[:,0], verginica[:,1], c="r",label="verginica") 
 </pre>
 
-![image alt text](image_2.png)
+![](image_2.png)
 
 Convert the numpy array into a spark dataframe.
 
@@ -144,6 +144,7 @@ U = U.rows.map(lambda x: (x.index, x.vector[0:K]*S[0:K]))
 princ_comps = np.array(list(map(lambda x:x[1], sorted(U.collect(), key = lambda x:x[0]))))
 </pre>
 
+
 Plot the resultant principal components
 
 <pre>
@@ -155,11 +156,12 @@ plt.scatter(versicolor[:,0], versicolor[:,1], c="g",label="versicolor")
 plt.scatter(verginica[:,0], verginica[:,1], c="r",label="verginica")
 </pre>
 
+
 PCA clearly presents a better picture of the dataset.
 
 Visualization of a subset of the mnist dataset using the PCA.
 
-![image alt text](image_3.png)
+![](image_3.png)
 
 PCA is able to differentiate between the digits with better accuracy. Zeros, Ones, and Fours are grouped distinctly while PCA finds it difficult to separate Twos, Threes, and Fives.
 
