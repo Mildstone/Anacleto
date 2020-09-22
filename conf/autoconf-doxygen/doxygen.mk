@@ -75,13 +75,15 @@ ${DX_DESTDIR}/${DX_PACKAGE_NAME}.pdf: $(DX_DESTDIR)/latex/refman.pdf
 doxygen-update: ##@docs update latex config file
 	$(DOXYGEN_BINARY) -u $(DX_CFG);
 
-
 html:  ##@docs generate html documentation
-html:  $(DX_DESTDIR)/html
 latex: ##@docs generate latex documentation
-latex: doxygen-update $(DX_DESTDIR)/latex
 pdf:   ##@docs generate pdf manual
+
+if ENABLE_DOXYGEN
+html:  $(DX_DESTDIR)/html
+latex: doxygen-update $(DX_DESTDIR)/latex
 pdf:   $(DX_DESTDIR)/${DX_PACKAGE_NAME}.pdf
+endif
 
 clean-local:
 	@ rm -rf doxygen.stamp html latex \
