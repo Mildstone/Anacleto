@@ -4,6 +4,16 @@
 ak__PYTHON_PACKAGES +=  sphinx \
 						sphinx-rtd-theme \
 					    git+https://github.com/rtfd/recommonmark.git
+						
+
+
+# ak__post_pip_install += recommonmark_template_install
+# recommonmark_template_install:
+# if ENABLE_JUPYTER_NOTEBOOK
+# 	cp -a $(PYTHON_USERBASE)/share/jupyter
+# endif
+
+
 
 # You can set these variables from the command line, and also
 # from the environment for the first two.
