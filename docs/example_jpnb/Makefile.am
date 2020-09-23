@@ -4,5 +4,5 @@ include $(top_srcdir)/conf/kscripts/python.mk
 JUPYTER_NOTEBOOKS = example_jpnb
 
 
-all: example_jpnb.md
+all: $(srcdir)/example_jpnb.md
 
