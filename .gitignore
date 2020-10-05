@@ -41,7 +41,6 @@ config.h.in~
 stamp-h1
 
 
-**/.ipynb_checkpoints/
 **/.logs/
 **/.deps/
 
@@ -52,6 +51,10 @@ src/sh_template/script.sh
 # external modules
 ext/mdsplus
 
+# PYTHON
+**/.pip-install.stamp
+**/ipysh.py
+**/.ipynb_checkpoints/
 
 /downloads
 /.
