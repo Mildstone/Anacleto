@@ -4,5 +4,5 @@
     "python.autoComplete.extraPaths": [
         "${workspaceFolder}/build/ext/mdsplus/python/",
     ],
-
+    "python.envFile": "${workspaceFolder}/.env",
 }

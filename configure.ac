@@ -100,6 +100,9 @@ m4_sinclude(conf/kscripts/build_common.ac)
 ## TOOLCHAIN ##
 m4_sinclude(conf/kscripts/toolchain.ac)
 
+## PYTHON ##
+m4_sinclude(conf/kscripts/python.ac)
+
 ## CODAC ##
 # m4_sinclude(conf/kscripts/iter_codac.ac)
 
@@ -111,9 +114,6 @@ m4_sinclude(conf/kscripts/nodejs.ac)
 
 ## DOXYGEN ##
 m4_sinclude(conf/autoconf-doxygen/doxygen.ac)
-
-## JUPYTER ##
-m4_sinclude(conf/kscripts/jupyter.ac)
 
 ## EXT_LIBJIT ##
 m4_sinclude(conf/kscripts/ext_libjit.ac)
@@ -146,6 +146,9 @@ m4_sinclude(conf/kscripts/yocto.ac)
 
 ## // GIT IGNORE // ##
 AX_GITIGNORE_ADD_PATH([${builddir}])
+AX_GITIGNORE_ADD_PATH([${builddir}/conf/python])
+AX_GITIGNORE_ADD_PATH([${builddir}/conf/ide])
+AX_GITIGNORE_ADD_PATH([*/.deps])
 AX_GITIGNORE_SUBST
 
 
@@ -224,7 +227,8 @@ AC_CONFIG_FILES(
 				 src/project_variables/Makefile
 				 src/mds_example/Makefile
 				 src/jp_notebook/Makefile
-				 doc/Makefile
+				 docs/Makefile
+				 docs/example_jpnb/Makefile
 				 ext/Makefile
 				 autoconf-bootstrap.spec
                )

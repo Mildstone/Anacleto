@@ -1,4 +1,5 @@
 include $(top_srcdir)/Common.mk
+include $(top_srcdir)/conf/kscripts/python.mk
 # include $(top_srcdir)/conf/kscripts/ext_ccStickers.mk
 # include $(top_srcdir)/conf/kscripts/ext_libjit.mk
 # include $(top_srcdir)/conf/kscripts/ext_llvm.mk
@@ -109,6 +110,7 @@ ext-mdsplus: AM_MAKEFLAGS += -j1
 mdsplus: ##@ext mdsplus
 mdsplus_URL    = $(EXT_MDSPLUS_URL)
 mdsplus_BRANCH = $(EXT_MDSPLUS_BRANCH)
+mdsplus_CONFIGURE_ARGS = --enable-debug=$(ENABLE_DEBUG)
 $(call _ext_bootstrap,mdsplus)
 $(call _ext_configure,mdsplus)
 

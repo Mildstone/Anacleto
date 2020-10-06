@@ -1,10 +1,10 @@
+
 include $(top_srcdir)/Common.mk
+include $(top_srcdir)/conf/kscripts/python.mk
 
-if ENABLE_JUPYTER_NOTEBOOK
+pythondir = $(PYTHON_USERBASE)
+hello_PYTHON = hello.py
+hellodir = /tmp/$(PACKAGE)
 
-jpnb-start:  ##@jupyter start notebook server
-jpnb-stop:   ##@jupyter stop notebook server
-jpnb-passwd: ##@jupyter set new custom passwd
 
-endif
 

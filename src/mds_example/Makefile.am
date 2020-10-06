@@ -1,4 +1,5 @@
 include $(top_srcdir)/Common.mk
+include $(top_srcdir)/conf/kscripts/python.mk
 include $(top_srcdir)/conf/kscripts/ext_mdsplus.mk
 
 
@@ -9,22 +10,18 @@ mds_test_SOURCES      = mds_test.cpp
 mds_test_CPPFLAGS     = $(MDSCPPFLAGS)
 mds_test_LDFLAGS      = $(MDSLDFLAGS) -Wl,-rpath,${MDS_LIBDIR}
 
+# further python script with program
+pythondir = $(PYTHON_USERBASE)
+mds_test_PYTHON = mds-test.py
+mds_testdir = /tmp/$(PACKAGE)
+
 ## this is called before link
 ## mds_test_DEPENDENCIES = ext-mdsplus
 
 ## this is done before compiling code
 $(mds_test_OBJECTS): ext-mdsplus
 
-debug: ##@mdsplus debug test program
-debug:
-	@ gdbserver localhost:5677 mds-test
-
-
-PYTHON_PACKAGES = debugpy
-debugpy: ##@mdsplus debug test program
-debugpy:
-	@ gdbserver localhost:5677 python -m debugpy --listen 5678 --wait-for-client $(srcdir)/mds-test.py
-
+CLEANFILES = test_model.characteristics  test_model.datafile  test_model.tree
 
 else
 $(warning ext sources for Mdsplus are disabled, please reconfigure)

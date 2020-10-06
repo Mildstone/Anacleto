@@ -21,7 +21,7 @@
 include $(top_srcdir)/conf/kscripts/build_common.mk
 include $(top_srcdir)/conf/kscripts/toolchain.mk
 include $(top_srcdir)/conf/kscripts/docker.mk
-include $(top_srcdir)/conf/kscripts/jupyter.mk
+
 
 
 ## ////////////////////////////////////////////////////////////////////////// ##
