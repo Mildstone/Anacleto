@@ -21,6 +21,8 @@ mds_testdir = /tmp/$(PACKAGE)
 ## this is done before compiling code
 $(mds_test_OBJECTS): ext-mdsplus
 
+CLEANFILES = test_model.characteristics  test_model.datafile  test_model.tree
+
 else
 $(warning ext sources for Mdsplus are disabled, please reconfigure)
 endif
