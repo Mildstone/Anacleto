@@ -27,10 +27,15 @@ ACLOCAL_AMFLAGS = -I conf/m4
 
 SUBDIRS = conf/kconfig src ext docs
 
-all: ##@all all target
+all: ## all target ( default if no target selected )
 all:
 
-clean-local:
+clean: ## clean
+
+# these are example of varaiables comments that appear in help
+#@ CFLAGS     set C/C++ compiler flags
+#@ CPPFLAGSS  set C/C++ precompiler flags
+
 
 DISTCLEANFILES = .config .config.old
 
@@ -39,6 +44,8 @@ hello.log:
 	@ echo "hello bootstrap" > $@
 
 
+#@log EXAMPLE_STRING_VAR set this variable for print-hello target
+print-hello: ##@log print variable
 print-hello: EXAMPLE_STRING_VAR = not set
 print-hello:
 	@ echo "this is the var: $(EXAMPLE_STRING_VAR)"
@@ -64,7 +71,6 @@ rpm: docker-rpm-builder-install autoconf-bootstrap.spec dist
 	docker-rpm-builder dir $(DOCKER_IMAGE) . $(TMP)/
 	
 
-
 DOCKER_TARGETS = rpm-test
 rpm-test: ##@rpm test created rpm packages
 rpm-test: DOCKER_CONTAINER = rpm-test
@@ -72,3 +78,6 @@ rpm-test: DOCKER_IMAGE = alanfranz/docker-rpm-builder-configurations:centos-7
 rpm-test: $(wildcard $(TMP)/$(build_cpu)/*.rpm)
 	rpm -qlp $^
 	rpm -Uvvvh --test $^
+
+
+

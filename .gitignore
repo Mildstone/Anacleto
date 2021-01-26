@@ -51,21 +51,14 @@ src/sh_template/script.sh
 # external modules
 ext/mdsplus
 
-# DOXYGEN
-conf/autoconf-doxygen/m4/ax_prog_doxygen.m4
-
 # PYTHON
 **/.pip-install.stamp
 **/ipysh.py
 **/.ipynb_checkpoints/
 
-.env
-.vscode/launch.json
-.vscode/settings.json
-
 /downloads
 /.
-/build/**
+/.
 /conf/python
 /conf/ide
 /src/.deps
