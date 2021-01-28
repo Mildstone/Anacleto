@@ -70,9 +70,11 @@ print: ##@debug print all names associated with this NAME
 ## ///  CONFIGURATION   ///////////////////////////////////////////////////// ##
 ## ////////////////////////////////////////////////////////////////////////// ##
 
+__execute_script = $(if $(wildcard $1),. $1,:)
+
 define _envset
- . $(VIVADO_SETUP_SCRIPT); \
- [ -x $(VIVADO_SDK_SETUP_SCRIPT) ] && . $(VIVADO_SDK_SETUP_SCRIPT)
+ $(call __execute_script,$(VIVADO_SETUP_SCRIPT)); \
+ $(call __execute_script,$(VIVADO_SDK_SETUP_SCRIPT))
 endef
 
 # Vivado from Xilinx provides IP handling, FPGA compilation hsi (hardware
