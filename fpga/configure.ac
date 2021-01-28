@@ -22,46 +22,68 @@
 # //  FPGA  ////////////////////////////////////////////////////////////////// #
 # //////////////////////////////////////////////////////////////////////////// #
 
-AX_KCONFIG_WITH_CHOICE([BOARD],["Select SoC board to use"],
+
+AX_KCONFIG_MODULES([ENABLE_BOARD],
+			[red_pitaya], [],
+			[zybo], [])
+AC_SUBST([ENABLED_BOARDS],[${ENABLE_BOARD_MODULES}])
+
+AX_KCONFIG_WITH_CHOICE([BOARD],["Select default board"],
 			   [WITH_SOC_RED_PITAYA],["red_pitaya"],
-			   [WITH_SOC_PARALLELLA],["parallella"])
+			   [WITH_SOC_ZYBO],["zybo"],
+			   [WITH_SOC_CUSTOM],["custom"]
+			   )
 AC_SUBST([BOARD])
 
-AX_KCONFIG_VAR([BOARD_PART])
-AC_SUBST([BOARD_PART])
-AX_KCONFIG_VAR([BOARD_PRESET])
-AC_SUBST([BOARD_PRESET])
+AX_KCONFIG_VAR([red_pitaya_BOARD_PRESET])
+AC_SUBST([red_pitaya_BOARD_PRESET])
+AX_KCONFIG_VAR([red_pitaya_BOARD_PART])
+AC_SUBST([red_pitaya_BOARD_PART])
+AX_KCONFIG_VAR([red_pitaya_VIVADO_SOC_PART])
+AC_SUBST([red_pitaya_VIVADO_SOC_PART])
 
-AX_KCONFIG_VAR([VIVADO_SOC_PART])
-AC_SUBST([VIVADO_SOC_PART])
+AX_KCONFIG_VAR([zybo_BOARD_PRESET])
+AC_SUBST([zybo_BOARD_PRESET])
+AX_KCONFIG_VAR([zybo_BOARD_PART])
+AC_SUBST([zybo_BOARD_PART])
+AX_KCONFIG_VAR([zybo_VIVADO_SOC_PART])
+AC_SUBST([zybo_VIVADO_SOC_PART])
 
-AX_KCONFIG_WITH_CHOICE([VIVADO_VERSION],["Vivado version to use"],
-			   [VIVADO_VERSION_2015_4],["2015.4"],
-			   [VIVADO_VERSION_2016_1],["2016.1"],
-			   [VIVADO_VERSION_2016_2],["2016.2"],
-			   [VIVADO_VERSION_2016_4],["2016.4"],
-			   [VIVADO_VERSION_2017_1],["2017.1"],
-			   [VIVADO_VERSION_2017_2],["2017.2"],
-			   [VIVADO_VERSION_2017_4],["2017.4"],
-			   [VIVADO_VERSION_2018_1],["2018.1"])
+AX_KCONFIG_VAR([custom_BOARD_PRESET])
+AC_SUBST([custom_BOARD_PRESET])
+AX_KCONFIG_VAR([custom_BOARD_PART])
+AC_SUBST([custom_BOARD_PART])
+AX_KCONFIG_VAR([custom_VIVADO_SOC_PART])
+AC_SUBST([custom_VIVADO_SOC_PART])
+
+
+AX_KCONFIG_VAR_WITH([VIVADO_VERSION],["Vivado version to use"])
 AC_SUBST([VIVADO_VERSION])
 
 AX_KCONFIG_WITH_CHOICE([VIVADO_SETUP_METHOD],["Vivado setup method"],
 					   [VIVADO_SETUP_METHOD_BASEPATH],[basepath],
 					   [VIVADO_SETUP_METHOD_SCRIPTS],[scripts])
+
+
 AS_CASE([${VIVADO_SETUP_METHOD}],
 [basepath],
-  [AX_KCONFIG_VAR([XILINX_BASE_PATHDIR])
-   AS_VAR_SET([VIVADO_SETUP_SCRIPT],
+  [ AX_KCONFIG_VAR([XILINX_BASE_PATHDIR])
+	
+	# select if SDK of Vitis settings script exists
+	AS_IF([test -e ${XILINX_BASE_PATHDIR}/SDK/${VIVADO_VERSION}/settings64.sh],
+		AS_VAR_SET([ak__sdk_script],[${XILINX_BASE_PATHDIR}/SDK/${VIVADO_VERSION}/settings64.sh]))
+	AS_IF([test -e ${XILINX_BASE_PATHDIR}/Vitis/${VIVADO_VERSION}/settings64.sh],
+		AS_VAR_SET([ak__sdk_script],[${XILINX_BASE_PATHDIR}/Vitis/${VIVADO_VERSION}/settings64.sh]))
+   	
+	AS_VAR_SET([VIVADO_SETUP_SCRIPT],
 			  [${XILINX_BASE_PATHDIR}/Vivado/${VIVADO_VERSION}/settings64.sh])
-   AS_VAR_SET([VIVADO_SDK_SETUP_SCRIPT],
-			  [${XILINX_BASE_PATHDIR}/SDK/${VIVADO_VERSION}/settings64.sh])
+   	AS_VAR_SET([VIVADO_SDK_SETUP_SCRIPT], [${ak__sdk_script}])
   ],
 [scripts],
   [AX_KCONFIG_VAR([VIVADO_SETUP_SCRIPT])
    AX_KCONFIG_VAR([VIVADO_SDK_SETUP_SCRIPT])
   ],
-  [AC_ERROR(["Xilinx config method not set"])])
+  [AC_MSG_ERROR("Xilinx config method not set")])
 AC_SUBST([VIVADO_SETUP_SCRIPT])
 AC_SUBST([VIVADO_SDK_SETUP_SCRIPT])
 

@@ -19,11 +19,75 @@
 # ////////////////////////////////////////////////////////////////////////// //
 
 
+rename source Tcl_source
+proc source { args } {  
+    array set options { -encoding "utf-8" }
+    set tags [list]
+    set current_parser [lindex [split [version] " "] 0]
+
+    # // IS EMPTY STRING //
+    proc is_empty {string} {
+        expr {![binary scan $string c c]}
+    }
+
+    # // IS NON-EMPTY STRING //
+    proc not_empty {string} {
+        expr {![is_empty $string]}
+    }
+
+    # // HELP //
+    proc help {} {
+            puts {
+  source
+
+  Description: 
+  Add tracing of commands
+
+  Syntax: 
+  source  [-encoding <arg>] [-notrace] [-quiet] [-verbose] <file>
+
+  Usage: 
+    Name         Description
+    ------------------------
+    [-encoding]  specify the encoding of the data stored in filename
+    [-notrace]   disable tracing of sourced commands
+    [-quiet]     Ignore command errors
+    [-verbose]   Suspend message limits during command execution
+    <file>       script to source
+
+  Categories: }
+    } 
+
+    
+    while {[llength $args]-1} {
+      switch -glob -- [lindex $args 0] {
+          -h* { help }
+          -encoding {set args [lassign $args - options(-encoding)]}
+          -notrace { lappend tags "-notrace" ; set args [lrange $args 1 end] }
+          -quiet   { lappend tags "-quiet" ; set args   [lrange $args 1 end] }
+          -verbose { lappend tags "-verbose" ; set args [lrange $args 1 end] }
+          -*      {error "unknown option [lindex $args 0]"}
+          default break
+      } 
+    }
+    foreach {a b} [array get options] { lappend lout $a $b }
+    set filename [lindex $args [llength $args]-1 ]
+    
+    if { [string tolower $current_parser] == "xsct" } {
+      set tags ""
+    }
+    if {[not_empty $filename]} {
+      puts "\[ LOADING SOURCE \] Tcl_source $tags $lout $filename"
+      uplevel 1 Tcl_source $tags $lout $filename;
+    } else { help }
+}
+
+
+
 
 global env
 set srcdir       $env(srcdir)
 set top_srcdir   $env(top_srcdir)
-
 
 source -notrace $top_srcdir/fpga/vivado_socdev_utils.tcl
 source -notrace $top_srcdir/fpga/vivado_socdev_env.tcl

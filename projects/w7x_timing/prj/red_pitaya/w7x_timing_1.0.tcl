@@ -4,6 +4,28 @@
 ## ////////////////////////////////////////////////////////////////////////// ##
 
 
+# ////////////////////////////////////////////////////////////////////////// //
+#
+# This file is part of the anacleto project.
+# Copyright 2018 Andrea Rigoni Garola <andrea.rigoni@igi.cnr.it>.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# ////////////////////////////////////////////////////////////////////////// //
+
+
+
 ################################################################################
 # define paths
 ################################################################################
@@ -79,6 +101,7 @@ proc reset_core_env {} {
   set    core_env(VENDOR)           [getenv VENDOR]
   set    core_env(VERSION)          [getenv VERSION]
   set    core_env(DRV_LINUX)        [getenv DRV_LINUX]
+  set    core_env(BSPDIR)           [getenv BSPDIR]
 }
 # set env by default when included
 reset_core_env
@@ -91,6 +114,8 @@ proc reset_project_env { } {
   set project_env(VIVADO_VERSION)  [getenv VIVADO_VERSION]
   set project_env(VIVADO_SOC_PART) [getenv VIVADO_SOC_PART]
   set project_env(BOARD)           [getenv BOARD]
+  set project_env(BOARD_PART)      [getenv BOARD_PART]
+  set project_env(BOARD_PRESET)    [getenv BOARD_PRESET]
   set project_env(dir_prj)         [compute_project_dir edit]
   set project_env(dir_src)         [compute_project_dir src]
   set project_env(dir_sdc)         [compute_project_dir edit]/[compute_project_name].sdc
@@ -100,6 +125,9 @@ proc reset_project_env { } {
   set project_env(synth_name)      [getenv synth_name "anacleto_synth"]
   set project_env(impl_name)       [getenv impl_name  "anacleto_impl"]
   set project_env(SOURCES)         [getenv SOURCES]
+  set project_env(ARCHIVE)         [getenv ARCHIVE]
+  set project_env(PRJCFG)          [getenv PRJCFG]
+  set project_env(IPCFG)           [getenv IPCFG]
   set project_env(BD_SOURCES)      [getenv BD_SOURCES]
   set project_env(IP_SOURCES)      [getenv IP_SOURCES]
   set project_env(COMPILE_ORDER)   [getenv COMPILE_ORDER]
@@ -239,8 +267,28 @@ namespace upvar ::tclapp::socdev::makeutils core_env    core_env
  # 
  # Set 'constrs_1' fileset object
  set obj [get_filesets constrs_1]
- # Empty (no sources present)
-
+ set files [list \
+  "[file normalize $make_env(srcdir)/src/w7x_timing.xdc]"\
+ ]
+ add_files -norecurse -fileset $obj $files
+ # 
+ # Properties for w7x_timing.xdc
+  set file "$project_env(dir_src)/../../src/w7x_timing.xdc"
+  set file [file normalize $file]
+  set file_obj [get_files -of_objects [get_filesets constrs_1] [list "$file"]]
+  set_property -quiet "file_type" "XDC" $file_obj
+  set_property -quiet "is_enabled" "1" $file_obj
+  set_property -quiet "is_global_include" "0" $file_obj
+  set_property -quiet "library" "xil_defaultlib" $file_obj
+  set_property -quiet "path_mode" "RelativeFirst" $file_obj
+  set_property -quiet "processing_order" "NORMAL" $file_obj
+  set_property -quiet "scoped_to_cells" "" $file_obj
+  set_property -quiet "scoped_to_ref" "" $file_obj
+  set_property -quiet "used_in" "synthesis implementation" $file_obj
+  set_property -quiet "used_in_implementation" "1" $file_obj
+  set_property -quiet "used_in_synthesis" "1" $file_obj
+ # 
+ # No properties for constrs_1
  # 
  # 
  # /////////////////////////////////////////////////////////////  

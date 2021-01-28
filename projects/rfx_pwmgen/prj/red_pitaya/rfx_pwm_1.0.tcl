@@ -47,7 +47,7 @@ proc  getenv { name {default ""}} {
   variable ::env
   if { [info exists env($name)] } {
     return $env($name)
-  } else {    
+  } else {
     return $default
   }
 }
@@ -130,6 +130,7 @@ proc reset_project_env { } {
   set project_env(IPCFG)           [getenv IPCFG]
   set project_env(BD_SOURCES)      [getenv BD_SOURCES]
   set project_env(IP_SOURCES)      [getenv IP_SOURCES]
+  set project_env(TB_SOURCES)      [getenv TB_SOURCES]
   set project_env(COMPILE_ORDER)   [getenv COMPILE_ORDER]
   set project_env(sources_list)    [split [getenv SOURCES] " "]
 }
@@ -189,7 +190,14 @@ namespace upvar ::tclapp::socdev::makeutils core_env    core_env
  }
  # 
  # Set IP repository paths
- # No local ip repos found for sources_1 ... 
+ set obj [get_filesets sources_1]
+ set repo_path_str [list \
+  /home/andrea/devel/rfx/anacleto/build/projects/rfx_pwmgen/ip\
+ ]
+ set_property "ip_repo_paths" ${repo_path_str} $obj
+ # 
+ # Rebuild user ip_repo's index before adding any source files
+ update_ip_catalog -rebuild
  # 
  # Set 'sources_1' fileset object
  set obj [get_filesets sources_1]

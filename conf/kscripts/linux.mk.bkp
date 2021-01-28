@@ -1,0 +1,127 @@
+################################################################################
+# Linux build
+################################################################################
+
+
+
+
+LINUX_CFLAGS    = "-O2 -mtune=cortex-a9 -mfpu=neon -mfloat-abi=hard"
+LINUX_PACKAGE   = uImage
+LINUX_IMAGE     = $(TMP)/$(LINUX_PACKAGE)
+LINUXDIR        = linux
+
+if LINUX_DIR_IN_SRCTREE
+ LINUX_SRCDIR    = $(abs_top_srcdir)/$(LINUXDIR)
+ LINUX_BUILDDIR  = $(abs_top_builddir)/$(LINUXDIR)
+ LINUX_BUILD_O   = $(filter-out $(LINUX_SRCDIR),$(LINUX_BUILDDIR))
+else
+ LINUX_SRCDIR    = $(abs_top_builddir)/$(LINUXDIR)
+ LINUX_BUILDDIR  = $(abs_top_builddir)/$(LINUXDIR)
+endif
+
+ARCH                     = arm
+WITH_TOOLCHAIN_DIR       = ${abs_top_builddir}/toolchain
+TOOLCHAIN_PATH           = ${WITH_TOOLCHAIN_DIR}/bin
+CROSS_COMPILE            = arm-linux-gnueabihf-
+
+
+
+define _set_export
+export ARCH=$(ARCH); \
+export CROSS_COMPILE=${CROSS_COMPILE}; \
+export PATH=$${PATH}:$(TOOLCHAIN_PATH); \
+export O=${LINUX_BUILD_O}
+endef
+
+
+
+DOWNLOADS += linux
+linux_DIR    = $(LINUX_SRCDIR)
+linux_URL    = $(LINUX_URL)
+linux_BRANCH = $(LINUX_GIT_BRANCH)
+
+
+linux-:     ##@linux_target use: "make linux-<target>" to build target in linux directory
+linux-init: ##@linux initialize linux sources applying the soc defconfig
+linux-help: ##@linux_target get linux build help
+linux-menuconfig: ##@linux_target enter menuconfig inside linux sources
+linux-nconfig: ##@linux_target enter ncurses config inside linux sources
+linux-xconfig: ##@linux_target enter xlib config inside linux sources
+linux-gconfig: ##@linux_target enter gnome config inside linux sources
+linux-savedefconfig: ##@linux_target save default configuration in linux builddir defconfig file
+linux-kernelversion: ##@linux_target display the current kernel version
+linux-kernelrelease: ##@linux_target display the current kernel release
+linux-updateconfig: ##@linux update the soc defconf in /conf/linux/...
+
+KERNELVERSION = $(shell $(MAKE) -s -C $(LINUX_BUILDDIR) kernelversion)
+DEFCONFIG     = $(abs_top_srcdir)/conf/linux/$(KERNELVERSION)/$(BOARD).def
+ak__LINUX_PATCH = $(abs_top_srcdir)/conf/linux/$(KERNELVERSION)/*.patch $(LINUX_PATCH)
+
+
+
+
+
+# config_file: $(LINUX_CONFIG_FILE)
+
+
+.PHONY: linux-init linux-init-s
+linux-init-s: export CC := $(CROSS_COMPILE)$(CC)
+linux-init-s: export SRCARCH=$(ARCH)
+linux-init-s: export srctree=$(LINUX_SRCDIR)
+linux-init-s:
+	$(_set_export); \
+	cd $(LINUX_BUILDDIR); \
+	$(LINUX_BUILDDIR)/scripts/kconfig/conf --defconfig=$(DEFCONFIG) Kconfig
+
+# export KERNELVERSION=$$($(MAKE) -s -C $< kernelversion);
+# export DEFCONFIG=${abs_top_srcdir}/conf/linux/$(KERNELVERSION)/$(BOARD.def; 
+
+LINUX_CONFIG_FILE = $(LINUX_BUILDDIR)/.config
+$(LINUX_BUILDDIR)/.config: $(LINUX_SRCDIR)
+	$(_set_export); \
+	$(MKDIR_P) $(@D); \
+	$(MAKE) $(AM_MAKEFLAGS) -C $(LINUX_BUILDDIR) mrproper; \
+	$(MAKE) -s $(AM_MAKEFLAGS) -C $(LINUX_BUILDDIR) O=$$O CFLAGS="$(LINUX_CFLAGS)" defconfig; \
+	$(MAKE) -s linux-init-s;
+
+linux_config: $(LINUX_BUILDDIR)/.config
+
+linux-init: 
+	$(MAKE) -s config_file
+
+linux-apply-patches: ##@linux apply patches
+linux-apply-patches: 
+	@ cd $(LINUX_SRCDIR); \
+	test -f $(ak__LINUX_PATCH) && \
+	for p in $(ak__LINUX_PATCH); do patch -N -p0 < $$p ||:; done;
+
+
+.PHONY: linux-%
+linux-nconfig linux-menuconfig linux-xconfig linux-gconfig: \
+ $(LINUX_SRCDIR) $(LINUX_CONFIG_FILE)
+	$(_set_export); \
+	_target=$@; \
+	$(MAKE) -C $< O=$$O $${_target//linux-/}
+
+
+linux-updateconfig: $(LINUX_CONFIG_FILE)
+	$(_set_export); \
+	$(MAKE) linux-savedefconfig && cp $(LINUX_BUILDDIR)/defconfig $(DEFCONFIG)
+
+
+linux-%: $(LINUX_SRCDIR) $(LINUX_BUILDDIR)
+	$(_set_export); \
+	_target=$@; \
+	$(MAKE) $(AM_MAKEFLAGS) -C $< O=$$O CFLAGS="$(LINUX_CFLAGS)" $${_target//linux-/}
+
+
+$(LINUX_IMAGE): $(LINUX_SRCDIR) $(LINUX_CONFIG_FILE)
+	$(_set_export); \
+	$(MAKE) $(AM_MAKEFLAGS) -C $< O=$$O CFLAGS="$(LINUX_CFLAGS)" \
+		UIMAGE_LOADADDR=$(LINUX_UIMAGE_LOADADDR) $(LINUX_PACKAGE); \
+	$(MAKE) $(AM_MAKEFLAGS) -C $< O=$$O CFLAGS="$(LINUX_CFLAGS)" modules; \
+	mkdir -p $(TMP)/lib/modules; \
+	$(MAKE) $(AM_MAKEFLAGS) -C $< O=$$O CFLAGS="$(LINUX_CFLAGS)" \
+		INSTALL_MOD_PATH=$(TMP) modules_install; \
+	cp $(LINUX_BUILDDIR)/arch/arm/boot/uImage $@
+

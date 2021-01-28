@@ -18,7 +18,6 @@
 # EXTRA_SEARCH_MAPPINGS  = $(DX_TAGFILES)
 # TAGFILES               = $(DX_TAGFILES)
 # GENERATE_TAGFILE       = $(DX_DESTTAG)
-
 # project
 DX_TITLE  ?= Project title
 DX_BRIEF  ?= project code documentation reference
@@ -72,12 +71,19 @@ $(DX_DESTDIR)/latex/refman.pdf: $(DX_DESTDIR)/latex
 ${DX_DESTDIR}/${DX_PACKAGE_NAME}.pdf: $(DX_DESTDIR)/latex/refman.pdf
 	cp $< $@
 
+
+doxygen-update: ##@docs update latex config file
+	$(DOXYGEN_BINARY) -u $(DX_CFG);
+
+
+if ENABLE_DOXYGEN
 html:  ##@docs generate html documentation
 html:  $(DX_DESTDIR)/html
 latex: ##@docs generate latex documentation
-latex: $(DX_DESTDIR)/latex
+latex: doxygen-update $(DX_DESTDIR)/latex
 pdf:   ##@docs generate pdf manual
 pdf:   $(DX_DESTDIR)/${DX_PACKAGE_NAME}.pdf
+endif
 
 clean-local:
 	@ rm -rf doxygen.stamp html latex \

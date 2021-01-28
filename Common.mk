@@ -31,13 +31,11 @@ include $(top_srcdir)/conf/kscripts/docker.mk
 
 help: print_banner
 print_banner:
-	@ cat $(top_srcdir)/doc/logo.txt
+	@ cat $(top_srcdir)/docs/logo.txt
 
 ## /////////////////////////////////////////////////////////////////////////////
 ## // DIRECTORIES //////////////////////////////////////////////////////////////
 ## /////////////////////////////////////////////////////////////////////////////
-
-kscripts = $(top_srcdir)/conf/kscripts
 
 DL   ?= $(DOWNLOAD_DIR)
 TMP  ?= $(abs_top_builddir)
@@ -50,26 +48,21 @@ ${DL} ${TMP}:
 ## /////////////////////////////////////////////////////////////////////////////
 
 locale-gen: USER = root
-locale-gen:
+locale-gen: ##@@docker set locale in the docker container instance
 	@ locale-gen $${LANG}
 
-## /////////////////////////////////////////////////////////////////////////////
-## // RECONFIGURE  /////////////////////////////////////////////////////////////
-## /////////////////////////////////////////////////////////////////////////////
+ip-address: NIC    = eth0
+ip-address: HOSTID = 02:42:ac:11:00:aa
+ip-address: USER   = root
+ip-address: ##@@docker set MAC address in the docker container instance
+	@ ip link set $(NIC) address $(HOSTID)
 
-$(top_srcdir)/configure.ac: $(foreach x,$(CONFIG_SUBDIRS), $(top_srcdir)/$x/configure.ac)
-	@ touch $@
 
-.PHONY: reconfigure
-reconfigure: ##@miscellaneous re-run configure with last passed arguments
-	@ \
-	echo " -- Reconfiguring build with following parameters: -----------"; \
-	echo $(shell $(abs_top_builddir)/config.status --config);              \
-	echo " -------------------------------------------------------------"; \
-	echo ; \
-	cd '$(abs_top_builddir)' && \
-	$(abs_top_srcdir)/configure $(shell $(abs_top_builddir)/config.status --config);
-	
+
+## ACLOCAL = ${SHELL} /home/andrea/devel/utils/autoconf-bootstrap/conf/missing aclocal
+## AUTOCONF = ${SHELL} /home/andrea/devel/utils/autoconf-bootstrap/conf/missing autoconf
+## AUTOHEADER = ${SHELL} /home/andrea/devel/utils/autoconf-bootstrap/conf/missing autoheader
+## AUTOMAKE = ${SHELL} /home/andrea/devel/utils/autoconf-bootstrap/conf/missing automake
 
 
 ## ////////////////////////////////////////////////////////////////////////// ##
@@ -90,7 +83,7 @@ else
  LINUX_BUILDDIR  = $(abs_top_builddir)/$(LINUX_DIR)
 endif
 
-ARCH                     = arm
+ARCH                    ?= arm
 WITH_TOOLCHAIN_DIR      ?= ${abs_top_builddir}/toolchain
 TOOLCHAIN_PATH          ?= ${WITH_TOOLCHAIN_DIR}/bin
 CROSS_COMPILE           ?= arm-linux-gnueabihf-
@@ -103,3 +96,34 @@ export CROSS_COMPILE=${CROSS_COMPILE}; \
 export PATH=$${PATH}:$(TOOLCHAIN_PATH); \
 export O=${LINUX_BUILD_O}
 endef
+
+
+
+## /////////////////////////////////////////////////////////////////////////////
+## // DUMPS  ///////////////////////////////////////////////////////////////////
+## /////////////////////////////////////////////////////////////////////////////
+
+print-env: ##@micellaneous print environment used for crosscompiling linux
+	@\
+	$(_set_export); \
+	echo ""; \
+	echo "---[KERNEL BUILD]----------------------------------------------------------"; \
+	echo " compiler: $${CROSS_COMPILE}${CC}"; \
+	echo " arch    : ${ARCH}"; \
+	echo " flags   : ${LINUX_CFLAGS}"; \
+	echo " TOOLCH  : ${TOOLCHAIN_PATH}"; \
+	echo " PATH    : $${PATH}"; \
+	echo " builddir: $${O}"; \
+	echo " "; \
+	echo " LINUX_IMAGE    : ${LINUX_IMAGE}"; \
+	echo " LINUX_DIR      : ${LINUX_DIR}"; \
+	echo " LINUX_SRCDIR   : ${LINUX_SRCDIR}"; \
+	echo " LINUX_BUILDDIR : ${LINUX_BUILDDIR}"; \
+	echo " LINUX_GIT      : ${LINUX_GIT}"; \
+	echo " MAKE           : $${MAKE}"; \
+	echo " "; \
+	echo "---------------------------------------------------------------------------"; \
+	echo ""
+
+
+

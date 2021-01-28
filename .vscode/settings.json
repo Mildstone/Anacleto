@@ -1,0 +1,31 @@
+{
+    "python.globalModuleInstallation": true,
+    "python.linting.pylintEnabled": true,
+    "python.autoComplete.extraPaths": [
+        "${workspaceFolder}/build/ext/mdsplus/python/",
+    ],
+    "python.envFile": "${workspaceFolder}/.env",
+    "files.associations": {
+        "module.h": "c",
+        "version.h": "c",
+        "cdev.h": "c",
+        "semaphore.h": "c",
+        "mm.h": "c"
+    },
+    "search.exclude": {
+        "**/.git": true,
+        "**/node_modules": true,
+        "**/bower_components": true,
+        "**/tmp": true,
+        "**/yocto-build/**": true,
+        "**/yocto/**": true,
+        "**/build/linux": true,
+        "**/linux": true
+    },
+    "files.watcherExclude" : {
+        "**/build/linux": true,
+        "**/linux": true,
+        "**/yocto/**": true,
+        "**/yocto-build/**": true
+    },
+}

@@ -16,22 +16,32 @@ linux-menuconfig: ##@linux_target enter menuconfig inside linux sources
 linux-nconfig: ##@linux_target enter ncurses config inside linux sources
 linux-xconfig: ##@linux_target enter xlib config inside linux sources
 linux-gconfig: ##@linux_target enter gnome config inside linux sources
-linux-savedefconfig: ##@linux_target save default configuration in linux builddir defconfig file
+# linux-savedefconfig: ##@linux_target save default configuration in linux builddir defconfig file
 linux-kernelversion: ##@linux_target display the current kernel version
 linux-kernelrelease: ##@linux_target display the current kernel release
 linux-updateconfig: ##@linux update the soc defconf in /conf/linux/...
 
 
+
+
+# define _set_export
+# linux-export ARCH=$(ARCH)
+# linux-export CROSS_COMPILE=${CROSS_COMPILE}
+# linux-export PATH=$${PATH}:$(TOOLCHAIN_PATH)
+# linux-export O=${LINUX_BUILD_O}
+# endef
+
+# linux-%: export KERNELVERSION = $(shell $(MAKE) -s -C $(LINUX_SRCDIR) kernelversion)
+linux-%: export KERNELVERSION = 4.4.0
+linux-%: export DEFCONFIG=${abs_top_srcdir}/conf/linux/$(KERNELVERSION)/${BOARD}.def
+linux-%: export SRCARCH=${ARCH}
+linux-%: export srctree=$(LINUX_SRCDIR)
+
 .PHONY: linux-init linux-init-s
-linux-init-s: $(LINUX_SRCDIR) print-env
-	$(_set_export); \
+linux-init-s: $(LINUX_SRCDIR) 
+	@$(_set_export); \
 	$(MKDIR_P) $(LINUX_BUILDDIR); \
 	cd $(LINUX_BUILDDIR); \
-	export LS=$$(ls); \
-	export KERNELVERSION=$$($(MAKE) -s -C $< kernelversion); \
-	export DEFCONFIG=${abs_top_srcdir}/conf/linux/$${KERNELVERSION}/${BOARD}.def; \
-	export SRCARCH=${ARCH}; \
-	export srctree=$(LINUX_SRCDIR); \
 	$(LINUX_BUILDDIR)/scripts/kconfig/conf --defconfig=$${DEFCONFIG} Kconfig
 
 linux-init:

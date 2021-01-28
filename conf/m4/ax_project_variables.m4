@@ -63,6 +63,13 @@ _var = \$(or \$(\$(call _flt,\$(VENDOR)_\$(NAME)_\$(VERSION)_\$[]1)),\\\\
 \$(eval override NAME    =\$(strip \$(call _nam,\$(NAME))))
 \$(foreach x,\$(project_VARIABLES),\$(eval override \$x:=\$(call _var,\$x)))
 
+define __rename =
+\$(eval override VERSION =\$(strip \$(call _ver,\$(1))))
+\$(eval override VENDOR  =\$(strip \$(call _ven,\$(1))))
+\$(eval override NAME    =\$(strip \$(call _nam,\$(1))))
+\$(foreach x,\$(project_VARIABLES),\$(eval override \$x:=\$(call _var,\$x)))
+endef
+
  ])
  AC_SUBST([PROJECT_VARIABLES])
  m4_ifdef([AM_SUBST_NOTMAKE], [AM_SUBST_NOTMAKE([PROJECT_VARIABLES])])

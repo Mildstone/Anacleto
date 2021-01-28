@@ -3,7 +3,6 @@
 # //////////////////////////////////////////////////////////////////////////////
 
 AX_KCONFIG_VAR_ENABLE([ENABLE_DOXYGEN],["set with ENABLE_DOXYGEN"])
-
 AX_KCONFIG_WITH_EXEC([DOXYGEN_BINARY],["set with DOXYGEN_BINARY"],,[
 					  AC_MSG_WARN(["unable to find doxygen"])
 					  # Why if? remember: any variable could be undefined!
@@ -13,6 +12,7 @@ AX_KCONFIG_WITH_EXEC([DOXYGEN_BINARY],["set with DOXYGEN_BINARY"],,[
 					  AS_VAR_SET([DOXYGEN_BINARY],[:])
 					  ])
 AC_SUBST([DOXYGEN_BINARY])
+AM_CONDITIONAL([ENABLE_DOXYGEN],[test x${ENABLE_DOXYGEN} = xyes])
 
 # MODULES
 AS_VAR_IF([ENABLE_DOXYGEN],[yes],[
@@ -26,9 +26,11 @@ AS_VAR_IF([ENABLE_DOXYGEN],[yes],[
 			  [xml], [output],
 			  [pdf], [output],
 			  [ps],  [output])
-DX_MY_INIT_DOXYGEN([autoconf-bootstrap],
-				   [conf/autoconf-doxygen/config/doxygen.cfg])
-			  ])
+
+DX_INIT_DOXYGEN([autoconf-bootstrap],
+		   		[conf/autoconf-doxygen/config/doxygen.cfg])
+])
+
 AC_SUBST(DOXYGEN_MODULES)
 AC_SUBST(DOXYGEN_MODULES_AVAILABLE)
 AC_SUBST(DOXYGEN_MODULES_ENABLED)

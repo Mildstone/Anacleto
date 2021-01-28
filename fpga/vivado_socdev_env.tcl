@@ -42,7 +42,7 @@ proc  getenv { name {default ""}} {
   variable ::env
   if { [info exists env($name)] } {
     return $env($name)
-  } else {    
+  } else {
     return $default
   }
 }
@@ -125,6 +125,7 @@ proc reset_project_env { } {
   set project_env(IPCFG)           [getenv IPCFG]
   set project_env(BD_SOURCES)      [getenv BD_SOURCES]
   set project_env(IP_SOURCES)      [getenv IP_SOURCES]
+  set project_env(TB_SOURCES)      [getenv TB_SOURCES]
   set project_env(COMPILE_ORDER)   [getenv COMPILE_ORDER]
   set project_env(sources_list)    [split [getenv SOURCES] " "]
 }

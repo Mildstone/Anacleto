@@ -10,7 +10,9 @@ entity w7x_timing_v1_0 is
         ADDR_WIDTH : integer := 16
     );
     port (
-        clk_axi_in : in  std_logic;
+        aclk       : in  std_logic;
+        aresetn    : in  std_logic;
+        
         clk_in     : in  STD_LOGIC;
         clk20_in   : in  STD_LOGIC;
         trig_in    : in  STD_LOGIC;
@@ -30,8 +32,7 @@ entity w7x_timing_v1_0 is
         bram_clkb  : out  STD_LOGIC;
         bram_doutb : in   STD_LOGIC_VECTOR(BRAM_WIDTH-1 downto 0);
         bram_rstb  : out  STD_LOGIC;
-        -- Ports of Axi Slave Bus Interface S00_AXI
-        s00_axi_resetn  : in  std_logic;
+        -- Ports of Axi Slave Bus Interface S00_AXI        
         s00_axi_awaddr  : in  std_logic_vector(ADDR_WIDTH+DATA_WIDTH/32 downto 0);
         s00_axi_awprot  : in  std_logic_vector(2 downto 0);
         s00_axi_awvalid : in  std_logic;
@@ -181,11 +182,11 @@ clk <= clk_in when c_extclk(0) = '1' else clk_int;
 trigger    <= c_trig(0) or trig_in;
 power_down <= c_extclk(0);
 ---- BRAM
-bram_clka   <= clk_axi_in;
+bram_clka   <= aclk;
 bram_rsta   <= '0';
 bram_addra  <= std_logic_vector(m_addr-offset);
-bram_update: process(clk_axi_in,m_strb,m_wdata,bram_douta) begin
-  if rising_edge(clk_axi_in) then
+bram_update: process(aclk,m_strb,m_wdata,bram_douta) begin
+  if rising_edge(aclk) then
     bram_douta_buf <= bram_douta;
     for i in 0 to BRAM_WIDTH/8-1 loop
       if m_strb(i) = '1'
@@ -223,9 +224,9 @@ state_led(6) <= c_extclk(0);
 state_led(7) <= not state(0);--error/not ok
 
 ----DATA_BUF
-update_buffer: process(clk_axi_in,m_addr,m_strb,m_wdata,head_save,data_buf,state)
+update_buffer: process(aclk,m_addr,m_strb,m_wdata,head_save,data_buf,state)
 begin
-  if rising_edge(clk_axi_in) then
+  if rising_edge(aclk) then
     -- handle driver write operations
     if m_addr < offset then
       for i in 0 to DATA_WIDTH/8-1 loop
@@ -265,8 +266,8 @@ w7x_timing_v1_0_S00_AXI_inst : w7x_timing_v1_0_S00_AXI
         STRB_OUT      => m_strb,
         WE_OUT        => bram_wea,
         EN_OUT        => bram_ena,
-        S_AXI_CLK     => clk_axi_in,
-        S_AXI_RESETN  => s00_axi_resetn,
+        S_AXI_CLK     => aclk,
+        S_AXI_RESETN  => aresetn,
         S_AXI_AWADDR  => s00_axi_awaddr,
         S_AXI_AWPROT  => s00_axi_awprot,
         S_AXI_AWVALID => s00_axi_awvalid,
