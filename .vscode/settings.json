@@ -1,4 +1,10 @@
 {
+    "python.globalModuleInstallation": true,
+    "python.linting.pylintEnabled": true,
+    "python.autoComplete.extraPaths": [
+        "${workspaceFolder}/build/ext/mdsplus/python/",
+    ],
+    "python.envFile": "${workspaceFolder}/.env",
     "files.associations": {
         "module.h": "c",
         "version.h": "c",

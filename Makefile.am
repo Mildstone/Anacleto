@@ -34,7 +34,7 @@ all: toolchain $(LINUX_IMAGE)
 ## // DUMPS  ///////////////////////////////////////////////////////////////////
 ## /////////////////////////////////////////////////////////////////////////////
 
-print-env: ##@micellaneous print environment used for crosscompiling linux
+print-envdebug: ##@micellaneous print environment used for crosscompiling linux
 	@\
 	$(_set_export); \
 	echo ""; \
@@ -126,12 +126,12 @@ meta_xilinx_URL = $(YOCTO_XILINX_URL)
 meta_xilinx_BRANCH = master
 
 
-yocto-%: DOCKER_CONTAINER = yocto-builder
-yocto-%: DOCKER_IMAGE = yocto-builder:latest
-yocto-%: DOCKER_URL   = $(top_srcdir)/docker/yocto-build
+# yocto-%: DOCKER_CONTAINER = yocto-builder
+# yocto-%: DOCKER_IMAGE = yocto-builder:latest
+# yocto-%: DOCKER_URL   = $(top_srcdir)/docker/yocto-build
 
-yocto-init: ##@yocto init docker
-	echo "done...";
+# yocto-init: ##@yocto init docker
+# 	echo "done...";
 
 
 clean-local:
@@ -154,7 +154,7 @@ print-hello:
 
 
 
-DOWNLOADS += linux
-linux_DIR    = $(LINUX_SRCDIR)
-linux_URL    = $(LINUX_URL)
-linux_BRANCH = $(LINUX_GIT_BRANCH)
+prova:
+	echo "ciao"
+
+

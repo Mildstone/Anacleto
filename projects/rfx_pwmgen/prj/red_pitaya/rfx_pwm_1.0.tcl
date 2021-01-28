@@ -190,7 +190,14 @@ namespace upvar ::tclapp::socdev::makeutils core_env    core_env
  }
  # 
  # Set IP repository paths
- # No local ip repos found for sources_1 ... 
+ set obj [get_filesets sources_1]
+ set repo_path_str [list \
+  /home/andrea/devel/rfx/anacleto/build/projects/rfx_pwmgen/ip\
+ ]
+ set_property "ip_repo_paths" ${repo_path_str} $obj
+ # 
+ # Rebuild user ip_repo's index before adding any source files
+ update_ip_catalog -rebuild
  # 
  # Set 'sources_1' fileset object
  set obj [get_filesets sources_1]

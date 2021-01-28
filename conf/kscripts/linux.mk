@@ -2,30 +2,11 @@
 # Linux build
 ################################################################################
 
-LINUX_CFLAGS    ?= "-O2 -mtune=cortex-a9 -mfpu=neon -mfloat-abi=hard"
-LINUX_PACKAGE   ?= uImage
-LINUX_IMAGE     ?= $(TMP)/$(LINUX_PACKAGE)
-LINUX_DIR       ?= linux
 
-if LINUX_DIR_IN_SRCTREE
- LINUX_SRCDIR    = $(abs_top_srcdir)/$(LINUX_DIR)
- LINUX_BUILDDIR  = $(abs_top_builddir)/$(LINUX_DIR)
- LINUX_BUILD_O   = $(filter-out $(LINUX_SRCDIR),$(LINUX_BUILDDIR))
-else
- LINUX_SRCDIR    = $(abs_top_builddir)/$(LINUX_DIR)
- LINUX_BUILDDIR  = $(abs_top_builddir)/$(LINUX_DIR)
-endif
-
-
-
-
-define _set_export
-export ARCH=$(ARCH); \
-export CROSS_COMPILE=${CROSS_COMPILE}; \
-export PATH=$${PATH}:$(TOOLCHAIN_PATH); \
-export O=${LINUX_BUILD_O}
-endef
-
+DOWNLOADS += linux
+linux_DIR    = $(LINUX_SRCDIR)
+linux_URL    = $(LINUX_URL)
+linux_BRANCH = $(LINUX_GIT_BRANCH)
 
 
 linux-:     ##@linux_target use: "make linux-<target>" to build target in linux directory
@@ -35,35 +16,35 @@ linux-menuconfig: ##@linux_target enter menuconfig inside linux sources
 linux-nconfig: ##@linux_target enter ncurses config inside linux sources
 linux-xconfig: ##@linux_target enter xlib config inside linux sources
 linux-gconfig: ##@linux_target enter gnome config inside linux sources
-linux-savedefconfig: ##@linux_target save default configuration in linux builddir defconfig file
+# linux-savedefconfig: ##@linux_target save default configuration in linux builddir defconfig file
 linux-kernelversion: ##@linux_target display the current kernel version
 linux-kernelrelease: ##@linux_target display the current kernel release
 linux-updateconfig: ##@linux update the soc defconf in /conf/linux/...
 
 
+
+
+# define _set_export
+# linux-export ARCH=$(ARCH)
+# linux-export CROSS_COMPILE=${CROSS_COMPILE}
+# linux-export PATH=$${PATH}:$(TOOLCHAIN_PATH)
+# linux-export O=${LINUX_BUILD_O}
+# endef
+
+# linux-%: export KERNELVERSION = $(shell $(MAKE) -s -C $(LINUX_SRCDIR) kernelversion)
+linux-%: export KERNELVERSION = 4.4.0
+linux-%: export DEFCONFIG=${abs_top_srcdir}/conf/linux/$(KERNELVERSION)/${BOARD}.def
+linux-%: export SRCARCH=${ARCH}
+linux-%: export srctree=$(LINUX_SRCDIR)
+
 .PHONY: linux-init linux-init-s
-linux-init-s: $(LINUX_SRCDIR) print-env
-	$(_set_export); \
+linux-init-s: $(LINUX_SRCDIR) 
+	@$(_set_export); \
 	$(MKDIR_P) $(LINUX_BUILDDIR); \
 	cd $(LINUX_BUILDDIR); \
-	export LS=$$(ls); \
-	export CC=$(CROSS_COMPILE)$(CC); \
-	export KERNELVERSION=$$($(MAKE) -s -C $< kernelversion); \
-	export DEFCONFIG=${abs_top_srcdir}/conf/linux/$${KERNELVERSION}/${BOARD}.def; \
-	export SRCARCH=${ARCH}; \
-	export srctree=$(LINUX_SRCDIR); \
 	$(LINUX_BUILDDIR)/scripts/kconfig/conf --defconfig=$${DEFCONFIG} Kconfig
 
-
-linux-apply-patches: ##@linux apply patches
-linux-apply-patches: $(LINUX_SRCDIR)
-	@ cd $(LINUX_SRCDIR); \
-	KERNELVERSION=$$($(MAKE) -s -C $(LINUX_SRCDIR) kernelversion); \
-	_patch="$(abs_top_srcdir)/conf/linux/$${KERNELVERSION}/*.patch $(LINUX_PATCH)"; \
-	test -f $${_patch} && \
-	for p in $${_patch}; do patch -N -p0 < $$p ||:; done;
-
-linux-init: linux-apply-patches
+linux-init:
 	$(MAKE) -s linux-init-s
 
 .PHONY: linux-%

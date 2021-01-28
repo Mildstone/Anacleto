@@ -21,8 +21,8 @@ dnl // ////////////////////////////////////////////////////////////////////// //
 dnl Process this file with autoconf to produce a configure script.
 
 dnl AUTOCONF ///////////////////////////////////////////////////////////////////
-AC_PREREQ([2.69])
-AC_INIT([Anacleto], [0.1], [andrea.rgn@gmail.com])
+AC_PREREQ([])
+AC_INIT([Anacleto],[0.1],[andrea.rgn@gmail.com])
 AC_CONFIG_MACRO_DIRS([conf/m4])
 AC_CONFIG_AUX_DIR([conf])
 dnl AC_CONFIG_SRCDIR([...])
@@ -80,7 +80,7 @@ AC_CHECK_PROGS([TAR],[gtar tar])
 AC_CHECK_PROGS([UNIQ],[uniq])
 AC_CHECK_PROGS([WC],[wc])
 
-AC_PROG_LEX
+AC_PROG_LEX(yywrap)
 AC_PROG_YACC
 
 
@@ -103,6 +103,9 @@ m4_sinclude(conf/kscripts/build_common.ac)
 
 ## TOOLCHAIN ##
 m4_sinclude(conf/kscripts/toolchain.ac)
+
+## PYTHON ##
+m4_sinclude(conf/kscripts/python.ac)
 
 ## CODAC ##
 # m4_sinclude(conf/kscripts/iter_codac.ac)
